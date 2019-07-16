@@ -1,0 +1,251 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "176ffcf5_6960d135",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Comply to review.md import sorting rules.",
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "702d9f27_dd907525",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable. Next line too.",
+      "range": {
+        "startLine": 164,
+        "startChar": 1,
+        "endLine": 164,
+        "endChar": 12
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3cea5b0e_298761e6",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 336,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 336,
+        "startChar": 1,
+        "endLine": 336,
+        "endChar": 16
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f91cb0af_85260928",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 537,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable. Below too.",
+      "range": {
+        "startLine": 537,
+        "startChar": 1,
+        "endLine": 537,
+        "endChar": 9
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c7d01ce_bb678bc8",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 566,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable. Below too.",
+      "range": {
+        "startLine": 566,
+        "startChar": 1,
+        "endLine": 566,
+        "endChar": 4
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3e0b15a9_f7fe851b",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 649,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable. Below too",
+      "range": {
+        "startLine": 649,
+        "startChar": 1,
+        "endLine": 649,
+        "endChar": 9
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d4223e9b_1651dd8c",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable. Below too.",
+      "range": {
+        "startLine": 817,
+        "startChar": 1,
+        "endLine": 817,
+        "endChar": 9
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "537c908f_d093dfd9",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 899,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 899,
+        "startChar": 1,
+        "endLine": 899,
+        "endChar": 9
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f26daa2d_54680e79",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 905,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 905,
+        "startChar": 1,
+        "endLine": 905,
+        "endChar": 18
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70acb039_a71d9bfd",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 915,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Please renome all \"testScenario\" to \"ts\".",
+      "range": {
+        "startLine": 915,
+        "startChar": 1,
+        "endLine": 915,
+        "endChar": 13
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9488502_2deaa264",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 1031,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T10:28:31Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 1031,
+        "startChar": 1,
+        "endLine": 1031,
+        "endChar": 4
+      },
+      "revId": "783e461dc2503c35b204b4732fdd6867674f3688",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
