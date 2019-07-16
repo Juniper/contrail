@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b3b6bcce_41921e68",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 737,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T10:11:15Z",
+      "side": 1,
+      "message": "Imo logical order of parameters would be \"source, destination\" not other way around.",
+      "revId": "01af8e13e52ddbfdd7d16ffbe0dd69df6db3f64a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cfb2f482_aa52fd5e",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 738,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T10:11:15Z",
+      "side": 1,
+      "message": "Wrap this this to one line.",
+      "range": {
+        "startLine": 736,
+        "startChar": 0,
+        "endLine": 738,
+        "endChar": 9
+      },
+      "revId": "01af8e13e52ddbfdd7d16ffbe0dd69df6db3f64a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "afee327f_71b6be85",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 747,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T10:11:15Z",
+      "side": 1,
+      "message": "Wrap this check to one line.",
+      "range": {
+        "startLine": 744,
+        "startChar": 1,
+        "endLine": 747,
+        "endChar": 2
+      },
+      "revId": "01af8e13e52ddbfdd7d16ffbe0dd69df6db3f64a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e9ebde1_8bb9deda",
+        "filename": "pkg/logutil/report/reporter.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T10:11:15Z",
+      "side": 1,
+      "message": "Wrap to one line check.",
+      "range": {
+        "startLine": 36,
+        "startChar": 1,
+        "endLine": 41,
+        "endChar": 2
+      },
+      "revId": "01af8e13e52ddbfdd7d16ffbe0dd69df6db3f64a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
