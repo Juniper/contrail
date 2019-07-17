@@ -257,7 +257,7 @@ Available query parameters:
 | page_limit | Limit number of returned resources (e.g. '50'; default '100') |
 | page_marker | Return only the resources with UUIDs lexically greater than the given value (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022'; default '') |
 | detail | Detailed response data if 'true' provided (default 'false') |
-| count | Return response with only resource count if 'true' provided (default 'false') [implementation broken] |
+| count | Return response with only resource count if 'true' provided (default 'false') |
 | shared | Include shared object in response if 'true' provided (default 'false') |
 | exclude_hrefs | Exclude hrefs from response if 'true' provided (default 'false') [implementation broken] |
 | parent_fq_name_str | Parent's fully-qualified name as colon-separated list of names (e.g. 'default-domain:project-red:vn-red'; default '') [implementation broken] |
