@@ -180,15 +180,15 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				skip: true, // TODO(Daniel): fix implementation and remove
 				name: "with parent UUID and count",
 				lp: &client.ListParameters{
 					ParentUUIDs: projectUUID,
 					Count:       true,
 				},
-				expected: resources(vnRed(t), vnBlue(t)),
-				assert: func(t *testing.T, response string) {
-					// TODO(Daniel): check response body while fixing implementation
+				expected: map[string]interface{}{
+					"virtual-networks": map[string]interface{}{
+						"count": "2",
+					},
 				},
 			},
 			{
