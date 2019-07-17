@@ -46,6 +46,30 @@
       "revId": "0a0e2528964f613b33bebff6cf5ca1f533753e88",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e479875b_0192dbb0",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-17T14:50:39Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d4ce781c_ac4e0329",
+      "range": {
+        "startLine": 153,
+        "startChar": 29,
+        "endLine": 153,
+        "endChar": 30
+      },
+      "revId": "0a0e2528964f613b33bebff6cf5ca1f533753e88",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
