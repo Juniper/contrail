@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/ansible"
+	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/osutil"
@@ -159,11 +160,11 @@ func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir st
 }
 
 func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
-	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultAppformixDir)
+	return filepath.Join(base.DefaultAppformixAnsibleRepoDir, base.DefaultAppformixAnsibleRepo, defaultAppformixDir)
 }
 
 func (a *contrailAnsibleDeployer) getXflowDeployerDir() (xflowDir string) {
-	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultXflowDir)
+	return filepath.Join(base.DefaultAppformixAnsibleRepoDir, base.DefaultAppformixAnsibleRepo, defaultXflowDir)
 }
 
 func (a *contrailAnsibleDeployer) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
