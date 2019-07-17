@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b37f9bb1_4f8d1d28",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 9
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-17T14:21:20Z",
+      "side": 1,
+      "message": "Close the parenthesis.",
+      "range": {
+        "startLine": 257,
+        "startChar": 50,
+        "endLine": 257,
+        "endChar": 51
+      },
+      "revId": "d06b68ebf5803e7033ec12c016d45cf50350ac55",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c323179_366642a5",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 9
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-17T14:21:20Z",
+      "side": 1,
+      "message": "`the given`",
+      "range": {
+        "startLine": 258,
+        "startChar": 76,
+        "endLine": 258,
+        "endChar": 81
+      },
+      "revId": "d06b68ebf5803e7033ec12c016d45cf50350ac55",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "28faa8ae_8386c705",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 9
+      },
+      "lineNbr": 266,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-17T14:21:20Z",
+      "side": 1,
+      "message": "Add a space here.",
+      "range": {
+        "startLine": 266,
+        "startChar": 62,
+        "endLine": 266,
+        "endChar": 63
+      },
+      "revId": "d06b68ebf5803e7033ec12c016d45cf50350ac55",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d7931f58_e674c8cc",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 9
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-17T14:21:20Z",
+      "side": 1,
+      "message": "It would be nice to say that \u0027\u0027 (the default value) does not limit which fields are returned.",
+      "range": {
+        "startLine": 268,
+        "startChar": 96,
+        "endLine": 268,
+        "endChar": 98
+      },
+      "revId": "d06b68ebf5803e7033ec12c016d45cf50350ac55",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ca0caafe_b76d9082",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 342,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-17T14:21:20Z",
+      "side": 1,
+      "message": "I\u0027d inline this to clearly see that cli.DeleteResource is called.",
+      "range": {
+        "startLine": 342,
+        "startChar": 2,
+        "endLine": 342,
+        "endChar": 31
+      },
+      "revId": "d06b68ebf5803e7033ec12c016d45cf50350ac55",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
