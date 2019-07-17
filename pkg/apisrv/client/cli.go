@@ -135,7 +135,7 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 		return c.showHelp("", listHelpTemplate)
 	}
 
-	var response map[string][]interface{}
+	var response map[string]interface{}
 	if _, err := c.ReadWithQuery(
 		context.Background(),
 		pluralPath(schemaID),
@@ -145,16 +145,14 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 		return "", err
 	}
 
-	el, err := makeEventList(schemaID, response, lp.Detail)
-	if err != nil {
-		return "", err
+	switch {
+	case lp.Count:
+		return encodeToYAML(response)
+	case lp.Detail:
+		return makeEventListFromDetailedResponse(schemaID, response)
+	default:
+		return makeEventListFromResponse(schemaID, response)
 	}
-
-	output, err := yaml.Marshal(el)
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
 }
 
 const listHelpTemplate = `List command possible usages:
@@ -194,53 +192,53 @@ func isZeroValue(value interface{}) bool {
 	return value == "" || value == 0 || value == false
 }
 
-func makeEventList(schemaID string, response map[string][]interface{}, detail bool) (*services.EventList, error) {
-	if detail {
-		return makeEventListFromDetailedResponse(schemaID, response)
-	}
-
-	return makeEventListFromStandardResponse(schemaID, response)
-}
-
-func makeEventListFromDetailedResponse(
-	schemaID string, response map[string][]interface{},
-) (*services.EventList, error) {
+// makeEventListFromDetailedResponse creates response in format compatible with Sync command input.
+func makeEventListFromDetailedResponse(schemaID string, response map[string]interface{}) (string, error) {
 	var el services.EventList
-	for _, list := range response {
+	for _, rawList := range response {
+		list, ok := rawList.([]interface{})
+		if !ok {
+			return "", errors.Errorf("detailed response should contain list of resources: %v", rawList)
+		}
+
 		for _, rawWrappedObject := range list {
 			wrappedObject, ok := rawWrappedObject.(map[string]interface{})
 			if !ok {
-				return nil, errors.Errorf("detailed response contains invalid data: %v", rawWrappedObject)
+				return "", errors.Errorf("detailed response contains invalid data: %v", rawWrappedObject)
 			}
 
 			for _, object := range wrappedObject {
 				e, err := makeEvent(schemaID, object)
 				if err != nil {
-					return nil, err
+					return "", err
 				}
 
 				el.Events = append(el.Events, e)
 			}
 		}
 	}
-	return &el, nil
+	return encodeToYAML(el)
 }
 
-func makeEventListFromStandardResponse(
-	schemaID string, response map[string][]interface{},
-) (*services.EventList, error) {
+// makeEventListFromResponse creates response in format compatible with Sync command input.
+func makeEventListFromResponse(schemaID string, response map[string]interface{}) (string, error) {
 	var el services.EventList
-	for _, list := range response {
+	for _, rawList := range response {
+		list, ok := rawList.([]interface{})
+		if !ok {
+			return "", errors.Errorf("response should contain list of resources: %v", rawList)
+		}
+
 		for _, object := range list {
 			e, err := makeEvent(schemaID, object)
 			if err != nil {
-				return nil, err
+				return "", err
 			}
 
 			el.Events = append(el.Events, e)
 		}
 	}
-	return &el, nil
+	return encodeToYAML(el)
 }
 
 func makeEvent(schemaID string, object interface{}) (*services.Event, error) {
@@ -258,6 +256,14 @@ func makeEvent(schemaID string, object interface{}) (*services.Event, error) {
 	}
 
 	return e, nil
+}
+
+func encodeToYAML(data interface{}) (string, error) {
+	o, err := yaml.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(o), nil
 }
 
 // SyncResources synchronizes state of resources specified in given file.
