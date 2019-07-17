@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+
 	"io"
 	"io/ioutil"
 	"net"
@@ -19,6 +20,7 @@ import (
 	"github.com/flosch/pongo2"
 
 	shellwords "github.com/mattn/go-shellwords"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -159,6 +161,10 @@ func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir st
 }
 
 func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
+	if a.cluster.config.Test {
+		return filepath.Join(a.cluster.config.WorkRoot, "/",
+			defaultAppformixAnsibleRepo, defaultAppformixDir)
+	}
 	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultAppformixDir)
 }
 
@@ -439,23 +445,28 @@ func (a *contrailAnsibleDeployer) xflowVenvDir() string {
 	return filepath.Join(a.getXflowDeployerDir(), "venv")
 }
 
+// AppformixConfig is saved defaults
+type AppformixConfig struct {
+	// AppformixVersion is AppFormix Version in deployment
+	AppformixVersion string `yaml:"appformix_version"`
+}
+
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
-		AppformixUsername := a.clusterData.GetAppformixClusterInfo().AppformixUsername
-		AppformixPassword := a.clusterData.GetAppformixClusterInfo().AppformixPassword
-		if AppformixUsername != "" {
-			err := os.Setenv("APPFORMIX_USERNAME", AppformixUsername)
-			if err != nil {
-				return err
-			}
+		repoDir := a.getAppformixAnsibleDeployerRepoDir()
+		configFile := repoDir + "/" + "config.yml"
+		data, ioerr := ioutil.ReadFile(configFile)
+		if ioerr != nil {
+			return ioerr
 		}
-		if AppformixPassword != "" {
-			err := os.Setenv("APPFORMIX_PASSWORD", AppformixPassword)
-			if err != nil {
-				return err
-			}
+
+		var config AppformixConfig
+		ioerr = yaml.UnmarshalStrict(data, &config)
+		if ioerr != nil {
+			return ioerr
 		}
-		AppformixVersion := a.clusterData.GetAppformixClusterInfo().AppformixVersion
+
+		AppformixVersion := config.AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
 			"-e", "appformix_version=" + AppformixVersion,
 			"--skip-tags=install_docker"}
@@ -466,7 +477,6 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		if err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
-		repoDir := a.getAppformixAnsibleDeployerRepoDir()
 		return a.ansibleClient.Play(repoDir, ansibleArgs, a.appformixVenvDir())
 	}
 	return nil

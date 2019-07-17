@@ -283,6 +283,22 @@ func createDummyCloudFiles(t *testing.T) func() {
 	}
 }
 
+func createDummyAppformixFiles(t *testing.T) func() {
+
+	// create appformix config.yml file
+	configFile := workRoot + "/" + "appformix-ansible-deployer/appformix/config.yml"
+	configData := []byte("{\n\"appformix_version\": \"3.0.0\"\n}")
+	err := fileutil.WriteToFile(configFile, configData, defaultFilePermRWOnly)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", configFile)
+	}
+	return func() {
+		// best effort method of deleting all the files
+		// nolint: errcheck
+		_ = os.Remove(configFile)
+	}
+}
+
 // nolint: gocyclo
 func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 	config *Config, action, expectedInstance, expectedInventory string,
@@ -722,7 +738,8 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 	case "sriov":
 		expectedInstances = "./test_data/expected_all_in_one_sriov_instances.yml"
 	}
-
+	appformixFilesCleanup := createDummyAppformixFiles(t)
+	defer appformixFilesCleanup()
 	runAppformixClusterTest(t, expectedInstances, "", context, expectedEndpoints)
 }
 
@@ -741,6 +758,8 @@ func TestXflow(t *testing.T) {
 	if err != nil {
 		t.Error("Unable to load test scenario", err)
 	}
+	appformixFilesCleanup := createDummyAppformixFiles(t)
+	defer appformixFilesCleanup()
 
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
