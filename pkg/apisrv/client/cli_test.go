@@ -187,7 +187,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				},
 				expected: map[string]interface{}{
 					"virtual-networks": map[string]interface{}{
-						"count": "2",
+						"count": 2,
 					},
 				},
 			},
@@ -252,7 +252,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				skip: true, // TODO(Daniel): fix implementation and remove
+				//skip: true, // TODO(Daniel): fix implementation and remove
 				name: "with parent UUID and fields",
 				lp: &client.ListParameters{
 					ParentUUIDs: projectUUID,
@@ -260,7 +260,10 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				},
 				expected: resources(vnRedFiltered(t), vnBlueFiltered(t)),
 				assert: func(t *testing.T, response string) {
+					fmt.Println("response: ", response)
+
 					el := unmarshalEventList(t, response).Events
+					fmt.Println("el: ", el)
 					assert.Equal(t, vnRedUUID, el[0].GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetUUID())
 					assert.Equal(t, vnRedName, el[0].GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetName())
 

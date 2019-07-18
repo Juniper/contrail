@@ -38,8 +38,6 @@ test_data:
 
   context: &context
     user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
-    roles:
-    - admin
     tenant_id: *tenant_id
     is_admin: true
     tenant: *tenant_id
@@ -217,6 +215,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-509281de-2e5f-4ce9-a682-06cb05916a70
         operation: CREATE
         type: router
@@ -250,6 +250,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-a948a397-a7b9-46a4-893f-ab64f4486f35
         operation: READ
         type: router
@@ -280,6 +282,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-e745949a-064b-4611-b99e-d1fe8932223d
         operation: CREATE
         type: network
@@ -317,6 +321,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-d8becf44-d071-44ae-a3ee-7ba1502dafaf
         operation: UPDATE
         type: router
@@ -349,6 +355,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-a948a397-a7b9-46a4-893f-ab64f4486f35
         operation: READ
         type: router
@@ -372,6 +380,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-79d7b75c-a990-4a79-b8e9-5e6d05b058dd
         operation: ADDINTERFACE
         type: router
@@ -395,6 +405,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-f93a8cea-28d0-410c-9763-e13816104992
         operation: DELINTERFACE
         type: router
@@ -418,6 +430,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-6d97ee33-3729-4191-ba61-c8bdf49d233f
         operation: ADDINTERFACE
         type: router
@@ -441,6 +455,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-476a621e-ce9a-48b6-aa4e-d77be48e1cb2
         operation: DELINTERFACE
         type: router
@@ -463,6 +479,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-790ca559-1d2c-4996-a73a-237ff8659f75
         operation: ADDINTERFACE
         type: router
@@ -484,6 +502,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-bb7afe67-8806-4e47-ad5c-ee1a63416f5c
         operation: DELETE
         type: router
@@ -511,6 +531,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-1bed8c5b-9971-48c7-914f-bc9e2056dc72
         operation: CREATE
         type: router
@@ -543,6 +565,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-9f455d95-f336-4125-be48-42b603051f43
         operation: DELETE
         type: router
@@ -566,6 +590,8 @@ workflow:
         filters:
       context:
         <<: *context
+        roles:
+        - admin
         request_id: req-36c2ed1d-9fe5-4b21-b647-8dd6039f60e0
         operation: DELETE
         type: network

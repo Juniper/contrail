@@ -49,7 +49,6 @@ test_data:
     uuid: vn_blue_test_sync
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid_test_sync
     route_target_list:
       route_target: ["100:200"]
     network_policy_refs:
@@ -112,7 +111,9 @@ workflow:
       - kind: network_ipam
         data: *network_ipam_blue
       - kind: virtual_network
-        data: *vn_blue
+        data:
+          <<: *vn_blue
+          parent_uuid: admin_project_uuid_test_sync
   expect:
   - kind: project
     data: *admin_project
@@ -123,6 +124,7 @@ workflow:
   - kind: virtual_network
     data:
       <<: *vn_blue
+      parent_uuid: admin_project_uuid_test_sync
       virtual_network_network_id: 5
 
 - name: Get project admin_project_uuid_test_sync
@@ -282,8 +284,11 @@ workflow:
       resources:
       - kind: project
         data:
-          <<: *admin_project
+          fq_name: ["default", "admin_project_uuid_test_sync"]
+          uuid: admin_project_uuid_test_sync
+          parent_type: domain
           parent_uuid: bad_uuid
+          quota: {}
   expect:
     message:
       $contains: "failed to process event at index: 0, operation: 'CREATE', kind 'project', uuid 'admin_project_uuid_test_sync':
