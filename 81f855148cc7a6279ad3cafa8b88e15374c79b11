@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "215f785a_e76051b7",
+        "filename": "pkg/deploy/cluster/templates/instances.tmpl",
+        "patchSetId": 10
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-07-18T22:13:49Z",
+      "side": 0,
+      "message": "No need for appformix_version in the instances.yml?",
+      "revId": "81f855148cc7a6279ad3cafa8b88e15374c79b11",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
