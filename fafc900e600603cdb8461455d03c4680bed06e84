@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a2073221_3d5575e9",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T13:52:19Z",
+      "side": 1,
+      "message": "I don\u0027t agree.",
+      "parentUuid": "a01c55e8_40c69884",
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9d2f5379_e8ba2625",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 2
@@ -30,6 +48,30 @@
       "writtenOn": "2019-07-18T13:40:33Z",
       "side": 1,
       "message": "`FromDetailed`?",
+      "range": {
+        "startLine": 193,
+        "startChar": 16,
+        "endLine": 193,
+        "endChar": 24
+      },
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4305833_a32c9178",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T13:52:19Z",
+      "side": 1,
+      "message": "Well, it takes detailed response and transforms it to detailed response compatible with Sync. So it could be name makeEventListDetailedResponseFromDetailedResponse.\n\nI think, current name is good.",
+      "parentUuid": "9d2f5379_e8ba2625",
       "range": {
         "startLine": 193,
         "startChar": 16,
