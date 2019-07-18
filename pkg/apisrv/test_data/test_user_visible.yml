@@ -12,7 +12,7 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     id_perms:
       user_visible: false
-  red_project: &red_project_omitempty
+  red_project_omitempty: &red_project_omitempty
     fq_name: ["default", "red_project_uuid"]
     uuid: red_project_uuid
     parent_type: domain

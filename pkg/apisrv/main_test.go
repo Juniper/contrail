@@ -3,7 +3,7 @@ package apisrv_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
@@ -16,12 +16,12 @@ func TestMain(m *testing.M) {
 
 func RunTest(t *testing.T, file string) {
 	ts, err := integration.LoadTest(file, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	integration.RunCleanTestScenario(t, ts, server)
 }
 
 func RunTestTemplate(t *testing.T, file string, context map[string]interface{}) {
 	ts, err := integration.LoadTest(file, context)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	integration.RunCleanTestScenario(t, ts, server)
 }

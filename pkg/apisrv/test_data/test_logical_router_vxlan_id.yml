@@ -58,23 +58,20 @@ test_data:
     bgpvpn_refs:
       - uuid: lr_vxlan_bgpvpn_l3
 
-  vn_vxlan_conflicting_logical_router: &vn_vxlan_conflicting_logical_router
+  vn_vxlan_conflicting_logical_router_base: &vn_vxlan_conflicting_logical_router_base
     uuid: vn_vxlan_conflicting_logical_router
     fq_name: ["default-domain", "admin_lr_vxlan_project", "vn_vxlan_conflicting_logical_router"]
     parent_type: project
-    vxlan_network_identifier: "20"
     virtual_machine_interface_refs:
       - uuid: ce14a053-3f09-49aa-a57a-20cc6a1506a4
     bgpvpn_refs:
       - uuid: lr_vxlan_bgpvpn_l3
 
-  vn_vxlan_conflicting_vn: &vn_vxlan_conflicting_vn
+  vn_vxlan_conflicting_vn_base: &vn_vxlan_conflicting_vn_base
     fq_name: ["default", "admin_vn_vxlan_project_uuid", "vn_vxlan_conflicting_vn"]
     uuid: vn_vxlan_conflicting_vn
     parent_type: project
     parent_uuid: admin_vn_vxlan_project_uuid
-    virtual_network_properties:
-      vxlan_network_identifier: 20
 
 clients:
   default:
@@ -200,7 +197,9 @@ workflow:
     expected:
     - 400
     data:
-      logical-router: *vn_vxlan_conflicting_logical_router
+      logical-router:
+        <<: *vn_vxlan_conflicting_logical_router_base
+        vxlan_network_identifier: "20"
   expect: null
 
 - name: fail to create a virtual network with the same VxLAN ID
@@ -210,7 +209,10 @@ workflow:
     expected:
     - 400
     data:
-      virtual-network: *vn_vxlan_conflicting_vn
+      virtual-network:
+        <<: *vn_vxlan_conflicting_vn_base
+        virtual_network_properties:
+          vxlan_network_identifier: 20
   expect: null
 
 - name: update logical router with a different VxLAN ID
@@ -233,7 +235,7 @@ workflow:
     - 400
     data:
       logical-router:
-        <<: *vn_vxlan_conflicting_logical_router
+        <<: *vn_vxlan_conflicting_logical_router_base
         vxlan_network_identifier: "21"
   expect: null
 
@@ -245,7 +247,7 @@ workflow:
     - 400
     data:
       virtual-network:
-        <<: *vn_vxlan_conflicting_vn
+        <<: *vn_vxlan_conflicting_vn_base
         virtual_network_properties:
           vxlan_network_identifier: 21
   expect: null

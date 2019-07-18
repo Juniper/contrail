@@ -1,5 +1,6 @@
 name: Physical Interface Test
 description:  basic physical interface test
+
 cleanup:
 - path: /network-ipam/network-ipam-uuid
 - path: /virtual-network/default-network-uuid
@@ -9,9 +10,9 @@ cleanup:
 - path: /physical-interface/physical_interface_red_uuid
 - path: /logical-interface/logical_interface_blue_uuid
 - path: /logical-interface/logical_interface_red_uuid
-test_data:
 
-  admin_project: &project_physical_interface
+test_data:
+  project_physical_interface: &project_physical_interface
     uuid: physical_interface_project_uuid
     name: physical_interface_project_uuid
     parent_type: domain
@@ -62,14 +63,14 @@ test_data:
     - to: ["default-domain", "k8s-default", "default-vmi-k8"]
       uuid: e5160f94-9bf2-11e9-9304-8b69eef1b0d4
 
-  physical-interface: &physical_interface_red
+  physical_interface_red: &physical_interface_red
     uuid: physical_interface_red_uuid
     name: physical_interface_red_name
     display_name: interface_red
     ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
     parent_uuid: 613d7804-9bef-11e9-911e-cb33d0375d1b
 
-  logical-interface: &logical_interface_red
+  logical_interface_red: &logical_interface_red
     uuid: logical_interface_red_uuid
     parent_type: physical-interface
     parent_uuid: physical_interface_red_uuid
