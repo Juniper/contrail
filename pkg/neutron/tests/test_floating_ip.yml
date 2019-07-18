@@ -89,11 +89,6 @@ test_data:
     request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
     type: floatingip
     tenant: 29a7f61445a811e9b210d663bd873d93
-  readall_filters: &readall_filters
-    id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
-    floating_ip_address : [10.0.0.0]
-    port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
-    tenant_id: [29a7f61445a811e9b210d663bd873d93]
   floating_ip_active: &floating_ip_active
     router_id:
     status: ACTIVE
@@ -299,7 +294,11 @@ workflow:
     expected: [200]
     data:
       data:
-        filters: *readall_filters
+        filters:
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+          floating_ip_address : [10.0.0.0]
       context:
         <<: *request_context
         operation: READALL
@@ -377,8 +376,10 @@ workflow:
     data:
       data:
         filters:
-          <<: *readall_filters
           id: [deadc0de-45a8-11e9-b210-d663bd873d93]
+          port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+          floating_ip_address : [10.0.0.0]
       context:
         <<: *request_context
         operation: READALL
@@ -392,8 +393,10 @@ workflow:
     data:
       data:
         filters:
-          <<: *readall_filters
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
           tenant_id: [baadc0de45a811e9b210d663bd873d93]
+          floating_ip_address : [10.0.0.0]
       context:
         <<: *request_context
         operation: READALL
@@ -407,8 +410,10 @@ workflow:
     data:
       data:
         filters:
-          <<: *readall_filters
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
           port_id : [deadc0de-9c8d-424f-b88b-e64e08b71f8c]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+          floating_ip_address : [10.0.0.0]
       context:
         <<: *request_context
         operation: READALL
@@ -422,7 +427,9 @@ workflow:
     data:
       data:
         filters:
-          <<: *readall_filters
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
           floating_ip_address : [10.0.0.100]
       context:
         <<: *request_context

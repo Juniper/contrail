@@ -15,6 +15,7 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -189,7 +190,7 @@ func initTestCluster(
 	}
 
 	ts, err := integration.LoadTest(testReplicationTmpl, pContext)
-	assert.NoError(t, err, "failed to load replication test data")
+	require.NoError(t, err, "failed to load replication test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	server.ForceProxyUpdate()
 
@@ -211,7 +212,7 @@ func runReplicationTest(t *testing.T) {
 
 	//create node-profile, node, port object
 	testScenario, err := integration.LoadTest(createReplicationTestFile, nil)
-	assert.NoError(t, err, "failed to load test data")
+	require.NoError(t, err, "failed to load test data")
 	cleanup := integration.RunDirtyTestScenario(t, testScenario, server)
 	defer cleanup()
 

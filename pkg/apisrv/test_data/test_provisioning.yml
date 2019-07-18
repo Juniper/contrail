@@ -10,9 +10,8 @@ cleanup:
 - path: /tag/tag_test_provisioning_uuid
 
 test_data:
-  bgp_router_parameters: &bgp_router_parameters_test_provisioning
+  bgp_router_parameters_test_provisioning: &bgp_router_parameters_test_provisioning
     vendor: contrail
-    admin_down: false
     router_type: control-node
     ipv6_gateway_address: null
     local_autonomous_system: null
@@ -24,7 +23,7 @@ test_data:
     gateway_address: null
     identifier: 192.168.0.14
     hold_time: 0
-    port: "179"
+    port: 179
     address_families:
       family:
         - route-target
@@ -42,11 +41,9 @@ test_data:
       - ip-fabric
       - __default__
       - bgp-router-test-provisioning
-    bgp_router_parameters: *bgp_router_parameters_test_provisioning
 
   virtual_router: &virtual_router_test_provisioning
     uuid: virtual_router_test_provisioning_uuid
-    virtual_router_dpdk_enabled: false
     parent_type: global-system-config
     fq_name:
     - default-global-system-config
@@ -76,9 +73,6 @@ test_data:
     direction: ">"
     endpoint_1:
       any: true
-    endpoint_2:
-      tags:
-        - "namespace=default"
     match_tag_types:
       tag_type:
         - 1
@@ -153,14 +147,17 @@ workflow:
     method: POST
     expected: [200]
     data:
-      bgp-router: *bgp_router_test_provisioning
+      bgp-router:
+        <<: *bgp_router_test_provisioning
+        bgp_router_parameters:
+          <<: *bgp_router_parameters_test_provisioning
+          admin_down: false
   expect:
     bgp-router:
       <<: *bgp_router_test_provisioning
       bgp_router_parameters:
         <<: *bgp_router_parameters_test_provisioning
         admin_down: null # admin_down has omitempty which omits "false"
-        port: 179
 
 - name: create virtual router
   request:
@@ -168,14 +165,15 @@ workflow:
     method: POST
     expected: [200]
     data:
-      virtual-router: *virtual_router_test_provisioning
+      virtual-router:
+        <<: *virtual_router_test_provisioning
+        virtual_router_dpdk_enabled: false
   expect:
     virtual-router:
       <<: *virtual_router_test_provisioning
       virtual_router_dpdk_enabled: null # virtual_router_dpdk_enabled has omitempty which omits "false"
       display_name: virtual-router-test-provisioning
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-      parent_type: global-system-config
       name: virtual-router-test-provisioning
 
 - name: create tag type
@@ -204,7 +202,11 @@ workflow:
     method: POST
     expected: [200]
     data:
-      firewall-rule: *firewall_rule_test_provisioning
+      firewall-rule:
+        <<: *firewall_rule_test_provisioning
+        endpoint_2:
+          tags:
+          - "namespace=default"
   expect:
     firewall-rule:
       <<: *firewall_rule_test_provisioning

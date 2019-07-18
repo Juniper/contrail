@@ -84,15 +84,18 @@ test_data:
       - uuid: test_vn_lr_blue
         to: ["default-domain", "admin_lr_project", "test_vn_lr_blue"]
 
-  test_lr: &test_lr
+  base_lr: &base_lr
     uuid: test_logical_router
     fq_name: ["default-domain", "admin_lr_project", "test_logical_router"]
     parent_type: project
     vxlan_network_identifier: "10"
-    virtual_machine_interface_refs:
-      - uuid: 4837041a-2dc0-4e7d-b2f4-d7fe449f8734
+
+  lr: &lr
+    <<: *base_lr
     bgpvpn_refs:
       - uuid: test_bgpvpn_l3
+    virtual_machine_interface_refs:
+      - uuid: 4837041a-2dc0-4e7d-b2f4-d7fe449f8734
 
 clients:
   default:
@@ -211,9 +214,11 @@ workflow:
     - 400
     data:
       logical-router:
-        <<: *test_lr
+        <<: *base_lr
         bgpvpn_refs:
           - uuid: test_bgpvpn_l2
+        virtual_machine_interface_refs:
+          - uuid: 4837041a-2dc0-4e7d-b2f4-d7fe449f8734
   expect: null
 
 - name: fail to create logical router with vmi in vn with bgpvpn associated
@@ -224,7 +229,9 @@ workflow:
     - 400
     data:
       logical-router:
-        <<: *test_lr
+        <<: *base_lr
+        bgpvpn_refs:
+          - uuid: test_bgpvpn_l3
         virtual_machine_interface_refs:
           - uuid: 7624a02f-1dc1-4318-8316-7343d1187aac
   expect: null
@@ -237,7 +244,7 @@ workflow:
     - 400
     data:
       logical-router:
-        <<: *test_lr
+        <<: *lr
         virtual_network_refs:
           - uuid: test_vn_lr_blue
 
@@ -258,9 +265,9 @@ workflow:
     expected:
     - 200
     data:
-      logical-router: *test_lr
+      logical-router: *lr
   expect:
-    logical-router: *test_lr
+    logical-router: *lr
 
 - name: count virtual networks after creating internal virtual network
   request:
