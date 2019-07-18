@@ -42,7 +42,7 @@ test_data:
     display_name: test_valid_alarm
     fq_name: ["default-domain", "admin_alarm_project", "valid_alarm"]
 
-  alarm_range_correct: &alarm_range_correct
+  alarm_range_correct_without_uuid: &alarm_range_correct_without_uuid
     alarm_rules:
       or_list:
         - and_list:
@@ -50,11 +50,13 @@ test_data:
               operand1: "test.param"
               operand2:
                 json_value: "[0, 1]"
-
     <<: *common_data
-    uuid: test_alarm_range_correct
     display_name: test_alarm_range_correct
     fq_name: ["default-domain", "admin_alarm_project", "alarm_range_correct"]
+
+  alarm_range_correct: &alarm_range_correct
+    <<: *alarm_range_correct_without_uuid
+    uuid: test_alarm_range_correct
 
   alarm_range_incorrect: &alarm_range_incorrect
     alarm_rules:
@@ -84,7 +86,7 @@ test_data:
     display_name: test_alarm_json_uve
     fq_name: ["default-domain", "admin_alarm_project", "alarm_json_uve"]
 
-  alarm_demo: &alarm_demo
+  alarm_demo_without_perms2: &alarm_demo_without_perms2
     uuid: test_alarm_demo
     display_name: testAlarm
     fq_name: ["default-domain", "admin_alarm_project", "testAlarm"]
@@ -92,13 +94,18 @@ test_data:
     uve_keys:
       uve_key:
         - "VirtualNetwork"
-    perms2: &demo_perms2
-      global_access: 0
-      owner_access: 7
     id_perms:
       enable: true
       description: "Test alarm description"
     parent_type: project
+
+  demo_perms2: &demo_perms2
+    global_access: 0
+    owner_access: 7
+
+  alarm_demo: &alarm_demo
+    <<: *alarm_demo_without_perms2
+    perms2: *demo_perms2
 
 clients:
   default:
@@ -184,7 +191,7 @@ workflow:
         - 200
       data:
         alarm:
-          <<: *alarm_demo
+          <<: *alarm_demo_without_perms2
           alarm_rules:
             or_list:
               - and_list:
@@ -196,7 +203,7 @@ workflow:
           perms2:
             <<: *demo_perms2
             share: []
-          tag_refs: []
+            tag_refs: []
     expect:
       alarm:
        <<: *alarm_demo
@@ -218,7 +225,7 @@ workflow:
         alarm: *alarm_range_correct
     expect:
       alarm:
-        <<: *alarm_range_correct
+        <<: *alarm_range_correct_without_uuid
         uuid: test_valid_alarm
 
   - name: update with emtpy rules

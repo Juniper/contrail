@@ -11,10 +11,10 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
-
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -116,7 +116,7 @@ func runCloudTest(
 
 	// create cloud related objects
 	ts, err := integration.LoadTest(allInOneCloudTemplatePath, context)
-	assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudTemplatePath)
+	require.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudTemplatePath)
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 
 	defer cleanup()
@@ -177,7 +177,7 @@ func runCloudTest(
 		config.Action = updateAction
 
 		ts, err = integration.LoadTest(allInOneCloudUpdateTemplatePath, context)
-		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudUpdateTemplatePath)
+		require.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudUpdateTemplatePath)
 		updateCleanup := integration.RunDirtyTestScenario(t, ts, server)
 		defer updateCleanup()
 
@@ -216,7 +216,7 @@ func runCloudTest(
 
 		// delete vpc and compare topology
 		ts, err = integration.LoadTest(deleteVPCTemplatePath, context)
-		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", deleteVPCTemplatePath)
+		require.NoErrorf(t, err, "failed to load cloud test data from file: %s", deleteVPCTemplatePath)
 		deleteVPC := integration.RunDirtyTestScenario(t, ts, server)
 		deleteVPC()
 
@@ -255,7 +255,7 @@ func runCloudTest(
 
 	// delete cloud
 	ts, err = integration.LoadTest(allInOneCloudDeleteTemplatePath, context)
-	assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudDeleteTemplatePath)
+	require.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudDeleteTemplatePath)
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 
 	// delete previously created
@@ -278,7 +278,7 @@ func runCloudTest(
 		// updates p_a of cluster to DELETE_CLOUD
 		// sets p_s of cluster to UPDATE_FAILED
 		ts, err = integration.LoadTest(clusterUpdateFailedTemplatePath, context)
-		assert.NoError(t, err, "failed to load cluster update failed test data")
+		require.NoError(t, err, "failed to load cluster update failed test data")
 		_ = integration.RunDirtyTestScenario(t, ts, server)
 
 		// now delete the cloud again with update failed cluster status
@@ -292,7 +292,7 @@ func runCloudTest(
 		// updates p_a of cluster to DELETE_CLOUD
 		// sets p_s of cluster to UPDATED
 		ts, err = integration.LoadTest(clusterUpdatedTemplatePath, context)
-		assert.NoError(t, err, "failed to load updated cluster test data")
+		require.NoError(t, err, "failed to load updated cluster test data")
 		_ = integration.RunDirtyTestScenario(t, ts, server)
 
 		// now delete the cloud again with updated cluster status

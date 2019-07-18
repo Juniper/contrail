@@ -65,13 +65,9 @@ test_data:
     obj_type: project
 
   set_tag_correct: &set_tag_correct
-    <<: *set_tag_project
     application:
       is_global: true
       value: k8s
-    namespace:
-      is_global: true
-      value: default
 
   set_tag_virtual_network: &set_tag_virtual_network
     obj_uuid: virtual_network_uuid
@@ -166,7 +162,13 @@ workflow:
     path: /set-tag
     method: POST
     expected: [200]
-    data: *set_tag_correct
+    data:
+      <<: *set_tag_correct
+      obj_uuid: admin_project_test_set_tag
+      obj_type: project
+      namespace:
+        is_global: true
+        value: default
   expect: null
 
 - name: check added tags
@@ -188,6 +190,8 @@ workflow:
     expected: [200]
     data:
       <<: *set_tag_correct
+      obj_uuid: admin_project_test_set_tag
+      obj_type: project
       namespace:
         is_global: true
         value: kube-system
@@ -289,7 +293,11 @@ workflow:
     expected: [400]
     data:
       <<: *set_tag_correct
+      namespace:
+        is_global: true
+        value: default
       obj_uuid: ""
+      obj_type: project
   expect: null
 
 - name: set-tag without obj_type
@@ -299,6 +307,10 @@ workflow:
     expected: [400]
     data:
       <<: *set_tag_correct
+      namespace:
+        is_global: true
+        value: default
+      obj_uuid: admin_project_test_set_tag
       obj_type: ""
   expect: null
 

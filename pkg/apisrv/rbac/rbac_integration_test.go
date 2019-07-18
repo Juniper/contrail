@@ -3,9 +3,9 @@ package rbac_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRBAC(t *testing.T) {
@@ -20,7 +20,7 @@ func TestRBAC(t *testing.T) {
 		}()
 
 		testScenario, err := integration.LoadTest("./test_data/test_rbac.yml", nil)
-		assert.NoError(t, err, "failed to load test data")
+		require.NoError(t, err, "failed to load test data")
 		integration.RunCleanTestScenario(t, testScenario, s)
 	})
 }

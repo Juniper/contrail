@@ -15,7 +15,7 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
-  firewall_rule: &test_firewall_rule
+  firewall_rule: &firewall_rule
     uuid: fw_rule_test_firewall_policy_uuid
     parent_type: project
     fq_name:
@@ -32,7 +32,7 @@ test_data:
     service:
       protocol: tcp
 
-  firewall_rule: &test_global_firewall_rule
+  global_firewall_rule: &global_firewall_rule
     uuid: global_fw_rule_test_firewall_policy_uuid
     parent_type: policy-management
     fq_name:
@@ -48,7 +48,7 @@ test_data:
     service:
       protocol: tcp
 
-  firewall_policy: &test_firewall_policy
+  firewall_policy: &firewall_policy
     uuid: test_firewall_policy_uuid
     parent_type: policy-management
     fq_name:
@@ -84,9 +84,9 @@ workflow:
     method: POST
     expected: [200]
     data:
-      firewall-rule: *test_firewall_rule
+      firewall-rule: *firewall_rule
   expect:
-    firewall-rule: *test_firewall_rule
+    firewall-rule: *firewall_rule
 
 - name: create firewall rule
   request:
@@ -94,9 +94,9 @@ workflow:
     method: POST
     expected: [200]
     data:
-      firewall-rule: *test_global_firewall_rule
+      firewall-rule: *global_firewall_rule
   expect:
-    firewall-rule: *test_global_firewall_rule
+    firewall-rule: *global_firewall_rule
 
 - name: creating firewall policy with draft mode state property defined should fail
   request:
@@ -105,7 +105,7 @@ workflow:
     expected: [400]
     data:
       firewall-policy:
-        <<: *test_firewall_policy
+        <<: *firewall_policy
         draft_mode_state: created
 
 - name: creating global firewall policy with scoped refs should fail
@@ -115,7 +115,7 @@ workflow:
     expected: [400]
     data:
       firewall-policy:
-        <<: *test_firewall_policy
+        <<: *firewall_policy
         firewall_rule_refs:
           - uuid: fw_rule_test_firewall_policy_uuid
 
@@ -125,9 +125,9 @@ workflow:
     method: POST
     expected: [200]
     data:
-      firewall-policy: *test_firewall_policy
+      firewall-policy: *firewall_policy
   expect:
-    firewall-policy: *test_firewall_policy
+    firewall-policy: *firewall_policy
 
 - name: updating firewall policy with draft-state-mode property defined should fail
   request:
