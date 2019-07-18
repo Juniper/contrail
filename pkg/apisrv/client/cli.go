@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -22,6 +23,13 @@ import (
 	"github.com/spf13/viper"
 
 	yaml "gopkg.in/yaml.v2"
+)
+
+// YAML key names
+const (
+	DataKey      = "data"
+	KindKey      = "kind"
+	ResourcesKey = "resources"
 )
 
 const (
@@ -129,6 +137,9 @@ type ListParameters struct {
 	Fields      string
 }
 
+// Resources define output format of list command.
+type Resources = map[string][]map[string]interface{}
+
 // ListResources lists resources with given schemaID using filters.
 func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error) {
 	if schemaID == "" {
@@ -145,14 +156,26 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 		return "", err
 	}
 
+	var r Resources
+	var err error
 	switch {
 	case lp.Count:
 		return encodeToYAML(response)
 	case lp.Detail:
-		return makeEventListFromDetailedResponse(schemaID, response)
+		r, err = makeOutputResourcesFromDetailedResponse(schemaID, response)
 	default:
-		return makeEventListFromResponse(schemaID, response)
+		r, err = makeOutputResources(schemaID, response)
 	}
+	if err != nil {
+		return "", err
+	}
+
+	r, err = filterFieldsIfNeeded(r, lp.Fields)
+	if err != nil {
+		return "", err
+	}
+
+	return encodeToYAML(r)
 }
 
 const listHelpTemplate = `List command possible usages:
@@ -192,70 +215,81 @@ func isZeroValue(value interface{}) bool {
 	return value == "" || value == 0 || value == false
 }
 
-// makeEventListFromDetailedResponse creates response in format compatible with Sync command input.
-func makeEventListFromDetailedResponse(schemaID string, response map[string]interface{}) (string, error) {
-	var el services.EventList
+// makeOutputResourcesFromDetailedResponse creates list command output in format compatible with Sync command input
+// based on API Server detailed response.
+func makeOutputResourcesFromDetailedResponse(schemaID string, response map[string]interface{}) (Resources, error) {
+	r := Resources{}
 	for _, rawList := range response {
 		list, ok := rawList.([]interface{})
 		if !ok {
-			return "", errors.Errorf("detailed response should contain list of resources: %v", rawList)
+			return nil, errors.Errorf("detailed response should contain list of resources: %v", rawList)
 		}
 
 		for _, rawWrappedObject := range list {
-			wrappedObject, ok := rawWrappedObject.(map[string]interface{})
-			if !ok {
-				return "", errors.Errorf("detailed response contains invalid data: %v", rawWrappedObject)
+			wrappedObject, ok2 := rawWrappedObject.(map[string]interface{})
+			if !ok2 {
+				return nil, errors.Errorf("detailed response contains invalid data: %v", rawWrappedObject)
 			}
 
 			for _, object := range wrappedObject {
-				e, err := makeEvent(schemaID, object)
-				if err != nil {
-					return "", err
-				}
-
-				el.Events = append(el.Events, e)
+				r[ResourcesKey] = append(r[ResourcesKey], map[string]interface{}{
+					KindKey: schemaID,
+					DataKey: object,
+				})
 			}
 		}
 	}
-	return encodeToYAML(el)
+	return r, nil
 }
 
-// makeEventListFromResponse creates response in format compatible with Sync command input.
-func makeEventListFromResponse(schemaID string, response map[string]interface{}) (string, error) {
-	var el services.EventList
+// makeOutputResources creates list command output in format compatible with Sync command input.
+// based on API Server standard response.
+func makeOutputResources(schemaID string, response map[string]interface{}) (Resources, error) {
+	r := Resources{}
 	for _, rawList := range response {
 		list, ok := rawList.([]interface{})
 		if !ok {
-			return "", errors.Errorf("response should contain list of resources: %v", rawList)
+			return nil, errors.Errorf("response should contain list of resources: %v", rawList)
 		}
 
 		for _, object := range list {
-			e, err := makeEvent(schemaID, object)
-			if err != nil {
-				return "", err
-			}
-
-			el.Events = append(el.Events, e)
+			r[ResourcesKey] = append(r[ResourcesKey], map[string]interface{}{
+				KindKey: schemaID,
+				DataKey: object,
+			})
 		}
 	}
-	return encodeToYAML(el)
+	return r, nil
 }
 
-func makeEvent(schemaID string, object interface{}) (*services.Event, error) {
-	m, ok := object.(map[string]interface{})
-	if !ok {
-		return nil, errors.Errorf("response contains a resource that is not a JSON object: %v", object)
+func filterFieldsIfNeeded(r Resources, rawFields string) (Resources, error) {
+	if rawFields == "" {
+		return r, nil
 	}
 
-	e, err := services.NewEvent(services.EventOption{
-		Kind: schemaID,
-		Data: m,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create event")
-	}
+	f := fields(rawFields)
+	for _, resource := range r[ResourcesKey] {
+		data, ok := resource[DataKey].(map[string]interface{})
+		if !ok {
+			return nil, errors.Errorf("output made from response contains invalid data: %v", resource[DataKey])
+		}
 
-	return e, nil
+		for k := range data {
+			_, ok := f[k]
+			if !ok {
+				delete(data, k)
+			}
+		}
+	}
+	return r, nil
+}
+
+func fields(rawFields string) map[string]struct{} {
+	fm := map[string]struct{}{}
+	for _, f := range strings.Split(rawFields, ",") {
+		fm[f] = struct{}{}
+	}
+	return fm
 }
 
 func encodeToYAML(data interface{}) (string, error) {
