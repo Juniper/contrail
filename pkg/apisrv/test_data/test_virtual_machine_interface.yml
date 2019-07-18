@@ -36,7 +36,6 @@ test_data:
       - uuid: 11437ed0-9bf3-11e9-8490-639a5c2aa320
         to: ["default-domain", "admin_vmi_project", "vn_blue"]
     port_security_enabled: true
-    display_name: vmi_test
 
   virtual_router_blue: &virtual_router_blue
     virtual-router:
@@ -155,6 +154,7 @@ workflow:
     data:
       virtual-machine-interface:
         <<: *vmi_base_setup
+        display_name: vmi_test
         service_health_check_refs:
           - uuid: test_service_health_check_segment
 
@@ -209,7 +209,9 @@ workflow:
     method: POST
     expected: [200]
     data:
-      virtual-machine-interface: *vmi_base_setup
+      virtual-machine-interface:
+        <<: *vmi_base_setup
+        display_name: vmi_test
 
 - name: update display_name virtual machine interface
   request:
@@ -263,6 +265,7 @@ workflow:
     data:
       virtual-machine-interface:
         <<: *vmi_base_setup
+        display_name: vmi_test
         virtual_machine_interface_bindings:
           key_value_pair:
             - key: vnic_type
@@ -417,6 +420,7 @@ workflow:
     data:
       virtual-machine-interface:
         <<: *vmi_base_setup
+        display_name: vmi_test
         virtual_machine_interface_bindings:
           key_value_pair:
             - key: vnic_type

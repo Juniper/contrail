@@ -12,16 +12,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/flosch/pongo2"
-	"github.com/labstack/echo"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/flosch/pongo2"
+	"github.com/labstack/echo"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
@@ -104,7 +104,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	}
 
 	ts, err := integration.LoadTest(testClusterTokenAPIFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -161,7 +161,7 @@ func TestClusterLogin(t *testing.T) {
 	}
 
 	ts, err := integration.LoadTest(testClusterTokenAPIFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -169,7 +169,7 @@ func TestClusterLogin(t *testing.T) {
 
 	ctx := context.Background()
 	ts, err = integration.LoadTest(testClusterTokenAPIFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	clients := integration.PrepareClients(ctx, t, ts, server)
 
 	// preserve infra token
@@ -336,7 +336,7 @@ func TestBasicAuth(t *testing.T) {
 		"public_url":    configService.URL,
 	}
 	ts, err := integration.LoadTest(testBasicAuthFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 

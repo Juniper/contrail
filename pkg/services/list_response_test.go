@@ -111,18 +111,19 @@ func TestListResponseYAML(t *testing.T) {
 		{
 			ListFloatingIPPoolResponse{
 				FloatingIPPools: []*models.FloatingIPPool{
-					// We initialize the lists for comparing since yaml.v2 marshals null lists to empty lists
 					{
 						UUID:            "vn_uuid",
-						FQName:          []string{},
-						ProjectBackRefs: []*models.Project{},
-						FloatingIPs:     []*models.FloatingIP{},
-						TagRefs:         []*models.FloatingIPPoolTagRef{},
+						FQName:          []string(nil),
+						ProjectBackRefs: []*models.Project(nil),
+						FloatingIPs:     []*models.FloatingIP(nil),
+						TagRefs:         []*models.FloatingIPPoolTagRef(nil),
 					},
 				},
 				FloatingIPPoolCount: 1,
 			},
-			[]byte(floatingIPPoolsYAML),
+			[]byte(`floating-ip-pools:
+- uuid: vn_uuid
+`),
 		},
 		{
 			ListFloatingIPPoolResponse{
@@ -153,21 +154,3 @@ func TestListResponseYAML(t *testing.T) {
 		})
 	}
 }
-
-const floatingIPPoolsYAML = `floating-ip-pools:
-- uuid: vn_uuid
-  name: ""
-  parent_uuid: ""
-  parent_type: ""
-  fq_name: []
-  id_perms: null
-  display_name: ""
-  annotations: null
-  perms2: null
-  configuration_version: 0
-  href: ""
-  floating_ip_pool_subnets: null
-  tag_refs: []
-  project_back_refs: []
-  floating_ips: []
-`

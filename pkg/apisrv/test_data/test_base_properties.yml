@@ -27,11 +27,10 @@ test_data:
     parent_type: project
     parent_uuid: project_base_properties_uuid
 
-    id_perms: &id_perms_with_correct_uuid
-      uuid:
-        uuid_lslong: 3335361290466096867
-        uuid_mslong: 5441706009095324062
-
+  id_perms: &id_perms_with_correct_uuid
+    uuid:
+      uuid_lslong: 3335361290466096867
+      uuid_mslong: 5441706009095324062
 
 clients:
   default:
@@ -147,7 +146,6 @@ workflow:
     /contrail/network_ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3:
       - data:
           <<: *network_ipam
-          uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
           id_perms:
             uuid:
               uuid_mslong: 123
@@ -172,7 +170,6 @@ workflow:
     /contrail/network_ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3:
       - data:
           <<: *network_ipam
-          uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
           id_perms:
             description: my-description
 

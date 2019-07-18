@@ -6,7 +6,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFQNameCleanup(t *testing.T) {
@@ -18,7 +18,7 @@ func TestFQNameCleanup(t *testing.T) {
 
 func runDirtyTest(t *testing.T, name string) func() {
 	ts, err := integration.LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
-	assert.NoError(t, err, "failed to load test data")
+	require.NoError(t, err, "failed to load test data")
 	return integration.RunDirtyTestScenario(t, ts, server)
 }
 

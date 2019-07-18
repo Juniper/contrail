@@ -15,8 +15,6 @@ test_data:
     quota: {}
 
   srv_minimal: &srv_minimal_name_unique
-    uuid: srv_blue
-    display_name: blue
     parent_type: project
     parent_uuid: admin_project_name_unique_uuid
 
@@ -48,11 +46,16 @@ workflow:
     expected:
     - 200
     data:
-      server: *srv_minimal_name_unique
+      server:
+        <<: *srv_minimal_name_unique
+        uuid: srv_blue
+        display_name: blue
   expect:
     server:
       <<: *srv_minimal_name_unique
+      uuid: srv_blue
       name: default-server
+      display_name: blue
 
 - name: create server with same name, but different uuid and display_name
   request:

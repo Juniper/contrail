@@ -18,8 +18,6 @@ test_data:
     dst_ports:
     - start_port: 0
       end_port: 65535
-    src_addresses:
-    - security_group: local
     src_ports:
     - start_port: 0
       end_port: 65535
@@ -42,12 +40,16 @@ test_data:
 
   rule_security_group: &rule_security_group
     <<: *rule_base
+    src_addresses:
+    - security_group: local
     dst_addresses:
       - security_group: default-domain:default-project:sg-with-ipv4-rule
     ethertype: IPv4
 
   rule_with_invalid_ethertype: &rule_with_invalid_ethertype
     <<: *rule_base
+    src_addresses:
+    - security_group: local
     dst_addresses:
     - subnet:
         ip_prefix: "::"
@@ -59,6 +61,8 @@ test_data:
     security_group_entries:
       policy_rule:
         - <<: *rule_ipv4
+          src_addresses:
+          - security_group: local
     security_group_id: 1
 
   security_group_with_same_rules: &security_group_with_same_rules
@@ -66,7 +70,11 @@ test_data:
     security_group_entries:
       policy_rule:
       - <<: *rule_ipv4
+        src_addresses:
+        - security_group: local
       - <<: *rule_ipv4
+        src_addresses:
+        - security_group: local
 
   security_group_with_no_local: &security_group_with_no_local
     <<: *security_group_base
@@ -90,12 +98,11 @@ test_data:
     security_group_entries:
       policy_rule:
       - <<: *rule_ipv4
+        src_addresses:
+        - security_group: local
 
   security_group_with_ipv6_rule: &security_group_with_ipv6_rule
     uuid: security-group-with-ipv6-rule
-    security_group_entries:
-      policy_rule:
-      - <<: *rule_ipv6
     fq_name:
     - default-domain
     - default-project
@@ -176,13 +183,21 @@ workflow:
     expected:
     - 200
     data:
-      security-group: *security_group_with_ipv6_rule
+      security-group:
+        <<: *security_group_with_ipv6_rule
+        security_group_entries:
+          policy_rule:
+          - <<: *rule_ipv6
+            src_addresses:
+            - security_group: local
   expect:
     security-group:
       <<: *security_group_with_ipv6_rule
       security_group_entries:
         policy_rule:
         - <<: *rule_ipv6
+          src_addresses:
+          - security_group: local
           rule_uuid: $uuid
 - name: create security group with security group rule
   request:
