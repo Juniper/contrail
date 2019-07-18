@@ -23,8 +23,6 @@ test_data:
     uuid: conflicting_vn
     parent_type: project
     parent_uuid: admin_vn_vxlan_project_uuid
-    virtual_network_properties:
-      vxlan_network_identifier: 10
 
 clients:
   default:
@@ -64,7 +62,10 @@ workflow:
     expected:
     - 400
     data:
-      virtual-network: *conflicting_vn
+      virtual-network:
+        <<: *conflicting_vn
+        virtual_network_properties:
+          vxlan_network_identifier: 10
   expect: null
 
 - name: update virtual network blue with a new VxLAN ID

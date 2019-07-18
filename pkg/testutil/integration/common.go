@@ -32,6 +32,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
@@ -82,9 +83,9 @@ func TestMain(m *testing.M, s **APIServer) {
 
 // RunTest invokes integration test located in "tests" directory
 func RunTest(t *testing.T, name string, server *APIServer) {
-	testScenario, err := LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
-	assert.NoError(t, err, "failed to load test data")
-	RunCleanTestScenario(t, testScenario, server)
+	ts, err := LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
+	require.NoError(t, err, "failed to load test data")
+	RunCleanTestScenario(t, ts, server)
 }
 
 // WithTestDBs does test setup and run tests for

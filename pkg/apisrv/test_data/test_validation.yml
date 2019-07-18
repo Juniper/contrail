@@ -1,11 +1,12 @@
 name: Resource Validation test
 description:  validation test
+
 cleanup:
 - path: /virtual-network/vn_validation_test_uuid
 - path: /network-ipam/test_ipam_validation_uuid
 - path: /project/admin_project_validation_test_uuid
-test_data:
 
+test_data:
   admin_project: &admin_project_validation_test
     uuid: admin_project_validation_test_uuid
     name: admin_project
@@ -29,6 +30,10 @@ test_data:
     parent_type: project
     parent_uuid: admin_project_validation_test_uuid
 
+  mac_limit_control: &mac_limit_control
+    mac_limit: 10
+    mac_limit_action: alarm
+
   vn_validation_test_pass: &vn_validation_test_pass
     uuid: vn_validation_test_uuid
     display_name: blue
@@ -47,13 +52,6 @@ test_data:
     parent_uuid: admin_project_validation_test_uuid
     alarm_severity: -1
 
-  vn_validation_test_fail_number_too_big: &alarm_validation_test_fail_number_too_big
-    uuid: alarm_validation_test_uuid
-    display_name: alarm
-    parent_type: project
-    parent_uuid: admin_project_validation_test_uuid
-    alarm_severity: 3
-
   vn_validation_test_fail_invalid_enum_value: &vn_validation_test_fail_invalid_enum_value
     uuid: vn_validation_test_uuid
     display_name: blue
@@ -62,22 +60,7 @@ test_data:
     address_allocation_mode: hogehoge
     mac_limit_control: *mac_limit_control
 
-  vn_validation_test_fail_bad_parent_type: &vn_validation_test_fail_bad_parent_type
-    uuid: vn_validation_test_uuid
-    display_name: blue
-    parent_type: hogehoge
-    parent_uuid: admin_project_validation_test_uuid
-    mac_limit_control: *mac_limit_control
-
   mac_limit_control_missing_mac_limit: &mac_limit_control_missing_mac_limit
-    mac_limit_action: alarm
-
-  mac_limit_control_mac_limit_zero_value: &mac_limit_control_mac_limit_zero_value
-    mac_limit: 0
-    mac_limit_action: alarm
-
-  mac_limit_control: &mac_limit_control
-    mac_limit: 10
     mac_limit_action: alarm
 
   vn_validation_test_fail_missing_required_integer: &vn_validation_test_fail_missing_required_integer
@@ -86,13 +69,6 @@ test_data:
     parent_type: hogehoge
     parent_uuid: admin_project_validation_test_uuid
     mac_limit_control: *mac_limit_control_missing_mac_limit
-
-  vn_validation_test_fail_required_integer_zero_value: &vn_validation_test_fail_required_integer_zero_value
-    uuid: vn_validation_test_uuid
-    display_name: blue
-    parent_type: project
-    parent_uuid: admin_project_validation_test_uuid
-    mac_limit_control: *mac_limit_control_mac_limit_zero_value
 
 clients:
   default:

@@ -34,16 +34,9 @@ test_data:
     fq_name:
       - default-policy-management
       - test_firewall_rule_blue_uuid
-    endpoint_1:
-      any: true
-    endpoint_2:
-      tags:
-        - "namespace=kube-system"
     match_tags:
       tag_list:
         - application
-    service:
-      protocol: tcp
 
   firewall_rule_red: &test_firewall_rule_red
     uuid: test_firewall_rule_red_uuid
@@ -58,8 +51,6 @@ test_data:
     match_tags:
       tag_list:
         - application
-    service_group_refs:
-      - uuid: test_service_group_uuid
 
 clients:
   default:
@@ -114,10 +105,15 @@ workflow:
     data:
       firewall-rule:
         <<: *test_firewall_rule_blue
+        service:
+          protocol: tcp
         endpoint_1:
           any: false
           tags:
             - "namespace=default"
+        endpoint_2:
+          tags:
+          - "namespace=kube-system"
 
 - name: try to create firewall rule red with non existing service group ref
   request:
@@ -128,7 +124,7 @@ workflow:
       firewall-rule:
         <<: *test_firewall_rule_red
         service_group_refs:
-          - uuid: service_group_uuid
+        - uuid: non-existant
 
 - name: create firewall rule red
   request:
@@ -136,13 +132,16 @@ workflow:
     method: POST
     expected: [200]
     data:
-      firewall-rule: *test_firewall_rule_red
+      firewall-rule:
+        <<: *test_firewall_rule_red
+        service_group_refs:
+        - uuid: test_service_group_uuid
   expect:
     firewall-rule:
       <<: *test_firewall_rule_red
       service_group_refs:
-        - uuid: test_service_group_uuid
-          to: [default-policy-management, test_service_group_uuid]
+      - uuid: test_service_group_uuid
+        to: [default-policy-management, test_service_group_uuid]
 
 - name: create firewall rule blue
   request:
@@ -152,11 +151,20 @@ workflow:
     data:
       firewall-rule:
         <<: *test_firewall_rule_blue
+        service:
+          protocol: tcp
+        endpoint_1:
+          any: true
+        endpoint_2:
+          tags:
+          - "namespace=kube-system"
   expect:
     firewall-rule:
       <<: *test_firewall_rule_blue
       service:
         protocol_id: 6
+      endpoint_1:
+        any: true
       endpoint_2:
         tag_ids:
         - 0x00ff0002
@@ -169,6 +177,8 @@ workflow:
           <<: *test_firewall_rule_blue
           service:
             protocol_id: 6
+          endpoint_1:
+            any: true
           endpoint_2:
             tag_ids:
             - 0x00ff0002
@@ -220,6 +230,8 @@ workflow:
     /contrail/firewall_rule/test_firewall_rule_blue_uuid:
       - data:
           <<: *test_firewall_rule_blue
+          service:
+            protocol: tcp
           endpoint_1:
             tags:
               - "namespace=kube-system"

@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -173,7 +175,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 
 	// Create the cloudManager and related objects
 	ts, err := integration.LoadTest(cloudManagerTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load cloudManager test data")
+	require.NoError(t, err, "failed to load cloudManager test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
