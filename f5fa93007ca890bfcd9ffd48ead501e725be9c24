@@ -1,0 +1,159 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "13522e5b_7178d8ca",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "Please provide commit summary in first line. Put commit description separately, below.",
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ad3087c3_7366e9dc",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "This could be const qualified",
+      "range": {
+        "startLine": 168,
+        "startChar": 2,
+        "endLine": 168,
+        "endChar": 7
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6fb206bc_42747b79",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 169,
+        "startChar": 2,
+        "endLine": 169,
+        "endChar": 13
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3365ec84_b0ad49b2",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "Please just \u0027return targets.Next(scope)\u0027",
+      "range": {
+        "startLine": 174,
+        "startChar": 2,
+        "endLine": 177,
+        "endChar": 3
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3cef4cb7_10db3a1d",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 347,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 347,
+        "startChar": 2,
+        "endLine": 347,
+        "endChar": 11
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9e9209f4_a4c9fb75",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 42,
+        "startChar": 1,
+        "endLine": 42,
+        "endChar": 7
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "20ef1f46_608712dc",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T08:46:59Z",
+      "side": 1,
+      "message": "Please extract to function",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 333,
+        "endChar": 2
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    }
+  ]
+}
