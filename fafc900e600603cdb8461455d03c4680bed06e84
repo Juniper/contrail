@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a01c55e8_40c69884",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-18T13:40:33Z",
+      "side": 1,
+      "message": "A `switch` might look better here.",
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d2f5379_e8ba2625",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-18T13:40:33Z",
+      "side": 1,
+      "message": "`FromDetailed`?",
+      "range": {
+        "startLine": 193,
+        "startChar": 16,
+        "endLine": 193,
+        "endChar": 24
+      },
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
