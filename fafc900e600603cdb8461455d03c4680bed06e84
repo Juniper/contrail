@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "9540698a_c7451858",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-18T14:17:25Z",
+      "side": 1,
+      "message": "With `switch`, it\u0027s clearer that this is a choice of an encoding function based on request parameters, and the `return` argument is nicely aligned vertically:\n\nswitch {\ncase lp.Count:\n\treturn encodeToYAML(response)\ncase lp.Detail:\n\treturn makeEventListDetailedResponse(schemaID, response)\ndefault:\n\treturn makeEventListStandardResponse(schemaID, response)\n}",
+      "parentUuid": "a2073221_3d5575e9",
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9d2f5379_e8ba2625",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 2
@@ -72,6 +90,30 @@
       "side": 1,
       "message": "Well, it takes detailed response and transforms it to detailed response compatible with Sync. So it could be name makeEventListDetailedResponseFromDetailedResponse.\n\nI think, current name is good.",
       "parentUuid": "9d2f5379_e8ba2625",
+      "range": {
+        "startLine": 193,
+        "startChar": 16,
+        "endLine": 193,
+        "endChar": 24
+      },
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f194614c_11e3930a",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-18T14:17:25Z",
+      "side": 1,
+      "message": "The resulting event list does not have \"wrapped objects\", so I wouldn\u0027t call it \"detailed\".",
+      "parentUuid": "b4305833_a32c9178",
       "range": {
         "startLine": 193,
         "startChar": 16,
