@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "ecf4a775_a47a31d4",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T14:32:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9540698a_c7451858",
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9d2f5379_e8ba2625",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 2
@@ -114,6 +132,30 @@
       "side": 1,
       "message": "The resulting event list does not have \"wrapped objects\", so I wouldn\u0027t call it \"detailed\".",
       "parentUuid": "b4305833_a32c9178",
+      "range": {
+        "startLine": 193,
+        "startChar": 16,
+        "endLine": 193,
+        "endChar": 24
+      },
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "354f2b54_14d74bee",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-18T14:32:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f194614c_11e3930a",
       "range": {
         "startLine": 193,
         "startChar": 16,
