@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "f7a89a27_688d944c",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-18T14:34:24Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ecf4a775_a47a31d4",
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9d2f5379_e8ba2625",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 2
@@ -165,6 +183,30 @@
       "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "77e75833_b1552841",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-18T14:34:24Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "354f2b54_14d74bee",
+      "range": {
+        "startLine": 193,
+        "startChar": 16,
+        "endLine": 193,
+        "endChar": 24
+      },
+      "revId": "fafc900e600603cdb8461455d03c4680bed06e84",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
