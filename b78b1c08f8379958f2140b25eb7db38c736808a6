@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "46642592_0296c913",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-19T11:03:47Z",
+      "side": 1,
+      "message": "I\u0027d change the indentation to line up with the `endif` (which is on line 154).",
+      "revId": "b78b1c08f8379958f2140b25eb7db38c736808a6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
