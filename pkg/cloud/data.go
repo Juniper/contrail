@@ -105,7 +105,6 @@ type sgData struct {
 }
 
 func (s *subnetData) getPvtSubnetObject() (*models.CloudPrivateSubnet, error) {
-
 	request := new(services.GetCloudPrivateSubnetRequest)
 	request.ID = s.info.UUID
 
@@ -121,7 +120,6 @@ func (s *subnetData) hasInfo() bool {
 }
 
 func (v *virtualCloudData) newSubnet(subnet *models.CloudPrivateSubnet) (*subnetData, error) {
-
 	s := &subnetData{
 		parentVC: v,
 		info:     subnet,
@@ -141,7 +139,6 @@ func (v *virtualCloudData) newSubnet(subnet *models.CloudPrivateSubnet) (*subnet
 }
 
 func (v *virtualCloudData) updateSubnets() error {
-
 	var unSortedSubnet dataList
 	for _, subnet := range v.info.CloudPrivateSubnets {
 		newSubnet, err := v.newSubnet(subnet)
@@ -166,7 +163,6 @@ func (v *virtualCloudData) updateSubnets() error {
 }
 
 func (i *instanceData) getNodeObject() (*models.Node, error) {
-
 	request := new(services.GetNodeRequest)
 	request.ID = i.info.UUID
 
@@ -178,7 +174,6 @@ func (i *instanceData) getNodeObject() (*models.Node, error) {
 }
 
 func (i *instanceData) updateInstType(instance *models.Node) error {
-
 	if instance.Type == "" {
 		instance.Type = "private"
 		_, err := i.client.UpdateNode(i.ctx,
@@ -192,7 +187,6 @@ func (i *instanceData) updateInstType(instance *models.Node) error {
 }
 
 func (i *torData) getTorObject() (*models.PhysicalRouter, error) {
-
 	request := new(services.GetPhysicalRouterRequest)
 	request.ID = i.info.UUID
 
@@ -208,9 +202,7 @@ func (i *torData) hasInfo() bool {
 }
 
 // nolint: gocyclo
-func (v *virtualCloudData) newInstance(instance *models.Node,
-	isDelRequest bool) (*instanceData, error) {
-
+func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool) (*instanceData, error) {
 	inst := &instanceData{
 		parentVC: v,
 		info:     instance,
@@ -228,9 +220,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 
 	data := v.parentRegion.parentProvider.parentCloud
 	if data.isCloudPrivate() {
-
 		i := inst
-
 		if i.info.ContrailVrouterNodeBackRefs != nil && i.info.KubernetesNodeBackRefs != nil {
 			i.roles = append(i.roles, "compute_node")
 		} else if i.info.ContrailVrouterNodeBackRefs != nil {
@@ -240,20 +230,16 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 			i.roles = append(i.roles, "controller")
 			i.provision = strconv.FormatBool(false)
 		}
-
 		if i.info.KubernetesMasterNodeBackRefs != nil {
 			i.roles = append(i.roles, "k8s_master")
 		}
-
 		if i.info.ContrailMulticloudGWNodeBackRefs != nil {
 			i.roles = append(i.roles, "gateway")
 		}
-
 		err = inst.updatePvtIntf(isDelRequest)
 		if err != nil {
 			return nil, err
 		}
-
 		if inst.info.OpenstackComputeNodeBackRefs != nil {
 			inst.provision = strconv.FormatBool(false)
 		}
@@ -280,7 +266,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		}
 	}
 
-	if data.isCloudPublic() {
+	if !data.isCloudPrivate() {
 		err = inst.updateInstType(instObj)
 		if err != nil {
 			return nil, err
@@ -305,7 +291,6 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 			}
 		}
 	}
-
 	return inst, nil
 }
 
@@ -319,7 +304,6 @@ func hasCloudRole(roles []string, nodeRole string) bool {
 }
 
 func (i *instanceData) updateInstanceUsername(providerType string) error {
-
 	switch i.info.CloudInfo.OperatingSystem {
 	case "ubuntu16":
 		i.username = "ubuntu"
@@ -384,7 +368,6 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 }
 
 func (v *virtualCloudData) updateInstances(isdelRequest bool) error {
-
 	var unsortedInstances dataList
 	nodes, err := v.getInstancesWithTag(v.info.TagRefs, isdelRequest)
 	if err != nil {
@@ -409,7 +392,6 @@ func (v *virtualCloudData) updateInstances(isdelRequest bool) error {
 }
 
 func (v *virtualCloudData) updateTorInstances() error {
-
 	var unSortedTOR dataList
 	physicalRouters, err := v.getTorInstancesWithTag(v.info.TagRefs)
 	if err != nil {
@@ -434,7 +416,6 @@ func (v *virtualCloudData) updateTorInstances() error {
 }
 
 func (sg *sgData) getSGObject() (*models.CloudSecurityGroup, error) {
-
 	request := new(services.GetCloudSecurityGroupRequest)
 	request.ID = sg.info.UUID
 
@@ -445,8 +426,9 @@ func (sg *sgData) getSGObject() (*models.CloudSecurityGroup, error) {
 	return sgResp.GetCloudSecurityGroup(), nil
 }
 
-func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTagRef,
-	isDelRequest bool) ([]*models.Node, error) {
+func (v *virtualCloudData) getInstancesWithTag(
+	tagRefs []*models.VirtualCloudTagRef,isDelRequest bool,
+) ([]*models.Node, error) {
 	var nodesOfVC []*models.Node
 
 	for _, tag := range tagRefs {
@@ -475,7 +457,8 @@ func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTag
 }
 
 func (v *virtualCloudData) getTorInstancesWithTag(
-	tagRefs []*models.VirtualCloudTagRef) ([]*models.PhysicalRouter, error) {
+	tagRefs []*models.VirtualCloudTagRef,
+) ([]*models.PhysicalRouter, error) {
 	var torOfVC []*models.PhysicalRouter
 
 	for _, tag := range tagRefs {
@@ -489,7 +472,6 @@ func (v *virtualCloudData) getTorInstancesWithTag(
 }
 
 func (v *virtualCloudData) newSG(mSG *models.CloudSecurityGroup) (*sgData, error) {
-
 	sg := &sgData{
 		parentVC: v,
 		info:     mSG,
@@ -513,7 +495,6 @@ func (sg *sgData) hasInfo() bool {
 }
 
 func (v *virtualCloudData) updateSGs() error {
-
 	var unSortedSG dataList
 	for _, sg := range v.info.CloudSecurityGroups {
 		newSG, err := v.newSG(sg)
@@ -537,7 +518,6 @@ func (v *virtualCloudData) updateSGs() error {
 }
 
 func (v *virtualCloudData) getVCloudObject() (*models.VirtualCloud, error) {
-
 	request := new(services.GetVirtualCloudRequest)
 	request.ID = v.info.UUID
 
@@ -548,9 +528,7 @@ func (v *virtualCloudData) getVCloudObject() (*models.VirtualCloud, error) {
 	return vCloudResp.GetVirtualCloud(), nil
 }
 
-func (v *virtualCloudData) updateNodeWithTag(
-	nodeUUID string, nTagRefs []*models.NodeTagRef) error {
-
+func (v *virtualCloudData) updateNodeWithTag(nodeUUID string, nTagRefs []*models.NodeTagRef) error {
 	getNodeResp, err := v.client.GetNode(v.ctx,
 		&services.GetNodeRequest{
 			ID: nodeUUID,
@@ -572,9 +550,7 @@ func (v *virtualCloudData) updateNodeWithTag(
 	return err
 }
 
-func (v *virtualCloudData) updateControlNodeWithTag(
-	controlNodes []*models.ContrailControlNode) error {
-
+func (v *virtualCloudData) updateControlNodeWithTag(controlNodes []*models.ContrailControlNode) error {
 	if controlNodes == nil {
 		return fmt.Errorf("cluster does not have control nodes")
 	}
@@ -606,9 +582,7 @@ func (v *virtualCloudData) updateControlNodeWithTag(
 	return nil
 }
 
-func (v *virtualCloudData) updateConfigNodeWithTag(
-	configNodes []*models.ContrailConfigNode) error {
-
+func (v *virtualCloudData) updateConfigNodeWithTag(configNodes []*models.ContrailConfigNode) error {
 	if configNodes == nil {
 		return fmt.Errorf("cluster does not have config nodes")
 	}
@@ -640,9 +614,7 @@ func (v *virtualCloudData) updateConfigNodeWithTag(
 	return nil
 }
 
-func (v *virtualCloudData) updateK8sClusterNodesWithTag(
-	k8sClusterUUID string) error {
-
+func (v *virtualCloudData) updateK8sClusterNodesWithTag(k8sClusterUUID string) error {
 	k8sClusterObj, err := v.client.GetKubernetesCluster(v.ctx,
 		&services.GetKubernetesClusterRequest{
 			ID: k8sClusterUUID,
@@ -664,9 +636,7 @@ func (v *virtualCloudData) updateK8sClusterNodesWithTag(
 	return nil
 }
 
-func (v *virtualCloudData) updateK8sMasterNodeWithTag(
-	k8sMasterNodes []*models.KubernetesMasterNode) error {
-
+func (v *virtualCloudData) updateK8sMasterNodeWithTag(k8sMasterNodes []*models.KubernetesMasterNode) error {
 	for _, k8sMaster := range k8sMasterNodes {
 		getK8sMasterNodeResp, err := v.client.GetKubernetesMasterNode(v.ctx,
 			&services.GetKubernetesMasterNodeRequest{
@@ -694,9 +664,7 @@ func (v *virtualCloudData) updateK8sMasterNodeWithTag(
 	return nil
 }
 
-func (v *virtualCloudData) updateVrouterNodeWithTag(
-	vrouterNodes []*models.ContrailVrouterNode) error {
-
+func (v *virtualCloudData) updateVrouterNodeWithTag(vrouterNodes []*models.ContrailVrouterNode) error {
 	if vrouterNodes == nil {
 		return fmt.Errorf("cluster does not have vrouter nodes")
 	}
@@ -729,9 +697,7 @@ func (v *virtualCloudData) updateVrouterNodeWithTag(
 }
 
 // nolint: gocyclo
-func (v *virtualCloudData) updateClusterNodeWithTag(
-	mcGWNode *models.ContrailMulticloudGWNode) error {
-
+func (v *virtualCloudData) updateClusterNodeWithTag(mcGWNode *models.ContrailMulticloudGWNode) error {
 	ccResp, err := v.client.GetContrailCluster(v.ctx,
 		&services.GetContrailClusterRequest{
 			ID: mcGWNode.ParentUUID,
@@ -771,12 +737,9 @@ func (v *virtualCloudData) updateClusterNodeWithTag(
 	}
 
 	return v.updateVrouterNodeWithTag(contrailCluster.GetContrailVrouterNodes())
-
 }
 
-func (v *virtualCloudData) getMCGWNodeRole(
-	instances []*models.Node) (*models.ContrailMulticloudGWNode, error) {
-
+func (v *virtualCloudData) getMCGWNodeRole(instances []*models.Node) (*models.ContrailMulticloudGWNode, error) {
 	for _, i := range instances {
 		if i.GetContrailMulticloudGWNodeBackRefs() != nil {
 			mcGWNodeRefs := i.GetContrailMulticloudGWNodeBackRefs()
@@ -790,14 +753,11 @@ func (v *virtualCloudData) getMCGWNodeRole(
 			}
 		}
 	}
-	return nil, fmt.Errorf(
-		"instances list does not have multicloud gw node back refs")
+	return nil, fmt.Errorf("instances list does not have multicloud gw node back refs")
 }
 
 func (v *virtualCloudData) getTagsAndUpdateClusterNodes() error {
-
-	instances, err := v.getInstancesWithTag(v.info.TagRefs,
-		v.parentRegion.parentProvider.parentCloud.delRequest)
+	instances, err := v.getInstancesWithTag(v.info.TagRefs,	v.parentRegion.parentProvider.parentCloud.delRequest)
 	if err != nil {
 		return err
 	}
@@ -808,7 +768,6 @@ func (v *virtualCloudData) getTagsAndUpdateClusterNodes() error {
 	}
 
 	return v.updateClusterNodeWithTag(mcGWNodeRole)
-
 }
 
 func (v *virtualCloudData) hasInfo() bool {
@@ -816,7 +775,6 @@ func (v *virtualCloudData) hasInfo() bool {
 }
 
 func (r *regionData) newVCloud(vCloud *models.VirtualCloud) (*virtualCloudData, error) {
-
 	vc := &virtualCloudData{
 		parentRegion: r,
 		info:         vCloud,
@@ -838,7 +796,6 @@ func (r *regionData) newVCloud(vCloud *models.VirtualCloud) (*virtualCloudData, 
 
 // nolint: gocyclo
 func (r *regionData) updateVClouds() error {
-
 	var unSortedVCloud dataList
 	for _, vc := range r.info.VirtualClouds {
 		newVC, err := r.newVCloud(vc)
@@ -878,7 +835,6 @@ func (r *regionData) updateVClouds() error {
 		}
 
 		unSortedVCloud = append(unSortedVCloud, newVC)
-
 	}
 	sort.Sort(unSortedVCloud)
 	for _, sortedVC := range unSortedVCloud {
@@ -888,7 +844,6 @@ func (r *regionData) updateVClouds() error {
 }
 
 func (r *regionData) getRegionObject() (*models.CloudRegion, error) {
-
 	request := new(services.GetCloudRegionRequest)
 	request.ID = r.info.UUID
 
@@ -898,7 +853,6 @@ func (r *regionData) getRegionObject() (*models.CloudRegion, error) {
 	}
 
 	return regResp.GetCloudRegion(), nil
-
 }
 
 func (r *regionData) hasInfo() bool {
@@ -906,7 +860,6 @@ func (r *regionData) hasInfo() bool {
 }
 
 func (p *providerData) newRegion(region *models.CloudRegion) (*regionData, error) {
-
 	reg := &regionData{
 		parentProvider: p,
 		info:           region,
@@ -922,12 +875,10 @@ func (p *providerData) newRegion(region *models.CloudRegion) (*regionData, error
 	if err != nil {
 		return nil, err
 	}
-
 	return reg, nil
 }
 
 func (p *providerData) getProviderObject() (*models.CloudProvider, error) {
-
 	request := new(services.GetCloudProviderRequest)
 	request.ID = p.info.UUID
 
@@ -937,7 +888,6 @@ func (p *providerData) getProviderObject() (*models.CloudProvider, error) {
 	}
 
 	return provResp.GetCloudProvider(), nil
-
 }
 
 func (p *providerData) hasInfo() bool {
@@ -945,7 +895,6 @@ func (p *providerData) hasInfo() bool {
 }
 
 func (d *Data) newProvider(provider *models.CloudProvider) (*providerData, error) {
-
 	prov := &providerData{
 		parentCloud: d,
 		info:        provider,
@@ -966,7 +915,6 @@ func (d *Data) newProvider(provider *models.CloudProvider) (*providerData, error
 }
 
 func (p *providerData) updateRegions() error {
-
 	var unSortedRegion dataList
 	for _, region := range p.info.CloudRegions {
 		newRegion, err := p.newRegion(region)
@@ -1010,9 +958,7 @@ func (d *Data) updateProviders() error {
 	return nil
 }
 
-func getUserObject(ctx context.Context, uuid string,
-	apiClient *client.HTTP) (*models.CloudUser, error) {
-
+func getUserObject(ctx context.Context, uuid string, apiClient *client.HTTP) (*models.CloudUser, error) {
 	request := new(services.GetCloudUserRequest)
 	request.ID = uuid
 
@@ -1021,7 +967,6 @@ func getUserObject(ctx context.Context, uuid string,
 		return nil, err
 	}
 	return userResp.GetCloudUser(), nil
-
 }
 
 func (d *Data) updateUsers() error {
@@ -1067,20 +1012,16 @@ func (i *instanceData) updateProtoModes(isDelRequest bool) error {
 }
 
 func (i *instanceData) updateVrouterGW(role string, isDelRequest bool) error {
-
 	switch role {
 	case gatewayRole:
 		return i.setMultiCloudGWNodeDefaultGW(isDelRequest)
 	case computeRole:
 		return i.setVrouterNodeDefaultGW(isDelRequest)
 	}
-
 	return fmt.Errorf("instance does not have a %s ref", role)
-
 }
 
 func (i *instanceData) setMultiCloudGWNodeDefaultGW(isDelRequest bool) error {
-
 	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
 		response, err := i.client.GetContrailMulticloudGWNode(i.ctx,
 			&services.GetContrailMulticloudGWNodeRequest{
@@ -1101,18 +1042,15 @@ func (i *instanceData) setMultiCloudGWNodeDefaultGW(isDelRequest bool) error {
 		}
 		return nil
 	}
-
 	if isDelRequest {
 		return nil
 	}
-
 	return fmt.Errorf(
 		"contrailMulticloudGWNodeBackRefs are not present for instance: %s",
 		i.info.UUID)
 }
 
 func (i *instanceData) setVrouterNodeDefaultGW(isDelRequest bool) error {
-
 	for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
 		response, err := i.client.GetContrailVrouterNode(i.ctx,
 			&services.GetContrailVrouterNodeRequest{
@@ -1189,23 +1127,19 @@ func (i *instanceData) updateMCGWServices() error {
 }
 
 func (d *Data) update(isDelRequest bool) error {
-
 	d.delRequest = isDelRequest
 	err := d.updateProviders()
 	if err != nil {
 		return err
 	}
-
 	err = d.updateUsers()
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (d *Data) isCloudCreated() bool {
-
 	status := d.info.ProvisioningState
 	if d.cloud.config.Action == createAction && (status == statusNoState || status == "") {
 		return false
@@ -1215,7 +1149,6 @@ func (d *Data) isCloudCreated() bool {
 }
 
 func (d *Data) isCloudUpdateRequest() bool {
-
 	status := d.info.ProvisioningState
 	if d.cloud.config.Action == updateAction && (status == statusNoState) {
 		return true
@@ -1224,7 +1157,6 @@ func (d *Data) isCloudUpdateRequest() bool {
 }
 
 func (d *Data) isCloudPrivate() bool {
-
 	for _, provider := range d.info.CloudProviders {
 		if provider.Type == onPrem {
 			return true
@@ -1233,23 +1165,13 @@ func (d *Data) isCloudPrivate() bool {
 	return false
 }
 
-func (d *Data) isCloudPublic() bool {
-
-	if !d.isCloudPrivate() {
-		return true
-	}
-	return false
-}
-
 func (d *Data) hasProviderAWS() bool {
-
 	for _, prov := range d.providers {
 		if prov.info.Type == aws {
 			return true
 		}
 	}
 	return false
-
 }
 
 func (d *Data) hasProviderAzure() bool {
