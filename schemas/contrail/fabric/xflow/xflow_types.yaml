@@ -1,13 +1,4 @@
 definitions:
-  XflowType:
-    type: object
-    properties:
-      iface_public:
-        presence: optional
-        type: string
-      iface_internal:
-        presence: optional
-        type: string
   ClickhouseType:
     type: object
     properties:

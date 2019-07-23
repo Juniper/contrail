@@ -26,9 +26,6 @@ schema:
     keepalived_shared_ip:
       type: string
       presence: optional
-    xflow:
-      $ref: "xflow_types.json#/definitions/XflowType"
-      presence: optional
     clickhouse:
       $ref: "xflow_types.json#/definitions/ClickhouseType"
       presence: optional
