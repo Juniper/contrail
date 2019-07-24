@@ -6,13 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/jackc/pgx"
 	"github.com/kyleconroy/pgoutput"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 type oner interface {
@@ -269,63 +268,4 @@ func (pwc *mockPostgresWatcherConnection) DoInTransactionSnapshot(
 ) error {
 	args := pwc.MethodCalled("DoInTransactionSnapshot", ctx, snapshotName, do)
 	return args.Error(0)
-}
-
-func TestWatchFailsWhenCanalStartFails(t *testing.T) {
-	w := NewMySQLWatcher(&failingCanalStub{})
-	err := w.Watch(context.Background())
-	assert.Error(t, err)
-}
-
-func TestWatchStartsCanal(t *testing.T) {
-	s := &succeedingCanalSpy{}
-	w := NewMySQLWatcher(s)
-
-	err := w.Watch(context.Background())
-
-	assert.NoError(t, err)
-	assert.Equal(t, 1, s.startCounter)
-	assert.Equal(t, 0, s.closeCounter)
-}
-
-func TestStopClosesCanal(t *testing.T) {
-	s := &succeedingCanalSpy{}
-	w := NewMySQLWatcher(s)
-
-	w.Close()
-
-	assert.Equal(t, 0, s.startCounter)
-	assert.Equal(t, 1, s.closeCounter)
-}
-
-type failingCanalStub struct{}
-
-func (c *failingCanalStub) Run() error { return assert.AnError }
-
-func (*failingCanalStub) WaitDumpDone() <-chan struct{} {
-	c := make(chan struct{})
-	close(c)
-	return c
-}
-
-func (c *failingCanalStub) Close() {}
-
-type succeedingCanalSpy struct {
-	startCounter int
-	closeCounter int
-}
-
-func (c *succeedingCanalSpy) Run() error {
-	c.startCounter++
-	return nil
-}
-
-func (*succeedingCanalSpy) WaitDumpDone() <-chan struct{} {
-	c := make(chan struct{})
-	close(c)
-	return c
-}
-
-func (c *succeedingCanalSpy) Close() {
-	c.closeCounter++
 }
