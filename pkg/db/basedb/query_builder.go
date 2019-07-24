@@ -18,13 +18,6 @@ import (
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
-const (
-	//MYSQL db type
-	MYSQL = "mysql"
-	//POSTGRES db type
-	POSTGRES = "postgres"
-)
-
 //TODO(ijohnson) remove when global share table is supported.
 var globalResources = []string{"contrail_cluster", "endpoint"}
 
@@ -80,46 +73,25 @@ func NewQueryBuilder(
 }
 
 // NewDialect creates NewDialect objects.
-func NewDialect(mode string) Dialect {
-	switch mode {
-	case MYSQL:
-		return Dialect{
-			Name:               MYSQL,
-			QuoteRune:          "`",
-			JSONAggFuncStart:   "group_concat(JSON_OBJECT(",
-			JSONAggFuncEnd:     "))",
-			AnyValueString:     "ANY_VALUE(",
-			PlaceHolderIndex:   false,
-			IPLiteralPrefix:    "INET6_ATON('",
-			PpLiteralSuffix:    "')",
-			SelectIPPrefix:     "INET6_NTOA(`",
-			SelectIPSuffix:     "`)",
-			ConstraintsDisable: "SET GLOBAL FOREIGN_KEY_CHECKS=0;",
-			ConstraintsEnable:  "SET GLOBAL FOREIGN_KEY_CHECKS=1;",
-			CastColumnToText:   "CONVERT(%s USING utf8)",
-		}
-	default:
-		return Dialect{
-			Name:               POSTGRES,
-			QuoteRune:          `"`,
-			JSONAggFuncStart:   "json_agg(json_build_object(",
-			JSONAggFuncEnd:     "))",
-			AnyValueString:     "",
-			PlaceHolderIndex:   true,
-			IPLiteralPrefix:    "inet '",
-			PpLiteralSuffix:    "'",
-			SelectIPPrefix:     `"`,
-			SelectIPSuffix:     `"`,
-			ConstraintsDisable: "SET session_replication_role = replica;",
-			ConstraintsEnable:  "SET session_replication_role = DEFAULT;",
-			CastColumnToText:   "%s :: TEXT",
-		}
+func NewDialect() Dialect {
+	return Dialect{
+		QuoteRune:          `"`,
+		JSONAggFuncStart:   "json_agg(json_build_object(",
+		JSONAggFuncEnd:     "))",
+		AnyValueString:     "",
+		PlaceHolderIndex:   true,
+		IPLiteralPrefix:    "inet '",
+		PpLiteralSuffix:    "'",
+		SelectIPPrefix:     `"`,
+		SelectIPSuffix:     `"`,
+		ConstraintsDisable: "SET session_replication_role = replica;",
+		ConstraintsEnable:  "SET session_replication_role = DEFAULT;",
+		CastColumnToText:   "%s :: TEXT",
 	}
 }
 
 // Dialect represents database dialect.
 type Dialect struct {
-	Name               string
 	QuoteRune          string
 	JSONAggFuncStart   string
 	JSONAggFuncEnd     string
@@ -415,35 +387,16 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 }
 
 func (d *Dialect) jsonAggBase(table string, params ...string) string {
-	if d.Name == POSTGRES {
-		return "row_to_json(" + d.Quote(table) + ")"
-	}
-
-	query := ""
-	l := len(params)
-	for i := 0; i < l-1; i++ {
-		query += "'" + params[i] + "'" + "," + d.Quote(table, params[i]) + ","
-	}
-	query += "'" + params[l-1] + "'" + "," + d.Quote(table, params[l-1])
-	return query
+	return "row_to_json(" + d.Quote(table) + ")"
 }
 
 func (d *Dialect) jsonAgg(table string, params ...string) string {
-	if d.Name == POSTGRES {
-		return "json_agg(" + d.jsonAggBase(table, params...) + ")"
-	}
-	return d.JSONAggFuncStart + d.jsonAggBase(table, params...) + d.JSONAggFuncEnd
+	return "json_agg(" + d.jsonAggBase(table, params...) + ")"
 }
 
 func (d *Dialect) jsonAggRef(table string, params ...string) string {
-	if d.Name == POSTGRES {
-		fqNameJSON := "json_build_object('fq_name', metadata.fq_name)"
-		return "json_agg((" + d.jsonAggBase(table, params...) + ")::jsonb || " + fqNameJSON + "::jsonb)"
-	}
-
-	query := d.JSONAggFuncStart + d.jsonAggBase(table, params...)
-	query += ",'fq_name'," + d.Quote("metadata", "fq_name") + d.JSONAggFuncEnd
-	return query
+	fqNameJSON := "json_build_object('fq_name', metadata.fq_name)"
+	return "json_agg((" + d.jsonAggBase(table, params...) + ")::jsonb || " + fqNameJSON + "::jsonb)"
 }
 
 func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
@@ -663,22 +616,12 @@ func (qb *QueryBuilder) ScanResourceList(value interface{}) []interface{} {
 	if stringValue == "" {
 		return nil
 	}
-	switch qb.Dialect.Name {
-	case MYSQL:
-		err := json.Unmarshal([]byte("["+stringValue+"]"), &resources)
-		if err != nil {
-			logrus.Debug(err)
-			return nil
-		}
-	case POSTGRES:
-		err := json.Unmarshal([]byte(stringValue), &resources)
-		if err != nil {
-			logrus.Debug(err)
-			return nil
-		}
-	default:
-		logutil.FatalWithStackTrace(errors.Errorf("unsupported DB dialect: %v", qb.Dialect.Name))
+
+	if err := json.Unmarshal([]byte(stringValue), &resources); err != nil {
+		logrus.WithError(err).WithField("value", value).Debug("query builder: failed to scan resource list - ignoring")
+		return nil
 	}
+
 	return resources
 }
 

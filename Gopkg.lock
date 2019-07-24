@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  digest = "1:289dd4d7abfb3ad2b5f728fbe9b1d5c1bf7d265a3eb9ef92869af1f7baba4c7a"
-  name = "github.com/BurntSushi/toml"
-  packages = ["."]
-  pruneopts = ""
-  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
-  version = "v0.3.0"
-
-[[projects]]
   branch = "master"
   digest = "1:3696d400a9966c467ca6b050c18547608c821b46bbe9fee915b3d92c3ff08ede"
   name = "github.com/DavidCai1993/etcd-lock"
@@ -301,14 +293,6 @@
   packages = ["."]
   pruneopts = ""
   revision = "0d03ad0b6405ada874d59d97c416b5cf4234e154"
-
-[[projects]]
-  digest = "1:24f8932912fd9331367d38715bb74be889dc2f94d401109c3aa3db8b3aa246c5"
-  name = "github.com/go-sql-driver/mysql"
-  packages = ["."]
-  pruneopts = ""
-  revision = "a0583e0143b1624142adab07e0e97fe106d99561"
-  version = "v1.3"
 
 [[projects]]
   branch = "master"
@@ -914,38 +898,6 @@
   revision = "836a144573533ea4da4e6929c235fd348aed1c80"
 
 [[projects]]
-  digest = "1:69240630f5a4a6f16a7d6111884e206b0c5b0a233c9ee5fe54956f06c2fd6ac0"
-  name = "github.com/shopspring/decimal"
-  packages = ["."]
-  pruneopts = ""
-  revision = "69b3a8ad1f5f2c8bd855cb6506d18593064a346b"
-  version = "1.0.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:d034a32ba83bf7acb7aa2ee5bf2a0d5891781a565e9b9a5b0e69bb2241363c0f"
-  name = "github.com/siddontang/go"
-  packages = ["hack"]
-  pruneopts = ""
-  revision = "cb568a3e5cc06256f91a2da5a87455f717eb33f4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:07ebea6b3ce788cf52e41eac559f753569fc6ad5420206bbf494663446e0db61"
-  name = "github.com/siddontang/go-mysql"
-  packages = [
-    "canal",
-    "client",
-    "dump",
-    "mysql",
-    "packet",
-    "replication",
-    "schema",
-  ]
-  pruneopts = ""
-  revision = "5b24def0560e05198f0cd7a7e6abd35b5a13187b"
-
-[[projects]]
   digest = "1:42a42c4bc67bed17f40fddf0f24d4403e25e7b96488456cf4248e6d16659d370"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -1310,7 +1262,6 @@
     "github.com/databus23/keystone",
     "github.com/flosch/pongo2",
     "github.com/go-openapi/spec",
-    "github.com/go-sql-driver/mysql",
     "github.com/gocql/gocql",
     "github.com/gogo/protobuf/codec",
     "github.com/gogo/protobuf/gogoproto",
@@ -1336,12 +1287,7 @@
     "github.com/pkg/errors",
     "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc",
     "github.com/satori/go.uuid",
-    "github.com/siddontang/go-mysql/canal",
-    "github.com/siddontang/go-mysql/mysql",
-    "github.com/siddontang/go-mysql/replication",
-    "github.com/siddontang/go-mysql/schema",
     "github.com/sirupsen/logrus",
-    "github.com/spf13/cast",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
     "github.com/streadway/amqp",

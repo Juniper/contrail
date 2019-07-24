@@ -1,20 +1,10 @@
-// Package sync contains functionality that supplies etcd with data from PostgreSQL or MySQL database.
+// Package sync contains functionality that supplies etcd with data from PostgreSQL database.
 package sync
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
-	"time"
-
-	"github.com/jackc/pgx"
-	"github.com/pkg/errors"
-	mysqlcanal "github.com/siddontang/go-mysql/canal"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/constants"
-
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -22,11 +12,14 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
+	"github.com/jackc/pgx"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
-	mysqlDefaultPort = "3306"
-	syncID           = "sync-service"
+	syncID = "sync-service"
 )
 
 type watchCloser interface {
@@ -104,20 +97,12 @@ func createWatcher(id string, processor eventProcessor) (watchCloser, error) {
 		return nil, err
 	}
 
-	dbService := db.NewService(sqlDB, viper.GetString("database.dialect"))
+	dbService := db.NewService(sqlDB)
 	if err != nil {
 		return nil, err
 	}
 
-	driver := viper.GetString("database.type")
-	switch driver {
-	case basedb.DriverPostgreSQL:
-		return createPostgreSQLWatcher(id, dbService, processor)
-	case basedb.DriverMySQL:
-		return createMySQLWatcher(dbService, processor)
-	default:
-		return nil, errors.Errorf("invalid database driver: %v", driver)
-	}
+	return createPostgreSQLWatcher(id, dbService, processor)
 }
 
 func createPostgreSQLWatcher(
@@ -150,34 +135,6 @@ func createPostgreSQLWatcher(
 		processor,
 		viper.GetBool("sync.dump"),
 	)
-}
-
-func createMySQLWatcher(d replication.EventDecoder, p services.EventProcessor) (watchCloser, error) {
-	conf := canalConfig()
-
-	canal, err := mysqlcanal.NewCanal(conf)
-	if err != nil {
-		return nil, fmt.Errorf("error creating canal: %v", err)
-	}
-	canal.SetEventHandler(replication.NewCanalHandler(p, d))
-
-	return replication.NewMySQLWatcher(canal), nil
-}
-
-func canalConfig() *mysqlcanal.Config {
-	c := mysqlcanal.NewDefaultConfig()
-	c.Addr = viper.GetString("database.host") + ":" + mysqlDefaultPort
-	c.User = viper.GetString("database.user")
-	c.Password = viper.GetString("database.password")
-	c.Dump.Databases = []string{viper.GetString("database.name")}
-	c.Dump.DiscardErr = false
-	c.ServerID = randomServerID()
-	return c
-}
-
-func randomServerID() uint32 {
-	rand.Seed(time.Now().UnixNano())
-	return uint32(rand.Intn(1000)) + 1001
 }
 
 // Run runs Sync service.

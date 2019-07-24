@@ -11,7 +11,6 @@ ADD ./contrail /bin/contrailgo
 ADD ./contrailcli /bin/contrailcli
 ADD ./contrailutil /bin/contrailutil
 ADD ./etc /etc/contrail
-ADD ./etc/gen_init_mysql.sql /usr/share/contrail/init_mysql.sql
 ADD ./etc/gen_init_psql.sql /usr/share/contrail/init_psql.sql
 ADD ./etc/init_data.yaml /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
@@ -22,7 +21,7 @@ COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
 RUN ln -s /usr/share/contrail/contrail-ansible-deployer /tmp/
 
 RUN yum install -y \
-    mysql postgresql \
+    postgresql \
     git \
     python-requests python-pip
 

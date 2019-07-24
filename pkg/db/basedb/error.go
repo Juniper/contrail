@@ -3,7 +3,6 @@ package basedb
 import (
 	"database/sql"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 
@@ -11,10 +10,6 @@ import (
 )
 
 const (
-	mysqlUniqueViolation = 1062
-	mysqlRowIsReferenced = 1451
-	mysqlNoReferencedRow = 1452
-
 	pgUniqueViolation     = "unique_violation"
 	pgForeignKeyViolation = "foreign_key_violation"
 )
@@ -41,23 +36,8 @@ func getPublicError(err error) error {
 	}
 
 	switch err.(type) {
-	case *mysql.MySQLError:
-		return getPublicMySQLError(err.(*mysql.MySQLError))
 	case *pq.Error:
 		return getPublicPGError(err.(*pq.Error))
-	default:
-		return nil
-	}
-}
-
-func getPublicMySQLError(err *mysql.MySQLError) error {
-	switch err.Number {
-	case mysqlUniqueViolation:
-		return uniqueConstraintViolation()
-	case mysqlRowIsReferenced:
-		return foreignKeyConstraintViolation()
-	case mysqlNoReferencedRow:
-		return foreignKeyConstraintViolation()
 	default:
 		return nil
 	}

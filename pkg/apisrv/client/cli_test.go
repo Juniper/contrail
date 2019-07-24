@@ -13,8 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	yaml "gopkg.in/yaml.v2"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 const (
@@ -154,9 +152,10 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnBlue(t)),
 			},
 			{
-				name: "with page limit",
+				name: "with parent UUID and page limit",
 				lp: &client.ListParameters{
-					PageLimit: 1,
+					ParentUUIDs: projectUUID,
+					PageLimit:   1,
 				},
 				expected: resources(vnRed(t)),
 			},

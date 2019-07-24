@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/pgtype"
 	"github.com/kyleconroy/pgoutput"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -140,4 +141,26 @@ func TestPgOutputEventHandlerHandle(t *testing.T) {
 			m.AssertExpectations(t)
 		})
 	}
+}
+
+type rowSinkMock struct {
+	mock.Mock
+}
+
+func (m *rowSinkMock) DecodeRowEvent(
+	operation, resourceName string, pk []string, properties map[string]interface{},
+) (*services.Event, error) {
+	args := m.Called(operation, resourceName, pk, properties)
+	return args.Get(0).(*services.Event), args.Error(1)
+}
+
+type eventProcessorMock struct {
+}
+
+func (m *eventProcessorMock) Process(ctx context.Context, e *services.Event) (*services.Event, error) {
+	return nil, nil
+}
+
+func (m *eventProcessorMock) ProcessList(ctx context.Context, e *services.EventList) (*services.EventList, error) {
+	return nil, nil
 }
