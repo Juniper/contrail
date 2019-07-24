@@ -9,9 +9,8 @@ import (
 )
 
 func TestRBAC(t *testing.T) {
-	integration.WithTestDBs(func(dbType string) {
+	integration.WithViperConfig(func() {
 		s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-			DBDriver:     dbType,
 			RepoRootPath: "../../..",
 			EnableRBAC:   true,
 		})
