@@ -125,3 +125,14 @@ func decodeRowData(
 
 	return pk, data, nil
 }
+
+func primaryKeyToStringSlice(keyValues []interface{}) ([]string, error) {
+	keys := []string{}
+	for i, pk := range keyValues {
+		if pk == nil || pk == "" {
+			return nil, fmt.Errorf("primary key value is nil or empty on key element at index %v", i)
+		}
+		keys = append(keys, fmt.Sprint(pk))
+	}
+	return keys, nil
+}

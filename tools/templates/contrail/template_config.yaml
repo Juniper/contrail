@@ -3,11 +3,7 @@
 - type: all
   template_path: pkg/models/type_validation.go.tmpl
 - type: all
-  template_path: tools/init_mysql.sql.tmpl
-- type: all
   template_path: tools/init_psql.sql.tmpl
-- type: all
-  template_path: tools/cleanup_mysql.sql.tmpl
 - type: all
   template_path: tools/cleanup_psql.sql.tmpl
 - type: all

@@ -9,14 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gogo/protobuf/types"
-
-	"github.com/coreos/etcd/clientv3"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
@@ -24,6 +16,12 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/coreos/etcd/clientv3"
+	"github.com/gogo/protobuf/types"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
