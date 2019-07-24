@@ -29,11 +29,10 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
@@ -46,7 +45,7 @@ const (
 // TestMain is a function that can be called inside package specific TestMain
 // to enable integration testing capabilities.
 func TestMain(m *testing.M, s **APIServer) {
-	WithTestDBs(func(dbType string) {
+	WithTestDBs(func() {
 		cacheDB, cancelEtcdEventProducer, err := RunCacheDB()
 		if err != nil {
 			logutil.FatalWithStackTrace(errors.Wrap(err, "failed to run Cache DB"))
@@ -64,7 +63,6 @@ func TestMain(m *testing.M, s **APIServer) {
 		}
 
 		if srv, err := NewRunningServer(&APIServerConfig{
-			DBDriver:           dbType,
 			RepoRootPath:       "../../..",
 			EnableEtcdNotifier: true,
 			CacheDB:            cacheDB,
@@ -88,9 +86,8 @@ func RunTest(t *testing.T, name string, server *APIServer) {
 	RunCleanTestScenario(t, ts, server)
 }
 
-// WithTestDBs does test setup and run tests for
-// all supported db types.
-func WithTestDBs(f func(dbType string)) {
+// WithTestDBs does test setup and run tests for all supported db types.
+func WithTestDBs(f func()) {
 	if err := initViperConfig(); err != nil {
 		logutil.FatalWithStackTrace(errors.Wrap(err, "failed to initialize Viper config"))
 	}
@@ -98,37 +95,9 @@ func WithTestDBs(f func(dbType string)) {
 		logutil.FatalWithStackTrace(err)
 	}
 
-	testDBs := viper.GetStringMap("test_database")
-	if len(testDBs) == 0 {
-		logutil.FatalWithStackTrace(errors.New("test suite expected test database definitions under 'test_database' key"))
-	}
-
-	for _, iConfig := range testDBs {
-		config := format.InterfaceToInterfaceMap(iConfig)
-		dbType, ok := config["type"].(string)
-		if !ok {
-			logutil.FatalWithStackTrace(errors.New("failed to read test_database.type value"))
-		}
-		viper.Set("database.type", dbType)
-		viper.Set("database.host", config["host"])
-		viper.Set("database.user", config["user"])
-		viper.Set("database.name", config["name"])
-		viper.Set("database.password", config["password"])
-		viper.Set("database.dialect", config["dialect"])
-		viper.Set("database.debug", config["debug"])
-
-		if val, ok := config["use_sync"]; ok && cast.ToBool(val) == true {
-			viper.Set("server.notify_etcd", false)
-			viper.Set("sync.enabled", true)
-		} else {
-			viper.Set("server.notify_etcd", true)
-			viper.Set("sync.enabled", false)
-		}
-
-		logrus.WithField("db-type", dbType).Info("Starting tests with DB")
-		f(dbType)
-		logrus.WithField("db-type", dbType).Info("Finished tests with DB")
-	}
+	logrus.Info("Starting integration tests")
+	f()
+	logrus.Info("Finished integration tests")
 }
 
 func initViperConfig() error {

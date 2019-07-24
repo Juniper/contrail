@@ -1,7 +1,7 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
-DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
+DB_FILES := gen_init_psql.sql init_data.yaml
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""
 ANSIBLE_DEPLOYER_BRANCH ?= master
@@ -118,33 +118,22 @@ testenv: ## Setup docker based test environment
 
 reset_db: zero_db init_db ## Reset databases with latest schema and load initial data
 
-reset_mysql: zero_mysql init_mysql
-
 reset_psql: zero_psql init_psql
 
-zero_db: zero_mysql zero_psql
-
-zero_mysql:
-	./tools/reset_db_mysql.sh
+zero_db: zero_psql
 
 zero_psql:
 	./tools/reset_db_psql.sh
 
-clean_db: clean_mysql clean_psql init_db ## Truncate all database tables and load initial data
-
-clean_mysql:
-	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/gen_cleanup_mysql.sql
+clean_db: clean_psql init_db ## Truncate all database tables and load initial data
 
 clean_psql:
 	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/gen_cleanup_psql.sql
 
-init_db: init_mysql init_psql ## Load initial data to databases
-
-init_mysql:
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
+init_db: init_psql ## Load initial data to databases
 
 init_psql:
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail_postgres.yml
+	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail

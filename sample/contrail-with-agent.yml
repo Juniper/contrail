@@ -1,6 +1,4 @@
 database:
-  type: mysql
-  dialect: mysql
   host: localhost
   user: root
   password: contrail123
@@ -8,6 +6,7 @@ database:
   max_open_conn: 100
   connection_retries: 10
   retry_period: 3s
+  replication_status_timeout: 10s
   debug: false
 
 etcd:
@@ -16,8 +15,12 @@ etcd:
   username: ""
   password: ""
   path: contrail
+  grpc_insecure: false
 
 log_level: debug
+
+homepage:
+  enabled: true
 
 server:
   enabled: true
@@ -26,6 +29,8 @@ server:
   log_api: true
   log_body: true
   address: ":9091"
+  enable_vnc_replication: false
+  enable_gzip: false
   tls:
     enabled: true
     key_file: /root/go/src/github.com/Juniper/contrail/tools/server.key

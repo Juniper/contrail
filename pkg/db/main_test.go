@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 )
 
@@ -32,33 +32,29 @@ func TestMain(m *testing.M) {
 		logutil.FatalWithStackTrace(err)
 	}
 
-	for _, iConfig := range viper.GetStringMap("test_database") {
-		config := format.InterfaceToInterfaceMap(iConfig)
-		driver := config["type"].(string) //nolint: errcheck
-		testDB, err := basedb.OpenConnection(basedb.ConnectionConfig{
-			Driver:   driver,
-			User:     config["user"].(string),
-			Password: config["password"].(string),
-			Host:     config["host"].(string),
-			Name:     config["name"].(string),
-			Debug:    config["debug"].(bool),
-		})
-		if err != nil {
-			logutil.FatalWithStackTrace(err)
-		}
-		defer closeDB(testDB)
+	testDB, err := basedb.OpenConnection(basedb.ConnectionConfig{
+		Driver:   basedb.DriverPostgreSQL,
+		User:     viper.GetString("database.user"),
+		Password: viper.GetString("database.password"),
+		Host:     viper.GetString("database.host"),
+		Name:     viper.GetString("database.name"),
+		Debug:    viper.GetBool("database.debug"),
+	})
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	defer closeDB(testDB)
 
-		db = &Service{
-			BaseDB: basedb.NewBaseDB(testDB, config["dialect"].(string)),
-		}
-		db.initQueryBuilders()
+	db = &Service{
+		BaseDB: basedb.NewBaseDB(testDB),
+	}
+	db.initQueryBuilders()
 
-		logrus.WithField("dbType", config["type"]).Info("Starting tests for DB")
-		code := m.Run()
-		logrus.WithField("dbType", config["type"]).Info("Finished tests for DB")
-		if code != 0 {
-			os.Exit(code)
-		}
+	logrus.Info("Starting integration tests")
+	code := m.Run()
+	logrus.Info("Finished integration tests")
+	if code != 0 {
+		os.Exit(code)
 	}
 }
 
