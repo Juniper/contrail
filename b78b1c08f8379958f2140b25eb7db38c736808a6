@@ -16,6 +16,24 @@
       "revId": "b78b1c08f8379958f2140b25eb7db38c736808a6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c467e666_e85d4ef4",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T11:08:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "46642592_0296c913",
+      "revId": "b78b1c08f8379958f2140b25eb7db38c736808a6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
