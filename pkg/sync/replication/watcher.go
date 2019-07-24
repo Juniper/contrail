@@ -16,43 +16,6 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-type abstractCanal interface {
-	Run() error
-	WaitDumpDone() <-chan struct{}
-	Close()
-}
-
-// MySQLWatcher uses canal to read MySQL binlog events.
-type MySQLWatcher struct {
-	canal abstractCanal
-	log   *logrus.Entry
-}
-
-// NewMySQLWatcher creates new BinlogWatcher listening on provided canal.
-func NewMySQLWatcher(c abstractCanal) *MySQLWatcher {
-	return &MySQLWatcher{
-		canal: c,
-		log:   logutil.NewLogger("mysql-watcher"),
-	}
-}
-
-// Watch starts listening on a canal.
-func (w *MySQLWatcher) Watch(context.Context) error {
-	w.log.Debug("Watching events on MySQL binlog")
-	return w.canal.Run()
-}
-
-// DumpDone returns a channel that is closed when dump is done.
-func (w *MySQLWatcher) DumpDone() <-chan struct{} {
-	return w.canal.WaitDumpDone()
-}
-
-// Close closes canal.
-func (w *MySQLWatcher) Close() {
-	w.log.Debug("Stopping watching events on MySQL binlog")
-	w.canal.Close()
-}
-
 // PostgresSubscriptionConfig stores configuration for logical replication connection used for Subscription object.
 type PostgresSubscriptionConfig struct {
 	Slot          string

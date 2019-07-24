@@ -4,9 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -14,6 +11,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/pkg/errors"
 )
 
 //Service for DB.
@@ -28,14 +26,14 @@ func NewServiceFromConfig() (*Service, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Init DB failed")
 	}
-	return NewService(sqlDB, viper.GetString("database.dialect")), nil
+	return NewService(sqlDB), nil
 }
 
 //NewService makes a DB service.
-func NewService(db *sql.DB, dialect string) *Service {
+func NewService(db *sql.DB) *Service {
 	dbService := &Service{
 		BaseService: services.BaseService{},
-		BaseDB:      basedb.NewBaseDB(db, dialect),
+		BaseDB:      basedb.NewBaseDB(db),
 	}
 	dbService.initQueryBuilders()
 	return dbService

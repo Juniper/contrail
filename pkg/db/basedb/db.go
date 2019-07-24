@@ -11,7 +11,6 @@ import (
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 
 	"github.com/ExpansiveWorlds/instrumentedsql"
-	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -21,14 +20,10 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 
-// Database drivers
+// Database driver
 const (
-	DriverMySQL      = "mysql"
 	DriverPostgreSQL = "postgres"
-)
 
-const (
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s:3306)/%s"
 	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
 )
 
@@ -40,10 +35,10 @@ type BaseDB struct {
 }
 
 //NewBaseDB makes new base db instance.
-func NewBaseDB(db *sql.DB, dialect string) BaseDB {
+func NewBaseDB(db *sql.DB) BaseDB {
 	return BaseDB{
 		db:      db,
-		Dialect: NewDialect(dialect),
+		Dialect: NewDialect(),
 	}
 }
 
@@ -168,7 +163,7 @@ func rollbackOnPanic(tx *sql.Tx) {
 //ConnectDB connect to the db based on viper configuration.
 func ConnectDB() (*sql.DB, error) {
 	db, err := OpenConnection(ConnectionConfig{
-		Driver:   viper.GetString("database.type"),
+		Driver:   DriverPostgreSQL,
 		User:     viper.GetString("database.user"),
 		Password: viper.GetString("database.password"),
 		Host:     viper.GetString("database.host"),
@@ -229,24 +224,16 @@ func logQuery(_ context.Context, command string, args ...interface{}) {
 }
 
 func wrapDriver(driver string) string {
-	idriver := "instrumented-" + driver
-	if isDriverRegistered(idriver) {
-		return idriver
+	iDriver := "instrumented-" + driver
+	if isDriverRegistered(iDriver) {
+		return iDriver
 	}
 
-	switch driver {
-	case POSTGRES:
-		sql.Register(idriver, instrumentedsql.WrapDriver(
-			&pq.Driver{},
-			instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
-		)
-	case MYSQL:
-		sql.Register(idriver, instrumentedsql.WrapDriver(
-			&mysql.MySQLDriver{},
-			instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
-		)
-	}
-	return idriver
+	sql.Register(iDriver, instrumentedsql.WrapDriver(
+		&pq.Driver{},
+		instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
+	)
+	return iDriver
 }
 
 func isDriverRegistered(driver string) bool {
@@ -259,23 +246,7 @@ func isDriverRegistered(driver string) bool {
 }
 
 func dataSourceName(c *ConnectionConfig) (string, error) {
-	f, err := getDSNFormat(c.Driver)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Name), nil
-}
-
-func getDSNFormat(driver string) (string, error) {
-	switch driver {
-	case DriverPostgreSQL:
-		return dbDSNFormatPostgreSQL, nil
-	case DriverMySQL:
-		return dbDSNFormatMySQL, nil
-	default:
-		return "", errors.Errorf("undefined database driver: %v", driver)
-	}
+	return fmt.Sprintf(dbDSNFormatPostgreSQL, c.User, c.Password, c.Host, c.Name), nil
 }
 
 // Structure describes fields in schema.
