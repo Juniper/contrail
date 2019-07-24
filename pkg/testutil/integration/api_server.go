@@ -8,7 +8,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/testutil"
@@ -63,7 +62,6 @@ type APIServer struct {
 // APIServerConfig contains parameters for test API Server.
 type APIServerConfig struct {
 	CacheDB            *cache.DB
-	DBDriver           string
 	RepoRootPath       string
 	LogLevel           string
 	EnableEtcdNotifier bool
@@ -115,18 +113,13 @@ func setViperConfig(c *APIServerConfig) {
 	if c.AuthType == "" {
 		c.AuthType = defaultAuthType
 	}
-	if c.DBDriver == "" {
-		c.DBDriver = basedb.DriverPostgreSQL
-	}
 	setViper(map[string]interface{}{
 		"aaa_mode":                    rbacConfig(c.EnableRBAC),
 		"auth_type":                   c.AuthType,
-		"database.type":               c.DBDriver,
 		"database.host":               "localhost",
 		"database.user":               dbUser,
 		"database.name":               dbName,
 		"database.password":           dbPassword,
-		"database.dialect":            c.DBDriver,
 		"database.max_open_conn":      100,
 		"database.connection_retries": 10,
 		"database.retry_period":       3,

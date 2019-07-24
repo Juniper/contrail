@@ -89,8 +89,7 @@ etcd notifier is a temporary substitute for Sync service.
 - **Purpose:** High level abstraction for database driver.
 - **Source code:** [db.go](../pkg/db/db.go)
 
-Database service provides query builder by exposing high level abstraction methods.
-Works with MySQL and PostgreSQL drivers.
+Database service provides query builder by exposing high level abstraction methods. Works with PostgreSQL driver.
 
 Database service can be accessed through Read and Write services located
 in ContrailService and ContrailTypeLogicService.

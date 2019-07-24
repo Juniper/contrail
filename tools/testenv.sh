@@ -5,7 +5,7 @@ set -e
 SOURCEDIR=$( cd "$(dirname "$0")/../../../../.." ; pwd -P )
 TOOLSDIR=$(dirname $0)
 
-RunDockers="mysql etcd patroni"
+RunDockers="etcd patroni"
 Network='contrail'
 PROJECT='contrail'
 PatroniEtcd=0
@@ -29,8 +29,8 @@ PASSWORD=contrail123
 SpecialNetworks='bridge none host'
 [[ "$SpecialNetworks" = *"$Network"* ]] || PROJECT=$Network
 NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT down -v || true
-docker rm -f contrail_mysql contrail_etcd || true
-docker volume rm -f contrail_mysql contrail_etcd || true
+docker rm -f contrail_etcd || true
+docker volume rm -f contrail_etcd || true
 docker network remove $PROJECT || true
 
 docker network create $PROJECT --subnet 10.0.4.0/24 --gateway 10.0.4.1 || true
@@ -46,17 +46,6 @@ run_docker_patroni()
     ETCDIP=$ETCDIP NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT up --scale dbnode=2 -d haproxy dbnode
 }
 
-run_docker_mysql()
-{
-	docker run -d --name contrail_mysql \
-		--net "$Network" \
-		-v "$SOURCEDIR:/go" \
-		-v "contrail_mysql:/var/lib/mysql" \
-		-p 3306:3306 \
-		-e "MYSQL_ROOT_PASSWORD=$PASSWORD" \
-		circleci/mysql:5.7
-}
-
 run_docker_etcd()
 {
 	docker run -d --name contrail_etcd \
@@ -70,19 +59,8 @@ run_docker_etcd()
 
 [ ! -z "$1" ] && RunDockers="$*"
 
-WaitMysql=0
 for docker in $RunDockers; do
 	eval "run_docker_$docker"
-	[ "$docker" = mysql ] && WaitMysql=1
 done
-
-if [ $WaitMysql -eq 1 ]; then
-	echo "Waiting for mysql"
-	until docker exec contrail_mysql mysql -uroot -p"$PASSWORD" -e "show status" &> /dev/null
-	do
-		printf "."
-		sleep 1
-	done
-fi
 
 echo "TestEnv done"
