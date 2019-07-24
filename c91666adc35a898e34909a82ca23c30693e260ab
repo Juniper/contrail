@@ -1,0 +1,353 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e2a560c4_2ab1592b",
+        "filename": "pkg/apisrv/test_data/test_alarm.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Probably the intention was to check that an update with different values works; so try to restore the old logic.",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0979aec5_d266caf4",
+        "filename": "pkg/apisrv/test_data/test_base_properties.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Make the name match the reference name.",
+      "range": {
+        "startLine": 30,
+        "startChar": 2,
+        "endLine": 30,
+        "endChar": 10
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9d7e27b_568e653e",
+        "filename": "pkg/apisrv/test_data/test_base_properties.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Use *id_perms_with_correct_uuid here and below?",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "afb4eef2_ea22e32e",
+        "filename": "pkg/apisrv/test_data/test_firewall_rule.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "This shouldn\u0027t be necessary - endpoint_2 should be preserved by the update if not supplied.",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4765918c_28ec1259",
+        "filename": "pkg/apisrv/test_data/test_forwarding_class.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Rename this to `forw_class_base`?",
+      "range": {
+        "startLine": 25,
+        "startChar": 2,
+        "endLine": 25,
+        "endChar": 12
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ae67bba8_4664d0cd",
+        "filename": "pkg/apisrv/test_data/test_logical_interface.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Why repeat `physical` twice?",
+      "range": {
+        "startLine": 65,
+        "startChar": 2,
+        "endLine": 65,
+        "endChar": 11
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5374c2e8_656dc2d7",
+        "filename": "pkg/apisrv/test_data/test_logical_router.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Add a blank line before this.",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea062de0_84a7019b",
+        "filename": "pkg/apisrv/test_data/test_logical_router.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Just `*lr` should be enough.",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4ff5369d_2e0d6556",
+        "filename": "pkg/apisrv/test_data/test_logical_router_vxlan_id.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Rename this to vn_vxlan_conflicting_logical_router_base?",
+      "range": {
+        "startLine": 61,
+        "startChar": 2,
+        "endLine": 61,
+        "endChar": 37
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "10b12746_179e4324",
+        "filename": "pkg/apisrv/test_data/test_logical_router_vxlan_id.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Rename this to vn_vxlan_conflicting_vn_base?",
+      "range": {
+        "startLine": 70,
+        "startChar": 2,
+        "endLine": 70,
+        "endChar": 25
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9596de9_37b54ba3",
+        "filename": "pkg/apisrv/test_data/test_network_policy.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Add _base to the same?",
+      "range": {
+        "startLine": 30,
+        "startChar": 47,
+        "endLine": 30,
+        "endChar": 89
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "187d6548_6a991b9c",
+        "filename": "pkg/apisrv/test_data/test_network_policy.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Add _base to the name?",
+      "range": {
+        "startLine": 90,
+        "startChar": 2,
+        "endLine": 90,
+        "endChar": 22
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce5d235f_3ff21054",
+        "filename": "pkg/apisrv/test_data/test_physical_interface.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "Why repeat `physical` twice?",
+      "range": {
+        "startLine": 65,
+        "startChar": 2,
+        "endLine": 65,
+        "endChar": 11
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e6b6f8b8_7b8c724f",
+        "filename": "pkg/apisrv/test_data/test_physical_interface.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 72,
+        "startChar": 2,
+        "endLine": 72,
+        "endChar": 10
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d34f2203_abe0c2ab",
+        "filename": "pkg/services/list_response_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "This can be removed - then it\u0027ll look the same as in TestListResponseJSON.",
+      "range": {
+        "startLine": 116,
+        "startChar": 6,
+        "endLine": 119,
+        "endChar": 59
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00439d9d_d91716d3",
+        "filename": "proto/github.com/Juniper/contrail/pkg/models/model.proto.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "This comment says there should be no `omitempty` in the changed line below.",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "61e04fc7_9f21a57c",
+        "filename": "proto/github.com/Juniper/contrail/pkg/models/model.proto.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-24T15:37:59Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
