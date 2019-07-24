@@ -4,10 +4,7 @@
 # name: value
 
 replicaCount: 1
-
 image: opencontrailnightly/contrail-go
-
-# TLS Configuration
 tls:
     enabled: true
     key: |
@@ -61,34 +58,23 @@ tls:
         iWmfeMFgqlZvQVMRMxuVJRNQMX3Zf+U6kvflwDztmh9Pw7rQ1e3I2RdYUgbY8+Le
         iXnlsJGVT5DRZkTAv1ysQlA8Mc0UIAemOB56ksja7/fmHGZL4ROeqRc=
         -----END CERTIFICATE-----
-
 config:
-    # Database configuration. MySQL/PostgreSQL supported
     database:
-        type: postgres
-        dialect: postgres
         # host: localhost
         # user: root
         # password: contrail123
         # name: contrail_test
-
-        # Max Open Connections for DB Server
         max_open_conn: 100
         connection_retries: 10
         retry_period: 3s
         debug: false
-
     etcd:
         endpoints:
          - localhost:2379
         username: ""
         password: ""
         path: json
-
-    # Log Level
     log_level: debug
-
-    # Server configuration
     server:
         enabled: true
         read_timeout: 10
@@ -96,32 +82,17 @@ config:
         log_api: true
         log_body: true
         address: ":9091"
-
-        # TLS Configuration
         tls:
             enabled: false
             key_file: tools/server.key
             cert_file: tools/server.crt
-
-        # Enable GRPC or not
         enable_grpc: false
-
-        # Static file config
-        # key: URL path
-        # value: file path. (absolute path recommended in production)
         static_files:
             public: /usr/share/contrail/public
-
-        # API Proxy configuration
-        # key: URL path
-        # value: String list of backend host
         proxy:
             /contrail:
             - http://localhost:8082
-
         notify_etcd: true
-
-    # Keystone configuration
     #keystone:
     #    local: true # Enable local keystone v3. This is only for testing now.
     #    assignment:
@@ -131,22 +102,17 @@ config:
     #        type: memory
     #        expire: 3600
     #    authurl: http://localhost:9091/v3
-
-    # disable authentication with auth_type set to no-auth and comment out keystone configuraion.
     auth_type: no-auth
     insecure: true
-
     sync:
         enabled: false
         storage: json
-
     client:
         id: alice
         password: alice_password
         project_id: admin
         schema_root: /public
         endpoint: http://localhost:9091
-
     agent:
         enabled: true
         backend: file
@@ -175,10 +141,8 @@ config:
           on_delete:
           - command: "echo deleted"
           - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
-
     compilation:
         enabled: true
-        # Global configuration
         plugin_directory: 'etc/plugins/'
         number_of_workers: 4
         max_job_queue_len: 5
@@ -186,15 +150,12 @@ config:
         msg_index_string: 'MsgIndex'
         read_lock_string: "MsgReadLock"
         master_election: true
-
-        # Plugin configuration
         plugin:
             handlers:
                 create_handler: 'HandleCreate'
                 update_handler: 'HandleUpdate'
                 delete_handler: 'HandleDelete'
 
-# Dependency on Postgresql, configure here
 postgresql:
     enabled: true
     imageTag: latest

@@ -13,8 +13,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 		name           string
 		args           []*basemodels.Metadata
 		want           string
-		mysqlExpect    string
-		postgresExpect string
+		expectedFilter string
 		fails          bool
 	}{
 		{
@@ -28,8 +27,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			mysqlExpect:    " ( uuid = ? )  or  ( type = ? and fq_name = ? ) ",
-			postgresExpect: " ( uuid = $1 )  or  ( type = $2 and fq_name = $3 ) ",
+			expectedFilter: " ( uuid = $1 )  or  ( type = $2 and fq_name = $3 ) ",
 		},
 		{
 			name: "Get multiple metadatas using UUIDs",
@@ -41,8 +39,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 					UUID: "uuid-c",
 				},
 			},
-			mysqlExpect:    " ( uuid = ? )  or  ( uuid = ? ) ",
-			postgresExpect: " ( uuid = $1 )  or  ( uuid = $2 ) ",
+			expectedFilter: " ( uuid = $1 )  or  ( uuid = $2 ) ",
 		},
 		{
 			name: "Get multiple metadatas using FQNames",
@@ -56,8 +53,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			mysqlExpect:    " ( type = ? and fq_name = ? )  or  ( type = ? and fq_name = ? ) ",
-			postgresExpect: " ( type = $1 and fq_name = $2 )  or  ( type = $3 and fq_name = $4 ) ",
+			expectedFilter: " ( type = $1 and fq_name = $2 )  or  ( type = $3 and fq_name = $4 ) ",
 		},
 		{
 			name: "Provide only FQNames - fail",
@@ -78,8 +74,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			mysqlExpect:    " ( type = ? and fq_name = ? ) ",
-			postgresExpect: " ( type = $1 and fq_name = $2 ) ",
+			expectedFilter: " ( type = $1 and fq_name = $2 ) ",
 		},
 		{
 			name: "Get metadata using UUID",
@@ -88,8 +83,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 					UUID: "uuid-b",
 				},
 			},
-			mysqlExpect:    " ( uuid = ? ) ",
-			postgresExpect: " ( uuid = $1 ) ",
+			expectedFilter: " ( uuid = $1 ) ",
 		},
 
 		{
@@ -103,27 +97,19 @@ func TestBuildMetadataFilter(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			mysqlExpect:    " ( uuid = ? )  or  ( type = ? and fq_name = ? ) ",
-			postgresExpect: " ( uuid = $1 )  or  ( type = $2 and fq_name = $3 ) ",
+			expectedFilter: " ( uuid = $1 )  or  ( type = $2 and fq_name = $3 ) ",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mysqlDialect := NewDialect(MYSQL)
-			postgresDialect := NewDialect(POSTGRES)
-
-			mysql, _, err1 := buildMetadataFilter(mysqlDialect, tt.args)
-			postgres, _, err2 := buildMetadataFilter(postgresDialect, tt.args)
+			f, _, err := buildMetadataFilter(NewDialect(), tt.args)
 
 			if tt.fails {
-				assert.Error(t, err1)
-				assert.Error(t, err2)
+				assert.Error(t, err)
 				return
 			}
-
-			assert.Equal(t, tt.mysqlExpect, mysql)
-			assert.Equal(t, tt.postgresExpect, postgres)
+			assert.Equal(t, tt.expectedFilter, f)
 		})
 	}
 }

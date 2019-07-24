@@ -1,6 +1,4 @@
 database:
-  type: mysql
-  dialect: mysql
   host: localhost
   user: root
   password: contrail123
@@ -8,6 +6,7 @@ database:
   max_open_conn: 100
   connection_retries: 10
   retry_period: 3s
+  replication_status_timeout: 10s
   debug: false
 
 etcd:
@@ -30,6 +29,7 @@ server:
   log_api: true
   log_body: true
   address: ":9091"
+  enable_vnc_replication: false
   enable_gzip: false
   tls:
     enabled: false
@@ -42,13 +42,13 @@ server:
   proxy:
     /contrail:
     - http://localhost:8082
-  notify_etcd: true
+  notify_etcd: false # notify_etcd should be disabled when using Sync process
 
 auth_type: no-auth
 insecure: true
 
 sync:
-  enabled: false # sync in mysql is not working yet
+  enabled: true
   storage: json
   dump: true
 
@@ -101,7 +101,7 @@ cache:
   timeout: 10s
   max_history: 100000
   cassandra:
-    enabled: true
+    enabled: false
   etcd:
     enabled: true
 

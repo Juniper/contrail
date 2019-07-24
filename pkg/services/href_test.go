@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -133,17 +132,14 @@ func loadNetworkIpam(t *testing.T, path string) (ni *models.NetworkIpam) {
 }
 
 func runTest(t *testing.T, test func(*testing.T, *integration.HTTPAPIClient, *integration.APIServer)) {
-	for _, driver := range []string{basedb.DriverMySQL, basedb.DriverPostgreSQL} {
-		func() {
-			s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-				DBDriver:     driver,
-				RepoRootPath: "../../..",
-			})
-			defer func() {
-				assert.NoError(t, s.Close())
-			}()
-
-			test(t, integration.NewTestingHTTPClient(t, s.URL(), integration.AdminUserID), s)
+	func() {
+		s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
+			RepoRootPath: "../../..",
+		})
+		defer func() {
+			assert.NoError(t, s.Close())
 		}()
-	}
+
+		test(t, integration.NewTestingHTTPClient(t, s.URL(), integration.AdminUserID), s)
+	}()
 }
