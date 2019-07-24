@@ -1,19 +1,13 @@
 database:
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail_test
   max_open_conn: 100
   connection_retries: 10
-  retry_period: 3
-
-test_database:
-  # mysql is disabled because replicator uses sync watcher
-  postgres:
-    type: postgres
-    dialect: postgres
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
-    use_sync: true
-    debug: false
+  retry_period: 3s
+  replication_status_timeout: 10s
+  debug: false
 
 etcd:
   endpoints:
@@ -25,12 +19,17 @@ etcd:
 
 log_level: debug
 
+homepage:
+  enabled: true
+
 server:
+  enabled: true
   read_timeout: 10
   write_timeout: 5
   log_api: true
   log_body: true
   enable_vnc_replication: true
+  enable_gzip: false
   address: ":9091"
   tls:
     enabled: true
@@ -44,6 +43,7 @@ server:
   proxy:
     /contrail:
     - http://localhost:8082
+  notify_etcd: false
 
 client:
   id: alice
@@ -54,10 +54,8 @@ client:
   endpoint: https://localhost:9091
 
 sync:
-  storage: json
-
-homepage:
   enabled: true
+  storage: json
 
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.

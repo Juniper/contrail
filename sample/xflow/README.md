@@ -2,7 +2,7 @@
 
 ## How to use
 
-1. After building, starting testenv and resetting mysql run the contrail backend:
+1. After building, starting testenv and resetting PostgreSQL, run the contrail backend:
    ```
    contrail run -c sample/contrail.yml
    ```
