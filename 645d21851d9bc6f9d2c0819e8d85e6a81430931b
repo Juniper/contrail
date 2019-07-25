@@ -1,0 +1,278 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3f60960f_5c1a114d",
+        "filename": "Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Inline `zero_psql` here.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df22f762_5e939044",
+        "filename": "Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Rename this to `truncate_db`.",
+      "range": {
+        "startLine": 130,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 10
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0d1e226_6b072cd6",
+        "filename": "Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Inline `init_psql` here.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "68a7505f_4c447c5e",
+        "filename": "doc/sync.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "This is redundant with the next sentence.",
+      "range": {
+        "startLine": 3,
+        "startChar": 78,
+        "endLine": 3,
+        "endChar": 110
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7975efec_875fb647",
+        "filename": "doc/sync.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "This makes the line somewhat hard to read on a wide screen. I\u0027d put it on the next line.",
+      "range": {
+        "startLine": 3,
+        "startChar": 111,
+        "endLine": 3,
+        "endChar": 198
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f32f1c3_f740511a",
+        "filename": "docker/contrail_go/Dockerfile",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Update the maintainer?",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87db72a4_7bf536db",
+        "filename": "packaging/apisrv.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Does this describe a MySQL connection? (The comment above mentions MySQL.)\n\nIf so, this config should be changed to work with postgresql.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57edfaf7_6daba783",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Why is this changed in this change? It doesn\u0027t seem related to removing MySQL support.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f451fb04_d52e8b0c",
+        "filename": "pkg/db/basedb/query_builder_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "This doesn\u0027t have to be a pointer.",
+      "range": {
+        "startLine": 29,
+        "startChar": 21,
+        "endLine": 29,
+        "endChar": 22
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f70e145e_ef9e0158",
+        "filename": "pkg/db/main_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Merge these groups of imports.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1b469d71_bd64a60d",
+        "filename": "pkg/neutron/test_config.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "This gets overridden at https://review.opencontrail.org/c/Juniper/contrail/+/52701/2/pkg/testutil/integration/common.go#67, so both the notifier and sync will be enabled in most integration tests.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b106b35_3b9d8bcf",
+        "filename": "pkg/testutil/integration/common.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Rename this to `WithViperConfig`?",
+      "range": {
+        "startLine": 90,
+        "startChar": 5,
+        "endLine": 90,
+        "endChar": 16
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4de7afeb_75a3e9c9",
+        "filename": "sample/contrail-with-agent.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "Why is this different from all the other configs?",
+      "range": {
+        "startLine": 18,
+        "startChar": 17,
+        "endLine": 18,
+        "endChar": 22
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "49663b62_6edce305",
+        "filename": "sample/contrail.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-25T14:57:08Z",
+      "side": 1,
+      "message": "This is the default value, so it doesn\u0027t have to be specified here.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
