@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "92287cdd_3b3daf0a",
+        "filename": "pkg/testutil/integration/common.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T17:44:51Z",
+      "side": 1,
+      "message": "This is a renamed import, so it should be in the next group.\n\nBy the way, has goimports changed recently? I remember it renaming such imports, but I see the renames getting removed in some of your other changes.",
+      "revId": "a4569b770cb2af68057db2dddcc6ee89b228cbe8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
