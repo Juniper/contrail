@@ -16,6 +16,24 @@
       "revId": "619101f5fff3e893a4a7681e611df2eeee9ed822",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "877fd8a7_e70fada0",
+        "filename": "pkg/apisrv/test_data/test_alarm.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T12:32:15Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "a73b295b_5102937f",
+      "revId": "619101f5fff3e893a4a7681e611df2eeee9ed822",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
