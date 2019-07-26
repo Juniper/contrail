@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "214dc51f_e8594eb0",
+        "filename": "Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3f60960f_5c1a114d",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "df22f762_5e939044",
         "filename": "Makefile",
         "patchSetId": 2
@@ -42,6 +60,30 @@
     },
     {
       "key": {
+        "uuid": "8e587d56_ca099820",
+        "filename": "Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "df22f762_5e939044",
+      "range": {
+        "startLine": 130,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 10
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c0d1e226_6b072cd6",
         "filename": "Makefile",
         "patchSetId": 2
@@ -53,6 +95,24 @@
       "writtenOn": "2019-07-25T14:57:08Z",
       "side": 1,
       "message": "Inline `init_psql` here.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e0583961_0627e18f",
+        "filename": "Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0d1e226_6b072cd6",
       "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -105,6 +165,54 @@
     },
     {
       "key": {
+        "uuid": "3818779e_577abb7b",
+        "filename": "doc/sync.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7975efec_875fb647",
+      "range": {
+        "startLine": 3,
+        "startChar": 111,
+        "endLine": 3,
+        "endChar": 198
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7ab2120f_029f1bf0",
+        "filename": "doc/sync.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "68a7505f_4c447c5e",
+      "range": {
+        "startLine": 3,
+        "startChar": 78,
+        "endLine": 3,
+        "endChar": 110
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1f32f1c3_f740511a",
         "filename": "docker/contrail_go/Dockerfile",
         "patchSetId": 2
@@ -116,6 +224,24 @@
       "writtenOn": "2019-07-25T14:57:08Z",
       "side": 1,
       "message": "Update the maintainer?",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8862705d_9c78fd62",
+        "filename": "docker/contrail_go/Dockerfile",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "I don\u0027t want to do it in this CR.",
+      "parentUuid": "1f32f1c3_f740511a",
       "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -139,6 +265,24 @@
     },
     {
       "key": {
+        "uuid": "f1c2878f_94e92837",
+        "filename": "packaging/apisrv.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "This config is severly outdated. I took sample/contrail.yml, but kept settings of static_files and proxy unchanged.",
+      "parentUuid": "87db72a4_7bf536db",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "57edfaf7_6daba783",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 2
@@ -150,6 +294,24 @@
       "writtenOn": "2019-07-25T14:57:08Z",
       "side": 1,
       "message": "Why is this changed in this change? It doesn\u0027t seem related to removing MySQL support.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e4d500ea_4b1949bf",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "This test stopped working, because the order of returned VNs changed (not sure why, probably it run with MySQL earlier). Other VNs are now returned as first. This was a bug of the test, because it assumed a specific order of VNs. I fixed it by adding this line. Now the test only assumes that VNRed is returned before VNBlue, which seems to be ok.",
+      "parentUuid": "57edfaf7_6daba783",
       "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -179,6 +341,30 @@
     },
     {
       "key": {
+        "uuid": "2149d7f9_3024c07c",
+        "filename": "pkg/db/basedb/query_builder_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f451fb04_d52e8b0c",
+      "range": {
+        "startLine": 29,
+        "startChar": 21,
+        "endLine": 29,
+        "endChar": 22
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f70e145e_ef9e0158",
         "filename": "pkg/db/main_test.go",
         "patchSetId": 2
@@ -190,6 +376,24 @@
       "writtenOn": "2019-07-25T14:57:08Z",
       "side": 1,
       "message": "Merge these groups of imports.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6bfd3f9_0173f2ab",
+        "filename": "pkg/db/main_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f70e145e_ef9e0158",
       "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -213,6 +417,24 @@
     },
     {
       "key": {
+        "uuid": "ddfd0427_50fd205f",
+        "filename": "pkg/neutron/test_config.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Ok, so it will not change behaviour in those tests. But I didn\u0027t mean to. I just like configs to have all the options so comparing them at glance is easy.",
+      "parentUuid": "1b469d71_bd64a60d",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6b106b35_3b9d8bcf",
         "filename": "pkg/testutil/integration/common.go",
         "patchSetId": 2
@@ -224,6 +446,30 @@
       "writtenOn": "2019-07-25T14:57:08Z",
       "side": 1,
       "message": "Rename this to `WithViperConfig`?",
+      "range": {
+        "startLine": 90,
+        "startChar": 5,
+        "endLine": 90,
+        "endChar": 16
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7d54091b_e6ad81f6",
+        "filename": "pkg/testutil/integration/common.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6b106b35_3b9d8bcf",
       "range": {
         "startLine": 90,
         "startChar": 5,
@@ -259,6 +505,30 @@
     },
     {
       "key": {
+        "uuid": "beda2d0a_ee34790d",
+        "filename": "sample/contrail-with-agent.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "Changed that to true. I didn\u0027t want to change the behaviour here but this config is probably not used (Maciej recently started using it and told me that the agent config os obsolete).",
+      "parentUuid": "4de7afeb_75a3e9c9",
+      "range": {
+        "startLine": 18,
+        "startChar": 17,
+        "endLine": 18,
+        "endChar": 22
+      },
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "49663b62_6edce305",
         "filename": "sample/contrail.yml",
         "patchSetId": 2
@@ -270,6 +540,24 @@
       "writtenOn": "2019-07-25T14:57:08Z",
       "side": 1,
       "message": "This is the default value, so it doesn\u0027t have to be specified here.",
+      "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4cc9f5b9_e72bc9a7",
+        "filename": "sample/contrail.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 1,
+      "message": "This is the case with many fields across our config files. What I did is make configs uniform.",
+      "parentUuid": "49663b62_6edce305",
       "revId": "645d21851d9bc6f9d2c0819e8d85e6a81430931b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

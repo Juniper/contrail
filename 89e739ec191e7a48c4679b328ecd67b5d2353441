@@ -16,6 +16,24 @@
       "revId": "89e739ec191e7a48c4679b328ecd67b5d2353441",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b22bcfd2_3703acf0",
+        "filename": "pkg/sync/service.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-26T13:18:11Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "b8f7ab40_de31103c",
+      "revId": "89e739ec191e7a48c4679b328ecd67b5d2353441",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
