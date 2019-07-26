@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7dd7b491_bfa3e5d2",
+        "filename": "pkg/apisrv/test_data/test_alarm.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "This should probably be unindented.",
+      "revId": "dd6708a459798ded8ef553213839aaf4dcdaedfd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c72c2763_cf6be153",
+        "filename": "pkg/services/list_response_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "This can also be removed.",
+      "revId": "dd6708a459798ded8ef553213839aaf4dcdaedfd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

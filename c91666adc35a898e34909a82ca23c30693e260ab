@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "53333eb7_6c4d23d1",
+        "filename": "pkg/apisrv/test_data/test_alarm.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2e414d8c_3bbbad5a",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0979aec5_d266caf4",
         "filename": "pkg/apisrv/test_data/test_base_properties.yml",
         "patchSetId": 2
@@ -84,6 +102,30 @@
     },
     {
       "key": {
+        "uuid": "ff704d0b_e62e3242",
+        "filename": "pkg/apisrv/test_data/test_base_properties.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ed22d55d_f31bd389",
+      "range": {
+        "startLine": 30,
+        "startChar": 2,
+        "endLine": 30,
+        "endChar": 10
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f9d7e27b_568e653e",
         "filename": "pkg/apisrv/test_data/test_base_properties.yml",
         "patchSetId": 2
@@ -119,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "2c78a65f_507f24a0",
+        "filename": "pkg/apisrv/test_data/test_base_properties.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "779e8c27_34115349",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "afb4eef2_ea22e32e",
         "filename": "pkg/apisrv/test_data/test_firewall_rule.yml",
         "patchSetId": 2
@@ -151,6 +211,24 @@
       "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2676e499_294b3d18",
+        "filename": "pkg/apisrv/test_data/test_firewall_rule.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "22fe8526_d5b166d6",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -201,6 +279,30 @@
     },
     {
       "key": {
+        "uuid": "f7d9cbbc_49988a14",
+        "filename": "pkg/apisrv/test_data/test_forwarding_class.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "056279e3_86f8214a",
+      "range": {
+        "startLine": 25,
+        "startChar": 2,
+        "endLine": 25,
+        "endChar": 12
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ae67bba8_4664d0cd",
         "filename": "pkg/apisrv/test_data/test_logical_interface.yml",
         "patchSetId": 2
@@ -248,6 +350,30 @@
     },
     {
       "key": {
+        "uuid": "ab04fc40_6c9f5dcb",
+        "filename": "pkg/apisrv/test_data/test_logical_interface.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": ":D Done",
+      "parentUuid": "f3fcb2d6_6b9ccb09",
+      "range": {
+        "startLine": 65,
+        "startChar": 2,
+        "endLine": 65,
+        "endChar": 11
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5374c2e8_656dc2d7",
         "filename": "pkg/apisrv/test_data/test_logical_router.yml",
         "patchSetId": 2
@@ -283,6 +409,24 @@
     },
     {
       "key": {
+        "uuid": "200637ed_de2c10e5",
+        "filename": "pkg/apisrv/test_data/test_logical_router.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f6e9d8f9_347e3ed1",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ea062de0_84a7019b",
         "filename": "pkg/apisrv/test_data/test_logical_router.yml",
         "patchSetId": 2
@@ -315,6 +459,24 @@
       "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b475a444_0fef8560",
+        "filename": "pkg/apisrv/test_data/test_logical_router.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0a0c4645_e6cd4511",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -365,6 +527,30 @@
     },
     {
       "key": {
+        "uuid": "60691fc6_dc69829e",
+        "filename": "pkg/apisrv/test_data/test_logical_router_vxlan_id.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0a2eb6af_c197f5f6",
+      "range": {
+        "startLine": 61,
+        "startChar": 2,
+        "endLine": 61,
+        "endChar": 37
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "10b12746_179e4324",
         "filename": "pkg/apisrv/test_data/test_logical_router_vxlan_id.yml",
         "patchSetId": 2
@@ -409,6 +595,30 @@
       "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "59d5b558_a7c8c5b7",
+        "filename": "pkg/apisrv/test_data/test_logical_router_vxlan_id.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4ab880cc_1df703df",
+      "range": {
+        "startLine": 70,
+        "startChar": 2,
+        "endLine": 70,
+        "endChar": 25
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -459,6 +669,30 @@
     },
     {
       "key": {
+        "uuid": "ca979d11_e50472e7",
+        "filename": "pkg/apisrv/test_data/test_network_policy.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b5316494_5abfe7d2",
+      "range": {
+        "startLine": 30,
+        "startChar": 47,
+        "endLine": 30,
+        "endChar": 89
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "187d6548_6a991b9c",
         "filename": "pkg/apisrv/test_data/test_network_policy.yml",
         "patchSetId": 2
@@ -503,6 +737,30 @@
       "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df3fd50b_072d21cb",
+        "filename": "pkg/apisrv/test_data/test_network_policy.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "968c041c_38689ed3",
+      "range": {
+        "startLine": 90,
+        "startChar": 2,
+        "endLine": 90,
+        "endChar": 22
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -553,6 +811,30 @@
     },
     {
       "key": {
+        "uuid": "13435b83_ef316ffc",
+        "filename": "pkg/apisrv/test_data/test_physical_interface.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "934eb7bb_5accf6df",
+      "range": {
+        "startLine": 65,
+        "startChar": 2,
+        "endLine": 65,
+        "endChar": 11
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e6b6f8b8_7b8c724f",
         "filename": "pkg/apisrv/test_data/test_physical_interface.yml",
         "patchSetId": 2
@@ -597,6 +879,30 @@
       "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e28611f_f469aa55",
+        "filename": "pkg/apisrv/test_data/test_physical_interface.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "911abc94_23819ab8",
+      "range": {
+        "startLine": 72,
+        "startChar": 2,
+        "endLine": 72,
+        "endChar": 10
+      },
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -682,6 +988,24 @@
     },
     {
       "key": {
+        "uuid": "adf2cbbb_278948d2",
+        "filename": "proto/github.com/Juniper/contrail/pkg/models/model.proto.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "09149b88_6ad3efca",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "61e04fc7_9f21a57c",
         "filename": "proto/github.com/Juniper/contrail/pkg/models/model.proto.tmpl",
         "patchSetId": 2
@@ -714,6 +1038,24 @@
       "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7d921f9e_b219a732",
+        "filename": "proto/github.com/Juniper/contrail/pkg/models/model.proto.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-26T15:44:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "95037ae4_54a37869",
+      "revId": "c91666adc35a898e34909a82ca23c30693e260ab",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
