@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "952fd9aa_a5940874",
+        "filename": "pkg/apisrv/test_data/test_alarm.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-29T10:20:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7dd7b491_bfa3e5d2",
+      "revId": "dd6708a459798ded8ef553213839aaf4dcdaedfd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c72c2763_cf6be153",
         "filename": "pkg/services/list_response_test.go",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2019-07-26T15:44:36Z",
       "side": 1,
       "message": "This can also be removed.",
+      "revId": "dd6708a459798ded8ef553213839aaf4dcdaedfd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7321307e_0be9aac3",
+        "filename": "pkg/services/list_response_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-29T10:20:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c72c2763_cf6be153",
       "revId": "dd6708a459798ded8ef553213839aaf4dcdaedfd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
