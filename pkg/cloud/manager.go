@@ -209,14 +209,14 @@ func (c *Cloud) create() error {
 		return err
 	}
 
-	if data.isCloudPublic() {
+	if !data.isCloudPrivate() {
 		err = secret.createSecretFile()
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		err = manageTerraform(c, c.config.Action)
+		err = createTopology(c, c.reporter)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -225,7 +225,7 @@ func (c *Cloud) create() error {
 
 	// update IP details only when cloud is public
 	// basically when instances created by terraform
-	if data.isCloudPublic() && (!c.config.Test) {
+	if !data.isCloudPrivate() && (!c.config.Test) {
 		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -277,7 +277,7 @@ func (c *Cloud) update() error {
 
 	//TODO(madhukar) handle if key-pair changes or aws-key
 
-	if data.isCloudPublic() {
+	if !data.isCloudPrivate() {
 		err = secret.createSecretFile()
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -285,7 +285,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		err = manageTerraform(c, c.config.Action)
+		err = createTopology(c, c.reporter)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -293,7 +293,7 @@ func (c *Cloud) update() error {
 	}
 
 	//update IP address
-	if data.isCloudPublic() && (!c.config.Test) {
+	if !data.isCloudPrivate() && (!c.config.Test) {
 		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -319,7 +319,7 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
 	// initialize secret struct
 	secret, err := newSecret(c)
-	if data.isCloudPublic() {
+	if !data.isCloudPrivate() {
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -331,6 +331,7 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
 	return topo, secret, data, nil
 }
+
 func (c *Cloud) delete() error {
 	// get cloud data
 	data, err := c.getCloudData(true)
@@ -348,9 +349,9 @@ func (c *Cloud) delete() error {
 		}
 	}
 
-	if data.isCloudPublic() {
+	if !data.isCloudPrivate() {
 		if tfStateOutputExists(c.config.CloudID) {
-			err = manageTerraform(c, deleteAction)
+			err = destroyTopology(c, c.reporter)
 			if err != nil {
 				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 				return err
@@ -413,7 +414,7 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 		errList = append(errList, retErrList...)
 	}
 
-	if d.isCloudPublic() {
+	if !d.isCloudPrivate() {
 		retErrList = deleteNodeObjects(c.ctx, c.APIServer, d.instances)
 		if retErrList != nil {
 			errList = append(errList, retErrList...)
@@ -442,7 +443,7 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 		warnList = append(warnList, cloudUserErrList...)
 	}
 
-	if d.isCloudPublic() {
+	if !d.isCloudPrivate() {
 		credErrList := deleteCredentialAndDeps(c.ctx, c.APIServer, d.credentials)
 		warnList = append(warnList, credErrList...)
 	}

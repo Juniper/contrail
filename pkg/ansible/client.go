@@ -122,12 +122,3 @@ func (c *CLIClient) mockPlay(ansibleArgs []string) error {
 		filePermRWOnly,
 	)
 }
-
-// PlayViaDeployer runs Python CLI with passed arguments.
-func (c *CLIClient) PlayViaDeployer(args ...string) error {
-	result, err := exec.Command("deployer", args...).CombinedOutput()
-	if err != nil {
-		return errors.Wrap(err, string(result))
-	}
-	return nil
-}
