@@ -1,3 +1,1 @@
-/usr/share/contrail/contrail-multi-cloud/transform/generate_topology.py -t /var/tmp/cloud/cloud_uuid/topology.yml -s /var/tmp/cloud/cloud_uuid/secret.yml --no_validation
-terraform init
-terraform apply -auto-approve -parallelism=50 -refresh=false
+deployer topology create --topology /var/tmp/cloud/cloud_uuid/topology.yml --secret /var/tmp/cloud/cloud_uuid/secret.yml --skip_validation true

@@ -6,7 +6,6 @@ const (
 
 	defaultWorkRoot                = "/var/tmp/cloud"
 	defaultTemplateRoot            = "./pkg/cloud/configs"
-	defaultGenTopoScript           = "transform/generate_topology.py"
 	defaultGenInventoryScript      = "transform/generate_inventories.py"
 	defaultTFStateFile             = "terraform.tfstate"
 	defaultTopologyFile            = "topology.yml"
@@ -29,7 +28,6 @@ const (
 
 	createAction      = "create"
 	updateAction      = "update"
-	deleteAction      = "delete"
 	deleteCloudAction = "DELETE_CLOUD"
 
 	aws    = "aws"
