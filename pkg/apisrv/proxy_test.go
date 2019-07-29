@@ -120,7 +120,7 @@ func verifyKeystoneEndpoint(ctx context.Context, testScenario *integration.TestS
 func TestProxyEndpoint(t *testing.T) {
 	ctx := context.Background()
 	// Create a cluster and its neutron endpoints(multiple)
-	clusterAName := "clusterA"
+	clusterAName := t.Name() + "_clusterA"
 	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
 		t, clusterAName, "neutron1")
 	testScenario, clusterANeutron2Public, clusterANeutron2Private, cleanup2 := runEndpointTest(
@@ -139,7 +139,7 @@ func TestProxyEndpoint(t *testing.T) {
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
 
 	// create one more cluster/neutron endpoint for new cluster
-	clusterBName := "clusterB"
+	clusterBName := t.Name() + "_clusterB"
 	testScenario, neutronPublic, neutronPrivate, cleanup3 := runEndpointTest(
 		t, clusterBName, "neutron1")
 	defer cleanup3()
@@ -222,7 +222,7 @@ func TestProxyEndpoint(t *testing.T) {
 func TestProxyEndpointWithSleep(t *testing.T) {
 	ctx := context.Background()
 	// Create a cluster and its neutron endpoint
-	clusterAName := "clusterA"
+	clusterAName := t.Name() + "_clusterA"
 	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
 		t, clusterAName, "neutron1")
 	defer cleanup1()
@@ -236,7 +236,7 @@ func TestProxyEndpointWithSleep(t *testing.T) {
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
 
 	// create one more cluster/neutron endpoint for new cluster
-	clusterBName := "clusterB"
+	clusterBName := t.Name() + "_clusterB"
 	testScenario, neutronPublic, neutronPrivate, cleanup2 := runEndpointTest(
 		t, clusterBName, "neutron1")
 	defer cleanup2()
@@ -270,7 +270,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	ctx := context.Background()
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 
-	clusterCName := "clusterC"
+	clusterCName := t.Name() + "_clusterC"
 	clusterCUser := clusterCName + "_admin"
 	ksPrivate := integration.MockServerWithKeystoneTestUser(
 		"", keystoneAuthURL, clusterCUser, clusterCUser)
@@ -366,7 +366,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	ctx := context.Background()
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	clusterCName := "clusterC"
+	clusterCName := t.Name() + "_clusterC"
 	clusterCUser := clusterCName + "_admin"
 	ksPrivate := integration.MockServerWithKeystoneTestUser(
 		"", keystoneAuthURL, clusterCUser, clusterCUser)
@@ -395,7 +395,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 
 	// Create one more cluster's keystone endpoint
 	keystoneAuthURL = viper.GetString("keystone.authurl")
-	clusterDName := "clusterD"
+	clusterDName := t.Name() + "_clusterD"
 	clusterDUser := clusterDName + "_admin"
 	ksPrivateClusterD := integration.MockServerWithKeystoneTestUser(
 		"", keystoneAuthURL, clusterDUser, clusterDUser)

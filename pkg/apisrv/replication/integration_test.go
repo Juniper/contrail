@@ -205,9 +205,9 @@ func initTestCluster(
 
 func runReplicationTest(t *testing.T) {
 	//create test clusters with keystone/config endpoint.
-	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, "clusterA", 2)
+	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, t.Name()+"_clusterA", 2)
 	defer cleanupTestClusterA()
-	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, "clusterB", 2)
+	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, t.Name()+"_clusterB", 2)
 	defer cleanupTestClusterB()
 
 	//create node-profile, node, port object
