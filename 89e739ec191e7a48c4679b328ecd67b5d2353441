@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "2fdd23c1_cd1609e4",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-29T10:31:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "48165201_58ade8b3",
+      "revId": "89e739ec191e7a48c4679b328ecd67b5d2353441",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a541e3be_9d38dcca",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 3
@@ -42,6 +60,30 @@
     },
     {
       "key": {
+        "uuid": "5b2938c2_a11e5c8a",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 226,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-29T10:31:43Z",
+      "side": 1,
+      "message": "It would shadow above variable, but it is not the problem in that case. Changed.",
+      "parentUuid": "a541e3be_9d38dcca",
+      "range": {
+        "startLine": 226,
+        "startChar": 18,
+        "endLine": 226,
+        "endChar": 21
+      },
+      "revId": "89e739ec191e7a48c4679b328ecd67b5d2353441",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3ee7621c_993ca8e5",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 3
@@ -53,6 +95,30 @@
       "writtenOn": "2019-07-26T17:28:32Z",
       "side": 1,
       "message": "The sentence doesn\u0027t end here, so remove the `.`",
+      "range": {
+        "startLine": 242,
+        "startChar": 95,
+        "endLine": 242,
+        "endChar": 96
+      },
+      "revId": "89e739ec191e7a48c4679b328ecd67b5d2353441",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e3563881_8ff7e356",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-29T10:31:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3ee7621c_993ca8e5",
       "range": {
         "startLine": 242,
         "startChar": 95,
