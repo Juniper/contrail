@@ -90,7 +90,7 @@ func FetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 
 func TestClusterTokenMethod(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	clusterName := "clusterA"
+	clusterName := t.Name() + "_clusterA"
 	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPrivate.Close()
 
@@ -147,7 +147,7 @@ func TestClusterTokenMethod(t *testing.T) {
 
 func TestClusterLogin(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	clusterName := "clusterB"
+	clusterName := t.Name() + "_clusterB"
 	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPrivate.Close()
 
@@ -297,7 +297,7 @@ func TestBasicAuth(t *testing.T) {
 	})
 	defer s.CloseT(t)
 
-	clusterName := "clusterBasicAuth"
+	clusterName := t.Name() + "_cluster"
 	routes := map[string]interface{}{
 		"/domains": echo.HandlerFunc(func(c echo.Context) error {
 			return c.JSON(http.StatusOK,
