@@ -21,11 +21,12 @@ import (
 const (
 	testReplicationTmpl       = "./test_data/test_replication.tmpl"
 	createReplicationTestFile = "./test_data/create_replication.yml"
-	//updateReplicationTestFile = "./test_data/update_replication.yml"
-	postReq   = "POST"
-	putReq    = "PUT"
-	deleteReq = "DELETE"
-	readReq   = "GET"
+	updateReplicationTestFile = "./test_data/update_replication.yml"
+	deleteReplicationTestFile = "./test_data/delete_replication.yml"
+	postReq                   = "POST"
+	putReq                    = "PUT"
+	deleteReq                 = "DELETE"
+	readReq                   = "GET"
 )
 
 var server *integration.APIServer
@@ -203,7 +204,7 @@ func initTestCluster(
 	return cleanupTestCluster, vncReqStore, done
 }
 
-func runReplicationTest(t *testing.T) {
+func TestReplication(t *testing.T) {
 	//create test clusters with keystone/config endpoint.
 	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, t.Name()+"_clusterA", 2)
 	defer cleanupTestClusterA()
@@ -218,9 +219,60 @@ func runReplicationTest(t *testing.T) {
 
 	assertCloses(t, doneA)
 	assertCloses(t, doneB)
-	//verify create objects
+	//verify created objects
 	verifyVNCReqStore(t, postReq, vncReqStoreA, testScenario)
 	verifyVNCReqStore(t, postReq, vncReqStoreB, testScenario)
+}
+
+func TestReplicateAlreadyCreatedResources(t *testing.T) {
+	//create node-profile, node, port object
+	ts, err := integration.LoadTest(createReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	//create test clusters with keystone/config endpoint.
+	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, "clusterA", 2)
+	defer cleanupTestClusterA()
+	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, "clusterB", 2)
+	defer cleanupTestClusterB()
+
+	// Update node* objects to force replication to the new endpoints.
+	ts, err = integration.LoadTest(updateReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load update data")
+	integration.RunDirtyTestScenario(t, ts, server)
+
+	server.ForceProxyUpdate()
+
+	assertCloses(t, doneA)
+	assertCloses(t, doneB)
+	//verify created objects
+	verifyVNCReqStore(t, postReq, vncReqStoreA, ts)
+	verifyVNCReqStore(t, postReq, vncReqStoreB, ts)
+}
+
+func TestDeleteNonReplicatedResources(t *testing.T) {
+	//create node-profile, node, port object
+	ts, err := integration.LoadTest(createReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	//create test clusters with keystone/config endpoint.
+	cleanupTestClusterA, _, doneA := initTestCluster(t, "clusterA", 2)
+	defer cleanupTestClusterA()
+	cleanupTestClusterB, _, doneB := initTestCluster(t, "clusterB", 2)
+	defer cleanupTestClusterB()
+
+	// Delete node* objects.
+	ts, err = integration.LoadTest(deleteReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load delete data")
+	integration.RunDirtyTestScenario(t, ts, server)
+
+	server.ForceProxyUpdate()
+
+	assertCloses(t, doneA)
+	assertCloses(t, doneB)
 }
 
 func assertCloses(t *testing.T, c chan struct{}) {
@@ -267,8 +319,4 @@ func verifyVNCReqStore(t *testing.T, req string,
 		}
 	}
 	assert.True(t, ok, "post req not found in test replication store")
-}
-
-func TestReplication(t *testing.T) {
-	runReplicationTest(t)
 }
