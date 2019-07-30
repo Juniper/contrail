@@ -1,30 +1,12 @@
-name: Replication create objects
-description: replication test to create objects
+name: Replication update objects
+description: replication test to update objects
 test_data:
   test_create_node_profile: &test_create_node_profile
     uuid: test_create_node_profile_uuid
-    parent_type: global-system-config
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-    fq_name:
-    - default-global-system-config
-    - test-create-node-profile
-    node_profile_device_family: family123
-    node_profile_roles:
-      role_mappings:
-      -  physical_role: cat123
-    node_profile_vendor: juniper123
   test_create_node: &test_create_node
     uuid: test_create_node_uuid
-    hostname: test_replication_node_updated
-    interface_name: eth0
-    ip_address: 127.0.0.1
-    parent_type: global-system-config
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
   test_create_port: &test_create_port
     uuid: test_create_port_uuid
-    parent_type: node
-    parent_uuid: test_create_node_uuid
-    ip_address: 1.1.1.2
 
 clients:
   default:
@@ -36,7 +18,7 @@ clients:
         name: admin
 
 workflow:
-- name: create test replicate node profile
+- name: update test replicate node profile
   request:
     path: /node-profile/test_create_node_profile_uuid
     method: PUT
@@ -44,10 +26,8 @@ workflow:
     - 200
     data:
       node-profile: *test_create_node_profile
-  expect:
-    node-profile: *test_create_node_profile
 
-- name: create test replicate node
+- name: update test replicate node
   request:
     path: /node/test_create_node_uuid
     method: PUT
@@ -55,10 +35,8 @@ workflow:
     - 200
     data:
       node: *test_create_node_profile
-  expect:
-    node: *test_create_node_profile
 
-- name: create test replicate port
+- name: update test replicate port
   request:
     path: /port/test_create_port_uuid
     method: PUT
@@ -66,5 +44,3 @@ workflow:
     - 200
     data:
       port: *test_create_port
-  expect:
-    port: *test_create_port
