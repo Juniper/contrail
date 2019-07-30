@@ -1,0 +1,34 @@
+name: Replication delete objects
+description: replication test to delete objects
+test_data:
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: delete test replicate port
+  request:
+    path: /port/test_create_port_uuid
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete test replicate node
+  request:
+    path: /node/test_create_node_uuid
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete test replicate node profile
+  request:
+    path: /node-profile/test_create_node_profile_uuid
+    method: DELETE
+    expected:
+    - 200

@@ -35,11 +35,12 @@ const (
 )
 
 type vncAPI struct {
-	client     *client.HTTP
-	ctx        context.Context
-	clusterID  string
-	endpointID string
-	log        *logrus.Entry
+	client       *client.HTTP
+	sourceClient *client.HTTP
+	ctx          context.Context
+	clusterID    string
+	endpointID   string
+	log          *logrus.Entry
 }
 
 type vncAPIHandle struct {
@@ -220,11 +221,12 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 	}
 
 	h.clients[ep.ParentUUID] = &vncAPI{
-		client:     c,
-		ctx:        ctx,
-		clusterID:  ep.ParentUUID,
-		endpointID: ep.UUID,
-		log:        h.log,
+		client:       c,
+		sourceClient: h.APIServer,
+		ctx:          ctx,
+		clusterID:    ep.ParentUUID,
+		endpointID:   ep.UUID,
+		log:          h.log,
 	}
 	h.log.Debugf("created vnc client for endpoint: %s", ep.UUID)
 }
@@ -272,34 +274,92 @@ func (h *vncAPIHandle) replicate(action, url string, data interface{}, response 
 }
 
 func (v *vncAPI) replicate(action, url string, data interface{}, response interface{}) {
-	proxyURL := strings.Join([]string{"/proxy", v.clusterID, configService, url}, "/")
-	v.log.Debugf("replicating %v to cluster: %s", data, v.clusterID)
+	destinationURL := strings.Join([]string{"/proxy", v.clusterID, configService, url}, "/")
+	v.log.Debugf("Replicating %v to cluster: %s", data, v.clusterID)
 	switch action {
 	case createAction:
-		_, err := v.client.Create(v.ctx, proxyURL, data, response)
-		if err != nil {
-			v.log.Errorf("while creating %s on vncAPI: %v", proxyURL, err)
-		}
+		v.replicateCreate(url, destinationURL, data, response)
 	case updateAction:
-		_, err := v.client.Update(v.ctx, proxyURL, data, response)
-		if err != nil {
-			v.log.Errorf("while updating %s on vncAPI: %v", proxyURL, err)
-		}
+		v.replicateUpdate(url, destinationURL, data, response)
 	case deleteAction:
-		urlParts := strings.Split(url, "/")
-		if urlParts[0] == "port" {
-			v.deletePhysicaInterfaceToPortRefs(proxyURL, urlParts[1])
-		}
-		_, err := v.client.Delete(v.ctx, proxyURL, response)
-		if err != nil {
-			v.log.Errorf("while deleting %s on vncAPI: %v", proxyURL, err)
-		}
+		v.replicateDelete(url, destinationURL, data, response)
 	case refUpdateAction:
-		expected := []int{http.StatusOK}
-		_, err := v.client.Do(v.ctx, echo.POST, proxyURL, nil, data, response, expected)
-		if err != nil {
-			v.log.Errorf("while updating ref %v on vncAPI: %v", data, err)
+		v.replicateRefUpdate(url, destinationURL, data, response)
+	}
+}
+
+func (v *vncAPI) replicateCreate(sourceURL, destinationURL string, data, response interface{}) {
+	_, err := v.client.Create(v.ctx, destinationURL, data, response)
+	if err != nil {
+		v.log.WithError(err).Errorf("Failed to create %s in vncAPI", destinationURL)
+	}
+}
+
+func (v *vncAPI) replicateUpdate(sourceURL, destinationURL string, data, response interface{}) {
+	resp, err := v.client.Update(v.ctx, destinationURL, data, response)
+	if err != nil {
+		if isNotFound(resp) {
+			v.log.WithError(err).Warnf("Failed to update %s in vncAPI; fetching it from API to create it instead",
+				destinationURL)
+			v.fetchAndCreate(sourceURL, destinationURL)
+		} else {
+			v.log.WithError(err).Errorf("Failed to update %s in vncAPI", destinationURL)
 		}
+	}
+}
+
+func (v *vncAPI) fetchAndCreate(sourceURL, destinationURL string) {
+	sourceURL = "/" + sourceURL
+	var resource map[string]interface{}
+	_, err := v.sourceClient.Read(v.ctx, sourceURL, &resource)
+	if err != nil {
+		v.log.WithError(err).WithField("sourceURL", sourceURL).
+			Error("Failed to fetch from replication source")
+		return
+	}
+
+	createURL := singularToPluralURL(destinationURL)
+	var response map[string]interface{}
+	_, err = v.client.Create(v.ctx, createURL, resource, response)
+	if err != nil {
+		v.log.WithError(err).WithField("url", createURL).
+			Error("Failed to create to work around updating")
+	}
+}
+
+func singularToPluralURL(singularURL string) string {
+	parts := strings.Split(singularURL, "/")
+	if len(parts) == 0 {
+		return ""
+	}
+	singularURLBase := strings.Join(parts[:len(parts)-1], "/")
+	return singularURLBase + "s"
+}
+
+func (v *vncAPI) replicateDelete(sourceURL, destinationURL string, data, response interface{}) {
+	urlParts := strings.Split(sourceURL, "/")
+	if urlParts[0] == "port" {
+		v.deletePhysicaInterfaceToPortRefs(destinationURL, urlParts[1])
+	}
+	resp, err := v.client.Delete(v.ctx, destinationURL, response)
+	if err != nil {
+		if isNotFound(resp) {
+			v.log.WithError(err).Warnf("Failed to delete %s in vncAPI: no resource found", destinationURL)
+		} else {
+			v.log.WithError(err).Errorf("Failed to delete %s in vncAPI", destinationURL)
+		}
+	}
+}
+
+func isNotFound(resp *http.Response) bool {
+	return resp != nil && resp.StatusCode == http.StatusNotFound
+}
+
+func (v *vncAPI) replicateRefUpdate(sourceURL, destinationURL string, data, response interface{}) {
+	expected := []int{http.StatusOK}
+	_, err := v.client.Do(v.ctx, echo.POST, destinationURL, nil, data, response, expected)
+	if err != nil {
+		v.log.WithError(err).Errorf("Failed to update ref %v in vncAPI", data)
 	}
 }
 
