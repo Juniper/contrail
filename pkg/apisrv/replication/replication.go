@@ -4,14 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -40,13 +39,13 @@ const (
 )
 
 type handler interface {
-	replicate(action, url string, data interface{}, response interface{})
-	createClient(e *models.Endpoint)
-	updateClient(e *models.Endpoint)
-	deleteClient(id string)
+	Replicate(action, url string, data interface{}, response interface{})
+	CreateClient(e *models.Endpoint)
+	UpdateClient(e *models.Endpoint)
+	DeleteClient(id string)
 }
 
-// Replicator is an implementation to replicate objects to python API
+// Replicator is an implementation to Replicate objects to python API
 type Replicator struct {
 	serviceWaitGroup   *sync.WaitGroup
 	stopServiceContext context.CancelFunc
@@ -55,8 +54,7 @@ type Replicator struct {
 }
 
 // New initializes replication data
-func New(epStore *apicommon.EndpointStore) (*Replicator, error) {
-
+func New(epStore *endpoint.Store) (*Replicator, error) {
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
@@ -102,7 +100,7 @@ func (r *Replicator) Process(ctx context.Context, e *services.Event) (*services.
 
 	if re, ok := e.Unwrap().(services.ReferenceEvent); ok {
 		refUpdate := services.NewRefUpdateFromEvent(re)
-		r.handler.replicate(
+		r.handler.Replicate(
 			refUpdateAction,
 			services.RefUpdatePath,
 			refUpdate,
@@ -115,114 +113,114 @@ func (r *Replicator) Process(ctx context.Context, e *services.Event) (*services.
 	// watch endpoint event and prepare clients
 	case *services.Event_CreateEndpointRequest:
 		ep := event.CreateEndpointRequest.Endpoint
-		r.handler.createClient(ep)
+		r.handler.CreateClient(ep)
 	case *services.Event_UpdateEndpointRequest:
 		ep := event.UpdateEndpointRequest.Endpoint
-		r.handler.updateClient(ep)
+		r.handler.UpdateClient(ep)
 	case *services.Event_DeleteEndpointRequest:
 		id := event.DeleteEndpointRequest.ID
-		r.handler.deleteClient(id)
+		r.handler.DeleteClient(id)
 		// handle tag
 	case *services.Event_CreateTagRequest:
 		event.CreateTagRequest.Tag.TagID = ""
-		r.handler.replicate(createAction, createTagURL,
+		r.handler.Replicate(createAction, createTagURL,
 			event.CreateTagRequest, &services.CreateTagResponse{})
 	case *services.Event_UpdateTagRequest:
 		event.UpdateTagRequest.Tag.TagID = ""
 		objID := event.UpdateTagRequest.Tag.UUID
-		r.handler.replicate(updateAction, updateTagURL+objID,
+		r.handler.Replicate(updateAction, updateTagURL+objID,
 			event.UpdateTagRequest, &services.UpdateTagResponse{})
 	case *services.Event_DeleteTagRequest:
 		objID := event.DeleteTagRequest.ID
-		r.handler.replicate(deleteAction, updateTagURL+objID,
+		r.handler.Replicate(deleteAction, updateTagURL+objID,
 			event.DeleteTagRequest, &services.DeleteTagResponse{})
 	// handle virtual-network
 	case *services.Event_CreateVirtualNetworkRequest:
 		event.CreateVirtualNetworkRequest.VirtualNetwork.VirtualNetworkNetworkID = 0
-		r.handler.replicate(createAction, createVirtualNetworkURL,
+		r.handler.Replicate(createAction, createVirtualNetworkURL,
 			event.CreateVirtualNetworkRequest,
 			&services.CreateVirtualNetworkResponse{})
 	case *services.Event_UpdateVirtualNetworkRequest:
 		event.UpdateVirtualNetworkRequest.VirtualNetwork.VirtualNetworkNetworkID = 0
 		objID := event.UpdateVirtualNetworkRequest.VirtualNetwork.UUID
-		r.handler.replicate(updateAction, updateVirtualNetworkURL+objID,
+		r.handler.Replicate(updateAction, updateVirtualNetworkURL+objID,
 			event.UpdateVirtualNetworkRequest,
 			&services.UpdateVirtualNetworkResponse{})
 	case *services.Event_DeleteVirtualNetworkRequest:
 		objID := event.DeleteVirtualNetworkRequest.ID
-		r.handler.replicate(deleteAction, updateVirtualNetworkURL+objID,
+		r.handler.Replicate(deleteAction, updateVirtualNetworkURL+objID,
 			event.DeleteVirtualNetworkRequest, &services.DeleteVirtualNetworkResponse{})
 		// handle network-ipam
 	case *services.Event_CreateNetworkIpamRequest:
-		r.handler.replicate(createAction, createNetworkIpamURL,
+		r.handler.Replicate(createAction, createNetworkIpamURL,
 			event.CreateNetworkIpamRequest, &services.CreateNetworkIpamResponse{})
 	case *services.Event_UpdateNetworkIpamRequest:
 		objID := event.UpdateNetworkIpamRequest.NetworkIpam.UUID
-		r.handler.replicate(updateAction, updateNetworkIpamURL+objID,
+		r.handler.Replicate(updateAction, updateNetworkIpamURL+objID,
 			event.UpdateNetworkIpamRequest, &services.UpdateNetworkIpamResponse{})
 	case *services.Event_DeleteNetworkIpamRequest:
 		objID := event.DeleteNetworkIpamRequest.ID
-		r.handler.replicate(deleteAction, updateNetworkIpamURL+objID,
+		r.handler.Replicate(deleteAction, updateNetworkIpamURL+objID,
 			event.DeleteNetworkIpamRequest, &services.DeleteNetworkIpamResponse{})
 	// handle node-profile
 	case *services.Event_CreateNodeProfileRequest:
-		r.handler.replicate(createAction, createNodeProfileURL,
+		r.handler.Replicate(createAction, createNodeProfileURL,
 			event.CreateNodeProfileRequest, &services.CreateNodeProfileResponse{})
 	case *services.Event_UpdateNodeProfileRequest:
 		objID := event.UpdateNodeProfileRequest.NodeProfile.UUID
-		r.handler.replicate(updateAction, updateNodeProfileURL+objID,
+		r.handler.Replicate(updateAction, updateNodeProfileURL+objID,
 			event.UpdateNodeProfileRequest, &services.UpdateNodeProfileResponse{})
 	case *services.Event_DeleteNodeProfileRequest:
 		objID := event.DeleteNodeProfileRequest.ID
-		r.handler.replicate(deleteAction, updateNodeProfileURL+objID,
+		r.handler.Replicate(deleteAction, updateNodeProfileURL+objID,
 			event.DeleteNodeProfileRequest, &services.DeleteNodeProfileResponse{})
 	// handle nodes
 	case *services.Event_CreateNodeRequest:
-		r.handler.replicate(createAction, createNodeURL,
+		r.handler.Replicate(createAction, createNodeURL,
 			event.CreateNodeRequest, &services.CreateNodeResponse{})
 	case *services.Event_UpdateNodeRequest:
 		objID := event.UpdateNodeRequest.Node.UUID
-		r.handler.replicate(updateAction, updateNodeURL+objID,
+		r.handler.Replicate(updateAction, updateNodeURL+objID,
 			event.UpdateNodeRequest, &services.UpdateNodeResponse{})
 	case *services.Event_DeleteNodeRequest:
 		objID := event.DeleteNodeRequest.ID
-		r.handler.replicate(deleteAction, updateNodeURL+objID,
+		r.handler.Replicate(deleteAction, updateNodeURL+objID,
 			event.DeleteNodeRequest, &services.DeleteNodeResponse{})
 	// handle ports
 	case *services.Event_CreatePortRequest:
-		r.handler.replicate(createAction, createPortURL,
+		r.handler.Replicate(createAction, createPortURL,
 			event.CreatePortRequest, &services.CreatePortResponse{})
 	case *services.Event_UpdatePortRequest:
 		objID := event.UpdatePortRequest.Port.UUID
-		r.handler.replicate(updateAction, updatePortURL+objID,
+		r.handler.Replicate(updateAction, updatePortURL+objID,
 			event.UpdatePortRequest, &services.UpdatePortResponse{})
 	case *services.Event_DeletePortRequest:
 		objID := event.DeletePortRequest.ID
-		r.handler.replicate(deleteAction, updatePortURL+objID,
+		r.handler.Replicate(deleteAction, updatePortURL+objID,
 			event.DeletePortRequest, &services.DeletePortResponse{})
 	// handle hardware
 	case *services.Event_CreateHardwareRequest:
-		r.handler.replicate(createAction, createHardwareURL,
+		r.handler.Replicate(createAction, createHardwareURL,
 			event.CreateHardwareRequest, &services.CreateHardwareResponse{})
 	case *services.Event_UpdateHardwareRequest:
 		objID := event.UpdateHardwareRequest.Hardware.UUID
-		r.handler.replicate(updateAction, updateHardwareURL+objID,
+		r.handler.Replicate(updateAction, updateHardwareURL+objID,
 			event.UpdateHardwareRequest, &services.UpdateHardwareResponse{})
 	case *services.Event_DeleteHardwareRequest:
 		objID := event.DeleteHardwareRequest.ID
-		r.handler.replicate(deleteAction, updateHardwareURL+objID,
+		r.handler.Replicate(deleteAction, updateHardwareURL+objID,
 			event.DeleteHardwareRequest, &services.DeleteHardwareResponse{})
 		// handle card
 	case *services.Event_CreateCardRequest:
-		r.handler.replicate(createAction, createCardURL,
+		r.handler.Replicate(createAction, createCardURL,
 			event.CreateCardRequest, &services.CreateCardResponse{})
 	case *services.Event_UpdateCardRequest:
 		objID := event.UpdateCardRequest.Card.UUID
-		r.handler.replicate(updateAction, updateCardURL+objID,
+		r.handler.Replicate(updateAction, updateCardURL+objID,
 			event.UpdateCardRequest, &services.UpdateCardResponse{})
 	case *services.Event_DeleteCardRequest:
 		objID := event.DeleteCardRequest.ID
-		r.handler.replicate(deleteAction, updateCardURL+objID,
+		r.handler.Replicate(deleteAction, updateCardURL+objID,
 			event.DeleteCardRequest, &services.DeleteCardResponse{})
 	}
 

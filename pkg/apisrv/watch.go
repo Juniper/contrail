@@ -3,17 +3,16 @@ package apisrv
 import (
 	"encoding/json"
 
+	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/labstack/echo"
 	"golang.org/x/net/websocket"
-
-	auth2 "github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 func (s *Server) watchHandler(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := auth2.GetAuthCTX(ctx)
-	if !auth.IsAdmin() {
+	authCtx := auth.GetAuthCTX(ctx)
+	if !authCtx.IsAdmin() {
 		return errutil.ErrorPermissionDenied
 	}
 	websocket.Handler(func(ws *websocket.Conn) {

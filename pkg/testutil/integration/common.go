@@ -79,10 +79,24 @@ func TestMain(m *testing.M, s **APIServer) {
 	})
 }
 
-// RunTest invokes integration test located in "tests" directory
-func RunTest(t *testing.T, name string, server *APIServer) {
+// RunTestFromTestsDirectory invokes integration test located in "tests" directory.
+func RunTestFromTestsDirectory(t *testing.T, name string, server *APIServer) {
 	ts, err := LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
 	require.NoError(t, err, "failed to load test data")
+	RunCleanTestScenario(t, ts, server)
+}
+
+// RunTest invokes integration test located in given file.
+func RunTest(t *testing.T, file string, server *APIServer) {
+	ts, err := LoadTest(file, nil)
+	require.NoError(t, err)
+	RunCleanTestScenario(t, ts, server)
+}
+
+// RunTestTemplate invokes integration test from template located in given file.
+func RunTestTemplate(t *testing.T, file string, server *APIServer, context map[string]interface{}) {
+	ts, err := LoadTest(file, context)
+	require.NoError(t, err)
 	RunCleanTestScenario(t, ts, server)
 }
 
@@ -621,7 +635,7 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 func MockServerWithKeystoneTestUser(serve, keystoneAuthURL, testUser, testPassword string) *httptest.Server {
 	// Echo instance
 	e := echo.New()
-	keystoneClient := keystone.NewKeystoneClient(keystoneAuthURL, true)
+	keystoneClient := keystone.NewClient(keystoneAuthURL, true)
 	k, err := keystone.Init(e, nil, keystoneClient)
 	if err != nil {
 		return nil
