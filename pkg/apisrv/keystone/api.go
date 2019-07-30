@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
+	"github.com/Juniper/contrail/pkg/config"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/config"
-
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -20,15 +20,16 @@ import (
 const (
 	AuthEndpointSuffix = "/keystone/v3" // TODO(Daniel) use this constant where possible
 
-	configService = "config"
-	xClusterIDKey = "X-Cluster-ID"
+	configService   = "config"
+	keystoneService = "keystone"
+	xClusterIDKey   = "X-Cluster-ID"
 )
 
 //Keystone is used to represents Keystone Controller.
 type Keystone struct {
 	Store      Store
 	Assignment Assignment
-	Endpoints  *apicommon.EndpointStore
+	Endpoints  *endpoint.Store
 	Client     *Client
 
 	staticAssignment *StaticAssignment
@@ -36,8 +37,7 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
-	keystoneClient *Client) (*Keystone, error) {
+func Init(e *echo.Echo, endpoints *endpoint.Store, keystoneClient *Client) (*Keystone, error) {
 	keystone := &Keystone{
 		Endpoints: endpoints,
 		Client:    keystoneClient,
@@ -69,80 +69,6 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	e.GET("/keystone/v3/domains", keystone.ListDomainsAPI)
 
 	return keystone, nil
-}
-
-func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Project, error) {
-	if scope == nil {
-		return nil, nil
-	}
-	domain := scope.Domain
-	if domain != nil {
-		if domain.ID != user.Domain.ID {
-			return nil, fmt.Errorf("domain unmatched for user %s", user.ID)
-		}
-	}
-	project := scope.Project
-	if project == nil {
-		return nil, nil
-	}
-	for _, role := range user.Roles {
-		if project.Name != "" {
-			if role.Project.Name == project.Name {
-				return role.Project, nil
-			}
-		} else if project.ID != "" {
-			if role.Project.ID == project.ID {
-				return role.Project, nil
-			}
-		}
-	}
-	return nil, nil
-}
-
-func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
-	endpoint, err := endpoints.GetEndpoint(configService)
-	if endpoint != nil {
-		return endpoint.URL, err
-	}
-	return "", nil
-}
-
-func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
-	authType := viper.GetString("auth_type")
-	if authType != "basic-auth" {
-		return "", nil
-	}
-	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	if configEndpoint != "" {
-		apiAssignment := &VNCAPIAssignment{}
-		err := apiAssignment.Init(
-			configEndpoint, keystone.staticAssignment.ListUsers())
-		if err != nil {
-			logrus.Error(err)
-			return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		keystone.Assignment = apiAssignment
-	} else {
-		keystone.Assignment = keystone.staticAssignment
-	}
-	return configEndpoint, nil
-}
-
-func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error) {
-	tokenID := r.Header.Get("X-Auth-Token")
-	if tokenID == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
-	}
-	token, ok := keystone.Store.ValidateToken(tokenID)
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
-	}
-
-	return token, nil
 }
 
 //GetProjectAPI is an API handler to list projects.
@@ -234,29 +160,38 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, projectsResponse)
 }
 
-func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
-	scope := kscommon.NewScope(
-		viper.GetString("client.domain_id"),
-		viper.GetString("client.domain_name"),
-		viper.GetString("client.project_id"),
-		viper.GetString("client.project_name"),
-	)
-	authRequest := kscommon.ScopedAuthRequest{
-		Auth: &kscommon.ScopedAuth{
-			Identity: &kscommon.Identity{
-				Methods: []string{"password"},
-				Password: &kscommon.Password{
-					User: &kscommon.User{
-						Name:     viper.GetString("client.id"),
-						Password: viper.GetString("client.password"),
-						Domain:   scope.GetDomain(),
-					},
-				},
-			},
-			Scope: scope,
-		},
+func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error) {
+	tokenID := r.Header.Get("X-Auth-Token")
+	if tokenID == "" {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
-	return authRequest
+	token, ok := keystone.Store.ValidateToken(tokenID)
+	if !ok {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+
+	return token, nil
+}
+
+//CreateTokenAPI is an API handler for issuing new Token.
+func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
+	var authRequest kscommon.AuthRequest
+	scopedRequest := kscommon.ScopedAuthRequest{}
+	if err := c.Bind(&scopedRequest); err != nil {
+		logrus.WithField("error", err).Debug("Validation failed")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	authRequest = scopedRequest
+	identity := authRequest.GetIdentity()
+	if identity.Cluster != nil {
+		return keystone.fetchServerTokenWithClusterToken(c, identity)
+	}
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoint != nil {
+		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
+	}
+	return keystone.createToken(c, authRequest)
 }
 
 func (keystone *Keystone) fetchServerTokenWithClusterToken(
@@ -288,9 +223,34 @@ func (keystone *Keystone) fetchServerTokenWithClusterToken(
 	return keystone.createToken(c, keystone.newLocalAuthRequest())
 }
 
+func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
+	scope := kscommon.NewScope(
+		viper.GetString("client.domain_id"),
+		viper.GetString("client.domain_name"),
+		viper.GetString("client.project_id"),
+		viper.GetString("client.project_name"),
+	)
+	authRequest := kscommon.ScopedAuthRequest{
+		Auth: &kscommon.ScopedAuth{
+			Identity: &kscommon.Identity{
+				Methods: []string{"password"},
+				Password: &kscommon.Password{
+					User: &kscommon.User{
+						Name:     viper.GetString("client.id"),
+						Password: viper.GetString("client.password"),
+						Domain:   scope.GetDomain(),
+					},
+				},
+			},
+			Scope: scope,
+		},
+	}
+	return authRequest
+}
+
 func (keystone *Keystone) fetchClusterToken(c echo.Context,
 	identity *kscommon.Identity, authRequest kscommon.AuthRequest,
-	keystoneEndpoint *apicommon.Endpoint) error {
+	keystoneEndpoint *endpoint.Endpoint) error {
 	keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 	if identity.Password != nil {
 		if authRequest.GetScope() == nil {
@@ -316,27 +276,6 @@ func (keystone *Keystone) fetchClusterToken(c echo.Context,
 	}
 	c = keystone.Client.SetAuthIdentity(c, authRequest)
 	return keystone.Client.CreateToken(c)
-}
-
-//CreateTokenAPI is an API handler for issuing new Token.
-func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
-	var authRequest kscommon.AuthRequest
-	scopedRequest := kscommon.ScopedAuthRequest{}
-	if err := c.Bind(&scopedRequest); err != nil {
-		logrus.WithField("error", err).Debug("Validation failed")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
-	}
-	authRequest = scopedRequest
-	identity := authRequest.GetIdentity()
-	if identity.Cluster != nil {
-		return keystone.fetchServerTokenWithClusterToken(c, identity)
-	}
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
-	}
-	return keystone.createToken(c, authRequest)
 }
 
 func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthRequest) error {
@@ -386,6 +325,67 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 	return c.JSON(http.StatusOK, authResponse)
 }
 
+func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
+	authType := viper.GetString("auth_type")
+	if authType != "basic-auth" {
+		return "", nil
+	}
+	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
+	if err != nil {
+		logrus.Error(err)
+		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	if configEndpoint != "" {
+		apiAssignment := &VNCAPIAssignment{}
+		err := apiAssignment.Init(
+			configEndpoint, keystone.staticAssignment.ListUsers())
+		if err != nil {
+			logrus.Error(err)
+			return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		keystone.Assignment = apiAssignment
+	} else {
+		keystone.Assignment = keystone.staticAssignment
+	}
+	return configEndpoint, nil
+}
+
+func getVncConfigEndpoint(endpoints *endpoint.Store) (configEndpoint string, err error) {
+	endpoint, err := endpoints.GetEndpoint(configService)
+	if endpoint != nil {
+		return endpoint.URL, err
+	}
+	return "", nil
+}
+
+func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Project, error) {
+	if scope == nil {
+		return nil, nil
+	}
+	domain := scope.Domain
+	if domain != nil {
+		if domain.ID != user.Domain.ID {
+			return nil, fmt.Errorf("domain unmatched for user %s", user.ID)
+		}
+	}
+	project := scope.Project
+	if project == nil {
+		return nil, nil
+	}
+	for _, role := range user.Roles {
+		if project.Name != "" {
+			if role.Project.Name == project.Name {
+				return role.Project, nil
+			}
+		} else if project.ID != "" {
+			if role.Project.ID == project.ID {
+				return role.Project, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
@@ -407,4 +407,26 @@ func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
 		Token: token,
 	}
 	return c.JSON(http.StatusOK, validateTokenResponse)
+}
+
+func getKeystoneEndpoint(clusterID string, endpoints *endpoint.Store) (
+	authEndpoint *endpoint.Endpoint) {
+	if endpoints == nil {
+		// getKeystoneEndpoint called from CreateTokenAPI,
+		// ValidateTokenAPI or GetProjectAPI of the mock keystone
+		return nil
+	}
+	if clusterID != "" {
+		scope := "private"
+		endpointKey := strings.Join([]string{"/proxy", clusterID, keystoneService, scope}, "/")
+		keystoneTargets := endpoints.Read(endpointKey)
+		if keystoneTargets == nil {
+			return nil
+		}
+		authEndpoint = keystoneTargets.Next(scope)
+		if authEndpoint == nil {
+			return nil
+		}
+	}
+	return authEndpoint
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/services/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -150,7 +150,6 @@ func TestFloatingip_Create(t *testing.T) {
 	}
 }
 
-//nolint: golint
 func (tt *neutronTestCase) run(t *testing.T, ctx context.Context, rp RequestParameters) {
 	var got Response
 	var err error

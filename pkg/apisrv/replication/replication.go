@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -11,7 +13,6 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -55,7 +56,7 @@ type Replicator struct {
 }
 
 // New initializes replication data
-func New(epStore *apicommon.EndpointStore) (*Replicator, error) {
+func New(epStore *endpoint.Store) (*Replicator, error) {
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err

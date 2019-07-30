@@ -12,11 +12,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
+
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -26,8 +27,8 @@ import (
 const (
 	// DefaultDynamicProxyPath default value for server.dynamic_proxy_path
 	DefaultDynamicProxyPath = "proxy"
-	public                  = apicommon.Public
-	private                 = apicommon.Private
+	public                  = endpoint.Public
+	private                 = endpoint.Private
 	pathSep                 = "/"
 	limit                   = 100
 	xClusterIDKey           = "X-Cluster-ID"
@@ -37,7 +38,7 @@ type proxyService struct {
 	group         string
 	echoServer    *echo.Echo
 	dbService     services.Service
-	EndpointStore *apicommon.EndpointStore
+	EndpointStore *endpoint.Store
 	// context to stop servicing proxy endpoints
 	serviceContext     context.Context
 	stopServiceContext context.CancelFunc
@@ -45,7 +46,7 @@ type proxyService struct {
 	forceUpdateChan    chan chan struct{}
 }
 
-func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
+func newProxyService(e *echo.Echo, endpointStore *endpoint.Store,
 	dbService services.Service) *proxyService {
 	group := viper.GetString("server.dynamic_proxy_path")
 	if group == "" {
@@ -60,36 +61,70 @@ func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 	return p
 }
 
-func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
-	endpoints := make(map[string]*models.Endpoint)
-	ctx := auth.NoAuth(context.Background())
-	spec := baseservices.ListSpec{Limit: limit}
-	for {
-		request := &services.ListEndpointRequest{Spec: &spec}
-		response, err := p.dbService.ListEndpoint(ctx, request)
-		if err != nil {
-			return nil, err
+// Serve starts proxy service.
+func (p *proxyService) Serve() {
+	g := p.echoServer.Group(p.group)
+	g.Use(p.dynamicProxyMiddleware())
+
+	p.forceUpdateChan = make(chan chan struct{})
+	p.serviceContext, p.stopServiceContext = context.WithCancel(context.Background())
+
+	p.serviceWaitGroup = &sync.WaitGroup{}
+	p.serviceWaitGroup.Add(1)
+
+	go func() {
+		defer p.serviceWaitGroup.Done()
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-p.serviceContext.Done():
+				logrus.Info("Stopping dynamic proxy server")
+				return
+			case wait := <-p.forceUpdateChan:
+				p.updateEndpoints()
+				close(wait)
+			case <-ticker.C:
+				p.updateEndpoints()
+			}
 		}
-		for _, e := range response.Endpoints {
-			endpoints[e.UUID] = e
-		}
-		if len(response.Endpoints) != limit {
-			// less than 100 records present in DB
-			break
-		}
-		// more than 100 records present in DB, continue to read
-		marker := response.Endpoints[len(response.Endpoints)-1].UUID
-		spec.Marker = marker
-	}
-	return endpoints, nil
+	}()
 }
 
-func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (proxyPrefix string) {
-	paths := strings.Split(urlPath, pathSep)
-	prefixes := make([]string, 4)
-	copy(prefixes, paths[:4])
-	prefixes = append(prefixes, scope)
-	return strings.Join(prefixes, pathSep)
+func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			r := c.Request()
+			clusterID := getClusterIDFromProxyURL(r.URL.Path)
+			if clusterID != "" {
+				//set clusterID in proxy request, so that the
+				//proxy endpoints can use it to get server's
+				//keystone token.
+				r.Header.Set(xClusterIDKey, clusterID)
+			} else {
+				return echo.NewHTTPError(http.StatusInternalServerError,
+					"Cluster ID not found in proxy URL")
+			}
+			prefix, server := p.getReverseProxy(r.URL.Path)
+			if server == nil {
+				return echo.NewHTTPError(http.StatusInternalServerError,
+					"Proxy endpoint not found in endpoint store")
+			}
+			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
+			w := c.Response()
+			server.ServeHTTP(w, r)
+			return nil
+		}
+	}
+}
+
+// getClusterIDFromProxyURL parses the proxy url to retrieve clusterID.
+func getClusterIDFromProxyURL(url string) (clusterID string) {
+	paths := strings.Split(url, pathSep)
+	if len(paths) > 3 && paths[1] == "proxy" {
+		clusterID = paths[2]
+	}
+	return clusterID
 }
 
 func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *httputil.ReverseProxy) {
@@ -130,36 +165,63 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 	return strings.TrimSuffix(proxyPrefix, public), server
 }
 
-func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			r := c.Request()
-			clusterID := apicommon.GetClusterIDFromProxyURL(r.URL.Path)
-			if clusterID != "" {
-				//set clusterID in proxy request, so that the
-				//proxy endpoints can use it to get server's
-				//keystone token.
-				r.Header.Set(xClusterIDKey, clusterID)
-			} else {
-				return echo.NewHTTPError(http.StatusInternalServerError,
-					"Cluster ID not found in proxy URL")
-			}
-			prefix, server := p.getReverseProxy(r.URL.Path)
-			if server == nil {
-				return echo.NewHTTPError(http.StatusInternalServerError,
-					"Proxy endpoint not found in endpoint store")
-			}
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-			w := c.Response()
-			server.ServeHTTP(w, r)
-			return nil
+func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (proxyPrefix string) {
+	paths := strings.Split(urlPath, pathSep)
+	prefixes := make([]string, 4)
+	copy(prefixes, paths[:4])
+	prefixes = append(prefixes, scope)
+	return strings.Join(prefixes, pathSep)
+}
+
+func (p *proxyService) updateEndpoints() {
+	endpoints, err := p.readEndpoints()
+	if err != nil {
+		logrus.WithError(err).Error("Endpoints read failed")
+		return
+	}
+	p.syncProxyEndpoints(endpoints)
+}
+
+func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
+	endpoints := make(map[string]*models.Endpoint)
+	ctx := auth.NoAuth(context.Background())
+	spec := baseservices.ListSpec{Limit: limit}
+	for {
+		request := &services.ListEndpointRequest{Spec: &spec}
+		response, err := p.dbService.ListEndpoint(ctx, request)
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range response.Endpoints {
+			endpoints[e.UUID] = e
+		}
+		if len(response.Endpoints) != limit {
+			// less than 100 records present in DB
+			break
+		}
+		// more than 100 records present in DB, continue to read
+		marker := response.Endpoints[len(response.Endpoints)-1].UUID
+		spec.Marker = marker
+	}
+	return endpoints, nil
+}
+
+func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint) {
+	// delete stale proxy endpoints in-memory
+	p.checkDeleted(endpoints)
+	// create/update proxy middleware
+	for _, endpoint := range endpoints {
+		p.initProxyTargetStore(endpoint)
+		if endpoint.PublicURL != "" {
+			p.manageProxyEndpoint(endpoint, public)
+			p.manageProxyEndpoint(endpoint, private)
 		}
 	}
 }
 
 func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 	p.EndpointStore.Data.Range(func(prefix, proxy interface{}) bool {
-		s, ok := proxy.(*apicommon.TargetStore)
+		s, ok := proxy.(*endpoint.TargetStore)
 		if !ok {
 			logrus.Errorf("Unable to Read cluster(%s)'s proxy data from in-memory store",
 				prefix)
@@ -196,32 +258,17 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 	})
 }
 
-func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (proxyPrefix string) {
-	prefix := endpoint.Prefix
-	// TODO(ijohnson) remove using DisplayName as prefix
-	// once UI takes prefix as input.
-	if prefix == "" {
-		prefix = endpoint.DisplayName
-	}
-
-	if endpoint.ParentUUID == "" {
-		logrus.Errorf("Parent uuid missing for endpoint %s(%s)", prefix, endpoint.UUID)
-	}
-	prefixes := []string{"", p.group, endpoint.ParentUUID, prefix, scope}
-	return strings.Join(prefixes, pathSep)
-}
-
-func (p *proxyService) initProxyTargetStore(endpoint *models.Endpoint) {
-	if endpoint.PublicURL != "" {
-		proxyPrefix := p.getProxyPrefix(endpoint, public)
+func (p *proxyService) initProxyTargetStore(e *models.Endpoint) {
+	if e.PublicURL != "" {
+		proxyPrefix := p.getProxyPrefix(e, public)
 		targetStore := p.EndpointStore.Read(proxyPrefix)
 		if targetStore == nil {
-			p.EndpointStore.Write(proxyPrefix, apicommon.MakeTargetStore())
+			p.EndpointStore.Write(proxyPrefix, endpoint.NewTargetStore())
 		}
-		privateProxyPrefix := p.getProxyPrefix(endpoint, private)
+		privateProxyPrefix := p.getProxyPrefix(e, private)
 		privateTargetStore := p.EndpointStore.Read(privateProxyPrefix)
 		if privateTargetStore == nil {
-			p.EndpointStore.Write(privateProxyPrefix, apicommon.MakeTargetStore())
+			p.EndpointStore.Write(privateProxyPrefix, endpoint.NewTargetStore())
 		}
 	}
 }
@@ -241,62 +288,30 @@ func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope stri
 	}
 }
 
-func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint) {
-	// delete stale proxy endpoints in-memory
-	p.checkDeleted(endpoints)
-	// create/update proxy middleware
-	for _, endpoint := range endpoints {
-		p.initProxyTargetStore(endpoint)
-		if endpoint.PublicURL != "" {
-			p.manageProxyEndpoint(endpoint, public)
-			p.manageProxyEndpoint(endpoint, private)
-		}
+func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (proxyPrefix string) {
+	prefix := endpoint.Prefix
+	// TODO(ijohnson) remove using DisplayName as prefix
+	// once UI takes prefix as input.
+	if prefix == "" {
+		prefix = endpoint.DisplayName
 	}
+
+	if endpoint.ParentUUID == "" {
+		logrus.Errorf("Parent uuid missing for endpoint %s(%s)", prefix, endpoint.UUID)
+	}
+	prefixes := []string{"", p.group, endpoint.ParentUUID, prefix, scope}
+	return strings.Join(prefixes, pathSep)
 }
 
+// ForceUpdate requests an immediate update of endpoints and waits for its completion.
 func (p *proxyService) ForceUpdate() {
 	wait := make(chan struct{})
 	p.forceUpdateChan <- wait
 	<-wait
 }
 
-func (p *proxyService) serve() {
-	// add dynamic proxy middleware
-	g := p.echoServer.Group(p.group)
-	g.Use(p.dynamicProxyMiddleware())
-	p.forceUpdateChan = make(chan chan struct{})
-	p.serviceContext, p.stopServiceContext = context.WithCancel(context.Background())
-	p.serviceWaitGroup = &sync.WaitGroup{}
-	p.serviceWaitGroup.Add(1)
-	go func() {
-		defer p.serviceWaitGroup.Done()
-		ticker := time.NewTicker(2 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-p.serviceContext.Done():
-				logrus.Info("Stopping dynamic proxy server")
-				return
-			case wait := <-p.forceUpdateChan:
-				p.updateEndpoints()
-				close(wait)
-			case <-ticker.C:
-				p.updateEndpoints()
-			}
-		}
-	}()
-}
-
-func (p *proxyService) updateEndpoints() {
-	endpoints, err := p.readEndpoints()
-	if err != nil {
-		logrus.WithError(err).Error("Endpoints read failed")
-		return
-	}
-	p.syncProxyEndpoints(endpoints)
-}
-
-func (p *proxyService) stop() {
+// Stop stop proxy service.
+func (p *proxyService) Stop() {
 	// stop proxy server poll
 	p.stopServiceContext()
 	// wait for the proxy server poll to complete

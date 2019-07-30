@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
+
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
@@ -45,11 +46,11 @@ type vncAPI struct {
 type vncAPIHandle struct {
 	APIServer     *client.HTTP
 	clients       map[string]*vncAPI
-	endpointStore *apicommon.EndpointStore
+	endpointStore *endpoint.Store
 	log           *logrus.Entry
 }
 
-func newVncAPIHandle(epStore *apicommon.EndpointStore) *vncAPIHandle {
+func newVncAPIHandle(epStore *endpoint.Store) *vncAPIHandle {
 	handle := &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
@@ -117,7 +118,7 @@ func (h *vncAPIHandle) ListConfigEndpoints() (endpoints []*models.Endpoint, err 
 	return resp.GetEndpoints(), nil
 }
 
-func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *apicommon.Endpoint, err error) {
+func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoint.Endpoint, err error) {
 	// retry 5 times at interval of 2 seconds
 	// config endpoints are created before keystone
 	// endpoints

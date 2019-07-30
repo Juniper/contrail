@@ -1,4 +1,4 @@
-package apisrv_test
+package keystone_test
 
 import (
 	"testing"

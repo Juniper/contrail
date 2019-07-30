@@ -32,83 +32,9 @@ import (
 	protocodec "github.com/gogo/protobuf/codec"
 )
 
-func TestGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewContrailServiceClient(conn)
-		project := models.Project{
-			UUID:                 uuid.NewV4().String(),
-			FQName:               []string{"default-domain", "project", "my-project"},
-			ParentType:           "domain",
-			ParentUUID:           integration.DefaultDomainUUID,
-			ConfigurationVersion: 1,
-			IDPerms:              &models.IdPermsType{UserVisible: true},
-		}
-		_, err := c.CreateProject(ctx, &services.CreateProjectRequest{
-			Project: &project,
-		})
-		assert.NoError(t, err)
-
-		t.Run("create and delete namespace and project_namespace_ref", testNamespaceRef(ctx, c, project.UUID))
-		t.Run("list and get project", testProjectRead(ctx, c, project.UUID))
-
-		_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
-			ID: project.UUID,
-		})
-		assert.NoError(t, err)
-	})
-}
-
-func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
-	return func(t *testing.T) {
-		ns := models.Namespace{
-			UUID:       uuid.NewV4().String(),
-			ParentType: "domain",
-			ParentUUID: integration.DefaultDomainUUID,
-			Name:       "my-namespace",
-			IDPerms:    &models.IdPermsType{UserVisible: true},
-		}
-		_, err := c.CreateNamespace(ctx, &services.CreateNamespaceRequest{
-			Namespace: &ns,
-		})
-		assert.NoError(t, err)
-		_, err = c.CreateProjectNamespaceRef(ctx, &services.CreateProjectNamespaceRefRequest{
-			ID:                  projectUUID,
-			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
-		})
-		assert.NoError(t, err)
-
-		_, err = c.DeleteProjectNamespaceRef(ctx, &services.DeleteProjectNamespaceRefRequest{
-			ID:                  projectUUID,
-			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
-		})
-		assert.NoError(t, err)
-
-		_, err = c.DeleteNamespace(ctx, &services.DeleteNamespaceRequest{
-			ID: ns.UUID,
-		})
-		assert.NoError(t, err)
-	}
-}
-
-func testProjectRead(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
-	return func(t *testing.T) {
-		response, err := c.ListProject(ctx, &services.ListProjectRequest{
-			Spec: &baseservices.ListSpec{
-				Limit: 1,
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		assert.Equal(t, 1, len(response.Projects))
-
-		getResponse, err := c.GetProject(ctx, &services.GetProjectRequest{
-			ID: projectUUID,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, getResponse.GetProject())
-	}
-}
+/////////////////////////
+// Type-agnostic tests //
+/////////////////////////
 
 func TestFQNameToIDGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
@@ -120,6 +46,18 @@ func TestFQNameToIDGRPC(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, integration.DefaultDomainUUID, resp.UUID)
+	})
+}
+
+func TestIDToFQNameGRPC(t *testing.T) {
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewIDToFQNameClient(conn)
+		resp, err := c.IDToFQName(ctx, &services.IDToFQNameRequest{
+			UUID: integration.DefaultDomainUUID,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, models.KindDomain, resp.Type)
 	})
 }
 
@@ -304,18 +242,6 @@ func TestRefRelaxGRPC(t *testing.T) {
 	})
 }
 
-func TestIDToFQNameGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewIDToFQNameClient(conn)
-		resp, err := c.IDToFQName(ctx, &services.IDToFQNameRequest{
-			UUID: integration.DefaultDomainUUID,
-		})
-		assert.NoError(t, err)
-		assert.NotNil(t, resp)
-		assert.Equal(t, models.KindDomain, resp.Type)
-	})
-}
-
 func TestPropCollectionUpdateGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
 		gc := client.NewGRPC(services.NewContrailServiceClient(conn))
@@ -370,6 +296,117 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func createProject(
+	t *testing.T, ctx context.Context, c *client.GRPC,
+) (project *models.Project, cleanup func(t *testing.T)) {
+	return createProjectWithName(t, ctx, c, fmt.Sprintf("%s_project", t.Name()))
+}
+
+func createProjectWithName(
+	t *testing.T, ctx context.Context, c *client.GRPC, name string,
+) (project *models.Project, cleanup func(t *testing.T)) {
+	r, err := c.CreateProject(ctx, &services.CreateProjectRequest{
+		Project: &models.Project{
+			Name:       name,
+			ParentType: "domain",
+			ParentUUID: integration.DefaultDomainUUID,
+			IDPerms:    &models.IdPermsType{UserVisible: true},
+		},
+	})
+	require.NoError(t, err)
+
+	return r.GetProject(), func(t *testing.T) {
+		_, err := c.DeleteProject(ctx, &services.DeleteProjectRequest{
+			ID: project.GetUUID(),
+		})
+		assert.NoError(t, err)
+	}
+}
+
+/////////////////////////
+// Type-specific tests //
+/////////////////////////
+
+func TestGRPC(t *testing.T) {
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewContrailServiceClient(conn)
+		project := models.Project{
+			UUID:                 uuid.NewV4().String(),
+			FQName:               []string{"default-domain", "project", "my-project"},
+			ParentType:           "domain",
+			ParentUUID:           integration.DefaultDomainUUID,
+			ConfigurationVersion: 1,
+			IDPerms:              &models.IdPermsType{UserVisible: true},
+		}
+		_, err := c.CreateProject(ctx, &services.CreateProjectRequest{
+			Project: &project,
+		})
+		assert.NoError(t, err)
+
+		t.Run("create and delete namespace and project_namespace_ref", testNamespaceRef(ctx, c, project.UUID))
+		t.Run("list and get project", testProjectRead(ctx, c, project.UUID))
+
+		_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
+			ID: project.UUID,
+		})
+		assert.NoError(t, err)
+	})
+}
+
+func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
+	return func(t *testing.T) {
+		ns := models.Namespace{
+			UUID:       uuid.NewV4().String(),
+			ParentType: "domain",
+			ParentUUID: integration.DefaultDomainUUID,
+			Name:       "my-namespace",
+			IDPerms:    &models.IdPermsType{UserVisible: true},
+		}
+		_, err := c.CreateNamespace(ctx, &services.CreateNamespaceRequest{
+			Namespace: &ns,
+		})
+		assert.NoError(t, err)
+		_, err = c.CreateProjectNamespaceRef(ctx, &services.CreateProjectNamespaceRefRequest{
+			ID:                  projectUUID,
+			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
+		})
+		assert.NoError(t, err)
+
+		_, err = c.DeleteProjectNamespaceRef(ctx, &services.DeleteProjectNamespaceRefRequest{
+			ID:                  projectUUID,
+			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
+		})
+		assert.NoError(t, err)
+
+		_, err = c.DeleteNamespace(ctx, &services.DeleteNamespaceRequest{
+			ID: ns.UUID,
+		})
+		assert.NoError(t, err)
+	}
+}
+
+func testProjectRead(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
+	return func(t *testing.T) {
+		response, err := c.ListProject(ctx, &services.ListProjectRequest{
+			Spec: &baseservices.ListSpec{
+				Limit: 1,
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, 1, len(response.Projects))
+
+		getResponse, err := c.GetProject(ctx, &services.GetProjectRequest{
+			ID: projectUUID,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, getResponse.GetProject())
+	}
+}
+
+// Common
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
@@ -432,33 +469,4 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 	require.NoError(t, err)
 
 	return c.AuthToken
-}
-
-// nolint: golint
-func createProject(
-	t *testing.T, ctx context.Context, c *client.GRPC,
-) (project *models.Project, cleanup func(t *testing.T)) {
-	return createProjectWithName(t, ctx, c, fmt.Sprintf("%s_project", t.Name()))
-}
-
-// nolint: golint
-func createProjectWithName(
-	t *testing.T, ctx context.Context, c *client.GRPC, name string,
-) (project *models.Project, cleanup func(t *testing.T)) {
-	r, err := c.CreateProject(ctx, &services.CreateProjectRequest{
-		Project: &models.Project{
-			Name:       name,
-			ParentType: "domain",
-			ParentUUID: integration.DefaultDomainUUID,
-			IDPerms:    &models.IdPermsType{UserVisible: true},
-		},
-	})
-	require.NoError(t, err)
-
-	return r.GetProject(), func(t *testing.T) {
-		_, err := c.DeleteProject(ctx, &services.DeleteProjectRequest{
-			ID: project.GetUUID(),
-		})
-		assert.NoError(t, err)
-	}
 }

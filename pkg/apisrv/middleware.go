@@ -3,6 +3,8 @@ package apisrv
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -10,10 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/labstack/echo"
 	"google.golang.org/grpc"
-
-	"github.com/Juniper/contrail/pkg/auth"
 )
 
 func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
@@ -21,18 +22,6 @@ func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			req := c.Request()
 			req.URL.Path = strings.TrimPrefix(req.URL.Path, prefix)
-			return next(c)
-		}
-	}
-}
-
-func noAuthMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			r := c.Request()
-			ctx := auth.NoAuth(r.Context())
-			newRequest := r.WithContext(ctx)
-			c.SetRequest(newRequest)
 			return next(c)
 		}
 	}
@@ -60,6 +49,18 @@ func proxyMiddleware(target *url.URL, insecure bool) func(next echo.HandlerFunc)
 	}
 }
 
+func noAuthMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			r := c.Request()
+			ctx := auth.NoAuth(r.Context())
+			newRequest := r.WithContext(ctx)
+			c.SetRequest(newRequest)
+			return next(c)
+		}
+	}
+}
+
 func noAuthInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -83,4 +84,24 @@ func gRPCMiddleware(grpcServer http.Handler) func(next echo.HandlerFunc) echo.Ha
 			return nil
 		}
 	}
+}
+
+type customBinder struct{}
+
+func (*customBinder) Bind(i interface{}, c echo.Context) (err error) {
+	rq := c.Request()
+	ct := rq.Header.Get(echo.HeaderContentType)
+	err = echo.ErrUnsupportedMediaType
+	if !strings.HasPrefix(ct, echo.MIMEApplicationJSON) {
+		db := new(echo.DefaultBinder)
+		return db.Bind(i, c)
+	}
+
+	dec := json.NewDecoder(rq.Body)
+	dec.UseNumber()
+	err = dec.Decode(i)
+	if err == io.EOF {
+		return nil
+	}
+	return err
 }

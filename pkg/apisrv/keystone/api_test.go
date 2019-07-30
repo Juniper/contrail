@@ -33,24 +33,6 @@ const (
 	testBasicAuthFile       = "./test_data/test_basic_auth.tmpl"
 )
 
-var server *integration.APIServer
-
-func mockServer(routes map[string]interface{}) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-
-	// Routes
-	for route, handler := range routes {
-		e.GET(route, handler.(echo.HandlerFunc))
-	}
-	mockServer := httptest.NewServer(e)
-	return mockServer
-}
-
-func TestMain(m *testing.M) {
-	integration.TestMain(m, &server)
-}
-
 func FetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
 	dataJSON, err := json.Marshal(&kscommon.UnScopedAuthRequest{
 		Auth: &kscommon.UnScopedAuth{
@@ -225,71 +207,6 @@ func TestClusterLogin(t *testing.T) {
 	integration.RunCleanTestScenario(t, ts, server)
 }
 
-func verifyBasicAuthDomains(
-	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, clusterName string) bool {
-	for _, client := range testScenario.Clients {
-		domainList := keystone.DomainListResponse{}
-		_, err := client.Read(ctx, url, &domainList)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %s", url, err)
-			return false
-		}
-		if len(domainList.Domains) != 1 {
-			fmt.Printf("Unexpected domains: %v", domainList)
-			return false
-		}
-		ok := testutil.AssertEqual(
-			t, clusterName, domainList.Domains[0].Name,
-			fmt.Sprintf("Unexpected name in domain: %v", domainList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", domainList.Domains[0].ID,
-			fmt.Sprintf("Unexpected uuid in domain: %v", domainList))
-		if !ok {
-			return ok
-		}
-	}
-	return true
-}
-
-func verifyBasicAuthProjects(
-	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, clusterName string) bool {
-	for _, client := range testScenario.Clients {
-		projectList := keystone.ProjectListResponse{}
-		_, err := client.Read(ctx, url, &projectList)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %v", url, err)
-			return false
-		}
-		if len(projectList.Projects) != 1 {
-			fmt.Printf("Unexpected projects: %v", projectList)
-			return false
-		}
-		ok := testutil.AssertEqual(
-			t, clusterName, projectList.Projects[0].Name,
-			fmt.Sprintf("Unexpected name in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", projectList.Projects[0].ID,
-			fmt.Sprintf("Unexpected uuid in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
-			fmt.Sprintf("Unexpected parent_id in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-	}
-	return true
-}
 func TestBasicAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		RepoRootPath: "../../..",
@@ -350,4 +267,82 @@ func TestBasicAuth(t *testing.T) {
 	url = "/keystone/v3/auth/domains"
 	ok = verifyBasicAuthDomains(ctx, t, ts, url, clusterName)
 	assert.True(t, ok, "failed to get domain list from config %s", url)
+}
+
+func mockServer(routes map[string]interface{}) *httptest.Server {
+	// Echo instance
+	e := echo.New()
+
+	// Routes
+	for route, handler := range routes {
+		e.GET(route, handler.(echo.HandlerFunc))
+	}
+	mockServer := httptest.NewServer(e)
+	return mockServer
+}
+
+func verifyBasicAuthProjects(
+	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
+	url string, clusterName string) bool {
+	for _, client := range testScenario.Clients {
+		projectList := keystone.ProjectListResponse{}
+		_, err := client.Read(ctx, url, &projectList)
+		if err != nil {
+			fmt.Printf("Reading: %s, Response: %v", url, err)
+			return false
+		}
+		if len(projectList.Projects) != 1 {
+			fmt.Printf("Unexpected projects: %v", projectList)
+			return false
+		}
+		ok := testutil.AssertEqual(
+			t, clusterName, projectList.Projects[0].Name,
+			fmt.Sprintf("Unexpected name in project: %v", projectList))
+		if !ok {
+			return ok
+		}
+		ok = testutil.AssertEqual(
+			t, clusterName+"_uuid", projectList.Projects[0].ID,
+			fmt.Sprintf("Unexpected uuid in project: %v", projectList))
+		if !ok {
+			return ok
+		}
+		ok = testutil.AssertEqual(
+			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
+			fmt.Sprintf("Unexpected parent_id in project: %v", projectList))
+		if !ok {
+			return ok
+		}
+	}
+	return true
+}
+
+func verifyBasicAuthDomains(
+	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
+	url string, clusterName string) bool {
+	for _, client := range testScenario.Clients {
+		domainList := keystone.DomainListResponse{}
+		_, err := client.Read(ctx, url, &domainList)
+		if err != nil {
+			fmt.Printf("Reading: %s, Response: %s", url, err)
+			return false
+		}
+		if len(domainList.Domains) != 1 {
+			fmt.Printf("Unexpected domains: %v", domainList)
+			return false
+		}
+		ok := testutil.AssertEqual(
+			t, clusterName, domainList.Domains[0].Name,
+			fmt.Sprintf("Unexpected name in domain: %v", domainList))
+		if !ok {
+			return ok
+		}
+		ok = testutil.AssertEqual(
+			t, clusterName+"_uuid", domainList.Domains[0].ID,
+			fmt.Sprintf("Unexpected uuid in domain: %v", domainList))
+		if !ok {
+			return ok
+		}
+	}
+	return true
 }
