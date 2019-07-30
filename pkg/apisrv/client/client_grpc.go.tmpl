@@ -39,6 +39,7 @@ func (s *GRPC) List{{ schema.JSONSchema.GoName }}(
 }
 
 {% for _, reference in schema.References %}
+
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
 
 func (s *GRPC) Create{{ refType }}(

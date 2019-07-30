@@ -29,181 +29,6 @@ const (
 	readReq                   = "GET"
 )
 
-var server *integration.APIServer
-
-type httpBodyStore map[string]interface{}
-
-func TestMain(m *testing.M) {
-	integration.TestMain(m, &server)
-}
-
-func handleRead(t *testing.T, w http.ResponseWriter,
-	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
-	processReqBody(t, w, r, readReq, vncReqStore)
-}
-
-func handleCreate(t *testing.T, w http.ResponseWriter,
-	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
-	switch r.URL.Path {
-	case "/ports":
-		processReqBody(t, w, r, postReq, vncReqStore)
-	case "/node-profiles":
-		processReqBody(t, w, r, postReq, vncReqStore)
-	case "/nodes":
-		processReqBody(t, w, r, postReq, vncReqStore)
-	case "/ref-update":
-		processReqBody(t, w, r, postReq, vncReqStore)
-	default:
-		writeJSONResponse(t, w, 404, nil)
-	}
-}
-
-func handleUpdate(t *testing.T, w http.ResponseWriter,
-	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
-	switch r.URL.Path {
-	case "/port/:id":
-		processReqBody(t, w, r, putReq, vncReqStore)
-	case "/node-profile/:id":
-		processReqBody(t, w, r, putReq, vncReqStore)
-	case "/node/:id":
-		processReqBody(t, w, r, putReq, vncReqStore)
-	default:
-		writeJSONResponse(t, w, 404, nil)
-	}
-}
-
-func handleDelete(t *testing.T, w http.ResponseWriter,
-	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
-	switch r.URL.Path {
-	case "/port/:id":
-		processReqBody(t, w, r, deleteReq, vncReqStore)
-	case "/node-profile/:id":
-		processReqBody(t, w, r, deleteReq, vncReqStore)
-	case "/node/:id":
-		processReqBody(t, w, r, deleteReq, vncReqStore)
-	default:
-		writeJSONResponse(t, w, 404, nil)
-	}
-}
-
-func createMockVNCServer(t *testing.T, expectedCount int) (
-	*httptest.Server, map[string][]*httpBodyStore, chan struct{},
-) {
-	vncReqStore := map[string][]*httpBodyStore{}
-	done := make(chan struct{})
-	vncServer := httptest.NewServer(
-		// NewServer takes a handler.
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if expectedCount == 0 {
-				close(done)
-			}
-			expectedCount--
-			switch r.Method {
-			case postReq:
-				handleCreate(t, w, r, vncReqStore)
-			case putReq:
-				handleUpdate(t, w, r, vncReqStore)
-			case deleteReq:
-				handleDelete(t, w, r, vncReqStore)
-			case readReq:
-				handleRead(t, w, r, vncReqStore)
-			default:
-				writeJSONResponse(t, w, 404, nil)
-			}
-		}),
-	)
-	return vncServer, vncReqStore, done
-}
-
-//nolint: govet
-func writeJSONResponse(t *testing.T, w http.ResponseWriter,
-	status int, resp interface{}) {
-	bytes, err := json.MarshalIndent(resp, "", "  ")
-	assert.NoError(t, err, "failed to marshal response")
-	w.Header().Set("content-type", "application/json; charset=utf-8")
-	w.WriteHeader(status)
-	//nolint: errcheck
-	w.Write(bytes)
-	//nolint: errcheck
-	w.Write([]byte("\n"))
-}
-
-func processReqBody(t *testing.T, w http.ResponseWriter,
-	r *http.Request, reqType string, vncReqStore map[string][]*httpBodyStore) {
-
-	// read the body and save it to a var
-	body, err := ioutil.ReadAll(r.Body)
-	assert.NoError(t, err, "while reading REST req body")
-
-	reqBody := &httpBodyStore{}
-	if len(body) > 0 {
-		err = json.Unmarshal(body, reqBody)
-		assert.NoError(t, err, "while converting vnc req body to json")
-	}
-
-	vncReqStore[reqType] = append(vncReqStore[reqType], reqBody)
-	var resp httpBodyStore
-	if reqType == readReq {
-		urlParts := strings.Split(r.URL.Path, "/")
-		switch urlParts[1] {
-		case "port":
-			var pi []interface{}
-			pi = append(pi, map[string]string{
-				"uuid": "test_pi_uuid",
-			})
-			resp = httpBodyStore{
-				"port": map[string]interface{}{
-					"physical_interface_back_refs": pi,
-				},
-			}
-		}
-	} else {
-		resp = httpBodyStore{}
-	}
-	writeJSONResponse(t, w, 200, resp)
-}
-
-// create cluster and its endpoint
-func initTestCluster(
-	t *testing.T, clusterName string, expectedCount int,
-) (func(), map[string][]*httpBodyStore, chan struct{}) {
-
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	clusterUser := clusterName + "_admin"
-
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterUser, clusterUser)
-
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterUser, clusterUser)
-
-	vncServer, vncReqStore, done := createMockVNCServer(t, expectedCount)
-
-	pContext := pongo2.Context{
-		"cluster_name":    clusterName,
-		"endpoint_name":   clusterName + "_keystone",
-		"endpoint_prefix": "keystone",
-		"private_url":     ksPrivate.URL,
-		"public_url":      ksPublic.URL,
-		"manage_parent":   true,
-		"admin_user":      clusterUser,
-		"config_url":      vncServer.URL,
-	}
-
-	ts, err := integration.LoadTest(testReplicationTmpl, pContext)
-	require.NoError(t, err, "failed to load replication test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	server.ForceProxyUpdate()
-
-	cleanupTestCluster := func() {
-		defer cleanup()
-		defer ksPrivate.Close()
-		defer ksPublic.Close()
-		defer vncServer.Close()
-	}
-	return cleanupTestCluster, vncReqStore, done
-}
-
 func TestReplication(t *testing.T) {
 	//create test clusters with keystone/config endpoint.
 	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, t.Name()+"_clusterA", 2)
@@ -273,6 +98,175 @@ func TestDeleteNonReplicatedResources(t *testing.T) {
 
 	assertCloses(t, doneA)
 	assertCloses(t, doneB)
+}
+
+// create cluster and its endpoint
+func initTestCluster(
+	t *testing.T, clusterName string, expectedCount int,
+) (func(), map[string][]*httpBodyStore, chan struct{}) {
+
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	clusterUser := clusterName + "_admin"
+
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, clusterUser, clusterUser)
+
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, clusterUser, clusterUser)
+
+	vncServer, vncReqStore, done := createMockVNCServer(t, expectedCount)
+
+	pContext := pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   clusterName + "_keystone",
+		"endpoint_prefix": "keystone",
+		"private_url":     ksPrivate.URL,
+		"public_url":      ksPublic.URL,
+		"manage_parent":   true,
+		"admin_user":      clusterUser,
+		"config_url":      vncServer.URL,
+	}
+
+	ts, err := integration.LoadTest(testReplicationTmpl, pContext)
+	require.NoError(t, err, "failed to load replication test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	server.ForceProxyUpdate()
+
+	cleanupTestCluster := func() {
+		defer cleanup()
+		defer ksPrivate.Close()
+		defer ksPublic.Close()
+		defer vncServer.Close()
+	}
+	return cleanupTestCluster, vncReqStore, done
+}
+
+func createMockVNCServer(t *testing.T, expectedCount int) (
+	*httptest.Server, map[string][]*httpBodyStore, chan struct{},
+) {
+	vncReqStore := map[string][]*httpBodyStore{}
+	done := make(chan struct{})
+	vncServer := httptest.NewServer(
+		// NewServer takes a handler.
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if expectedCount == 0 {
+				close(done)
+			}
+			expectedCount--
+			switch r.Method {
+			case postReq:
+				handleCreate(t, w, r, vncReqStore)
+			case putReq:
+				handleUpdate(t, w, r, vncReqStore)
+			case deleteReq:
+				handleDelete(t, w, r, vncReqStore)
+			case readReq:
+				handleRead(t, w, r, vncReqStore)
+			default:
+				writeJSONResponse(t, w, 404, nil)
+			}
+		}),
+	)
+	return vncServer, vncReqStore, done
+}
+
+type httpBodyStore map[string]interface{}
+
+func handleCreate(t *testing.T, w http.ResponseWriter,
+	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
+	switch r.URL.Path {
+	case "/ports":
+		processReqBody(t, w, r, postReq, vncReqStore)
+	case "/node-profiles":
+		processReqBody(t, w, r, postReq, vncReqStore)
+	case "/nodes":
+		processReqBody(t, w, r, postReq, vncReqStore)
+	case "/ref-update":
+		processReqBody(t, w, r, postReq, vncReqStore)
+	default:
+		writeJSONResponse(t, w, 404, nil)
+	}
+}
+
+func handleUpdate(t *testing.T, w http.ResponseWriter,
+	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
+	switch r.URL.Path {
+	case "/port/:id":
+		processReqBody(t, w, r, putReq, vncReqStore)
+	case "/node-profile/:id":
+		processReqBody(t, w, r, putReq, vncReqStore)
+	case "/node/:id":
+		processReqBody(t, w, r, putReq, vncReqStore)
+	default:
+		writeJSONResponse(t, w, 404, nil)
+	}
+}
+
+func handleDelete(t *testing.T, w http.ResponseWriter,
+	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
+	switch r.URL.Path {
+	case "/port/:id":
+		processReqBody(t, w, r, deleteReq, vncReqStore)
+	case "/node-profile/:id":
+		processReqBody(t, w, r, deleteReq, vncReqStore)
+	case "/node/:id":
+		processReqBody(t, w, r, deleteReq, vncReqStore)
+	default:
+		writeJSONResponse(t, w, 404, nil)
+	}
+}
+
+func handleRead(t *testing.T, w http.ResponseWriter,
+	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
+	processReqBody(t, w, r, readReq, vncReqStore)
+}
+
+func processReqBody(t *testing.T, w http.ResponseWriter,
+	r *http.Request, reqType string, vncReqStore map[string][]*httpBodyStore) {
+
+	// read the body and save it to a var
+	body, err := ioutil.ReadAll(r.Body)
+	assert.NoError(t, err, "while reading REST req body")
+
+	reqBody := &httpBodyStore{}
+	if len(body) > 0 {
+		err = json.Unmarshal(body, reqBody)
+		assert.NoError(t, err, "while converting vnc req body to json")
+	}
+
+	vncReqStore[reqType] = append(vncReqStore[reqType], reqBody)
+	var resp httpBodyStore
+	if reqType == readReq {
+		urlParts := strings.Split(r.URL.Path, "/")
+		switch urlParts[1] {
+		case "port":
+			var pi []interface{}
+			pi = append(pi, map[string]string{
+				"uuid": "test_pi_uuid",
+			})
+			resp = httpBodyStore{
+				"port": map[string]interface{}{
+					"physical_interface_back_refs": pi,
+				},
+			}
+		}
+	} else {
+		resp = httpBodyStore{}
+	}
+	writeJSONResponse(t, w, 200, resp)
+}
+
+//nolint: govet
+func writeJSONResponse(t *testing.T, w http.ResponseWriter,
+	status int, resp interface{}) {
+	bytes, err := json.MarshalIndent(resp, "", "  ")
+	assert.NoError(t, err, "failed to marshal response")
+	w.Header().Set("content-type", "application/json; charset=utf-8")
+	w.WriteHeader(status)
+	//nolint: errcheck
+	w.Write(bytes)
+	//nolint: errcheck
+	w.Write([]byte("\n"))
 }
 
 func assertCloses(t *testing.T, c chan struct{}) {

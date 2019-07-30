@@ -12,12 +12,6 @@ import (
 const apiAccessListUUID = "default-api-access-list8_uuid"
 const adminUser = "admin"
 
-func userAuth(ctx context.Context, tenant string) context.Context {
-	Context := auth.NewContext(
-		"default-domain", tenant, "bob", []string{"Member"}, "", auth.NewObjPerms(nil))
-	var authKey interface{} = "auth"
-	return context.WithValue(ctx, authKey, Context)
-}
 func TestCheckCommonPermissions(t *testing.T) {
 	type args struct {
 		ctx     context.Context
@@ -71,7 +65,6 @@ func TestCheckCommonPermissions(t *testing.T) {
 		})
 	}
 }
-
 func TestCheckPermissions(t *testing.T) {
 	type args struct {
 		ctx     context.Context
@@ -296,14 +289,11 @@ func TestCheckObjectPermissions(t *testing.T) {
 	}
 }
 
-func rbacRuleEntryAdd(l *models.APIAccessList, kind string) {
-	m := models.MakeRbacRuleType()
-	m.RuleObject = kind
-	p := models.MakeRbacPermType()
-	p.RoleCrud = "CRUD"
-	p.RoleName = "Member"
-	m.RulePerms = append(m.RulePerms, p)
-	l.APIAccessListEntries.RbacRule = append(l.APIAccessListEntries.RbacRule, m)
+func userAuth(ctx context.Context, tenant string) context.Context {
+	Context := auth.NewContext(
+		"default-domain", tenant, "bob", []string{"Member"}, "", auth.NewObjPerms(nil))
+	var authKey interface{} = "auth"
+	return context.WithValue(ctx, authKey, Context)
 }
 
 func globalAccessRuleList() []*models.APIAccessList {
@@ -314,17 +304,6 @@ func globalAccessRuleList() []*models.APIAccessList {
 	model.Perms2.Owner = adminUser
 	model.ParentType = models.KindGlobalSystemConfig
 	rbacRuleEntryAdd(model, "projects")
-	return append(list, model)
-}
-
-func wildcardGlobalAccessRuleList() []*models.APIAccessList {
-	list := make([]*models.APIAccessList, 0)
-	model := models.MakeAPIAccessList()
-	model.UUID = apiAccessListUUID
-	model.FQName = []string{"default-global-system-config", model.UUID}
-	model.Perms2.Owner = adminUser
-	model.ParentType = models.KindGlobalSystemConfig
-	rbacRuleEntryAdd(model, "*")
 	return append(list, model)
 }
 
@@ -348,4 +327,25 @@ func projectAccessRuleList() []*models.APIAccessList {
 	model.ParentType = models.KindProject
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
+}
+
+func wildcardGlobalAccessRuleList() []*models.APIAccessList {
+	list := make([]*models.APIAccessList, 0)
+	model := models.MakeAPIAccessList()
+	model.UUID = apiAccessListUUID
+	model.FQName = []string{"default-global-system-config", model.UUID}
+	model.Perms2.Owner = adminUser
+	model.ParentType = models.KindGlobalSystemConfig
+	rbacRuleEntryAdd(model, "*")
+	return append(list, model)
+}
+
+func rbacRuleEntryAdd(l *models.APIAccessList, kind string) {
+	m := models.MakeRbacRuleType()
+	m.RuleObject = kind
+	p := models.MakeRbacPermType()
+	p.RoleCrud = "CRUD"
+	p.RoleName = "Member"
+	m.RulePerms = append(m.RulePerms, p)
+	l.APIAccessListEntries.RbacRule = append(l.APIAccessListEntries.RbacRule, m)
 }

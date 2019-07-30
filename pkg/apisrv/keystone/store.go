@@ -5,9 +5,8 @@ import (
 	"sync"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
-
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
+	uuid "github.com/satori/go.uuid"
 )
 
 //Store is used to provide a persistence layer for tokens.

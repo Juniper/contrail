@@ -34,54 +34,64 @@ const (
 	openstack               = "openstack"
 )
 
-var server *integration.APIServer
+func TestClusterTokenMethod(t *testing.T) {
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	clusterName := t.Name() + "_clusterA"
+	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
+	defer ksPrivate.Close()
 
-func mockConfigServer(clusterName, clusterID string) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-
-	// Routes
-	for route, handler := range map[string]interface{}{
-		"/domains": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&keystone.VncDomainListResponse{
-					Domains: []*keystone.VncDomain{{
-						Domain: &keystone.ConfigDomain{
-							Name: clusterName,
-							UUID: clusterID,
-						},
-					},
-					},
-				},
-			)
-		}),
-		"/projects": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&keystone.VncProjectListResponse{
-					Projects: []*keystone.VncProject{{
-						Project: &keystone.ConfigProject{
-							Name:   clusterName,
-							UUID:   clusterID,
-							FQName: []string{clusterName},
-						},
-					},
-					},
-				},
-			)
-		}),
-	} {
-
-		e.GET(route, handler.(echo.HandlerFunc))
+	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
+	defer ksPublic.Close()
+	pContext := pongo2.Context{
+		"cluster_name":  clusterName,
+		"endpoint_name": clusterName + "_keystone",
+		"private_url":   ksPrivate.URL,
+		"public_url":    ksPublic.URL,
 	}
-	mockServer := httptest.NewServer(e)
-	return mockServer
+
+	ts, err := integration.LoadTest(testClusterTokenAPIFile, pContext)
+	require.NoError(t, err, "failed to load endpoint create test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	server.ForceProxyUpdate()
+
+	// Fetch cluster keystone token
+	k := &client.Keystone{
+		URL:        ksPrivate.URL + "/v3",
+		HTTPClient: &http.Client{},
+	}
+	resp, err := k.ObtainToken(context.Background(), defaultUser, defaultPassword, nil)
+	assert.NoError(t, err)
+	token := resp.Header.Get("X-Subject-Token")
+	assert.NotEmpty(t, token)
+	// Fetch command keystone token with cluster keystone token
+	commandServerToken := fetchCommandServerToken(t, clusterName+"_uuid", token)
+	assert.NotEmpty(t, commandServerToken)
+	// Verify token
+	url := strings.Join([]string{server.URL(), "contrail-cluster", clusterName + "_uuid"}, "/")
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+		},
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	assert.NoError(t, err)
+	req.Header.Set("X-Auth-Token", commandServerToken)
+	res, err := c.Do(req)
+	assert.NoError(t, err)
+	defer res.Body.Close() // nolint: errcheck
+	assert.NoError(t, err)
+	contents, err := ioutil.ReadAll(res.Body)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, contents)
+
+	// Cleanup test TODO: Fix cleanup to remove all resources
+	integration.RunCleanTestScenario(t, ts, server)
 }
 
-func TestMain(m *testing.M) {
-	integration.TestMain(m, &server)
-}
-
-func FetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
+func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
 	dataJSON, err := json.Marshal(&kscommon.UnScopedAuthRequest{
 		Auth: &kscommon.UnScopedAuth{
 			Identity: &kscommon.Identity{
@@ -116,63 +126,6 @@ func FetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 
 	token := resp.Header.Get("X-Subject-Token")
 	return token
-}
-
-func TestClusterTokenMethod(t *testing.T) {
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	clusterName := t.Name() + "_clusterA"
-	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
-	defer ksPrivate.Close()
-
-	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
-	defer ksPublic.Close()
-	pContext := pongo2.Context{
-		"cluster_name":  clusterName,
-		"endpoint_name": clusterName + "_keystone",
-		"private_url":   ksPrivate.URL,
-		"public_url":    ksPublic.URL,
-	}
-
-	ts, err := integration.LoadTest(testClusterTokenAPIFile, pContext)
-	require.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	defer cleanup()
-
-	server.ForceProxyUpdate()
-
-	// Fetch cluster keystone token
-	k := &client.Keystone{
-		URL:        ksPrivate.URL + "/v3",
-		HTTPClient: &http.Client{},
-	}
-	resp, err := k.ObtainToken(context.Background(), defaultUser, defaultPassword, nil)
-	assert.NoError(t, err)
-	token := resp.Header.Get("X-Subject-Token")
-	assert.NotEmpty(t, token)
-	// Fetch command keystone token with cluster keystone token
-	commandServerToken := FetchCommandServerToken(t, clusterName+"_uuid", token)
-	assert.NotEmpty(t, commandServerToken)
-	// Verify token
-	url := strings.Join([]string{server.URL(), "contrail-cluster", clusterName + "_uuid"}, "/")
-	c := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: viper.GetBool("keystone.insecure")},
-		},
-	}
-	req, err := http.NewRequest("GET", url, nil)
-	assert.NoError(t, err)
-	req.Header.Set("X-Auth-Token", commandServerToken)
-	res, err := c.Do(req)
-	assert.NoError(t, err)
-	defer res.Body.Close() // nolint: errcheck
-	assert.NoError(t, err)
-	contents, err := ioutil.ReadAll(res.Body)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, contents)
-
-	// Cleanup test TODO: Fix cleanup to remove all resources
-	integration.RunCleanTestScenario(t, ts, server)
 }
 
 func TestClusterLogin(t *testing.T) {
@@ -255,57 +208,6 @@ func TestClusterLogin(t *testing.T) {
 	integration.RunCleanTestScenario(t, ts, server)
 }
 
-func verifyBasicAuthDomains(
-	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, domains []string) bool {
-	for _, client := range testScenario.Clients {
-		domainList := keystone.DomainListResponse{}
-		_, err := client.Read(ctx, url, &domainList)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %s", url, err)
-			return false
-		}
-		if len(domainList.Domains) != len(domains) {
-			fmt.Printf("Unexpected domains: %v", domainList)
-			return false
-		}
-		for _, domain := range domainList.Domains {
-			ok := assert.True(
-				t, format.ContainsString(domains, domain.ID),
-				fmt.Sprintf("Unexpected domain: %v", domain))
-			if !ok {
-				return ok
-			}
-		}
-	}
-	return true
-}
-
-func verifyBasicAuthProjects(
-	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, projects []string) bool {
-	for _, client := range testScenario.Clients {
-		projectList := keystone.ProjectListResponse{}
-		_, err := client.Read(ctx, url, &projectList)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %v", url, err)
-			return false
-		}
-		if len(projectList.Projects) != len(projects) {
-			fmt.Printf("Unexpected projects: %v", projectList)
-			return false
-		}
-		for _, project := range projectList.Projects {
-			ok := assert.True(
-				t, format.ContainsString(projects, project.ID),
-				fmt.Sprintf("Unexpected project: %v", project))
-			if !ok {
-				return ok
-			}
-		}
-	}
-	return true
-}
 func TestMultiClusterAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		RepoRootPath: "../../..",
@@ -375,4 +277,97 @@ func TestMultiClusterAuth(t *testing.T) {
 		ok = verifyBasicAuthDomains(ctx, t, ts, url, cluster.expectedDomains)
 		assert.True(t, ok, "failed to get domain list from cluster: %s", clusterName)
 	}
+}
+
+func mockConfigServer(clusterName, clusterID string) *httptest.Server {
+	// Echo instance
+	e := echo.New()
+
+	// Routes
+	for route, handler := range map[string]interface{}{
+		"/domains": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&keystone.VncDomainListResponse{
+					Domains: []*keystone.VncDomain{{
+						Domain: &keystone.ConfigDomain{
+							Name: clusterName,
+							UUID: clusterID,
+						},
+					},
+					},
+				},
+			)
+		}),
+		"/projects": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&keystone.VncProjectListResponse{
+					Projects: []*keystone.VncProject{{
+						Project: &keystone.ConfigProject{
+							Name:   clusterName,
+							UUID:   clusterID,
+							FQName: []string{clusterName},
+						},
+					},
+					},
+				},
+			)
+		}),
+	} {
+
+		e.GET(route, handler.(echo.HandlerFunc))
+	}
+	mockServer := httptest.NewServer(e)
+	return mockServer
+}
+
+func verifyBasicAuthProjects(
+	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
+	url string, projects []string) bool {
+	for _, client := range testScenario.Clients {
+		projectList := keystone.ProjectListResponse{}
+		_, err := client.Read(ctx, url, &projectList)
+		if err != nil {
+			fmt.Printf("Reading: %s, Response: %v", url, err)
+			return false
+		}
+		if len(projectList.Projects) != len(projects) {
+			fmt.Printf("Unexpected projects: %v", projectList)
+			return false
+		}
+		for _, project := range projectList.Projects {
+			ok := assert.True(
+				t, format.ContainsString(projects, project.ID),
+				fmt.Sprintf("Unexpected project: %v", project))
+			if !ok {
+				return ok
+			}
+		}
+	}
+	return true
+}
+
+func verifyBasicAuthDomains(
+	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
+	url string, domains []string) bool {
+	for _, client := range testScenario.Clients {
+		domainList := keystone.DomainListResponse{}
+		_, err := client.Read(ctx, url, &domainList)
+		if err != nil {
+			fmt.Printf("Reading: %s, Response: %s", url, err)
+			return false
+		}
+		if len(domainList.Domains) != len(domains) {
+			fmt.Printf("Unexpected domains: %v", domainList)
+			return false
+		}
+		for _, domain := range domainList.Domains {
+			ok := assert.True(
+				t, format.ContainsString(domains, domain.ID),
+				fmt.Sprintf("Unexpected domain: %v", domain))
+			if !ok {
+				return ok
+			}
+		}
+	}
+	return true
 }
