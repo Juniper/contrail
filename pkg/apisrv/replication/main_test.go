@@ -1,4 +1,4 @@
-package apisrv_test
+package replication_test
 
 import (
 	"testing"

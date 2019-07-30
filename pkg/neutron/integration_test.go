@@ -7,45 +7,45 @@ import (
 )
 
 func TestFloatingIP(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestNetwork(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestNetworkReferredByPort(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestNetworkFloatingIP(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestPort(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestProject(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestProjectDefaultSecurityGroup(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestRouter(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestSecurityGroup(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestSecurityGroupRule(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }
 
 func TestSubnet(t *testing.T) {
-	integration.RunTest(t, t.Name(), server)
+	integration.RunTestFromTestsDirectory(t, t.Name(), server)
 }

@@ -10,11 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type replicateCall struct {
-	action, url    string
-	data, response interface{}
-}
-
 func TestReplicator_Process(t *testing.T) {
 	const vnID = "vn-uuid"
 
@@ -83,10 +78,15 @@ type handlerMock struct {
 	last *replicateCall
 }
 
-func (h *handlerMock) createClient(ep *models.Endpoint) {}
-func (h *handlerMock) updateClient(ep *models.Endpoint) {}
-func (h *handlerMock) deleteClient(endpointID string)   {}
+type replicateCall struct {
+	action, url    string
+	data, response interface{}
+}
 
-func (h *handlerMock) replicate(action, url string, data interface{}, response interface{}) {
+func (h *handlerMock) CreateClient(ep *models.Endpoint) {}
+func (h *handlerMock) UpdateClient(ep *models.Endpoint) {}
+func (h *handlerMock) DeleteClient(endpointID string)   {}
+
+func (h *handlerMock) Replicate(action, url string, data interface{}, response interface{}) {
 	h.last = &replicateCall{action: action, url: url, data: data, response: response}
 }

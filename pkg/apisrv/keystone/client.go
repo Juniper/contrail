@@ -32,8 +32,8 @@ type Client struct {
 	InSecure     bool `yaml:"insecure"`
 }
 
-// NewKeystoneClient makes keystone client.
-func NewKeystoneClient(authURL string, insecure bool) *Client {
+// NewClient makes keystone client.
+func NewClient(authURL string, insecure bool) *Client {
 	c := &Client{
 		AuthURL:      authURL,
 		LocalAuthURL: authURL,
@@ -76,6 +76,16 @@ func (k *Client) NewAuth() *keystone.Auth {
 	return auth
 }
 
+// CreateToken sends token create request to keystone endpoint.
+func (k *Client) CreateToken(c echo.Context) error {
+	return k.tokenRequest(c)
+}
+
+// ValidateToken sends validate token request to keystone endpoint.
+func (k *Client) ValidateToken(c echo.Context) error {
+	return k.tokenRequest(c)
+}
+
 func (k *Client) tokenRequest(c echo.Context) error {
 	r := c.Request()
 	r.URL.Path = "/auth/tokens"
@@ -86,16 +96,6 @@ func (k *Client) tokenRequest(c echo.Context) error {
 	server := newCustomSingleHostReverseProxy(tokenURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
-}
-
-// CreateToken sends token create request to keystone endpoint.
-func (k *Client) CreateToken(c echo.Context) error {
-	return k.tokenRequest(c)
-}
-
-// ValidateToken sends validate token request to keystone endpoint.
-func (k *Client) ValidateToken(c echo.Context) error {
-	return k.tokenRequest(c)
 }
 
 // GetDomains sends domain get request to keystone endpoint.

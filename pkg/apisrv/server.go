@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/discovery"
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/apisrv/replication"
 	"github.com/Juniper/contrail/pkg/collector"
@@ -31,7 +31,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	protocodec "github.com/gogo/protobuf/codec"
 )
@@ -64,11 +63,6 @@ type Server struct {
 	Collector                  collector.Collector
 	VNCReplicator              *replication.Replicator
 	log                        *logrus.Entry
-}
-
-type recorderTask struct {
-	Request *client.Request `yaml:"request,omitempty"`
-	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
 // NewServer makes a server.
@@ -170,19 +164,19 @@ func (s *Server) Init() (err error) {
 		return errors.Wrap(err, "failed to register static proxy endpoints")
 	}
 
-	endpointStore := apicommon.MakeEndpointStore()
+	endpointStore := endpoint.NewStore()
 	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
 	if keystoneAuthURL != "" {
 		var skipPaths []string
-		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL, viper.GetBool("keystone.insecure"))
+		keystoneClient = keystone.NewClient(keystoneAuthURL, viper.GetBool("keystone.insecure"))
 		skipPaths, err = keystone.GetAuthSkipPaths()
 		if err != nil {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
-		s.Echo.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, endpointStore))
+		s.Echo.Use(keystone.AuthMiddleware(keystoneClient, skipPaths))
 	} else if viper.GetBool("no_auth") {
 		s.Echo.Use(noAuthMiddleware())
 	}
@@ -213,7 +207,7 @@ func (s *Server) Init() (err error) {
 			grpc.CustomCodec(protocodec.New(0)),
 		}
 		if keystoneAuthURL != "" {
-			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(keystoneClient, endpointStore)))
+			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(keystoneClient)))
 		} else if viper.GetBool("no_auth") {
 			opts = append(opts, grpc.UnaryInterceptor(noAuthInterceptor()))
 		}
@@ -383,16 +377,6 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
-func (s *Server) etcdNotifier() services.Service {
-	// TODO(Michał): Make the codec configurable
-	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
-	if err != nil {
-		s.log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
-		return nil
-	}
-	return en
-}
-
 func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
 	n := &neutron.Server{
 		ReadService:       cs,
@@ -405,6 +389,16 @@ func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
 	}
 	n.RegisterNeutronAPI(s.Echo)
 	return n
+}
+
+func (s *Server) etcdNotifier() services.Service {
+	// TODO(Michał): Make the codec configurable
+	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
+	if err != nil {
+		s.log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
+		return nil
+	}
+	return en
 }
 
 func (s *Server) registerStaticProxyEndpoints() error {
@@ -425,13 +419,13 @@ func (s *Server) registerStaticProxyEndpoints() error {
 	return nil
 }
 
-func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
+func (s *Server) serveDynamicProxy(endpointStore *endpoint.Store) {
 	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService)
-	s.Proxy.serve()
+	s.Proxy.Serve()
 }
 
 func (s *Server) startVNCReplicator(
-	endpointStore *apicommon.EndpointStore, auth *keystone.Keystone) (err error) {
+	endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
 	s.VNCReplicator, err = replication.New(endpointStore, auth)
 	if err != nil {
 		return err
@@ -440,7 +434,7 @@ func (s *Server) startVNCReplicator(
 }
 
 func (s *Server) setupHomepage() {
-	dh := discovery.NewHandler()
+	dh := NewHandler()
 
 	services.RegisterSingularPaths(func(path string, name string) {
 		dh.Register(path, "", name, "resource-base")
@@ -489,6 +483,11 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
 }
 
+type recorderTask struct {
+	Request *client.Request `yaml:"request,omitempty"`
+	Expect  interface{}     `yaml:"expect,omitempty"`
+}
+
 // Run runs Server.
 func (s *Server) Run() error {
 	defer func() {
@@ -508,11 +507,11 @@ func (s *Server) Run() error {
 	return s.Echo.Start(viper.GetString("server.address"))
 }
 
-// Close closes Server resources.
+// Close closes Server.
 func (s *Server) Close() error {
 	if s.VNCReplicator != nil {
 		s.VNCReplicator.Stop()
 	}
-	s.Proxy.stop()
+	s.Proxy.Stop()
 	return s.DBService.Close()
 }

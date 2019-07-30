@@ -8,23 +8,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo"
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 )
 
 // Keystone is a keystone client.
 type Keystone struct {
 	URL        string
 	HTTPClient *http.Client
-}
-
-func (k *Keystone) getURL(path string) string {
-	return k.URL + path
 }
 
 type projectResponse struct {
@@ -66,7 +61,7 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 func (k *Keystone) GetProjectIDByName(
 	ctx context.Context, id, password, projectName string, domain *keystone.Domain) (string, error) {
 	// Fetch unscoped token
-	resp, err := k.ObtainUnScopedToken(ctx, id, password, domain)
+	resp, err := k.obtainUnscopedToken(ctx, id, password, domain)
 	if err != nil {
 		return "", errorFromResponse(err, resp)
 	}
@@ -101,6 +96,36 @@ func (k *Keystone) GetProjectIDByName(
 	return "", fmt.Errorf("'%s' not a valid project name", projectName)
 }
 
+func (k *Keystone) getURL(path string) string {
+	return k.URL + path
+}
+
+// obtainUnscopedToken gets unscoped authentication token.
+func (k *Keystone) obtainUnscopedToken(
+	ctx context.Context, id, password string, domain *keystone.Domain) (*http.Response, error) {
+	if k.URL == "" {
+		return nil, nil
+	}
+	dataJSON, err := json.Marshal(&keystone.UnScopedAuthRequest{
+		Auth: &keystone.UnScopedAuth{
+			Identity: &keystone.Identity{
+				Methods: []string{"password"},
+				Password: &keystone.Password{
+					User: &keystone.User{
+						Name:     id,
+						Password: password,
+						Domain:   domain,
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return k.fetchToken(ctx, dataJSON)
+}
+
 // ObtainToken gets authentication token.
 func (k *Keystone) ObtainToken(
 	ctx context.Context, id, password string, scope *keystone.Scope) (*http.Response, error) {
@@ -125,37 +150,11 @@ func (k *Keystone) ObtainToken(
 	if err != nil {
 		return nil, err
 	}
-	return k.FetchToken(ctx, dataJSON)
+	return k.fetchToken(ctx, dataJSON)
 }
 
-// ObtainUnScopedToken gets unscoped authentication token.
-func (k *Keystone) ObtainUnScopedToken(
-	ctx context.Context, id, password string, domain *keystone.Domain) (*http.Response, error) {
-	if k.URL == "" {
-		return nil, nil
-	}
-	dataJSON, err := json.Marshal(&keystone.UnScopedAuthRequest{
-		Auth: &keystone.UnScopedAuth{
-			Identity: &keystone.Identity{
-				Methods: []string{"password"},
-				Password: &keystone.Password{
-					User: &keystone.User{
-						Name:     id,
-						Password: password,
-						Domain:   domain,
-					},
-				},
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return k.FetchToken(ctx, dataJSON)
-}
-
-// FetchToken gets scoped/unscoped token
-func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte) (*http.Response, error) {
+// fetchToken gets scoped/unscoped token.
+func (k *Keystone) fetchToken(ctx context.Context, dataJSON []byte) (*http.Response, error) {
 	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewBuffer(dataJSON))
 	if err != nil {
 		return nil, err

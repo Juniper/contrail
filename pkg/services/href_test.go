@@ -24,11 +24,11 @@ func TestApplyHref(t *testing.T) {
 	runTest(t, func(t *testing.T, client *integration.HTTPAPIClient, server *integration.APIServer) {
 		ctx := context.Background()
 
-		p, deleteProject := createResource(t, ctx, client, loadProject(t, projectBluePath))
+		p, deleteProject := createResource(ctx, t, client, loadProject(t, projectBluePath))
 		defer deleteProject()
-		_, deleteNetworkIpam := createResource(t, ctx, client, loadNetworkIpam(t, networkIpamBluePath))
+		_, deleteNetworkIpam := createResource(ctx, t, client, loadNetworkIpam(t, networkIpamBluePath))
 		defer deleteNetworkIpam()
-		vn, deleteVirtualNetwork := createResource(t, ctx, client, loadVirtualNetwork(t, virtualNetworkBluePath))
+		vn, deleteVirtualNetwork := createResource(ctx, t, client, loadVirtualNetwork(t, virtualNetworkBluePath))
 		defer deleteVirtualNetwork()
 
 		virtualNetwork := integration.GetVirtualNetwork(t, client, vn.GetUUID())
@@ -84,8 +84,7 @@ func TestApplyHref(t *testing.T) {
 	})
 }
 
-// nolint: golint
-func deleteResource(t *testing.T, ctx context.Context, client services.Service, object basemodels.Object) {
+func deleteResource(ctx context.Context, t *testing.T, client services.Service, object basemodels.Object) {
 	e, err := services.NewEvent(services.EventOption{
 		UUID:      object.GetUUID(),
 		Kind:      object.Kind(),
@@ -96,10 +95,9 @@ func deleteResource(t *testing.T, ctx context.Context, client services.Service, 
 	require.NoError(t, err)
 }
 
-// nolint: golint
 func createResource(
-	t *testing.T,
 	ctx context.Context,
+	t *testing.T,
 	client services.Service,
 	object basemodels.Object,
 ) (basemodels.Object, func()) {
@@ -112,7 +110,7 @@ func createResource(
 	resp, err := e.Process(ctx, client)
 	require.NoError(t, err)
 	return resp.GetResource(), func() {
-		deleteResource(t, ctx, client, resp.GetResource())
+		deleteResource(ctx, t, client, resp.GetResource())
 	}
 }
 

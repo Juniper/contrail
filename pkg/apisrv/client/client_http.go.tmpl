@@ -8,6 +8,7 @@ import (
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
 func (h *HTTP) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     response := &services.Create{{ schema.JSONSchema.GoName }}Response{}
     _, err := h.Create(ctx, "{{ schema.Prefix }}{{ schema.PluralPath }}", request, response)
@@ -40,7 +41,9 @@ func (h *HTTP) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *
 }
 
 {% for _, reference in schema.References %}
+
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+
 func (h *HTTP) Create{{ refType }}(
     ctx context.Context, request *services.Create{{ refType }}Request,
 ) (*services.Create{{ refType }}Response, error) {
@@ -86,5 +89,7 @@ func getRefUpdateFromRequest{{ refType }} (request *services.Create{{ refType }}
     }
     return data
 }
+
 {% endfor %}
+
 {% endif%}{% endfor %}

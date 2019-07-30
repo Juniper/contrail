@@ -26,97 +26,6 @@ const (
 	xClusterIDKey    = "X-Cluster-ID"
 )
 
-type mockPortsResponse struct {
-	Name string `json:"name"`
-}
-
-func mockServer(routes map[string]interface{}) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-
-	// Routes
-	for route, handler := range routes {
-		e.GET(route, handler.(echo.HandlerFunc))
-	}
-
-	return httptest.NewServer(e)
-}
-
-func runEndpointTest(t *testing.T, clusterName, endpointName string) (*integration.TestScenario,
-	*httptest.Server, *httptest.Server, func()) {
-	routes := map[string]interface{}{
-		"/ports": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&mockPortsResponse{Name: clusterName + privatePortList})
-		}),
-	}
-	neutronPrivate := mockServer(routes)
-	routes = map[string]interface{}{
-		"/ports": echo.HandlerFunc(func(c echo.Context) error {
-			clusterID := c.Request().Header.Get(xClusterIDKey)
-			if clusterID != clusterName+"_uuid" {
-				return c.JSON(http.StatusBadRequest,
-					"clusterID not found in header")
-			}
-			return c.JSON(http.StatusOK,
-				&mockPortsResponse{Name: clusterName + publicPortList})
-		}),
-	}
-	neutronPublic := mockServer(routes)
-
-	manageParent := true
-	if endpointName == "neutron2" {
-		manageParent = false
-	}
-
-	ts, err := integration.LoadTest(testEndpointFile, pongo2.Context{
-		"cluster_name":    clusterName,
-		"endpoint_name":   fmt.Sprintf("%s_%s", clusterName, endpointName),
-		"endpoint_prefix": "neutron",
-		"private_url":     neutronPrivate.URL,
-		"public_url":      neutronPublic.URL,
-		"manage_parent":   manageParent,
-	})
-	require.NoError(t, err, "failed to load test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-
-	return ts, neutronPublic, neutronPrivate, cleanup
-}
-
-func verifyProxy(ctx context.Context, t *testing.T, testScenario *integration.TestScenario, url string,
-	clusterName string, expected string) bool {
-	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
-		_, err := client.Read(ctx, url, &response)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %s", url, err)
-			return false
-		}
-		ok := testutil.AssertEqual(t,
-			map[string]interface{}{key: clusterName + expected},
-			response,
-			fmt.Sprintf("Unexpected Response: %s", response))
-		if !ok {
-			return ok
-		}
-	}
-	return true
-}
-
-func verifyKeystoneEndpoint(ctx context.Context, testScenario *integration.TestScenario, testInvalidUser bool) error {
-	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
-		_, err := client.Read(ctx, "/keystone/v3/auth/tokens", &response)
-		if err != nil {
-			return err
-		}
-		if !testInvalidUser {
-			break
-		}
-	}
-	return nil
-}
-
 func TestProxyEndpoint(t *testing.T) {
 	ctx := context.Background()
 	// Create a cluster and its neutron endpoints(multiple)
@@ -254,6 +163,63 @@ func TestProxyEndpointWithSleep(t *testing.T) {
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
 }
 
+func runEndpointTest(t *testing.T, clusterName, endpointName string) (*integration.TestScenario,
+	*httptest.Server, *httptest.Server, func()) {
+	routes := map[string]interface{}{
+		"/ports": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&mockPortsResponse{Name: clusterName + privatePortList})
+		}),
+	}
+	neutronPrivate := mockServer(routes)
+	routes = map[string]interface{}{
+		"/ports": echo.HandlerFunc(func(c echo.Context) error {
+			clusterID := c.Request().Header.Get(xClusterIDKey)
+			if clusterID != clusterName+"_uuid" {
+				return c.JSON(http.StatusBadRequest,
+					"clusterID not found in header")
+			}
+			return c.JSON(http.StatusOK,
+				&mockPortsResponse{Name: clusterName + publicPortList})
+		}),
+	}
+	neutronPublic := mockServer(routes)
+
+	manageParent := true
+	if endpointName == "neutron2" {
+		manageParent = false
+	}
+
+	ts, err := integration.LoadTest(testEndpointFile, pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_%s", clusterName, endpointName),
+		"endpoint_prefix": "neutron",
+		"private_url":     neutronPrivate.URL,
+		"public_url":      neutronPublic.URL,
+		"manage_parent":   manageParent,
+	})
+	require.NoError(t, err, "failed to load test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+
+	return ts, neutronPublic, neutronPrivate, cleanup
+}
+
+type mockPortsResponse struct {
+	Name string `json:"name"`
+}
+
+func mockServer(routes map[string]interface{}) *httptest.Server {
+	// Echo instance
+	e := echo.New()
+
+	// Routes
+	for route, handler := range routes {
+		e.GET(route, handler.(echo.HandlerFunc))
+	}
+
+	return httptest.NewServer(e)
+}
+
 func verifyProxies(
 	ctx context.Context, t *testing.T, scenario *integration.TestScenario, clusterName string, isSuccessful bool,
 ) {
@@ -264,6 +230,26 @@ func verifyProxies(
 	url = "/proxy/" + clusterName + "_uuid/neutron/private/ports"
 	ok = verifyProxy(ctx, t, scenario, url, clusterName, privatePortList)
 	assert.Equal(t, ok, isSuccessful, "failed to proxy %s", url)
+}
+
+func verifyProxy(ctx context.Context, t *testing.T, testScenario *integration.TestScenario, url string,
+	clusterName string, expected string) bool {
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		_, err := client.Read(ctx, url, &response)
+		if err != nil {
+			fmt.Printf("Reading: %s, Response: %s", url, err)
+			return false
+		}
+		ok := testutil.AssertEqual(t,
+			map[string]interface{}{key: clusterName + expected},
+			response,
+			fmt.Sprintf("Unexpected Response: %s", response))
+		if !ok {
+			return ok
+		}
+	}
+	return true
 }
 
 func TestKeystoneEndpoint(t *testing.T) {
@@ -361,6 +347,20 @@ func TestKeystoneEndpoint(t *testing.T) {
 	}
 
 	server.ForceProxyUpdate()
+}
+
+func verifyKeystoneEndpoint(ctx context.Context, testScenario *integration.TestScenario, testInvalidUser bool) error {
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		_, err := client.Read(ctx, "/keystone/v3/auth/tokens", &response)
+		if err != nil {
+			return err
+		}
+		if !testInvalidUser {
+			break
+		}
+	}
+	return nil
 }
 
 func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
