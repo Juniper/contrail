@@ -35,11 +35,12 @@ const (
 )
 
 type vncAPI struct {
-	client     *client.HTTP
-	ctx        context.Context
-	clusterID  string
-	endpointID string
-	log        *logrus.Entry
+	client       *client.HTTP
+	sourceClient *client.HTTP
+	ctx          context.Context
+	clusterID    string
+	endpointID   string
+	log          *logrus.Entry
 }
 
 type vncAPIHandle struct {
@@ -242,11 +243,12 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 	}
 
 	h.clients[ep.ParentUUID] = &vncAPI{
-		client:     c,
-		ctx:        ctx,
-		clusterID:  ep.ParentUUID,
-		endpointID: ep.UUID,
-		log:        h.log,
+		client:       c,
+		sourceClient: h.APIServer,
+		ctx:          ctx,
+		clusterID:    ep.ParentUUID,
+		endpointID:   ep.UUID,
+		log:          h.log,
 	}
 	h.log.Debugf("created vnc client for endpoint: %s", ep.UUID)
 }
@@ -306,6 +308,26 @@ func (v *vncAPI) replicate(action, url string, data interface{}, response interf
 		_, err := v.client.Update(v.ctx, proxyURL, data, response)
 		if err != nil {
 			v.log.WithError(err).Errorf("while updating %s on vncAPI", proxyURL)
+
+			url := "/" + url
+			v.log.WithField("url", url).Debug("fetching to create it instead")
+			var source map[string]interface{}
+			_, err := v.sourceClient.Read(v.ctx, url, &source)
+			if err != nil {
+				v.log.WithError(err).WithField("url", url).
+					Error("failed to fetch from replication source")
+				return
+			}
+
+			parts := strings.Split(proxyURL, "/")
+			// TODO Handle len(parts) == 0
+			// TODO Use a proper plural URL
+			proxyURL := strings.Join(parts[:len(parts)-1], "/") + "s"
+			_, err = v.client.Create(v.ctx, proxyURL, source, response)
+			if err != nil {
+				v.log.WithError(err).WithField("proxyURL", proxyURL).
+					Error("failed to create to work around updating")
+			}
 		}
 	case deleteAction:
 		urlParts := strings.Split(url, "/")

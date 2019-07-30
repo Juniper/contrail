@@ -15,16 +15,17 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
 	testReplicationTmpl       = "./test_data/test_replication.tmpl"
 	createReplicationTestFile = "./test_data/create_replication.yml"
-	//updateReplicationTestFile = "./test_data/update_replication.yml"
-	postReq   = "POST"
-	putReq    = "PUT"
-	deleteReq = "DELETE"
-	readReq   = "GET"
+	updateReplicationTestFile = "./test_data/update_replication.yml"
+	postReq                   = "POST"
+	putReq                    = "PUT"
+	deleteReq                 = "DELETE"
+	readReq                   = "GET"
 )
 
 var server *integration.APIServer
@@ -270,4 +271,31 @@ func verifyVNCReqStore(t *testing.T, req string,
 
 func TestReplication(t *testing.T) {
 	runReplicationTest(t)
+}
+
+func TestReplicateAlreadyCreatedResources(t *testing.T) {
+	//create node-profile, node, port object
+	ts, err := integration.LoadTest(createReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	//create test clusters with keystone/config endpoint.
+	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, "clusterA", 2)
+	defer cleanupTestClusterA()
+	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, "clusterB", 2)
+	defer cleanupTestClusterB()
+
+	// Update node* objects
+	ts, err = integration.LoadTest(updateReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load update data")
+	integration.RunDirtyTestScenario(t, ts, server)
+
+	server.ForceProxyUpdate()
+
+	assertCloses(t, doneA)
+	assertCloses(t, doneB)
+	//verify create objects
+	verifyVNCReqStore(t, postReq, vncReqStoreA, ts)
+	verifyVNCReqStore(t, postReq, vncReqStoreB, ts)
 }
