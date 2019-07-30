@@ -1,4 +1,4 @@
-package discovery
+package apisrv
 
 import (
 	"net/http"

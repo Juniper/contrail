@@ -1,28 +1,27 @@
-package discovery
+package apisrv
 
 import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo"
-
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/labstack/echo"
 )
 
-type linkDetails struct {
-	Path   string  `json:"href"`
-	Method *string `json:"method"`
-	Name   string  `json:"name"`
-	Rel    string  `json:"rel"`
+// Handler which serves a set of registered links.
+type Handler struct {
+	links []*link
 }
 
 type link struct {
 	Link linkDetails `json:"link"`
 }
 
-// Handler which serves a set of registered links.
-type Handler struct {
-	links []*link
+type linkDetails struct {
+	Path   string  `json:"href"`
+	Method *string `json:"method"`
+	Name   string  `json:"name"`
+	Rel    string  `json:"rel"`
 }
 
 // NewHandler creates a new Handler.

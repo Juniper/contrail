@@ -84,7 +84,6 @@ func TestApplyHref(t *testing.T) {
 	})
 }
 
-// nolint: golint
 func deleteResource(t *testing.T, ctx context.Context, client services.Service, object basemodels.Object) {
 	e, err := services.NewEvent(services.EventOption{
 		UUID:      object.GetUUID(),
@@ -96,7 +95,6 @@ func deleteResource(t *testing.T, ctx context.Context, client services.Service, 
 	require.NoError(t, err)
 }
 
-// nolint: golint
 func createResource(
 	t *testing.T,
 	ctx context.Context,

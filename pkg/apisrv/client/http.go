@@ -48,15 +48,6 @@ type HTTPConfig struct {
 	Insecure bool            `yaml:"insecure"`
 }
 
-// Request represents API request to the server.
-type Request struct {
-	Method   string      `yaml:"method"`
-	Path     string      `yaml:"path,omitempty"`
-	Expected []int       `yaml:"expected,omitempty"`
-	Data     interface{} `yaml:"data,omitempty"`
-	Output   interface{} `yaml:"output,omitempty"`
-}
-
 // NewHTTP makes API Server HTTP client.
 func NewHTTP(c *HTTPConfig) *HTTP {
 	hc := &http.Client{Transport: transport(c.Endpoint, c.Insecure)}
@@ -107,6 +98,34 @@ func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
 	return resp, nil
 }
 
+// Batch execution.
+func (h *HTTP) Batch(ctx context.Context, requests []*Request) error {
+	for i, request := range requests {
+		_, err := h.DoRequest(ctx, request)
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("%dth request failed.", i))
+		}
+	}
+	return nil
+}
+
+// DoRequest requests based on request object.
+func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
+	if request == nil {
+		return nil, fmt.Errorf("request cannot be nil")
+	}
+	return h.Do(ctx, request.Method, request.Path, nil, request.Data, &request.Output, request.Expected)
+}
+
+// Request represents API request to the server.
+type Request struct {
+	Method   string      `yaml:"method"`
+	Path     string      `yaml:"path,omitempty"`
+	Expected []int       `yaml:"expected,omitempty"`
+	Data     interface{} `yaml:"data,omitempty"`
+	Output   interface{} `yaml:"output,omitempty"`
+}
+
 // Create send a create API request.
 func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
 	return h.Do(ctx, echo.POST, path, nil, data, output, []int{http.StatusOK})
@@ -134,14 +153,14 @@ func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*ht
 	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK})
 }
 
-// RefUpdate sends a create/update API request/
-func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
-}
-
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
+}
+
+// RefUpdate sends a create/update API request/
+func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
+	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
 }
 
 // CreateIntPool sends a create int pool request to remote int-pools.
@@ -391,25 +410,6 @@ func checkStatusCode(expected []int, actual int) error {
 		}
 	}
 	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
-}
-
-// DoRequest requests based on request object.
-func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
-	if request == nil {
-		return nil, fmt.Errorf("request cannot be nil")
-	}
-	return h.Do(ctx, request.Method, request.Path, nil, request.Data, &request.Output, request.Expected)
-}
-
-// Batch execution.
-func (h *HTTP) Batch(ctx context.Context, requests []*Request) error {
-	for i, request := range requests {
-		_, err := h.DoRequest(ctx, request)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("%dth request failed.", i))
-		}
-	}
-	return nil
 }
 
 func errorFromResponse(e error, r *http.Response) error {
