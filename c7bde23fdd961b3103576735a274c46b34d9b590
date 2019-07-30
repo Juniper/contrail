@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c27b95f1_c2dba512",
+        "filename": "tools/testenv.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-30T14:50:17Z",
+      "side": 1,
+      "message": "Quote this.",
+      "range": {
+        "startLine": 28,
+        "startChar": 55,
+        "endLine": 28,
+        "endChar": 65
+      },
+      "revId": "c7bde23fdd961b3103576735a274c46b34d9b590",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e81aa4e1_6243ed93",
+        "filename": "tools/testenv.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-30T14:50:17Z",
+      "side": 1,
+      "message": "Quote this.",
+      "range": {
+        "startLine": 60,
+        "startChar": 11,
+        "endLine": 60,
+        "endChar": 20
+      },
+      "revId": "c7bde23fdd961b3103576735a274c46b34d9b590",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

@@ -34,6 +34,24 @@
       "revId": "a4569b770cb2af68057db2dddcc6ee89b228cbe8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e19f17eb_0287e1cf",
+        "filename": "pkg/testutil/integration/common.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-30T14:50:17Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c1dff2f8_c58404d9",
+      "revId": "a4569b770cb2af68057db2dddcc6ee89b228cbe8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
