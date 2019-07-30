@@ -28,13 +28,97 @@ const (
 	readReq   = "GET"
 )
 
-var server *integration.APIServer
+func TestReplication(t *testing.T) {
+	//create test clusters with keystone/config endpoint.
+	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, t.Name()+"_clusterA", 2)
+	defer cleanupTestClusterA()
+	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, t.Name()+"_clusterB", 2)
+	defer cleanupTestClusterB()
+
+	//create node-profile, node, port object
+	testScenario, err := integration.LoadTest(createReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load test data")
+	cleanup := integration.RunDirtyTestScenario(t, testScenario, server)
+	defer cleanup()
+
+	assertCloses(t, doneA)
+	assertCloses(t, doneB)
+	//verify create objects
+	verifyVNCReqStore(t, postReq, vncReqStoreA, testScenario)
+	verifyVNCReqStore(t, postReq, vncReqStoreB, testScenario)
+}
+
+// create cluster and its endpoint
+func initTestCluster(
+	t *testing.T, clusterName string, expectedCount int,
+) (func(), map[string][]*httpBodyStore, chan struct{}) {
+
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	clusterUser := clusterName + "_admin"
+
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, clusterUser, clusterUser)
+
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, clusterUser, clusterUser)
+
+	vncServer, vncReqStore, done := createMockVNCServer(t, expectedCount)
+
+	pContext := pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   clusterName + "_keystone",
+		"endpoint_prefix": "keystone",
+		"private_url":     ksPrivate.URL,
+		"public_url":      ksPublic.URL,
+		"manage_parent":   true,
+		"admin_user":      clusterUser,
+		"config_url":      vncServer.URL,
+	}
+
+	ts, err := integration.LoadTest(testReplicationTmpl, pContext)
+	require.NoError(t, err, "failed to load replication test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	server.ForceProxyUpdate()
+
+	cleanupTestCluster := func() {
+		defer cleanup()
+		defer ksPrivate.Close()
+		defer ksPublic.Close()
+		defer vncServer.Close()
+	}
+	return cleanupTestCluster, vncReqStore, done
+}
+
+func createMockVNCServer(t *testing.T, expectedCount int) (
+	*httptest.Server, map[string][]*httpBodyStore, chan struct{},
+) {
+	vncReqStore := map[string][]*httpBodyStore{}
+	done := make(chan struct{})
+	vncServer := httptest.NewServer(
+		// NewServer takes a handler.
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if expectedCount == 0 {
+				close(done)
+			}
+			expectedCount--
+			switch r.Method {
+			case postReq:
+				handleCreate(t, w, r, vncReqStore)
+			case putReq:
+				handleUpdate(t, w, r, vncReqStore)
+			case deleteReq:
+				handleDelete(t, w, r, vncReqStore)
+			case readReq:
+				handleRead(t, w, r, vncReqStore)
+			default:
+				writeJSONResponse(t, w, 404, nil)
+			}
+		}),
+	)
+	return vncServer, vncReqStore, done
+}
 
 type httpBodyStore map[string]interface{}
-
-func TestMain(m *testing.M) {
-	integration.TestMain(m, &server)
-}
 
 func handleRead(t *testing.T, w http.ResponseWriter,
 	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
@@ -85,48 +169,6 @@ func handleDelete(t *testing.T, w http.ResponseWriter,
 	}
 }
 
-func createMockVNCServer(t *testing.T, expectedCount int) (
-	*httptest.Server, map[string][]*httpBodyStore, chan struct{},
-) {
-	vncReqStore := map[string][]*httpBodyStore{}
-	done := make(chan struct{})
-	vncServer := httptest.NewServer(
-		// NewServer takes a handler.
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if expectedCount == 0 {
-				close(done)
-			}
-			expectedCount--
-			switch r.Method {
-			case postReq:
-				handleCreate(t, w, r, vncReqStore)
-			case putReq:
-				handleUpdate(t, w, r, vncReqStore)
-			case deleteReq:
-				handleDelete(t, w, r, vncReqStore)
-			case readReq:
-				handleRead(t, w, r, vncReqStore)
-			default:
-				writeJSONResponse(t, w, 404, nil)
-			}
-		}),
-	)
-	return vncServer, vncReqStore, done
-}
-
-//nolint: govet
-func writeJSONResponse(t *testing.T, w http.ResponseWriter,
-	status int, resp interface{}) {
-	bytes, err := json.MarshalIndent(resp, "", "  ")
-	assert.NoError(t, err, "failed to marshal response")
-	w.Header().Set("content-type", "application/json; charset=utf-8")
-	w.WriteHeader(status)
-	//nolint: errcheck
-	w.Write(bytes)
-	//nolint: errcheck
-	w.Write([]byte("\n"))
-}
-
 func processReqBody(t *testing.T, w http.ResponseWriter,
 	r *http.Request, reqType string, vncReqStore map[string][]*httpBodyStore) {
 
@@ -162,65 +204,17 @@ func processReqBody(t *testing.T, w http.ResponseWriter,
 	writeJSONResponse(t, w, 200, resp)
 }
 
-// create cluster and its endpoint
-func initTestCluster(
-	t *testing.T, clusterName string, expectedCount int,
-) (func(), map[string][]*httpBodyStore, chan struct{}) {
-
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	clusterUser := clusterName + "_admin"
-
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterUser, clusterUser)
-
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterUser, clusterUser)
-
-	vncServer, vncReqStore, done := createMockVNCServer(t, expectedCount)
-
-	pContext := pongo2.Context{
-		"cluster_name":    clusterName,
-		"endpoint_name":   clusterName + "_keystone",
-		"endpoint_prefix": "keystone",
-		"private_url":     ksPrivate.URL,
-		"public_url":      ksPublic.URL,
-		"manage_parent":   true,
-		"admin_user":      clusterUser,
-		"config_url":      vncServer.URL,
-	}
-
-	ts, err := integration.LoadTest(testReplicationTmpl, pContext)
-	require.NoError(t, err, "failed to load replication test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	server.ForceProxyUpdate()
-
-	cleanupTestCluster := func() {
-		defer cleanup()
-		defer ksPrivate.Close()
-		defer ksPublic.Close()
-		defer vncServer.Close()
-	}
-	return cleanupTestCluster, vncReqStore, done
-}
-
-func runReplicationTest(t *testing.T) {
-	//create test clusters with keystone/config endpoint.
-	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, t.Name()+"_clusterA", 2)
-	defer cleanupTestClusterA()
-	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, t.Name()+"_clusterB", 2)
-	defer cleanupTestClusterB()
-
-	//create node-profile, node, port object
-	testScenario, err := integration.LoadTest(createReplicationTestFile, nil)
-	require.NoError(t, err, "failed to load test data")
-	cleanup := integration.RunDirtyTestScenario(t, testScenario, server)
-	defer cleanup()
-
-	assertCloses(t, doneA)
-	assertCloses(t, doneB)
-	//verify create objects
-	verifyVNCReqStore(t, postReq, vncReqStoreA, testScenario)
-	verifyVNCReqStore(t, postReq, vncReqStoreB, testScenario)
+//nolint: govet
+func writeJSONResponse(t *testing.T, w http.ResponseWriter,
+	status int, resp interface{}) {
+	bytes, err := json.MarshalIndent(resp, "", "  ")
+	assert.NoError(t, err, "failed to marshal response")
+	w.Header().Set("content-type", "application/json; charset=utf-8")
+	w.WriteHeader(status)
+	//nolint: errcheck
+	w.Write(bytes)
+	//nolint: errcheck
+	w.Write([]byte("\n"))
 }
 
 func assertCloses(t *testing.T, c chan struct{}) {
@@ -267,8 +261,4 @@ func verifyVNCReqStore(t *testing.T, req string,
 		}
 	}
 	assert.True(t, ok, "post req not found in test replication store")
-}
-
-func TestReplication(t *testing.T) {
-	runReplicationTest(t)
 }

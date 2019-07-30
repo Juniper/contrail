@@ -8,9 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewHTTP(t *testing.T) {
@@ -38,45 +37,6 @@ func TestNewHTTP(t *testing.T) {
 			assert.Equal(t, tt.url, h.AuthURL, "invalid auth URL")
 		})
 	}
-}
-
-type httpResp struct {
-	code int
-	body []byte
-}
-
-func fakeHTTP(resps []httpResp) *httptest.Server {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		if req.URL.Path == "/auth/tokens" {
-			w.Header().Add("X-Auth-Token", "code")
-			w.WriteHeader(http.StatusOK)
-			err := json.NewEncoder(w).Encode(keystone.AuthResponse{Token: &keystone.Token{}})
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			return
-		}
-		if len(resps) == 0 {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		resp := resps[0]
-		resps = resps[1:]
-		if len(resp.body) != 0 {
-			if _, err := w.Write(resp.body); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}
-		w.WriteHeader(resp.code)
-
-	}))
-	return ts
-}
-
-type testResp struct {
-	StringValue string
-	IntValue    int
 }
 
 func TestDoRequest(t *testing.T) {
@@ -147,4 +107,43 @@ func TestDoRequest(t *testing.T) {
 			}
 		})
 	}
+}
+
+func fakeHTTP(resps []httpResp) *httptest.Server {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.Path == "/auth/tokens" {
+			w.Header().Add("X-Auth-Token", "code")
+			w.WriteHeader(http.StatusOK)
+			err := json.NewEncoder(w).Encode(keystone.AuthResponse{Token: &keystone.Token{}})
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+		if len(resps) == 0 {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		resp := resps[0]
+		resps = resps[1:]
+		if len(resp.body) != 0 {
+			if _, err := w.Write(resp.body); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}
+		w.WriteHeader(resp.code)
+
+	}))
+	return ts
+}
+
+type httpResp struct {
+	code int
+	body []byte
+}
+
+type testResp struct {
+	StringValue string
+	IntValue    int
 }

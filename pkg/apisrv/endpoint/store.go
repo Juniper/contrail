@@ -1,4 +1,4 @@
-package common
+package endpoint
 
 import (
 	"fmt"
@@ -16,54 +16,17 @@ const (
 	pathSep = "/"
 )
 
-// GetClusterIDFromProxyURL parses the proxy url to retrieve clusterID
-func GetClusterIDFromProxyURL(url string) (clusterID string) {
-	paths := strings.Split(url, pathSep)
-	if len(paths) > 3 && paths[1] == "proxy" {
-		clusterID = paths[2]
-	}
-	return clusterID
-}
-
-// Endpoint represents an endpoint url with its credentials
-type Endpoint struct {
-	URL      string
-	Username string
-	Password string
-}
-
-// NewEndpoint returns endoint struct with credential
-func NewEndpoint(url, user, password string) *Endpoint {
-	return &Endpoint{
-		URL:      url,
-		Username: user,
-		Password: password,
-	}
-}
-
 // TargetStore is used to store service specific endpoint targets in-memory
 type TargetStore struct {
 	Data       *sync.Map
 	nextTarget string
 }
 
-// EndpointStore is used to store cluster specific endpoints in-memory
-type EndpointStore struct {
-	Data *sync.Map
-}
-
-//MakeTargetStore is used to make an in-memory endpoint target store.
-func MakeTargetStore() *TargetStore {
+// NewTargetStore is used to make an in-memory endpoint target store.
+func NewTargetStore() *TargetStore {
 	return &TargetStore{
 		Data:       new(sync.Map),
 		nextTarget: "",
-	}
-}
-
-//MakeEndpointStore is used to make an in-memory endpoint store.
-func MakeEndpointStore() *EndpointStore {
-	return &EndpointStore{
-		Data: new(sync.Map),
 	}
 }
 
@@ -142,8 +105,20 @@ func (t *TargetStore) Count() int {
 	return count
 }
 
+// Store is used to store cluster specific endpoints in-memory
+type Store struct {
+	Data *sync.Map
+}
+
+// NewStore is used to make an in-memory endpoint store.
+func NewStore() *Store {
+	return &Store{
+		Data: new(sync.Map),
+	}
+}
+
 //Read endpoint targets store from memory
-func (e *EndpointStore) Read(endpointKey string) *TargetStore {
+func (e *Store) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
 	if !ok {
 		return nil
@@ -154,17 +129,17 @@ func (e *EndpointStore) Read(endpointKey string) *TargetStore {
 }
 
 //Write endpoint targets store in-memory
-func (e *EndpointStore) Write(endpointKey string, endpointStore *TargetStore) {
+func (e *Store) Write(endpointKey string, endpointStore *TargetStore) {
 	e.Data.Store(endpointKey, endpointStore)
 }
 
 //Remove endpoint target store from memory
-func (e *EndpointStore) Remove(prefix string) {
+func (e *Store) Remove(prefix string) {
 	e.Data.Delete(prefix)
 }
 
 //GetEndpoint by prefix
-func (e *EndpointStore) GetEndpoint(prefix string) (endpoint *Endpoint, err error) {
+func (e *Store) GetEndpoint(prefix string) (endpoint *Endpoint, err error) {
 	endpointCount := 0
 	e.Data.Range(func(key, targets interface{}) bool {
 		keyString, _ := key.(string) // nolint: errcheck
@@ -185,4 +160,20 @@ func (e *EndpointStore) GetEndpoint(prefix string) (endpoint *Endpoint, err erro
 	})
 
 	return endpoint, err
+}
+
+// Endpoint represents an endpoint url with its credentials
+type Endpoint struct {
+	URL      string
+	Username string
+	Password string
+}
+
+// NewEndpoint returns endoint struct with credential
+func NewEndpoint(url, user, password string) *Endpoint {
+	return &Endpoint{
+		URL:      url,
+		Username: user,
+		Password: password,
+	}
 }

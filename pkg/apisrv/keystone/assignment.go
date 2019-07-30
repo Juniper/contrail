@@ -30,14 +30,6 @@ type StaticAssignment struct {
 	Users    map[string]*kscommon.User    `json:"users"`
 }
 
-//VNCAPIAssignment is an implementation of Assignment based on vnc api-server.
-type VNCAPIAssignment struct {
-	Domains   map[string]*kscommon.Domain  `json:"domains"`
-	Projects  map[string]*kscommon.Project `json:"projects"`
-	Users     map[string]*kscommon.User    `json:"users"`
-	vncClient *client.HTTP
-}
-
 //ListUsers is used to fetch all users
 func (assignment *StaticAssignment) ListUsers() map[string]*kscommon.User {
 	return assignment.Users
@@ -73,34 +65,12 @@ func (assignment *StaticAssignment) ListProjects() []*kscommon.Project {
 	return projects
 }
 
-//FetchUser is used to fetch a user by ID and Password.
-func (assignment *VNCAPIAssignment) FetchUser(name, password string) (*kscommon.User, error) {
-	user, ok := assignment.Users[name]
-	if !ok {
-		return nil, fmt.Errorf("user %s not found", name)
-	}
-	if user.Password != "" && format.InterfaceToString(user.Password) != password {
-		return nil, fmt.Errorf("invalid Credentials")
-	}
-	return user, nil
-}
-
-//ListDomains is used to list domains
-func (assignment *VNCAPIAssignment) ListDomains() []*kscommon.Domain {
-	domains := []*kscommon.Domain{}
-	for _, domain := range assignment.Domains {
-		domains = append(domains, domain)
-	}
-	return domains
-}
-
-//ListProjects is used to list projects
-func (assignment *VNCAPIAssignment) ListProjects() []*kscommon.Project {
-	var projects []*kscommon.Project
-	for _, project := range assignment.Projects {
-		projects = append(projects, project)
-	}
-	return projects
+//VNCAPIAssignment is an implementation of Assignment based on vnc api-server.
+type VNCAPIAssignment struct {
+	Domains   map[string]*kscommon.Domain  `json:"domains"`
+	Projects  map[string]*kscommon.Project `json:"projects"`
+	Users     map[string]*kscommon.User    `json:"users"`
+	vncClient *client.HTTP
 }
 
 //Init the VNCAPI assignment with vnc api-server projects/domains
@@ -148,6 +118,24 @@ func (assignment *VNCAPIAssignment) Init(configEndpoint string, staticUsers map[
 	return nil
 }
 
+func (assignment *VNCAPIAssignment) getVncDomains() (map[string]*kscommon.Domain, error) {
+	domainURI := "/domains"
+	query := url.Values{"detail": []string{"True"}}
+	vncDomainsResponse := &VncDomainListResponse{}
+	_, err := assignment.vncClient.ReadWithQuery(context.Background(), domainURI, query, vncDomainsResponse)
+	if err != nil {
+		return nil, err
+	}
+	domains := map[string]*kscommon.Domain{}
+	for _, vncDomain := range vncDomainsResponse.Domains {
+		domains[vncDomain.Domain.Name] = &kscommon.Domain{
+			Name: vncDomain.Domain.Name,
+			ID:   strings.Replace(vncDomain.Domain.UUID, "-", "", -1),
+		}
+	}
+	return domains, nil
+}
+
 func (assignment *VNCAPIAssignment) getVncProjects(
 	domains map[string]*kscommon.Domain) (map[string]*kscommon.Project, []*kscommon.Role, error) {
 	projectURI := "/projects"
@@ -178,20 +166,32 @@ func (assignment *VNCAPIAssignment) getVncProjects(
 	return projects, roles, nil
 }
 
-func (assignment *VNCAPIAssignment) getVncDomains() (map[string]*kscommon.Domain, error) {
-	domainURI := "/domains"
-	query := url.Values{"detail": []string{"True"}}
-	vncDomainsResponse := &VncDomainListResponse{}
-	_, err := assignment.vncClient.ReadWithQuery(context.Background(), domainURI, query, vncDomainsResponse)
-	if err != nil {
-		return nil, err
+//FetchUser is used to fetch a user by ID and Password.
+func (assignment *VNCAPIAssignment) FetchUser(name, password string) (*kscommon.User, error) {
+	user, ok := assignment.Users[name]
+	if !ok {
+		return nil, fmt.Errorf("user %s not found", name)
 	}
-	domains := map[string]*kscommon.Domain{}
-	for _, vncDomain := range vncDomainsResponse.Domains {
-		domains[vncDomain.Domain.Name] = &kscommon.Domain{
-			Name: vncDomain.Domain.Name,
-			ID:   strings.Replace(vncDomain.Domain.UUID, "-", "", -1),
-		}
+	if user.Password != "" && format.InterfaceToString(user.Password) != password {
+		return nil, fmt.Errorf("invalid Credentials")
 	}
-	return domains, nil
+	return user, nil
+}
+
+//ListDomains is used to list domains
+func (assignment *VNCAPIAssignment) ListDomains() []*kscommon.Domain {
+	domains := []*kscommon.Domain{}
+	for _, domain := range assignment.Domains {
+		domains = append(domains, domain)
+	}
+	return domains
+}
+
+//ListProjects is used to list projects
+func (assignment *VNCAPIAssignment) ListProjects() []*kscommon.Project {
+	var projects []*kscommon.Project
+	for _, project := range assignment.Projects {
+		projects = append(projects, project)
+	}
+	return projects
 }

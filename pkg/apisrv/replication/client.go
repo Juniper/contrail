@@ -7,12 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
@@ -20,6 +16,9 @@ import (
 	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/labstack/echo"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -34,22 +33,14 @@ const (
 	defaultDomainName  = "Default"
 )
 
-type vncAPI struct {
-	client     *client.HTTP
-	ctx        context.Context
-	clusterID  string
-	endpointID string
-	log        *logrus.Entry
-}
-
 type vncAPIHandle struct {
 	APIServer     *client.HTTP
 	clients       map[string]*vncAPI
-	endpointStore *apicommon.EndpointStore
+	endpointStore *endpoint.Store
 	log           *logrus.Entry
 }
 
-func newVncAPIHandle(epStore *apicommon.EndpointStore) *vncAPIHandle {
+func newVncAPIHandle(epStore *endpoint.Store) *vncAPIHandle {
 	handle := &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
@@ -58,114 +49,8 @@ func newVncAPIHandle(epStore *apicommon.EndpointStore) *vncAPIHandle {
 	return handle
 }
 
-func (h *vncAPIHandle) initialize() (err error) {
-	if err = h.initClient(); err != nil {
-		return err
-	}
-	var endpoints []*models.Endpoint
-	if endpoints, err = h.ListConfigEndpoints(); err != nil {
-		return err
-	}
-	for _, e := range endpoints {
-		h.createClient(e)
-	}
-	return nil
-}
-
-func (h *vncAPIHandle) initClient() error {
-	h.APIServer = client.NewHTTP(&client.HTTPConfig{
-		ID:       viper.GetString("client.id"),
-		Password: viper.GetString("client.password"),
-		Endpoint: viper.GetString("client.endpoint"),
-		AuthURL:  viper.GetString("keystone.authurl"),
-		Scope: keystone.NewScope(
-			viper.GetString("client.domain_id"),
-			viper.GetString("client.domain_name"),
-			viper.GetString("client.project_id"),
-			viper.GetString("client.project_name"),
-		),
-		Insecure: viper.GetBool("insecure"),
-	})
-
-	var err error
-	if viper.GetString("keystone.authurl") != "" {
-		_, err = h.APIServer.Login(context.Background())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (h *vncAPIHandle) ListConfigEndpoints() (endpoints []*models.Endpoint, err error) {
-	request := &services.ListEndpointRequest{
-		Spec: &baseservices.ListSpec{
-			Fields: []string{"uuid", "parent_uuid", "prefix"},
-			Filters: []*baseservices.Filter{
-				{
-					Key:    "prefix",
-					Values: []string{configService},
-				},
-			},
-		},
-	}
-	var resp *services.ListEndpointResponse
-	resp, err = h.APIServer.ListEndpoint(context.Background(), request)
-	if err != nil {
-		return nil, err
-	}
-	return resp.GetEndpoints(), nil
-}
-
-func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *apicommon.Endpoint, err error) {
-	// retry 5 times at interval of 2 seconds
-	// config endpoints are created before keystone
-	// endpoints
-	if err := retry.Do(func() (retry bool, err error) {
-		endpointKey := strings.Join(
-			[]string{"/proxy", clusterID, keystoneService, scope}, "/")
-		keystoneTargets := h.endpointStore.Read(endpointKey)
-		if keystoneTargets == nil {
-			err = fmt.Errorf("keystone targets not found for: %s", endpointKey)
-			return true, err
-		}
-		authEndpoint = keystoneTargets.Next(scope)
-		if authEndpoint == nil {
-			err = fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
-			return true, err
-		}
-		return false, nil
-	}, retry.WithLog(logrus.StandardLogger()),
-		retry.WithInterval(proxySyncInterval)); err != nil {
-		h.log.Error(err)
-		return nil, err
-	}
-	return authEndpoint, nil
-}
-
-func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) context.Context {
-	var err error
-	var projectID string
-	ctx := auth.WithXClusterID(context.Background(), clusterID)
-	if apiClient.Scope.Project.Name == "" && apiClient.Scope.Project.ID == "" {
-		projectID, err = apiClient.Keystone.GetProjectIDByName(
-			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
-			apiClient.Scope.Project.Domain)
-		if err == nil {
-			apiClient.Scope = keystone.NewScope(
-				defaultDomainID, defaultDomainName,
-				projectID, defaultProjectName)
-		}
-	}
-	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(defaultDomainID, projectID,
-		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
-	var authKey interface{} = "auth"
-	ctx = context.WithValue(ctx, authKey, varCtx)
-	return ctx
-}
-
-func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
+// CreateClient creates client for given endpoint.
+func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 	if ep.Prefix != configService {
 		return
 	}
@@ -229,10 +114,59 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 	h.log.Debugf("created vnc client for endpoint: %s", ep.UUID)
 }
 
-func (h *vncAPIHandle) updateClient(ep *models.Endpoint) {
+func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoint.Endpoint, err error) {
+	// retry 5 times at interval of 2 seconds
+	// config endpoints are created before keystone
+	// endpoints
+	if err := retry.Do(func() (retry bool, err error) {
+		endpointKey := strings.Join(
+			[]string{"/proxy", clusterID, keystoneService, scope}, "/")
+		keystoneTargets := h.endpointStore.Read(endpointKey)
+		if keystoneTargets == nil {
+			err = fmt.Errorf("keystone targets not found for: %s", endpointKey)
+			return true, err
+		}
+		authEndpoint = keystoneTargets.Next(scope)
+		if authEndpoint == nil {
+			err = fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
+			return true, err
+		}
+		return false, nil
+	}, retry.WithLog(logrus.StandardLogger()),
+		retry.WithInterval(proxySyncInterval)); err != nil {
+		h.log.Error(err)
+		return nil, err
+	}
+	return authEndpoint, nil
+}
+
+func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) context.Context {
+	var err error
+	var projectID string
+	ctx := auth.WithXClusterID(context.Background(), clusterID)
+	if apiClient.Scope.Project.Name == "" && apiClient.Scope.Project.ID == "" {
+		projectID, err = apiClient.Keystone.GetProjectIDByName(
+			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
+			apiClient.Scope.Project.Domain)
+		if err == nil {
+			apiClient.Scope = keystone.NewScope(
+				defaultDomainID, defaultDomainName,
+				projectID, defaultProjectName)
+		}
+	}
+	// as auth is enabled, create ctx with auth
+	varCtx := auth.NewContext(defaultDomainID, projectID,
+		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
+	var authKey interface{} = "auth"
+	ctx = context.WithValue(ctx, authKey, varCtx)
+	return ctx
+}
+
+// UpdateClient updates client for given endpoint.
+func (h *vncAPIHandle) UpdateClient(ep *models.Endpoint) {
 	if ep.Prefix == configService {
 		if _, ok := h.clients[ep.ParentUUID]; !ok {
-			h.createClient(ep)
+			h.CreateClient(ep)
 		}
 	}
 	if ep.Prefix != keystoneService {
@@ -250,7 +184,8 @@ func (h *vncAPIHandle) updateClient(ep *models.Endpoint) {
 	h.log.Debugf("updated vnc client for endpoint: %s", ep.UUID)
 }
 
-func (h *vncAPIHandle) deleteClient(endpointID string) {
+// DeleteClient deletes client for given endpoint.
+func (h *vncAPIHandle) DeleteClient(endpointID string) {
 	for clusterID, apiClient := range h.clients {
 		if apiClient.endpointID == endpointID {
 			delete(h.clients, clusterID)
@@ -260,18 +195,87 @@ func (h *vncAPIHandle) deleteClient(endpointID string) {
 	}
 }
 
-func (h *vncAPIHandle) replicate(action, url string, data interface{}, response interface{}) {
+// Replicate propagates given event to VNC API.
+func (h *vncAPIHandle) Replicate(action, url string, data interface{}, response interface{}) {
 	if len(h.clients) == 0 {
 		if err := h.initialize(); err != nil {
 			h.log.Errorf("clients not initialized: %v", err)
 		}
 	}
 	for _, vncAPI := range h.clients {
-		vncAPI.replicate(action, url, data, response)
+		vncAPI.Replicate(action, url, data, response)
 	}
 }
 
-func (v *vncAPI) replicate(action, url string, data interface{}, response interface{}) {
+func (h *vncAPIHandle) initialize() (err error) {
+	if err = h.initClient(); err != nil {
+		return err
+	}
+	var endpoints []*models.Endpoint
+	if endpoints, err = h.listConfigEndpoints(); err != nil {
+		return err
+	}
+	for _, e := range endpoints {
+		h.CreateClient(e)
+	}
+	return nil
+}
+
+func (h *vncAPIHandle) initClient() error {
+	h.APIServer = client.NewHTTP(&client.HTTPConfig{
+		ID:       viper.GetString("client.id"),
+		Password: viper.GetString("client.password"),
+		Endpoint: viper.GetString("client.endpoint"),
+		AuthURL:  viper.GetString("keystone.authurl"),
+		Scope: keystone.NewScope(
+			viper.GetString("client.domain_id"),
+			viper.GetString("client.domain_name"),
+			viper.GetString("client.project_id"),
+			viper.GetString("client.project_name"),
+		),
+		Insecure: viper.GetBool("insecure"),
+	})
+
+	var err error
+	if viper.GetString("keystone.authurl") != "" {
+		_, err = h.APIServer.Login(context.Background())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (h *vncAPIHandle) listConfigEndpoints() (endpoints []*models.Endpoint, err error) {
+	request := &services.ListEndpointRequest{
+		Spec: &baseservices.ListSpec{
+			Fields: []string{"uuid", "parent_uuid", "prefix"},
+			Filters: []*baseservices.Filter{
+				{
+					Key:    "prefix",
+					Values: []string{configService},
+				},
+			},
+		},
+	}
+	var resp *services.ListEndpointResponse
+	resp, err = h.APIServer.ListEndpoint(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetEndpoints(), nil
+}
+
+type vncAPI struct {
+	client     *client.HTTP
+	ctx        context.Context
+	clusterID  string
+	endpointID string
+	log        *logrus.Entry
+}
+
+// Replicate propagates given event to VNC API.
+func (v *vncAPI) Replicate(action, url string, data interface{}, response interface{}) {
 	proxyURL := strings.Join([]string{"/proxy", v.clusterID, configService, url}, "/")
 	v.log.Debugf("replicating %v to cluster: %s", data, v.clusterID)
 	switch action {

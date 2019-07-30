@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -14,66 +15,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	auth2 "github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
-
-const (
-	keystoneService = "keystone"
-)
-
-func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
-	if tokenString == "" {
-		return nil, errors.Wrap(errutil.ErrorUnauthenticated, "no auth token in request")
-	}
-	validatedToken, err := auth.Validate(tokenString)
-	if err != nil {
-		logrus.Errorf("Invalid Token: %s", err)
-		return nil, errutil.ErrorUnauthenticated
-	}
-	roles := []string{}
-	for _, r := range validatedToken.Roles {
-		roles = append(roles, r.Name)
-	}
-	project := validatedToken.Project
-	if project == nil {
-		logrus.Debug("No project in a token")
-		return nil, errutil.ErrorUnauthenticated
-	}
-	domain := validatedToken.Project.Domain.ID
-	user := validatedToken.User
-
-	objPerms := auth2.NewObjPerms(validatedToken)
-	authContext := auth2.NewContext(domain, project.ID, user.ID, roles, tokenString, objPerms)
-
-	var authKey interface{} = "auth"
-	newCtx := context.WithValue(ctx, authKey, authContext)
-	return newCtx, nil
-}
-
-func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (
-	authEndpoint *apicommon.Endpoint) {
-	if endpoints == nil {
-		// getKeystoneEndpoint called from CreateTokenAPI,
-		// ValidateTokenAPI or GetProjectAPI of the mock keystone
-		return nil
-	}
-	if clusterID != "" {
-		scope := "private"
-		endpointKey := strings.Join([]string{"/proxy", clusterID, keystoneService, scope}, "/")
-		keystoneTargets := endpoints.Read(endpointKey)
-		if keystoneTargets == nil {
-			return nil
-		}
-		authEndpoint = keystoneTargets.Next(scope)
-		if authEndpoint == nil {
-			return nil
-		}
-	}
-	return authEndpoint
-
-}
 
 // GetAuthSkipPaths returns the list of paths which need not be authenticated.
 func GetAuthSkipPaths() ([]string, error) {
@@ -105,8 +48,7 @@ func GetAuthSkipPaths() ([]string, error) {
 
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
 //nolint: gocyclo
-func AuthMiddleware(keystoneClient *Client, skipPath []string,
-	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
+func AuthMiddleware(keystoneClient *Client, skipPath []string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		keystoneClient.AuthURL = keystoneClient.LocalAuthURL
 		auth := keystoneClient.NewAuth()
@@ -155,8 +97,7 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 }
 
 //AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(keystoneClient *Client,
-	endpoints *apicommon.EndpointStore) grpc.UnaryServerInterceptor {
+func AuthInterceptor(keystoneClient *Client) grpc.UnaryServerInterceptor {
 	keystoneClient.AuthURL = keystoneClient.LocalAuthURL
 	auth := keystoneClient.NewAuth()
 	return func(ctx context.Context, req interface{},
@@ -175,4 +116,33 @@ func AuthInterceptor(keystoneClient *Client,
 		}
 		return handler(newCtx, req)
 	}
+}
+
+func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
+	if tokenString == "" {
+		return nil, errors.Wrap(errutil.ErrorUnauthenticated, "no auth token in request")
+	}
+	validatedToken, err := auth.Validate(tokenString)
+	if err != nil {
+		logrus.Errorf("Invalid Token: %s", err)
+		return nil, errutil.ErrorUnauthenticated
+	}
+	roles := []string{}
+	for _, r := range validatedToken.Roles {
+		roles = append(roles, r.Name)
+	}
+	project := validatedToken.Project
+	if project == nil {
+		logrus.Debug("No project in a token")
+		return nil, errutil.ErrorUnauthenticated
+	}
+	domain := validatedToken.Project.Domain.ID
+	user := validatedToken.User
+
+	objPerms := auth2.NewObjPerms(validatedToken)
+	authContext := auth2.NewContext(domain, project.ID, user.ID, roles, tokenString, objPerms)
+
+	var authKey interface{} = "auth"
+	newCtx := context.WithValue(ctx, authKey, authContext)
+	return newCtx, nil
 }
