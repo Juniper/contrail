@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -23,251 +24,341 @@ import (
 )
 
 const (
-	key              = "name"
-	privatePortList  = "private_port_list"
-	publicPortList   = "public_port_list"
-	testEndpointFile = "./test_data/test_endpoint.tmpl"
-	xClusterIDKey    = "X-Cluster-ID"
+	key                  = "name"
+	neutron1EndpointName = "neutron1"
+	neutron2EndpointName = "neutron2"
+	privatePortList      = "private_port_list"
+	publicPortList       = "public_port_list"
+	testEndpointFile     = "./test_data/test_endpoint.tmpl"
+	xClusterIDKey        = "X-Cluster-ID"
 )
 
-func TestProxyEndpoint(t *testing.T) {
-	ctx := context.Background()
-	// Create a cluster and its neutron endpoints(multiple)
-	clusterAName := t.Name() + "_clusterA"
-	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
-		t, clusterAName, "neutron1")
-	testScenario, clusterANeutron2Public, clusterANeutron2Private, cleanup2 := runEndpointTest(
-		t, clusterAName, "neutron2")
-	defer cleanup1()
-	defer cleanup2()
-	// remove tempfile after test
-	defer clusterANeutronPrivate.Close()
-	defer clusterANeutronPublic.Close()
+//////////////////////////////
+// Dynamic proxy HTTP tests //
+//////////////////////////////
+
+func TestDynamicProxyService(t *testing.T) {
+	for _, tt := range []struct {
+		name                      string
+		synchronizeProxyEndpoints func(s *integration.APIServer)
+	}{
+		{
+			name: "synchronizing proxy endpoints with ForceProxyUpdate",
+			synchronizeProxyEndpoints: func(s *integration.APIServer) {
+				s.ForceProxyUpdate()
+			},
+		},
+		{
+			// TODO: Remove this test when proxyService switches to using events instead of Ticker.
+			name: "synchronizing proxy endpoints with sleep",
+			synchronizeProxyEndpoints: func(_ *integration.APIServer) {
+				time.Sleep(apisrv.ProxySyncInterval)
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			testDynamicProxyService(t, tt.synchronizeProxyEndpoints)
+		})
+	}
+}
+
+func testDynamicProxyService(
+	t *testing.T, synchronizeProxyEndpoints func(s *integration.APIServer),
+) {
+	tName := strings.ReplaceAll(t.Name(), "/", "_")
+	clusterAName, clusterBName := tName+"_clusterA", tName+"_clusterB"
+	httpClient := integration.NewTestingHTTPClient(t, server.URL(), integration.AdminUserID) // TODO: switch to Bob when yaml test removed
+
+	clusterANeutron1Public, clusterANeutron1Private, removeClusterA1 := createClusterAndItsTargetServers(
+		t, clusterAName, neutron1EndpointName,
+	)
+	clusterANeutron2Public, clusterANeutron2Private, removeClusterA2 := createClusterAndItsTargetServers(
+		t, clusterAName, neutron2EndpointName,
+	)
+	defer removeClusterA1()
+	defer removeClusterA2()
+	defer clusterANeutron1Private.Close()
+	defer clusterANeutron1Public.Close()
 	defer clusterANeutron2Private.Close()
 	defer clusterANeutron2Public.Close()
 
-	server.ForceProxyUpdate()
+	synchronizeProxyEndpoints(server)
+	verifyNeutronReadRequests(t, httpClient, clusterAName)
 
-	// verify proxies
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
+	clusterBNeutron1Public, clusterBNeutron1Private, removeClusterB := createClusterAndItsTargetServers(
+		t, clusterBName, neutron1EndpointName,
+	)
+	defer removeClusterB()
+	defer clusterBNeutron1Public.Close()
+	defer clusterBNeutron1Private.Close()
 
-	// create one more cluster/neutron endpoint for new cluster
-	clusterBName := t.Name() + "_clusterB"
-	testScenario, neutronPublic, neutronPrivate, cleanup3 := runEndpointTest(
-		t, clusterBName, "neutron1")
-	defer cleanup3()
-	// remove tempfile after test
-	defer neutronPrivate.Close()
-	defer neutronPublic.Close()
+	synchronizeProxyEndpoints(server)
+	verifyNeutronReadRequests(t, httpClient, clusterAName)
+	verifyNeutronReadRequests(t, httpClient, clusterBName)
 
-	server.ForceProxyUpdate()
+	updateNeutronEndpointsWithIncorrectPort(t, httpClient, clusterAName)
 
-	// verify new proxies
-	verifyProxies(ctx, t, testScenario, clusterBName, true)
+	synchronizeProxyEndpoints(server)
+	verifyNeutronReadRequestsFail(t, httpClient, clusterAName)
 
-	// verify existing proxies, make sure the proxy prefix is updated with cluster id
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
+	deleteNeutronEndpoints(t, httpClient, clusterAName)
+	createNeutron1Endpoint(t, httpClient, clusterAName, clusterANeutron1Public.URL, clusterANeutron1Private.URL)
 
-	// Update neutron endpoints with incorrect port
-	for _, neutron := range []string{"neutron1", "neutron2"} {
-
-		var data interface{}
-		endpointUUID := fmt.Sprintf("endpoint_%s_%s_uuid", clusterAName, neutron)
-		endpoint := map[string]interface{}{"uuid": endpointUUID,
-			"public_url":  "http://127.0.0.1",
-			"private_url": "http://127.0.0.1",
-		}
-		data = map[string]interface{}{"endpoint": endpoint}
-		for _, client := range testScenario.Clients {
-			var response map[string]interface{}
-			url := fmt.Sprintf("/endpoint/endpoint_%s_%s_uuid", clusterAName, neutron)
-			_, err := client.Update(ctx, url, &data, &response)
-			assert.NoError(t, err, "failed to update neutron endpoint port")
-			break
-		}
-	}
-
-	server.ForceProxyUpdate()
-
-	// verify proxy (expected to fail as the port is incorrect)
-	verifyProxies(ctx, t, testScenario, clusterAName, false)
-
-	// Delete the neutron endpoint
-	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
-		url := fmt.Sprintf("/endpoint/endpoint_%s_neutron1_uuid", clusterAName)
-		_, err := client.Delete(ctx, url, &response)
-		assert.NoError(t, err, "failed to delete neutron1 endpoint")
-		url = fmt.Sprintf("/endpoint/endpoint_%s_neutron2_uuid", clusterAName)
-		_, err = client.Delete(ctx, url, &response)
-		assert.NoError(t, err, "failed to delete neutron2 endpoint")
-		break
-	}
-
-	// Re create the neutron endpoint
-	endpointUUID := fmt.Sprintf("endpoint_%s_neutron1_uuid", clusterAName)
-	endpoint := map[string]interface{}{"uuid": endpointUUID,
-		"public_url":  clusterANeutronPublic.URL,
-		"private_url": clusterANeutronPrivate.URL,
-		"parent_type": "contrail-cluster",
-		"parent_uuid": clusterAName + "_uuid",
-		"name":        clusterAName + "_neutron1",
-		"prefix":      "neutron",
-	}
-	data := map[string]interface{}{"endpoint": endpoint}
-	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
-		url := fmt.Sprintf("/endpoints")
-		_, err := client.Create(ctx, url, &data, &response)
-		assert.NoError(t, err, "failed to re-create neutron1 endpoint port")
-		break
-	}
-
-	server.ForceProxyUpdate()
-
-	// verify proxy
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
+	synchronizeProxyEndpoints(server)
+	verifyNeutronReadRequests(t, httpClient, clusterAName)
 }
 
-// TestProxyEndpointWithSleep tests the first part of TestProxyEndpoint,
-// but verifies that endpoint updates are triggered every 2 seconds.
-// TODO: Remove this test when proxyService switches to using events instead of Ticker.
-func TestProxyEndpointWithSleep(t *testing.T) {
-	ctx := context.Background()
-	// Create a cluster and its neutron endpoint
-	clusterAName := t.Name() + "_clusterA"
-	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
-		t, clusterAName, "neutron1")
-	defer cleanup1()
-	// remove tempfile after test
-	defer clusterANeutronPrivate.Close()
-	defer clusterANeutronPublic.Close()
+func createClusterAndItsTargetServers(
+	t *testing.T, clusterName, endpointName string,
+) (*httptest.Server, *httptest.Server, func()) {
+	neutronPrivateServer := newNeutronPrivateServer(clusterName)
+	neutronPublicServer := newNeutronPublicServer(clusterName)
 
-	// wait for proxy endpoints to update
-	time.Sleep(2 * time.Second)
-
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
-
-	// create one more cluster/neutron endpoint for new cluster
-	clusterBName := t.Name() + "_clusterB"
-	testScenario, neutronPublic, neutronPrivate, cleanup2 := runEndpointTest(
-		t, clusterBName, "neutron1")
-	defer cleanup2()
-	// remove tempfile after test
-	defer neutronPrivate.Close()
-	defer neutronPublic.Close()
-
-	// wait for proxy endpoints to update
-	time.Sleep(2 * time.Second)
-
-	// verify new proxies
-	verifyProxies(ctx, t, testScenario, clusterBName, true)
-
-	// verify existing proxies, make sure the proxy prefix is updated with cluster id
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
-}
-
-func runEndpointTest(t *testing.T, clusterName, endpointName string) (*integration.TestScenario,
-	*httptest.Server, *httptest.Server, func()) {
-	routes := map[string]interface{}{
-		"/ports": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&mockPortsResponse{Name: clusterName + privatePortList})
-		}),
-	}
-	neutronPrivate := mockServer(routes)
-	routes = map[string]interface{}{
-		"/ports": echo.HandlerFunc(func(c echo.Context) error {
-			clusterID := c.Request().Header.Get(xClusterIDKey)
-			if clusterID != clusterName+"_uuid" {
-				return c.JSON(http.StatusBadRequest,
-					"clusterID not found in header")
-			}
-			return c.JSON(http.StatusOK,
-				&mockPortsResponse{Name: clusterName + publicPortList})
-		}),
-	}
-	neutronPublic := mockServer(routes)
-
-	manageParent := true
-	if endpointName == "neutron2" {
-		manageParent = false
-	}
-
+	// TODO: replace YAML test with Go code
 	ts, err := integration.LoadTest(testEndpointFile, pongo2.Context{
 		"cluster_name":    clusterName,
 		"endpoint_name":   fmt.Sprintf("%s_%s", clusterName, endpointName),
 		"endpoint_prefix": "neutron",
-		"private_url":     neutronPrivate.URL,
-		"public_url":      neutronPublic.URL,
-		"manage_parent":   manageParent,
+		"private_url":     neutronPrivateServer.URL,
+		"public_url":      neutronPublicServer.URL,
+		"manage_parent":   manageParent(endpointName),
 	})
 	require.NoError(t, err, "failed to load test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 
-	return ts, neutronPublic, neutronPrivate, cleanup
+	removeClusterAndEndpoint := integration.RunDirtyTestScenario(t, ts, server)
+
+	return neutronPublicServer, neutronPrivateServer, removeClusterAndEndpoint
+}
+
+func createContrailCluster() {
+	// TODO
+}
+
+func createEndpoint() {
+	// TODO
+}
+
+func newNeutronPrivateServer(clusterName string) *httptest.Server {
+	return newTestHTTPServer(routes{
+		"/ports": func(c echo.Context) error {
+			return c.JSON(http.StatusOK, &mockPortsResponse{Name: clusterName + privatePortList})
+		},
+	})
+}
+
+func newNeutronPublicServer(clusterName string) *httptest.Server {
+	return newTestHTTPServer(routes{
+		"/ports": func(c echo.Context) error {
+			clusterID := c.Request().Header.Get(xClusterIDKey)
+			if clusterID != clusterName+"_uuid" {
+				return c.JSON(http.StatusBadRequest, "clusterID not found in header")
+			}
+			return c.JSON(http.StatusOK, &mockPortsResponse{Name: clusterName + publicPortList})
+		},
+	})
 }
 
 type mockPortsResponse struct {
 	Name string `json:"name"`
 }
 
-func mockServer(routes map[string]interface{}) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-
-	// Routes
-	for route, handler := range routes {
-		e.GET(route, handler.(echo.HandlerFunc))
-	}
-
-	return httptest.NewServer(e)
-}
-
-func verifyProxies(
-	ctx context.Context, t *testing.T, scenario *integration.TestScenario, clusterName string, isSuccessful bool,
-) {
-	url := "/proxy/" + clusterName + "_uuid/neutron/ports"
-	ok := verifyProxy(ctx, t, scenario, url, clusterName, publicPortList)
-	assert.Equal(t, ok, isSuccessful, "failed to proxy %s", url)
-
-	url = "/proxy/" + clusterName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(ctx, t, scenario, url, clusterName, privatePortList)
-	assert.Equal(t, ok, isSuccessful, "failed to proxy %s", url)
-}
-
-func verifyProxy(ctx context.Context, t *testing.T, testScenario *integration.TestScenario, url string,
-	clusterName string, expected string) bool {
-	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
-		_, err := client.Read(ctx, url, &response)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %s", url, err)
-			return false
-		}
-		ok := testutil.AssertEqual(t,
-			map[string]interface{}{key: clusterName + expected},
-			response,
-			fmt.Sprintf("Unexpected Response: %s", response))
-		if !ok {
-			return ok
-		}
+func manageParent(endpointName string) bool {
+	if endpointName == neutron2EndpointName {
+		return false
 	}
 	return true
 }
 
+func updateNeutronEndpointsWithIncorrectPort(t *testing.T, httpClient *integration.HTTPAPIClient, clusterAName string) {
+	for _, endpointName := range []string{neutron1EndpointName, neutron2EndpointName} {
+		_, err := httpClient.Update(
+			context.Background(),
+			fmt.Sprintf("/endpoint/endpoint_%s_%s_uuid", clusterAName, endpointName),
+			map[string]interface{}{
+				"endpoint": map[string]interface{}{
+					"uuid":        fmt.Sprintf("endpoint_%s_%s_uuid", clusterAName, endpointName),
+					"public_url":  "http://127.0.0.1",
+					"private_url": "http://127.0.0.1",
+				},
+			},
+			nil,
+		)
+		assert.NoError(t, err, "failed to update Neutron endpoint port")
+	}
+}
+
+func deleteNeutronEndpoints(t *testing.T, httpClient *integration.HTTPAPIClient, clusterAName string) {
+	_, err := httpClient.Delete(
+		context.Background(),
+		fmt.Sprintf("/endpoint/endpoint_%s_%s_uuid", clusterAName, neutron1EndpointName),
+		nil,
+	)
+	assert.NoError(t, err, "failed to delete neutron1 endpoint")
+
+	_, err = httpClient.Delete(
+		context.Background(),
+		fmt.Sprintf("/endpoint/endpoint_%s_%s_uuid", clusterAName, neutron2EndpointName),
+		nil,
+	)
+	assert.NoError(t, err, "failed to delete neutron2 endpoint")
+}
+
+func createNeutron1Endpoint(
+	t *testing.T,
+	httpClient *integration.HTTPAPIClient,
+	clusterAName,
+	clusterANeutronPublicURL,
+	clusterANeutronPrivateURL string,
+) {
+	_, err := httpClient.Create(
+		context.Background(),
+		"/endpoints",
+		map[string]interface{}{
+			"endpoint": map[string]interface{}{
+				"uuid":        fmt.Sprintf("endpoint_%s_%s_uuid", clusterAName, neutron1EndpointName),
+				"public_url":  clusterANeutronPublicURL,
+				"private_url": clusterANeutronPrivateURL,
+				"parent_type": "contrail-cluster",
+				"parent_uuid": clusterAName + "_uuid",
+				"name":        clusterAName + "_" + neutron1EndpointName,
+				"prefix":      "neutron",
+			},
+		},
+		nil,
+	)
+	assert.NoError(t, err, "failed to recreate neutron1 endpoint port")
+}
+
+func verifyNeutronReadRequests(t *testing.T, c *integration.HTTPAPIClient, clusterName string) {
+	verifyNeutronReadRequest(t, c, fmt.Sprintf("/proxy/%s_uuid/neutron/ports", clusterName), clusterName+publicPortList)
+	verifyNeutronReadRequest(t, c, fmt.Sprintf("/proxy/%s_uuid/neutron/private/ports", clusterName), clusterName+privatePortList)
+}
+
+func verifyNeutronReadRequest(t *testing.T, c *integration.HTTPAPIClient, url, expectedValue string) {
+	var response map[string]interface{}
+	_, err := c.Read(context.Background(), url, &response)
+
+	assert.NoError(t, err, fmt.Sprintf("url: %v, response: %+v", url, response))
+	testutil.AssertEqual(
+		t,
+		map[string]interface{}{key: expectedValue},
+		response,
+	)
+}
+
+func verifyNeutronReadRequestsFail(t *testing.T, c *integration.HTTPAPIClient, clusterName string) {
+	verifyNeutronReadRequestFail(t, c, fmt.Sprintf("/proxy/%s_uuid/neutron/ports", clusterName))
+	verifyNeutronReadRequestFail(t, c, fmt.Sprintf("/proxy/%s_uuid/neutron/private/ports", clusterName))
+}
+
+func verifyNeutronReadRequestFail(t *testing.T, c *integration.HTTPAPIClient, url string) {
+	var response map[string]interface{}
+	_, err := c.Read(context.Background(), url, &response)
+
+	assert.Error(t, err, fmt.Sprintf("url: %v, response: %+v", url, response))
+}
+
+func TestDynamicProxyServiceWithUnreliableTargetHosts(t *testing.T) {
+	// TODO: use neutron/port APIs
+	// TODO: kill neutron servers in between
+
+	const clusterName = "dead_cluster"
+	httpClient := integration.NewTestingHTTPClient(t, server.URL(), integration.AdminUserID) // TODO: switch to Bob when yaml test removed
+
+	configServer1 := newTestHTTPServer(routes{
+		"/virtual-networks": func(c echo.Context) error {
+			return c.JSON(http.StatusServiceUnavailable, &mockPortsResponse{Name: clusterName + "_serviceUnavailable"})
+		},
+	})
+	defer configServer1.Close()
+
+	ts, err := integration.LoadTest(testEndpointFile, pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config1", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     configServer1.URL,
+		"public_url":      configServer1.URL,
+		"manage_parent":   true,
+	})
+	require.NoError(t, err, "failed to load test data")
+	cleanupConfigServer1 := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanupConfigServer1()
+
+	configServer2 := newTestHTTPServer(routes{
+		"/virtual-networks": func(c echo.Context) error {
+			return c.JSON(http.StatusBadGateway, &mockPortsResponse{Name: clusterName + "_badGateway"})
+		},
+	})
+	defer configServer2.Close()
+
+	ts, err = integration.LoadTest(testEndpointFile, pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config2", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     configServer2.URL,
+		"public_url":      configServer2.URL,
+		"manage_parent":   false,
+	})
+	require.NoError(t, err, "failed to load test data")
+	cleanupConfigServer2 := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanupConfigServer2()
+
+	configServer3 := newTestHTTPServer(routes{
+		"/virtual-networks": func(c echo.Context) error {
+			return c.JSON(http.StatusOK, &mockPortsResponse{Name: clusterName})
+		},
+	})
+	defer configServer3.Close()
+
+	ts, err = integration.LoadTest(testEndpointFile, pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config3", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     configServer3.URL,
+		"public_url":      configServer3.URL,
+		"manage_parent":   false,
+	})
+	require.NoError(t, err, "failed to load test data")
+	cleanupConfigServer3 := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanupConfigServer3()
+
+	server.ForceProxyUpdate()
+	verifyConfigVNReadFails(t, httpClient, clusterName)
+}
+
+func verifyConfigVNReadFails(t *testing.T, httpClient *integration.HTTPAPIClient, clusterName string) {
+	var response map[string]interface{}
+	_, err := httpClient.Read(
+		context.Background(),
+		fmt.Sprintf("/proxy/%s_uuid/config/virtual-networks", clusterName),
+		&response,
+	)
+	assert.Error(t, err)
+}
+
+type routes map[string]echo.HandlerFunc
+
+func newTestHTTPServer(r routes) *httptest.Server {
+	e := echo.New() // TODO: do not use echo
+	for route, handler := range r {
+		e.GET(route, handler)
+	}
+	return httptest.NewServer(e)
+}
+
+////////////////////
+// Keystone tests //
+////////////////////
+
 func TestKeystoneEndpoint(t *testing.T) {
-	ctx := context.Background()
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 
 	clusterCName := t.Name() + "_clusterC"
 	clusterCUser := clusterCName + "_admin"
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterCUser, clusterCUser)
+	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterCUser, clusterCUser)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterCUser, clusterCUser)
+	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterCUser, clusterCUser)
 	defer ksPublic.Close()
 
 	ts, err := integration.LoadTest(
@@ -287,6 +378,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	server.ForceProxyUpdate()
 
 	// Login to new remote keystone
+	ctx := context.Background()
 	for _, client := range ts.Clients {
 		_, err = client.Login(ctx)
 		assert.NoError(t, err, "client failed to login remote keystone")
@@ -479,14 +571,18 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	server.ForceProxyUpdate()
 }
 
-func TestWebsocketEndpoint(t *testing.T) {
+////////////////////////////////////
+// Dynamic Proxy WebSockets tests //
+////////////////////////////////////
+
+func TestDynamicProxyServiceWebSocketsSupport(t *testing.T) {
 	clusterName := t.Name() + "_cluster"
 	endpointPrefix := "websocket-server"
 
 	target := echoWebsocketServer(t)
 	target.Start()
 	defer target.Close()
-	cleanup := createEndpoint(t, target, clusterName, endpointPrefix)
+	cleanup := createClusterAndEndpoint(t, target, clusterName, endpointPrefix)
 	defer cleanup()
 
 	wsURLBase := strings.ReplaceAll(server.URL(), "https://", "wss://")
@@ -521,7 +617,9 @@ func echoWebsocketServer(t *testing.T) *httptest.Server {
 	}))
 }
 
-func createEndpoint(t *testing.T, target *httptest.Server, clusterName, endpointPrefix string) (cleanup func()) {
+func createClusterAndEndpoint(
+	t *testing.T, target *httptest.Server, clusterName, endpointPrefix string,
+) (cleanup func()) {
 	ts, err := integration.LoadTest(
 		testEndpointFile,
 		pongo2.Context{

@@ -420,12 +420,11 @@ func (s *Server) registerStaticProxyEndpoints() error {
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *endpoint.Store) {
-	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService)
+	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService, viper.GetString("server.dynamic_proxy_path"))
 	s.Proxy.Serve()
 }
 
-func (s *Server) startVNCReplicator(
-	endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
+func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
 	s.VNCReplicator, err = replication.New(endpointStore, auth)
 	if err != nil {
 		return err
