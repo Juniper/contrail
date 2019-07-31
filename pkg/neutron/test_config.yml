@@ -45,12 +45,9 @@ server:
     - http://localhost:8082
   notify_etcd: false
 
-sync:
-  enabled: true
-  storage: json
-
-homepage:
-  enabled: true
+auth_type: no-auth
+no_auth: false # applies only to gRPC
+insecure: true
 
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.
@@ -104,3 +101,7 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+
+sync:
+  enabled: true
+  storage: json

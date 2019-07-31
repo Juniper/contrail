@@ -45,7 +45,15 @@ server:
   notify_etcd: false
 
 auth_type: no-auth
+no_auth: false # applies only to gRPC
 insecure: true
+
+keystone:
+  store:
+    type: memory
+    expire: 3600
+  insecure: true
+  authurl: http://localhost:5000/v3/
 
 sync:
   enabled: true
@@ -113,10 +121,3 @@ cassandra:
 
 amqp:
   url: amqp://guest:guest@localhost:5672/
-
-keystone:
-  store:
-    type: memory
-    expire: 3600
-  insecure: true
-  authurl: http://localhost:5000/v3/

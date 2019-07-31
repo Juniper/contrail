@@ -45,17 +45,9 @@ server:
     - http://localhost:8082
   notify_etcd: false
 
-client:
-  id: alice
-  password: alice_password
-  project_id: admin
-  domain_id: default
-  schema_root: /public
-  endpoint: https://localhost:9091
-
-sync:
-  enabled: true
-  storage: json
+auth_type: no-auth
+no_auth: false # applies only to gRPC
+insecure: true
 
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.
@@ -110,7 +102,17 @@ keystone:
   insecure: true
   authurl: https://localhost:9091/keystone/v3
 
-insecure: true
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  domain_id: default
+  schema_root: /public
+  endpoint: https://localhost:9091
+
+sync:
+  enabled: true
+  storage: json
 
 cache:
   enabled: false

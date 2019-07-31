@@ -9,18 +9,10 @@ database:
   replication_status_timeout: 10s
   debug: false
 
-etcd:
-  endpoints:
-  - localhost:2379
-  username: ""
-  password: ""
-  path: contrail
-  grpc_insecure: true
-
 log_level: debug
 
 homepage:
-  enabled: true
+  enabled: false # disable in order not to collide with server.static_files
 
 server:
   enabled: true
@@ -28,22 +20,21 @@ server:
   write_timeout: 5
   log_api: true
   log_body: true
+  address: ":9091"
   enable_vnc_replication: false
   enable_gzip: false
-  address: ":9091"
   tls:
     enabled: true
-    key_file: test_data/server.key
-    cert_file: test_data/server.crt
-  enable_grpc: true
-  enable_vnc_neutron: false
+    key_file: tools/server.key
+    cert_file: tools/server.crt
+  enable_grpc: false
+  enable_vnc_neutron: true
   static_files:
-    public: ../../public
-  dynamic_proxy_path: proxy
+    /: public
   proxy:
     /contrail:
     - http://localhost:8082
-  notify_etcd: false
+  notify_etcd: false # notify_etcd should be disabled when using Sync process
 
 auth_type: no-auth
 no_auth: false # applies only to gRPC
@@ -101,21 +92,28 @@ keystone:
   insecure: true
   authurl: https://localhost:9091/keystone/v3
 
+sync:
+  enabled: false
+
 client:
   id: alice
   password: alice_password
   project_id: admin
   domain_id: default
-  schema_root: /public
-  endpoint: https://localhost:9091
+  schema_root: /
+  endpoint: http://localhost:9091
 
-sync:
-  enabled: true
-  storage: json
+agent:
+  enabled: false
+
+compilation:
+  enabled: false
 
 cache:
-  enabled: true
-  timeout: 10s
-  max_history: 100000
-  rdbms:
-    enabled: true
+  enabled: false
+
+replication:
+  cassandra:
+    enabled: false
+  amqp:
+    enabled: false

@@ -45,6 +45,7 @@ server:
   notify_etcd: false # notify_etcd should be disabled when using Sync process
 
 auth_type: no-auth
+no_auth: false # applies only to gRPC
 insecure: true
 
 sync:

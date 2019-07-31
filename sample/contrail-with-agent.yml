@@ -40,6 +40,10 @@ server:
     /: /root/go/src/github.com/Juniper/contrail/public
   notify_etcd: false
 
+auth_type: no-auth
+no_auth: false # applies only to gRPC
+insecure: true
+
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.
   assignment:
@@ -85,10 +89,6 @@ keystone:
   insecure: true
   auth_url: https://localhost:9091/keystone/v3
   authurl: https://localhost:9091/keystone/v3
-
-no_auth: false
-insecure: true
-domain_id: default
 
 watcher:
   enabled: false
