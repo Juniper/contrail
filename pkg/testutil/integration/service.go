@@ -61,74 +61,65 @@ func RunNoError(t *testing.T, rc RunCloser) (close func(*testing.T)) {
 	return func(*testing.T) { CloseNoError(t, rc, errChan) }
 }
 
-// CreateProject creates a project resource in given service.
-func CreateProject(t *testing.T, s services.WriteService, obj *models.Project) *models.Project {
-	resp, err := s.CreateProject(context.Background(), &services.CreateProjectRequest{Project: obj})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("creating Project failed\n requested: %+v\n "+
-			"response: %+v\n", obj, resp),
-	)
-	return resp.GetProject()
+///////////////////////////////////
+// HTTP API CRUD request helpers //
+///////////////////////////////////
+
+// DeleteAccessControlList deletes an access control list resource from given service.
+func DeleteAccessControlList(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteAccessControlList(context.Background(), &services.DeleteAccessControlListRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
-// DeleteProject deletes a project resource using given service.
-func DeleteProject(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteProject(context.Background(), &services.DeleteProjectRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting Project failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
+// CreateContrailCluster creates a Contrail cluster resource in given service.
+func CreateContrailCluster(
+	t *testing.T, s services.WriteService, obj *models.ContrailCluster,
+) *models.ContrailCluster {
+	resp, err := s.CreateContrailCluster(
+		context.Background(),
+		&services.CreateContrailClusterRequest{ContrailCluster: obj},
 	)
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetContrailCluster()
 }
 
-// GetProject gets a project resource from given service.
-func GetProject(t *testing.T, s services.ReadService, id string) *models.Project {
-	resp, err := s.GetProject(context.Background(), &services.GetProjectRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("getting Project failed\n id: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-	return resp.GetProject()
+// DeleteContrailCluster deletes a Contrail cluster resource from given service.
+func DeleteContrailCluster(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteContrailCluster(context.Background(), &services.DeleteContrailClusterRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
+}
+
+// CreateEndpoint creates an endpoint resource in given service.
+func CreateEndpoint(t *testing.T, s services.WriteService, obj *models.Endpoint) *models.Endpoint {
+	resp, err := s.CreateEndpoint(context.Background(), &services.CreateEndpointRequest{Endpoint: obj})
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetEndpoint()
+}
+
+// DeleteEndpoint deletes a network IPAM resource from given service.
+func DeleteEndpoint(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteEndpoint(context.Background(), &services.DeleteEndpointRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
 // CreateNetworkIpam creates a network IPAM resource in given service.
 func CreateNetworkIpam(t *testing.T, s services.WriteService, obj *models.NetworkIpam) *models.NetworkIpam {
 	resp, err := s.CreateNetworkIpam(context.Background(), &services.CreateNetworkIpamRequest{NetworkIpam: obj})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("creating NetworkIpam failed\n requested: %+v\n "+
-			"response: %+v\n", obj, resp),
-	)
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetNetworkIpam()
+}
+
+// GetNetworkIpam gets a network IPAM resource from given service.
+func GetNetworkIpam(t *testing.T, s services.ReadService, uuid string) *models.NetworkIpam {
+	resp, err := s.GetNetworkIpam(context.Background(), &services.GetNetworkIpamRequest{ID: uuid})
+	require.NoError(t, err, getFailureMessage(uuid, resp))
 	return resp.GetNetworkIpam()
 }
 
 // DeleteNetworkIpam deletes a network IPAM resource from given service.
-func DeleteNetworkIpam(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteNetworkIpam(context.Background(), &services.DeleteNetworkIpamRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting NetworkIpam failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-}
-
-// GetNetworkIpam gets a network IPAM resource from given service.
-func GetNetworkIpam(t *testing.T, s services.ReadService, id string) *models.NetworkIpam {
-	resp, err := s.GetNetworkIpam(context.Background(), &services.GetNetworkIpamRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("getting NetworkIpam failed\n id: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-	return resp.GetNetworkIpam()
+func DeleteNetworkIpam(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteNetworkIpam(context.Background(), &services.DeleteNetworkIpamRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
 // CreateNetworkPolicy creates a network policy resource in given service.
@@ -136,75 +127,43 @@ func CreateNetworkPolicy(
 	ctx context.Context, t *testing.T, s services.WriteService, obj *models.NetworkPolicy,
 ) *models.NetworkPolicy {
 	resp, err := s.CreateNetworkPolicy(ctx, &services.CreateNetworkPolicyRequest{NetworkPolicy: obj})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("creating NetworkPolicy failed\n requested: %+v\n "+
-			"response: %+v\n", obj, resp),
-	)
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetNetworkPolicy()
+}
+
+// GetNetworkPolicy gets a network policy resource from given service.
+func GetNetworkPolicy(ctx context.Context, t *testing.T, s services.ReadService, uuid string) *models.NetworkPolicy {
+	resp, err := s.GetNetworkPolicy(ctx, &services.GetNetworkPolicyRequest{ID: uuid})
+	require.NoError(t, err, getFailureMessage(uuid, resp))
 	return resp.GetNetworkPolicy()
 }
 
 // DeleteNetworkPolicy deletes a network policy resource from given service.
 func DeleteNetworkPolicy(
-	ctx context.Context, t *testing.T, s services.WriteService, id string,
+	ctx context.Context, t *testing.T, s services.WriteService, uuid string,
 ) {
-	resp, err := s.DeleteNetworkPolicy(ctx, &services.DeleteNetworkPolicyRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting NetworkPolicy failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
+	resp, err := s.DeleteNetworkPolicy(ctx, &services.DeleteNetworkPolicyRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
-// GetNetworkPolicy gets a network policy resource from given service.
-func GetNetworkPolicy(
-	ctx context.Context, t *testing.T, s services.ReadService, id string,
-) *models.NetworkPolicy {
-	resp, err := s.GetNetworkPolicy(ctx, &services.GetNetworkPolicyRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("getting NetworkPolicy failed\n id: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-	return resp.GetNetworkPolicy()
+// CreateProject creates a project resource in given service.
+func CreateProject(t *testing.T, s services.WriteService, obj *models.Project) *models.Project {
+	resp, err := s.CreateProject(context.Background(), &services.CreateProjectRequest{Project: obj})
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetProject()
 }
 
-// CreateVirtualNetwork creates a virtual network resource from given service.
-func CreateVirtualNetwork(t *testing.T, s services.WriteService, obj *models.VirtualNetwork) *models.VirtualNetwork {
-	resp, err := s.CreateVirtualNetwork(context.Background(), &services.CreateVirtualNetworkRequest{VirtualNetwork: obj})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("creating VirtualNetwork failed\n requested: %+v\n "+
-			"response: %+v\n", obj, resp),
-	)
-	return resp.GetVirtualNetwork()
+// GetProject gets a project resource from given service.
+func GetProject(t *testing.T, s services.ReadService, uuid string) *models.Project {
+	resp, err := s.GetProject(context.Background(), &services.GetProjectRequest{ID: uuid})
+	require.NoError(t, err, getFailureMessage(uuid, resp))
+	return resp.GetProject()
 }
 
-// DeleteVirtualNetwork deletes a virtual network resource from given service.
-func DeleteVirtualNetwork(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteVirtualNetwork(context.Background(), &services.DeleteVirtualNetworkRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting VirtualNetwork failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-}
-
-// GetVirtualNetwork gets a virtual network resource from given service.
-func GetVirtualNetwork(t *testing.T, s services.ReadService, id string) *models.VirtualNetwork {
-	resp, err := s.GetVirtualNetwork(context.Background(), &services.GetVirtualNetworkRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("getting VirtualNetwork failed\n id: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-	return resp.GetVirtualNetwork()
+// DeleteProject deletes a project resource using given service.
+func DeleteProject(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteProject(context.Background(), &services.DeleteProjectRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
 // CreateRoutingInstance creates a routing instance resource from given service.
@@ -212,91 +171,77 @@ func CreateRoutingInstance(t *testing.T, s services.WriteService, obj *models.Ro
 	resp, err := s.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
 		RoutingInstance: obj,
 	})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("creating RoutingInstance failed\n requested: %+v\n "+
-			"response: %+v\n", obj, resp),
-	)
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetRoutingInstance()
+}
+
+// GetRoutingInstance gets a routing instance resource from given service.
+func GetRoutingInstance(t *testing.T, s services.ReadService, uuid string) *models.RoutingInstance {
+	resp, err := s.GetRoutingInstance(context.Background(), &services.GetRoutingInstanceRequest{ID: uuid})
+	require.NoError(t, err, getFailureMessage(uuid, resp))
 	return resp.GetRoutingInstance()
 }
 
 // DeleteRoutingInstance deletes a routing instance resource from given service.
-func DeleteRoutingInstance(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteRoutingInstance(context.Background(), &services.DeleteRoutingInstanceRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting RoutingInstance failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-}
-
-// GetRoutingInstance gets a routing instance resource from given service.
-func GetRoutingInstance(t *testing.T, s services.ReadService, id string) *models.RoutingInstance {
-	resp, err := s.GetRoutingInstance(context.Background(), &services.GetRoutingInstanceRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("getting RoutingInstance failed\n id: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-	return resp.GetRoutingInstance()
+func DeleteRoutingInstance(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteRoutingInstance(context.Background(), &services.DeleteRoutingInstanceRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
 // CreateRouteTarget creates a route target resource from given service.
 func CreateRouteTarget(t *testing.T, s services.WriteService, obj *models.RouteTarget) *models.RouteTarget {
 	resp, err := s.CreateRouteTarget(context.Background(), &services.CreateRouteTargetRequest{RouteTarget: obj})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("creating RouteTarget failed\n requested: %+v\n "+
-			"response: %+v\n", obj, resp),
-	)
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetRouteTarget()
+}
+
+// GetRouteTarget gets a route target resource from given service.
+func GetRouteTarget(t *testing.T, s services.ReadService, uuid string) *models.RouteTarget {
+	resp, err := s.GetRouteTarget(context.Background(), &services.GetRouteTargetRequest{ID: uuid})
+	require.NoError(t, err, getFailureMessage(uuid, resp))
 	return resp.GetRouteTarget()
 }
 
 // DeleteRouteTarget deletes a route target resource from given service.
-func DeleteRouteTarget(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteRouteTarget(context.Background(), &services.DeleteRouteTargetRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting RouteTarget failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-}
-
-// GetRouteTarget gets a route target resource from given service.
-func GetRouteTarget(t *testing.T, s services.ReadService, id string) *models.RouteTarget {
-	resp, err := s.GetRouteTarget(context.Background(), &services.GetRouteTargetRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("getting RouteTarget failed\n id: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
-	return resp.GetRouteTarget()
+func DeleteRouteTarget(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteRouteTarget(context.Background(), &services.DeleteRouteTargetRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
 // DeleteSecurityGroup deletes a security group resource from given service.
-func DeleteSecurityGroup(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteSecurityGroup(context.Background(), &services.DeleteSecurityGroupRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting SecurityGroup failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
+func DeleteSecurityGroup(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteSecurityGroup(context.Background(), &services.DeleteSecurityGroupRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
 }
 
-// DeleteAccessControlList deletes an access control list resource from given service.
-func DeleteAccessControlList(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteAccessControlList(context.Background(), &services.DeleteAccessControlListRequest{ID: id})
-	require.NoError(
-		t,
-		err,
-		fmt.Sprintf("deleting AccessControlList failed\n UUID: %+v\n "+
-			"response: %+v\n", id, resp),
-	)
+// CreateVirtualNetwork creates a virtual network resource from given service.
+func CreateVirtualNetwork(t *testing.T, s services.WriteService, obj *models.VirtualNetwork) *models.VirtualNetwork {
+	resp, err := s.CreateVirtualNetwork(context.Background(), &services.CreateVirtualNetworkRequest{VirtualNetwork: obj})
+	require.NoError(t, err, createFailureMessage(obj, resp))
+	return resp.GetVirtualNetwork()
+}
+
+// GetVirtualNetwork gets a virtual network resource from given service.
+func GetVirtualNetwork(t *testing.T, s services.ReadService, uuid string) *models.VirtualNetwork {
+	resp, err := s.GetVirtualNetwork(context.Background(), &services.GetVirtualNetworkRequest{ID: uuid})
+	require.NoError(t, err, getFailureMessage(uuid, resp))
+	return resp.GetVirtualNetwork()
+}
+
+// DeleteVirtualNetwork deletes a virtual network resource from given service.
+func DeleteVirtualNetwork(t *testing.T, s services.WriteService, uuid string) {
+	resp, err := s.DeleteVirtualNetwork(context.Background(), &services.DeleteVirtualNetworkRequest{ID: uuid})
+	require.NoError(t, err, deleteFailureMessage(uuid, resp))
+}
+
+func createFailureMessage(obj, response interface{}) string {
+	return fmt.Sprintf("create failed\nrequest object: %+v\nresponse: %+v\n", obj, response)
+}
+
+func getFailureMessage(uuid string, response interface{}) string {
+	return fmt.Sprintf("get failed\nUUID: %+v\nresponse: %+v\n", uuid, response)
+}
+
+func deleteFailureMessage(uuid string, response interface{}) string {
+	return fmt.Sprintf("delete failed\nUUID: %+v\nresponse: %+v\n", uuid, response)
 }

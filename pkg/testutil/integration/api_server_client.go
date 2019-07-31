@@ -23,15 +23,8 @@ const (
 	DefaultDomainUUID             = "beefbeef-beef-beef-beef-beefbeef0002"
 	DefaultProjectUUID            = "beefbeef-beef-beef-beef-beefbeef0003"
 	DomainType                    = "domain"
-	NetworkIpamSingularPath       = "/network-ipam"
-	NetworkIpamPluralPath         = "/network-ipams"
 	ProjectType                   = "project"
-	ProjectSingularPath           = "/project"
-	ProjectPluralPath             = "/projects"
-	SecurityGroupSingularPath     = "/security-group"
-	SecurityGroupPluralPath       = "/security-groups"
 	VirtualNetworkSingularPath    = "/virtual-network"
-	VirtualNetworkPluralPath      = "/virtual-networks"
 )
 
 const (
