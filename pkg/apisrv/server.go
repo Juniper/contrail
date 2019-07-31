@@ -424,8 +424,7 @@ func (s *Server) serveDynamicProxy(endpointStore *endpoint.Store) {
 	s.Proxy.Serve()
 }
 
-func (s *Server) startVNCReplicator(
-	endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
+func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
 	s.VNCReplicator, err = replication.New(endpointStore, auth)
 	if err != nil {
 		return err

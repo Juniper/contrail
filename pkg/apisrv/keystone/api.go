@@ -280,6 +280,37 @@ func (keystone *Keystone) fetchServerTokenWithClusterToken(
 	return keystone.createToken(c, keystone.newLocalAuthRequest())
 }
 
+// TODO(Daniel): taken from previous CRs - verify this is needed
+func (keystone *Keystone) fetchServerTokenWithClusterToken2(
+	c echo.Context, identity *kscommon.Identity) error {
+	clusterID := identity.Cluster.ID
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoints != nil {
+		tokenURL := "/v3/auth/tokens"
+		request, err := http.NewRequest(echo.GET, tokenURL, nil)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		request.Header.Set("X-Auth-Token", identity.Cluster.Token.ID)
+		request.Header.Set("X-Subject-Token", identity.Cluster.Token.ID)
+		//keystone.Client.SetAuthEndpoint(keystoneEndpoints)
+
+		//servers := NewReverseProxy(keystoneEndpoints) // it was in apisrv/commmon package before
+		resp := c.Response()
+		//servers.ServeHTTP(resp, request)
+
+		//validateTokenResponse := &kscommon.ValidateTokenResponse{}
+		//if err = json.NewDecoder(resp.Body).Decode(validateTokenResponse); err != nil {
+		//	return echo.NewHTTPError(http.StatusInternalServerError, err)
+		//}
+		if resp.Status != 200 {
+			return c.JSON(resp.Status, resp)
+		}
+	}
+	// Get token from local keystone
+	return keystone.createToken(c, keystone.newLocalAuthRequest())
+}
+
 func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
 	scope := kscommon.NewScope(
 		viper.GetString("client.domain_id"),
