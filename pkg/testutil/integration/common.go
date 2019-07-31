@@ -38,8 +38,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Integration tests constants.
 const (
-	collectTimeout = 5 * time.Second
+	collectTimeout  = 5 * time.Second
+	DefaultClientID = "default"
 )
 
 // TestMain is a function that can be called inside package specific TestMain
@@ -129,11 +131,6 @@ func initViperConfig() error {
 	viper.AutomaticEnv()
 	return viper.ReadInConfig()
 }
-
-const (
-	defaultClientID = "default"
-	defaultDomainID = "default"
-)
 
 // Event represents event received from etcd watch.
 type Event struct {
@@ -422,7 +419,7 @@ func runTestScenario(
 		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
 		checkWaiters := StartWaiters(t, ts.Name, task.Waiters)
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
-		clientID := defaultClientID
+		clientID := DefaultClientID
 		if task.Client != "" {
 			clientID = task.Client
 		}
@@ -480,7 +477,7 @@ func performCleanup(
 
 func getClientByID(clientID string, clients ClientsList) *client.HTTP {
 	if clientID == "" {
-		clientID = defaultClientID
+		clientID = DefaultClientID
 	}
 	return clients[clientID]
 }
@@ -554,7 +551,7 @@ func extractSyncOperation(syncOp map[string]interface{}, client string) []tracke
 
 func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
 	if task.Request.Output != nil && task.Request.Method == "POST" && code == http.StatusOK && rerr == nil {
-		clientID := defaultClientID
+		clientID := DefaultClientID
 		if task.Client != "" {
 			clientID = task.Client
 		}
@@ -612,7 +609,7 @@ func addKeystoneUser(k *keystone.Keystone, testUser, testPassword string) {
 	assignment := k.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
 	assignment.Users = map[string]*kscommon.User{}
 	assignment.Users[testUser] = &kscommon.User{
-		Domain:   assignment.Domains[defaultDomainID],
+		Domain:   assignment.Domains[DefaultDomainID],
 		ID:       testUser,
 		Name:     testUser,
 		Password: testPassword,
