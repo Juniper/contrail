@@ -12,10 +12,15 @@ database:
 etcd:
   endpoints:
   - localhost:2379
-  username: ""
-  password: ""
+  username:
+  password:
   path: contrail
   grpc_insecure: true
+  tls:
+    enabled: false
+    certificate_path:
+    key_path:
+    trusted_ca_path:
 
 log_level: debug
 
@@ -32,13 +37,22 @@ server:
   enable_vnc_replication: false
   enable_gzip: false
   tls:
-    enabled: true
-    key_file: /root/go/src/github.com/Juniper/contrail/tools/server.key
-    cert_file: /root/go/src/github.com/Juniper/contrail/tools/server.crt
+    enabled: false
+    key_file: tools/server.key
+    cert_file: tools/server.crt
   enable_grpc: false
+  enable_vnc_neutron: false
   static_files:
-    /: /root/go/src/github.com/Juniper/contrail/public
+    public: public
+  dynamic_proxy_path: proxy
+  proxy:
+    /contrail:
+    - http://localhost:8082
   notify_etcd: false
+
+auth_type: no-auth
+no_auth: false
+insecure: true
 
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.
@@ -86,21 +100,16 @@ keystone:
   auth_url: https://localhost:9091/keystone/v3
   authurl: https://localhost:9091/keystone/v3
 
-no_auth: false
-insecure: true
-domain_id: default
-
-watcher:
+sync:
   enabled: false
-  storage: json
 
 client:
   id: alice
   password: alice_password
   project_id: admin
   domain_id: default
-  schema_root: /
-  endpoint: https://localhost:9091
+  schema_root: /public
+  endpoint: http://localhost:9091
 
 agent:
   enabled: true
@@ -143,39 +152,12 @@ agent:
 
 compilation:
   enabled: false
-  plugin_directory: 'etc/plugins/'
-  number_of_workers: 4
-  max_job_queue_len: 5
-  msg_queue_lock_time: 30
-  msg_index_string: 'MsgIndex'
-  read_lock_string: "MsgReadLock"
-  master_election: true
-  plugin:
-    handlers:
-      create_handler: 'HandleCreate'
-      update_handler: 'HandleUpdate'
-      delete_handler: 'HandleDelete'
 
 cache:
   enabled: false
-  timeout: 10s
-  max_history: 100000
-  cassandra:
-    enabled: false
-  etcd:
-    enabled: false
 
 replication:
   cassandra:
     enabled: false
   amqp:
     enabled: false
-
-cassandra:
-  host: localhost
-  port: 9042
-  timeout: 3600s
-  connect_timeout: 600ms
-
-amqp:
-  url: amqp://guest:guest@localhost:5672/
