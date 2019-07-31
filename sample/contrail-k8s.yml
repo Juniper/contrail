@@ -12,6 +12,8 @@ database:
 etcd:
   endpoints:
   - localhost:2379
+  username:
+  password:
   path: contrail
   grpc_insecure: true
   tls:
@@ -42,9 +44,14 @@ server:
   enable_vnc_neutron: true
   static_files:
     public: public
+  dynamic_proxy_path: proxy
+  proxy:
+    /contrail:
+    - http://localhost:8082
   notify_etcd: false
 
 auth_type: no-auth
+no_auth: false
 insecure: true
 
 sync:
@@ -62,39 +69,9 @@ client:
 
 agent:
   enabled: false
-  backend: file
-  watcher: polling
-  tasks:
-  - schema_id: virtual_network
-    common:
-    - vars:
-        dir: "./work/virtual_networks/"
-    on_create:
-    - command: mkdir -p "{{ dir }}"
-    - save:
-        dest: "{{ dir }}/{{ resource.uuid }}.yaml"
-        format: yaml
-    - command: echo created
-    on_update:
-    - command: "echo updated"
-    on_delete:
-    - command: "echo deleted"
-    - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
 
 compilation:
   enabled: false
-  plugin_directory: 'etc/plugins/'
-  number_of_workers: 4
-  max_job_queue_len: 5
-  msg_queue_lock_time: 30
-  msg_index_string: 'MsgIndex'
-  read_lock_string: "MsgReadLock"
-  master_election: true
-  plugin:
-    handlers:
-      create_handler: 'HandleCreate'
-      update_handler: 'HandleUpdate'
-      delete_handler: 'HandleDelete'
 
 cache:
   enabled: true
@@ -105,11 +82,8 @@ cache:
   etcd:
     enabled: true
 
-cassandra:
-  host: localhost
-  port: 9042
-  timeout: 3600s
-  connect_timeout: 600ms
-
-amqp:
-  url: amqp://guest:guest@localhost:5672/
+replication:
+  cassandra:
+    enabled: false
+  amqp:
+    enabled: false

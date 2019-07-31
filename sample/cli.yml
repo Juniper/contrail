@@ -2,8 +2,8 @@ client:
   id: alice
   password: alice_password
   project_id: admin
-  schema_root: /public
   domain_id: default
+  schema_root: /public
   endpoint: http://localhost:9091
 
 log_level: debug

@@ -9,23 +9,10 @@ database:
   replication_status_timeout: 10s
   debug: false
 
-etcd:
-  endpoints:
-  - localhost:2379
-  username:
-  password:
-  path: contrail
-  grpc_insecure: true
-  tls:
-    enabled: false
-    certificate_path:
-    key_path:
-    trusted_ca_path:
-
 log_level: debug
 
 homepage:
-  enabled: true
+  enabled: false # disable in order not to collide with server.static_files
 
 server:
   enabled: true
@@ -38,12 +25,12 @@ server:
   enable_gzip: false
   tls:
     enabled: true
-    key_file: test_data/server.key
-    cert_file: test_data/server.crt
-  enable_grpc: true
-  enable_vnc_neutron: true
+    key_file: tools/server.key
+    cert_file: tools/server.crt
+  enable_grpc: false
+  enable_vnc_neutron: false
   static_files:
-    public: ../../public
+    /: public
   dynamic_proxy_path: proxy
   proxy:
     /contrail:
@@ -107,17 +94,18 @@ keystone:
   authurl: https://localhost:9091/keystone/v3
 
 sync:
-  enabled: true
-  storage: json
-  dump: true
+  enabled: false
 
 client:
   id: alice
   password: alice_password
   project_id: admin
   domain_id: default
-  schema_root: /public
+  schema_root: /
   endpoint: https://localhost:9091
+
+agent:
+  enabled: false
 
 compilation:
   enabled: false

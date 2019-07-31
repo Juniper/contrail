@@ -12,10 +12,15 @@ database:
 etcd:
   endpoints:
   - localhost:2379
-  username: ""
-  password: ""
+  username:
+  password:
   path: contrail
   grpc_insecure: true
+  tls:
+    enabled: false
+    certificate_path:
+    key_path:
+    trusted_ca_path:
 
 log_level: debug
 
@@ -36,15 +41,17 @@ server:
     key_file: tools/server.key
     cert_file: tools/server.crt
   enable_grpc: false
-  enable_vnc_neutron: true
+  enable_vnc_neutron: false
   static_files:
     public: public
+  dynamic_proxy_path: proxy
   proxy:
     /contrail:
     - http://localhost:8082
-  notify_etcd: false # notify_etcd should be disabled when using Sync process
+  notify_etcd: false
 
 auth_type: no-auth
+no_auth: false
 insecure: true
 
 sync:
@@ -62,24 +69,6 @@ client:
 
 agent:
   enabled: false
-  backend: file
-  watcher: polling
-  tasks:
-  - schema_id: virtual_network
-    common:
-    - vars:
-        dir: "./work/virtual_networks/"
-    on_create:
-    - command: mkdir -p "{{ dir }}"
-    - save:
-        dest: "{{ dir }}/{{ resource.uuid }}.yaml"
-        format: yaml
-    - command: echo created
-    on_update:
-    - command: "echo updated"
-    on_delete:
-    - command: "echo deleted"
-    - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
 
 compilation:
   enabled: true
