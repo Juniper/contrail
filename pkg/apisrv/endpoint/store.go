@@ -30,15 +30,56 @@ func NewTargetStore() *TargetStore {
 
 //Read endpoint target from memory
 func (t *TargetStore) Read(id string) *models.Endpoint {
-	ep, ok := t.Data.Load(id)
+	rawE, ok := t.Data.Load(id)
 	if !ok {
 		return nil
 	}
-	endpoint, ok := ep.(*models.Endpoint)
+	e, ok := rawE.(*models.Endpoint)
 	if !ok {
 		return nil
 	}
-	return endpoint
+	return e
+}
+
+// ReadAll reads all targets from target store using given scope.
+// TODO: return all endpoints
+func (t *TargetStore) ReadAll(scope string) (targets []*Endpoint) {
+	var nextEndpoint *Endpoint
+	t.Data.Range(func(id, endpoint interface{}) bool {
+		e, ok := endpoint.(*models.Endpoint)
+		if !ok {
+			return false
+		}
+
+		if t.nextTarget == e.UUID {
+			nextEndpoint = newTargetEndpoint(e, scope)
+		} else {
+			targets = append(targets, newTargetEndpoint(e, scope))
+		}
+		return true
+	})
+
+	// Return the next target as first entry in the list so that the proxy service will load balance the
+	// requests among available endpoints starting from the next target.
+	if nextEndpoint != nil {
+		targets = append([]*Endpoint{nextEndpoint}, targets...)
+	}
+	return targets
+}
+
+func newTargetEndpoint(e *models.Endpoint, scope string) *Endpoint {
+	var t *Endpoint
+	switch scope {
+	case Public:
+		t = NewEndpoint(e.PublicURL, e.Username, e.Password)
+	case Private:
+		if e.PrivateURL != "" {
+			t = NewEndpoint(e.PrivateURL, e.Username, e.Password)
+		} else {
+			t = NewEndpoint(e.PublicURL, e.Username, e.Password)
+		}
+	}
+	return t
 }
 
 //Write endpoint target in-memory
@@ -121,9 +162,9 @@ func (e *Store) Read(endpointKey string) *TargetStore {
 	if !ok {
 		return nil
 	}
-	endpointStore, _ := p.(*TargetStore) // nolint: errcheck
-	return endpointStore
 
+	ts, _ := p.(*TargetStore) // nolint: errcheck
+	return ts
 }
 
 //Write endpoint targets store in-memory
