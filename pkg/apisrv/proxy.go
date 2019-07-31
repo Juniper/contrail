@@ -3,6 +3,7 @@ package apisrv
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -46,19 +47,18 @@ type proxyService struct {
 	forceUpdateChan    chan chan struct{}
 }
 
-func newProxyService(e *echo.Echo, endpointStore *endpoint.Store,
-	dbService services.Service) *proxyService {
+func newProxyService(e *echo.Echo, endpointStore *endpoint.Store, dbService services.Service) *proxyService {
 	group := viper.GetString("server.dynamic_proxy_path")
 	if group == "" {
 		group = DefaultDynamicProxyPath
 	}
-	p := &proxyService{
+
+	return &proxyService{
 		group:         group,
 		dbService:     dbService,
 		echoServer:    e,
 		EndpointStore: endpointStore,
 	}
-	return p
 }
 
 // Serve starts proxy service.
@@ -163,6 +163,13 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 		}
 	}
 	return strings.TrimSuffix(proxyPrefix, public), server
+
+	// TODO(Daniel): taken from previous CRs - verify this is needed
+	//targets := proxyEndpoint.ReadAll(scope)
+	//if targets == nil {
+	//	return strings.TrimSuffix(proxyPrefix, public), nil
+	//}
+	//return strings.TrimSuffix(proxyPrefix, public), NewReverseProxy(targets)
 }
 
 func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (proxyPrefix string) {
@@ -316,4 +323,49 @@ func (p *proxyService) Stop() {
 	p.stopServiceContext()
 	// wait for the proxy server poll to complete
 	p.serviceWaitGroup.Wait()
+}
+
+// NewReverseProxy creates a reverse proxy that will randomly select a host from the given targets.
+// TODO(Daniel): taken from previous CRs - verify this is needed
+// TODO(Daniel): use in every place it is needed
+func NewReverseProxy(targets []*endpoint.Endpoint) *httputil.ReverseProxy {
+	u, err := url.Parse(targets[0].URL)
+	if err != nil {
+		logrus.WithError(err).WithField("target", targets[0].URL).Info("Failed to parse target - ignoring")
+	}
+	director := func(req *http.Request) {
+		req.URL.Scheme = u.Scheme
+		// TODO(Daniel): move that logic to Transport.Dial, because here it is called only once at initialization
+		//  see: https://blog.charmes.net/post/reverse-proxy-go/
+		req.URL.Host = u.Host
+	}
+	insecure := true //TODO:(ijohnson) add insecure to endpoint schema
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: func(network, addr string) (net.Conn, error) {
+			return roundRobin(network, targets)
+		},
+		TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+	return &httputil.ReverseProxy{
+		Director:  director,
+		Transport: transport,
+	}
+}
+
+// roundRobin tries connecting to the endpoints in round robin fashion in case of connection failure.
+func roundRobin(network string, targets []*endpoint.Endpoint) (net.Conn, error) {
+	for _, target := range targets {
+		u, err := url.Parse(target.URL)
+		if err != nil {
+			logrus.WithError(err).WithField("target", target.URL).Info("Failed to parse target - ignoring")
+		}
+
+		conn, err := net.Dial(network, u.Host)
+		if err == nil {
+			return conn, nil
+		}
+	}
+	return nil, errors.New("no targets available")
 }

@@ -208,18 +208,6 @@ type mockPortsResponse struct {
 	Name string `json:"name"`
 }
 
-func mockServer(routes map[string]interface{}) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-
-	// Routes
-	for route, handler := range routes {
-		e.GET(route, handler.(echo.HandlerFunc))
-	}
-
-	return httptest.NewServer(e)
-}
-
 func verifyProxies(
 	ctx context.Context, t *testing.T, scenario *integration.TestScenario, clusterName string, isSuccessful bool,
 ) {
@@ -250,6 +238,108 @@ func verifyProxy(ctx context.Context, t *testing.T, testScenario *integration.Te
 		}
 	}
 	return true
+}
+
+// TODO(Daniel): taken from previous CRs - verify this is needed
+func TestProxyEndpointWithRetry(t *testing.T) {
+	// Create a cluster and its config endpoints(multiple)
+	// unavailable endpoint
+	clusterName := "dead_cluster"
+	routes := map[string]interface{}{
+		"/virtual-networks": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusServiceUnavailable,
+				&mockPortsResponse{Name: clusterName + "_serviceUnavailable"})
+		}),
+	}
+	api1 := mockServer(routes)
+	defer api1.Close()
+
+	pCtx := pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config1", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     api1.URL,
+		"public_url":      api1.URL,
+		"manage_parent":   true,
+	}
+
+	ts, err := integration.LoadTest(testEndpointFile, pCtx)
+	assert.NoError(t, err, "failed to load test data")
+	cleanup1 := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup1()
+
+	// bad gateway endpoint
+	routes = map[string]interface{}{
+		"/virtual-networks": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusBadGateway,
+				&mockPortsResponse{Name: clusterName + "_badGateway"})
+		}),
+	}
+	api2 := mockServer(routes)
+	defer api2.Close()
+	pCtx = pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config2", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     api2.URL,
+		"public_url":      api2.URL,
+		"manage_parent":   false,
+	}
+
+	ts, err = integration.LoadTest(testEndpointFile, pCtx)
+	assert.NoError(t, err, "failed to load test data")
+	cleanup2 := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup2()
+
+	// endpoint with gateway timeout
+	routes = map[string]interface{}{
+		"/virtual-networks": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&mockPortsResponse{Name: clusterName})
+		}),
+	}
+	api3 := mockServer(routes)
+	defer api3.Close()
+	pCtx = pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config3", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     api3.URL,
+		"public_url":      api3.URL,
+		"manage_parent":   false,
+	}
+
+	ts, err = integration.LoadTest(testEndpointFile, pCtx)
+	assert.NoError(t, err, "failed to load test data")
+	cleanup3 := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup3()
+
+	server.ForceProxyUpdate()
+
+	// verify proxies, expected to fail as all the endpoints are down
+	url := "/proxy/" + clusterName + "_uuid/config/virtual-networks"
+	for _, client := range ts.Clients {
+		var response map[string]interface{}
+		_, err := client.Read(context.Background(), url, &response) // FIXME sometimes returns 503 for "name":"dead_cluster_badGateway"
+		assert.NoError(t, err, fmt.Sprintf("Reading: %s, Response: %s", url, err))
+
+		testutil.AssertEqual(t,
+			map[string]interface{}{key: clusterName},
+			response,
+		)
+	}
+}
+
+func mockServer(routes map[string]interface{}) *httptest.Server {
+	// Echo instance
+	e := echo.New()
+
+	// Routes
+	for route, handler := range routes {
+		e.GET(route, handler.(echo.HandlerFunc))
+	}
+
+	return httptest.NewServer(e)
 }
 
 func TestKeystoneEndpoint(t *testing.T) {
