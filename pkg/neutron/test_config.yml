@@ -12,10 +12,15 @@ database:
 etcd:
   endpoints:
   - localhost:2379
-  username: ""
-  password: ""
+  username:
+  password:
   path: contrail
   grpc_insecure: true
+  tls:
+    enabled: false
+    certificate_path:
+    key_path:
+    trusted_ca_path:
 
 log_level: debug
 
@@ -28,9 +33,9 @@ server:
   write_timeout: 5
   log_api: true
   log_body: true
+  address: ":9091"
   enable_vnc_replication: false
   enable_gzip: false
-  address: ":9091"
   tls:
     enabled: true
     key_file: test_data/server.key
@@ -45,12 +50,9 @@ server:
     - http://localhost:8082
   notify_etcd: false
 
-sync:
-  enabled: true
-  storage: json
-
-homepage:
-  enabled: true
+auth_type: no-auth
+no_auth: false
+insecure: true
 
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.
@@ -88,7 +90,6 @@ keystone:
           - id: aa907485e1f94a14834d8c69ed9cb3b2
             name: neutron
             project: *neutron
-
         bob:
           id: bob
           name: Bob
@@ -104,3 +105,28 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+
+sync:
+  enabled: true
+  storage: json
+  dump: true
+
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  domain_id: default
+  schema_root: /public
+  endpoint: https://localhost:9091
+
+compilation:
+  enabled: false
+
+cache:
+  enabled: false
+
+replication:
+  cassandra:
+    enabled: false
+  amqp:
+    enabled: false

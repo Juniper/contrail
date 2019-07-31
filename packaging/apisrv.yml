@@ -11,7 +11,7 @@ database:
 
 etcd:
   endpoints:
-    - localhost:2379
+  - localhost:2379
   username: ""
   password: ""
   path: contrail
@@ -41,13 +41,13 @@ server:
     /: /usr/share/contrail/public
   proxy:
     /config:
-      - http://localhost:8082
+    - http://localhost:8082
     /telemetry:
-      - http://localhost:8081
-
-  notify_etcd: false # notify_etcd should be disabled when using Sync process
+    - http://localhost:8081
+  notify_etcd: false
 
 auth_type: no-auth
+no_auth: false
 insecure: true
 
 sync:
