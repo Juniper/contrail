@@ -18,7 +18,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }})
 	r.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
 	r.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
-{% endif%}{% endfor %}
+{% endif %}{% endfor %}
 
 	r.POST(SyncPath, service.RESTSync)
 	r.POST(RefUpdatePath, service.RESTRefUpdate)
@@ -37,14 +37,14 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 type registerFunc func(path string, name string)
 
 //RegisterSingularPaths registers singular paths of resources for discovery.
-func RegisterSingularPaths (register registerFunc) {
+func RegisterSingularPaths(register registerFunc) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	register("{{ schema.Prefix }}{{ schema.Path }}", "{{ schema.Path }}")
 {% endif %}{% endfor %}
 }
 
 // RegisterPluralPaths registers plural paths of resources for discovery.
-func RegisterPluralPaths (register registerFunc) {
+func RegisterPluralPaths(register registerFunc) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	register("{{ schema.Prefix }}{{ schema.PluralPath }}", "{{ schema.Path }}")
 {% endif %}{% endfor %}
