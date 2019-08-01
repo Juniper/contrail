@@ -41,6 +41,9 @@
         - name: Generate Docker files
           command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG='{{PLAT}}{{ packaging.docker_version }}' SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
+    - name: Print distro
+      debug: "msg=distro: '{{ packaging.repo_names.stdout }}'"
+
     - name: Fix files ownerships
       file:
         name: "{{ sourcedir }}"
