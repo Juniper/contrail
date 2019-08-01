@@ -21,10 +21,20 @@ func createTopology(c *Cloud, reporter *report.Reporter) error {
 	workDir := GetCloudDir(c.config.CloudID)
 	cmd := "deployer"
 	args := []string{
+		"image", "build",
+		"--topology", GetTopoFile(c.config.CloudID),
+		"--secret", GetSecretFile(c.config.CloudID),
+		"--k8s_deployment",
+	}
+	if err := osutil.ExecCmdAndWait(reporter, cmd, args, workDir); err != nil {
+		return err
+	}
+
+	args = []string{
 		"topology", "create",
 		"--topology", GetTopoFile(c.config.CloudID),
 		"--secret", GetSecretFile(c.config.CloudID),
-		"--skip_validation", "true",
+		"--skip_validation",
 	}
 
 	if c.config.Test {

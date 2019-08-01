@@ -231,11 +231,17 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 func (m *multiCloudProvisioner) multiCloudCLIRunAll() error {
 	topology := m.getClusterTopoFile(m.workDir)
 	secret := m.getClusterSecretFile(m.workDir)
+	stateTF := m.getTFStateFile()
 	// TODO: Remove this after refactoring test framework.
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI("deployer all run --topology " + topology + " --secret " + secret + " --retry 10")
 	}
-	return m.ansibleClient.PlayViaDeployer("all", "run", "--topology", topology, "--secret", secret, "--retry", "10")
+	args := []string{"all", "provision", "--topology", topology, "--secret", secret, "--tf_state", stateTF}
+
+	sshAuthSock := fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK"))
+	sshAgentPid := fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID"))
+	vars := []string{sshAuthSock, sshAgentPid}
+	return m.PlayFromMCRepo("deployer", args, vars)
 }
 
 func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
@@ -252,6 +258,18 @@ func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
 		// TODO: use const
 		0600,
 	)
+}
+
+// PlayViaDeployer runs Python CLI with passed arguments.
+func (m *multiCloudProvisioner) PlayFromMCRepo(command string, args []string, envVars []string) error {
+	cmd := exec.Command(command, args...)
+	cmd.Dir = m.getMCDeployerRepoDir()
+	cmd.Env = append(os.Environ(), envVars...)
+
+	if result, err := cmd.CombinedOutput(); err != nil {
+		return errors.Wrap(err, string(result))
+	}
+	return nil
 }
 
 func (m *multiCloudProvisioner) updateMCCluster() error {
@@ -321,7 +339,9 @@ func (m *multiCloudProvisioner) multiCloudCLICleanup() error {
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(fmt.Sprintf("deployer all clean --inventory %v --retry %v", invPath, 5))
 	}
-	return m.ansibleClient.PlayViaDeployer("all", "clean", "--inventory", invPath, "--retry", "5")
+	args := []string{"all", "clean", "--inventory", invPath, "--retry", "5"}
+	// TODO: Change inventory path after specifying work dir during provisioning.
+	return m.PlayFromMCRepo("deployer", args, []string{})
 }
 
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
@@ -613,22 +633,18 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string, action string) er
 }
 
 func (m *multiCloudProvisioner) addPvtKeyToSSHAgent(keyPath string) error {
-
 	cmd := "ssh-add"
 	args := []string{"-d", fmt.Sprintf("%s", keyPath)}
 	m.Log.Debugf("Executing command: %s", fmt.Sprintf("%s %s", cmd, keyPath))
-
 	if m.cluster.config.Test {
 		return cloud.TestCmdHelper(cmd, args, m.workDir, testTemplate)
 	}
 	// ignore if there is an error while deleting key,
 	// this step is to make sure that updated keys are loaded to agent
 	_ = osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.workDir) // nolint: errcheck
-
 	// readd the key
 	args = []string{fmt.Sprintf("%s", keyPath)}
 	m.Log.Debugf("Executing command: %s", fmt.Sprintf("%s %s", cmd, keyPath))
-
 	if m.cluster.config.Test {
 		return cloud.TestCmdHelper(cmd, args, m.workDir, testTemplate)
 	}
