@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ba420baa_98714da4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-01T11:40:25Z",
+      "side": 1,
+      "message": "\u003e Please provide commit summary in first line. Put commit description separately, below.\n\nThat one left",
+      "parentUuid": "13522e5b_7178d8ca",
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ad3087c3_7366e9dc",
         "filename": "pkg/apisrv/common/endpoint.go",
         "patchSetId": 2
@@ -230,6 +248,30 @@
     },
     {
       "key": {
+        "uuid": "1ff20d50_6b014d61",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-01T11:40:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9e9209f4_a4c9fb75",
+      "range": {
+        "startLine": 42,
+        "startChar": 1,
+        "endLine": 42,
+        "endChar": 7
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "20ef1f46_608712dc",
         "filename": "pkg/apisrv/keystone/api_test.go",
         "patchSetId": 2
@@ -274,6 +316,30 @@
       "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4528787b_c8b1b3ae",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-01T11:40:25Z",
+      "side": 1,
+      "message": "I meant \"replace variable with query\" refactoring: https://refactoring.guru/replace-temp-with-query\nIt would make test shorter.\n\nIn that case:\nfunc clusters() map[string]string {\n    return map[string]string{ ... }\n}\n\nNot insisting though.",
+      "parentUuid": "be7097b8_5781b572",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 333,
+        "endChar": 2
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
