@@ -42,6 +42,30 @@
     },
     {
       "key": {
+        "uuid": "bd30f45e_17a0a806",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-01T05:46:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ad3087c3_7366e9dc",
+      "range": {
+        "startLine": 168,
+        "startChar": 2,
+        "endLine": 168,
+        "endChar": 7
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6fb206bc_42747b79",
         "filename": "pkg/apisrv/common/endpoint.go",
         "patchSetId": 2
@@ -53,6 +77,30 @@
       "writtenOn": "2019-07-18T08:46:59Z",
       "side": 1,
       "message": "Redundant variable",
+      "range": {
+        "startLine": 169,
+        "startChar": 2,
+        "endLine": 169,
+        "endChar": 13
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "76166d3b_376917d9",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-01T05:46:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6fb206bc_42747b79",
       "range": {
         "startLine": 169,
         "startChar": 2,
@@ -88,6 +136,30 @@
     },
     {
       "key": {
+        "uuid": "5468fa65_684325ab",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-01T05:46:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3365ec84_b0ad49b2",
+      "range": {
+        "startLine": 174,
+        "startChar": 2,
+        "endLine": 177,
+        "endChar": 3
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3cef4cb7_10db3a1d",
         "filename": "pkg/apisrv/keystone/api.go",
         "patchSetId": 2
@@ -99,6 +171,30 @@
       "writtenOn": "2019-07-18T08:46:59Z",
       "side": 1,
       "message": "Redundant variable",
+      "range": {
+        "startLine": 347,
+        "startChar": 2,
+        "endLine": 347,
+        "endChar": 11
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9b89ad13_02c657dd",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 347,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-01T05:46:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3cef4cb7_10db3a1d",
       "range": {
         "startLine": 347,
         "startChar": 2,
@@ -145,6 +241,30 @@
       "writtenOn": "2019-07-18T08:46:59Z",
       "side": 1,
       "message": "Please extract to function",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 333,
+        "endChar": 2
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "be7097b8_5781b572",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-01T05:46:48Z",
+      "side": 1,
+      "message": "The test is to verify auth with multiple clusters, i don\u0027t understand the reason to extract it in to a function.",
+      "parentUuid": "20ef1f46_608712dc",
       "range": {
         "startLine": 330,
         "startChar": 1,
