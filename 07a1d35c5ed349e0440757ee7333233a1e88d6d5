@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "610a2b63_1f2d9114",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-01T14:04:55Z",
+      "side": 1,
+      "message": "Add a commit title, e.g. `Determine config endpoint and auth type dynamically`",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a1ed3aee_9666c7a0",
         "filename": "helm/contrail-go/values.yaml",
         "patchSetId": 6
@@ -173,6 +190,29 @@
     },
     {
       "key": {
+        "uuid": "beb4cec4_dc9ebb44",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-01T14:04:55Z",
+      "side": 1,
+      "message": "Reverse this to `return nil` early.",
+      "range": {
+        "startLine": 167,
+        "startChar": 1,
+        "endLine": 167,
+        "endChar": 19
+      },
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8cbf5c91_b7c6bce1",
         "filename": "pkg/apisrv/common/endpoint.go",
         "patchSetId": 6
@@ -224,6 +264,46 @@
       "writtenOn": "2019-08-01T11:40:25Z",
       "side": 1,
       "message": "IMO an error should be returned here instead of continuing with possibly wrong authType.\n\nRetry mechanism could be added for resilience in such places.",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02a46cf0_3928a354",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-01T14:04:55Z",
+      "side": 1,
+      "message": "This can be reversed so that returning \"\" is explicit:\n\nif e \u003d\u003d nil {\n\tkeystone.Assignment \u003d keystone.staticAssignment\n\treturn \"\", nil\n}\n\u003cthe rest of the code\u003e",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "58d8aa53_a4099bb7",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-01T14:04:55Z",
+      "side": 1,
+      "message": "A struct like\n\nstruct {\n\tid string\n\torchestrator string\n\texpectedProjects []string\n\texpectedDomains []string\n}\n\nhere would make the `if`s below simpler.",
+      "range": {
+        "startLine": 315,
+        "startChar": 24,
+        "endLine": 315,
+        "endChar": 30
+      },
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

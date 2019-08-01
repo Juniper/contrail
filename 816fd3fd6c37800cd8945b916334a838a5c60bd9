@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3f88d55d_80c366b4",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-01T14:04:55Z",
+      "side": 0,
+      "message": "Was removing this intentional?",
+      "revId": "816fd3fd6c37800cd8945b916334a838a5c60bd9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
