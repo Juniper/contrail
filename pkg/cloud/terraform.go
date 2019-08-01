@@ -24,7 +24,7 @@ func createTopology(c *Cloud, reporter *report.Reporter) error {
 		"topology", "create",
 		"--topology", GetTopoFile(c.config.CloudID),
 		"--secret", GetSecretFile(c.config.CloudID),
-		"--skip_validation", "true",
+		"--skip_validation",
 	}
 
 	if c.config.Test {
