@@ -50,6 +50,7 @@ func (s *secret) createSecretFile() error {
 	templateContext := pongo2.Context{
 		"secret":            s.sfc,
 		"gcpCredentialFile": defaultGCPCredentialFile,
+		"azureCredentialFile": defaultGCPCredentialFile,
 	}
 	content, err := template.Apply(s.getSecretTemplate(), templateContext)
 	if err != nil {

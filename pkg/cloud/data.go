@@ -251,7 +251,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool)
 	}
 
 	if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
-		err := inst.updateProtoModes(isDelRequest) //nolint: govet
+		err := inst.updateProtoModes(isDelRequest) // nolint: govet
 		if err != nil {
 			return nil, err
 		}
@@ -1201,11 +1201,27 @@ func (d *Data) getDefaultCloudUser() (*models.CloudUser, error) {
 }
 
 func (d *Data) saveGCPCredentialsToDisk() error {
+	return d.saveCredentialsToDisk(gcp)
+}
+
+func (d *Data) saveAzureCredentialsToDisk() error {
+	return d.saveCredentialsToDisk(azure)
+}
+
+func (d *Data) saveCredentialsToDisk(provider string) error {
 	user, err := d.getDefaultCloudUser()
 	if err != nil {
 		return err
 	}
-	return fileutil.WriteToFile(defaultGCPCredentialFile, []byte(user.GCPCredential), defaultRWOnlyPerm)
+
+	switch provider {
+	case gcp:
+		return fileutil.WriteToFile(defaultGCPCredentialFile, []byte(user.GCPCredential), defaultRWOnlyPerm)
+	case azure:
+		return fileutil.WriteToFile(defaultAzureCredentialFile, []byte(user.AzureCredential), defaultRWOnlyPerm)
+	default:
+		return errors.Errorf("Unknown cloud provider: %s", provider)
+	}
 }
 
 func (d *Data) getGatewayNodes() []*instanceData {
