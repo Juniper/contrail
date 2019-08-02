@@ -49,5 +49,6 @@ kolla_config:
   kolla_globals:
     enable_haproxy: yes
     kolla_internal_vip_address: 127.0.0.1
+    kolla_enable_tls_external: yes
   kolla_passwords:
     keystone_admin_password: contrail123
