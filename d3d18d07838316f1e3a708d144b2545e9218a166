@@ -16,6 +16,23 @@
       "revId": "d3d18d07838316f1e3a708d144b2545e9218a166",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6796892a_a0b99648",
+        "filename": "pkg/apisrv/keystone/cluster.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "I think that methods of Keystone type should be in one file. Now you need to jump between files and we can avoid that.",
+      "revId": "d3d18d07838316f1e3a708d144b2545e9218a166",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

@@ -358,6 +358,30 @@
       "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6d1acf2_299d27ab",
+        "filename": "pkg/apisrv/keystone/api_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4528787b_c8b1b3ae",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 333,
+        "endChar": 2
+      },
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

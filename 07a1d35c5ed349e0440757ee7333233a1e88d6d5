@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "8e4074f1_6b4aee3d",
+        "filename": "helm/contrail-go/values.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5cc8116c_347f9e53",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e59227c4_085aa2ba",
         "filename": "packaging/apisrv.yml",
         "patchSetId": 6
@@ -107,6 +125,24 @@
     },
     {
       "key": {
+        "uuid": "0ca541b5_f41b6e4c",
+        "filename": "packaging/apisrv.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "30beb01f_f89d2cc6",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1917508a_ca277d53",
         "filename": "pkg/apisrv/cluster/auth.go",
         "patchSetId": 6
@@ -136,6 +172,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "1917508a_ca277d53",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d331017d_fd62190f",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9616c3a5_8cb4f236",
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -189,6 +243,30 @@
     },
     {
       "key": {
+        "uuid": "51150beb_0dc734dd",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0aa9d26e_39bf1184",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 43
+      },
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "66c561d2_a6a074fe",
         "filename": "pkg/apisrv/cluster/auth.go",
         "patchSetId": 6
@@ -218,6 +296,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "66c561d2_a6a074fe",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f3b70452_eb94ab71",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2813977b_ee857ef2",
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -259,6 +355,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "f40ef853_071ff9b5",
+      "range": {
+        "startLine": 20,
+        "startChar": 6,
+        "endLine": 32,
+        "endChar": 3
+      },
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dfc037fe_3fa263b2",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2f5feb67_ade4f23e",
       "range": {
         "startLine": 20,
         "startChar": 6,
@@ -318,6 +438,30 @@
     },
     {
       "key": {
+        "uuid": "f8737e1e_3b7e7b89",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d36dd329_f3d56709",
+      "range": {
+        "startLine": 34,
+        "startChar": 1,
+        "endLine": 34,
+        "endChar": 8
+      },
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d80c166e_bda379fb",
         "filename": "pkg/apisrv/cluster/auth.go",
         "patchSetId": 6
@@ -353,6 +497,24 @@
     },
     {
       "key": {
+        "uuid": "2c007ffc_2b5cb3d8",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2fe2dac0_e60205d5",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3533cba7_ce873789",
         "filename": "pkg/apisrv/cluster/auth.go",
         "patchSetId": 6
@@ -382,6 +544,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "3533cba7_ce873789",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8398489d_8587be4e",
+        "filename": "pkg/apisrv/cluster/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "03ed8bc5_d225f8c8",
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -506,6 +686,30 @@
     },
     {
       "key": {
+        "uuid": "204d5721_2ef2734d",
+        "filename": "pkg/apisrv/common/endpoint.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "192a5f63_4112919a",
+      "range": {
+        "startLine": 168,
+        "startChar": 0,
+        "endLine": 170,
+        "endChar": 57
+      },
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c7344baf_b121d16d",
         "filename": "pkg/apisrv/keystone/api.go",
         "patchSetId": 6
@@ -535,6 +739,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "c7344baf_b121d16d",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e23d1cd2_5a15bcd3",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "72221519_022231b5",
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -681,6 +903,24 @@
     },
     {
       "key": {
+        "uuid": "62d2bedd_9c2d0121",
+        "filename": "pkg/apisrv/replication/test_config.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dccf2546_6c68819e",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "abb05160_646d6c93",
         "filename": "pkg/neutron/test_config.yml",
         "patchSetId": 6
@@ -695,6 +935,24 @@
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a5a8bbe1_32461fc6",
+        "filename": "pkg/neutron/test_config.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "abb05160_646d6c93",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -755,6 +1013,24 @@
     },
     {
       "key": {
+        "uuid": "5cb394cd_2bef01ca",
+        "filename": "sample/contrail-k8s.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dae34528_89ba36ed",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9565df19_fe830fba",
         "filename": "sample/contrail-openstack.yml",
         "patchSetId": 6
@@ -769,6 +1045,24 @@
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "242c0e81_beb712c8",
+        "filename": "sample/contrail-openstack.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9565df19_fe830fba",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -789,6 +1083,24 @@
     },
     {
       "key": {
+        "uuid": "a40cbda9_698de76c",
+        "filename": "sample/contrail-ui.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f868dab7_bb8f4dee",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cdcd5a35_c5011c65",
         "filename": "sample/contrail-with-agent.yml",
         "patchSetId": 6
@@ -806,6 +1118,24 @@
     },
     {
       "key": {
+        "uuid": "a4a3d87c_807d7859",
+        "filename": "sample/contrail-with-agent.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cdcd5a35_c5011c65",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c681d316_89e63df2",
         "filename": "sample/contrail.yml",
         "patchSetId": 6
@@ -820,6 +1150,24 @@
       "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea6fc058_f5664826",
+        "filename": "sample/contrail.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:52:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c681d316_89e63df2",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
