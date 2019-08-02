@@ -62,14 +62,14 @@ test_data:
     - to: ["default-domain", "k8s-default", "default-vmi-k8"]
       uuid: ec2a0fa6-9bf2-11e9-a17c-6b84d0afebc8
 
-  physical-interface: &physical_interface2
+  physical_interface2: &physical_interface2
     uuid: physical_interface_blue_uuid2
     name: physical_interface_blue_name2
     display_name: interface_no2
     ethernet_segment_identifier: 11:02:03:04:05:06:07:08:09:11
     parent_uuid: physical_router_blue_uuid
 
-  logical-interface: &logical_interface2
+  logical_interface2: &logical_interface2
     uuid: logical_interface_child_uuid2
     parent_type: physical-interface
     parent_uuid: physical_interface_blue_uuid2

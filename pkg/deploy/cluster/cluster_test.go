@@ -413,7 +413,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(allInOneClusterTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load cluster test data")
+	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -567,7 +567,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(allInOneClusterAppformixTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load cluster test data")
+	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -771,7 +771,7 @@ func TestXflow(t *testing.T) {
 		},
 	)
 	if err != nil {
-		t.Error("Unable to load test scenario", err)
+		t.Fatal("Unable to load test scenario", err)
 	}
 	appformixFilesCleanup := createDummyAppformixFiles(t)
 	defer appformixFilesCleanup()
@@ -920,7 +920,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(allInOneKubernetesClusterTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load cluster test data")
+	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -1060,7 +1060,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(allInOnevcenterClusterTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load cluster test data")
+	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -1181,9 +1181,9 @@ func TestVcenterCluster(t *testing.T) {
 }
 
 func TestWindowsCompute(t *testing.T) {
-	testScenario, err := integration.LoadTest("./test_data/test_windows_compute.yml", nil)
-	assert.NoError(t, err, "failed to load test data")
-	integration.RunCleanTestScenario(t, testScenario, server)
+	ts, err := integration.LoadTest("./test_data/test_windows_compute.yml", nil)
+	require.NoError(t, err, "failed to load test data")
+	integration.RunCleanTestScenario(t, ts, server)
 }
 
 // nolint: gocyclo
@@ -1198,7 +1198,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(allInOneMCClusterTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load mc cluster test data")
+	require.NoError(t, err, "failed to load mc cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -1243,7 +1243,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"mc deployment should fail because cloud provisioning has failed")
 
 	ts, err = integration.LoadTest(allInOneMCCloudUpdateTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load mc pvt cloud update test data")
+	require.NoError(t, err, "failed to load mc pvt cloud update test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 
 	// now get cluster data again
@@ -1314,7 +1314,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	}
 
 	ts, err = integration.LoadTest(allInOneMCClusterUpdateTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load mc cluster test data")
+	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
@@ -1356,7 +1356,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	}
 
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
-	assert.NoError(t, err, "failed to load mc cluster test data")
+	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cloud")

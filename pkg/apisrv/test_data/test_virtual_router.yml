@@ -92,7 +92,6 @@ workflow:
       <<: *test_virtual_router_test
       display_name: test-virtual-router
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-      parent_type: global-system-config
       name: test-virtual-router
 
 - name: add a new allocation pool

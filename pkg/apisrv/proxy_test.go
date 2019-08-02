@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -76,7 +77,7 @@ func runEndpointTest(t *testing.T, clusterName, endpointName string) (*integrati
 		"public_url":      neutronPublic.URL,
 		"manage_parent":   manageParent,
 	})
-	assert.NoError(t, err, "failed to load test data")
+	require.NoError(t, err, "failed to load test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 
 	return ts, neutronPublic, neutronPrivate, cleanup
@@ -289,7 +290,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 			"manage_parent": true,
 			"admin_user":    clusterCUser,
 		})
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -334,7 +335,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 			"public_url":    ksPublic.URL,
 			"admin_user":    clusterCName,
 		})
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup = integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -386,7 +387,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 			"manage_parent":   true,
 			"admin_user":      clusterCUser,
 		})
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
@@ -415,7 +416,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	}
 
 	ts, err = integration.LoadTest(testEndpointFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanupClusterD := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanupClusterD()
 
@@ -426,7 +427,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	// auth middleware should find the keystone endpoint
 	// with X-Cluster-ID in the header
 	clientTS, err := integration.LoadTest(testEndpointFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 
 	clients := integration.PrepareClients(ctx, t, clientTS, server)
 

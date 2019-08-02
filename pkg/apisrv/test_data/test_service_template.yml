@@ -6,7 +6,15 @@ cleanup:
   - path: /service-template/610e977a-9bf2-11e9-81f5-cfd968bee391
   - path: /service-template/67af4b92-9bf2-11e9-b4c9-3b04ac9848ec
 test_data:
-  service_template: &st_correct_svc_template
+  template_properties: &template_properties
+    version: 2
+    service_virtualization_type: virtual-machine
+    service_mode: transparent
+    service_type: firewall
+    interface_type:
+    - service_interface_type: left
+
+  st_correct_svc_template: &st_correct_svc_template
     uuid: 5a121ac8-9bf2-11e9-806a-23708815e454
     parent_type: domain
     fq_name:
@@ -14,25 +22,25 @@ test_data:
       - correct-template
     service_template_properties: *template_properties
 
-  service_template: &st_bad_domain
+  st_bad_domain: &st_bad_domain
     parent_type: domain
     fq_name:
       - bad-domain
       - with-bad-domain
     service_template_properties: *template_properties
 
-  service_template: &st_without_fqname
+  st_without_fqname: &st_without_fqname
     parent_type: domain
     service_template_properties: *template_properties
 
-  service_template: &st_with_parent_uuid
+  st_with_parent_uuid: &st_with_parent_uuid
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     uuid: 610e977a-9bf2-11e9-81f5-cfd968bee391
     name: with-parent-uuid
     parent_type: domain
     service_template_properties: *template_properties
 
-  service_template: &st_from_dump
+  st_from_dump: &st_from_dump
     uuid: 67af4b92-9bf2-11e9-b4c9-3b04ac9848ec
     name: service_template_test_1
     fq_name:
@@ -49,14 +57,6 @@ test_data:
         - service_interface_type: left
         - service_interface_type: right
         - service_interface_type: management
-
-  service_template_properties: &template_properties
-    version: 2
-    service_virtualization_type: virtual-machine
-    service_mode: transparent
-    service_type: firewall
-    interface_type:
-      - service_interface_type: left
 
 clients:
   default:

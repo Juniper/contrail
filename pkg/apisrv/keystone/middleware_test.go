@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -41,7 +41,7 @@ func TestRemoteAuthenticate(t *testing.T) {
 	}
 
 	ts, err := integration.LoadTest(testEndpointFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
+	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 

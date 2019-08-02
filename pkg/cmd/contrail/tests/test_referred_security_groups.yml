@@ -72,9 +72,11 @@ test_data:
   egress_acl: &egress_acl
     name: egress-access-control-list
     parent_uuid: dd2fe27e-9bec-11e9-a098-ffa8f87266f5
-  ingress_acl_referring: &ingress_acl_referring
+  base_ingress_acl_referring: &base_ingress_acl_referring
     name: ingress-access-control-list
     parent_uuid: d1961d0c-9bec-11e9-8401-cf38a6f73cf4
+  ingress_acl_referring: &ingress_acl_referring
+    <<: *base_ingress_acl_referring
     access_control_list_entries:
       acl_rule:
       - action_list:
@@ -92,7 +94,7 @@ test_data:
     name: egress-access-control-list
     parent_uuid: d1961d0c-9bec-11e9-8401-cf38a6f73cf4
   ingress_acl_referring_update: &ingress_acl_referring_update
-    <<: *ingress_acl_referring
+    <<: *base_ingress_acl_referring
     access_control_list_entries:
       acl_rule: $null
 

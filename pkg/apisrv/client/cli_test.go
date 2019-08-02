@@ -187,7 +187,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				},
 				expected: map[string]interface{}{
 					"virtual-networks": map[string]interface{}{
-						"count": "2",
+						"count": 2,
 					},
 				},
 			},
