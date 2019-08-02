@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0834e3ec_aee79f0f",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-02T10:36:36Z",
+      "side": 1,
+      "message": "`return \"\", nil` after this - then the `else` won\u0027t be necessary.",
+      "revId": "d3d18d07838316f1e3a708d144b2545e9218a166",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
