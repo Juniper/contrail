@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "a961528a_ca7d7027",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-02T01:19:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba420baa_98714da4",
+      "revId": "f5fa93007ca890bfcd9ffd48ead501e725be9c24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ad3087c3_7366e9dc",
         "filename": "pkg/apisrv/common/endpoint.go",
         "patchSetId": 2
