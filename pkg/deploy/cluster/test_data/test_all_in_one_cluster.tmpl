@@ -70,6 +70,12 @@ test_data:
             virt_type=qemu
             cpu_mode=none
     {%endif%}
+    {% if SSL_ENABLE %}
+    kolla_globals:
+      key_value_pair:
+        - key: kolla_enable_tls_external
+          value: "yes"
+    {%endif%}
   openstack_control_nodes: &openstack_control_nodes
     uuid: openstack_control_nodes_uuid
     parent_type: openstack-cluster
