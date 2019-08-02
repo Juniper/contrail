@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "faee5a71_4b097f1c",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-02T16:04:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5580b1fd_c1497d42",
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9c8083b3_df7df9b7",
         "filename": "pkg/apisrv/keystone/client.go",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2019-08-02T15:21:42Z",
       "side": 1,
       "message": "Please use cleanhttp.DefaultPooledTransport() and jsut extend it with tls.Config.\nSee: https://godoc.org/github.com/hashicorp/go-cleanhttp#DefaultPooledTransport",
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e5140f2_23a61520",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-02T16:04:52Z",
+      "side": 1,
+      "message": "Do we need to change this just before release? i am not sure about un foreseen issues with thr use of cleanhttp.DefaultPooledTransport(). I have raised a separate bug https://contrail-jws.atlassian.net/browse/CEM-7876 to track this comment.",
+      "parentUuid": "9c8083b3_df7df9b7",
       "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -56,6 +92,30 @@
       "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6f583128_27094a01",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-02T16:04:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6b029897_72a1c1c0",
+      "range": {
+        "startLine": 34,
+        "startChar": 56,
+        "endLine": 34,
+        "endChar": 64
+      },
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
