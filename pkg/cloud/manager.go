@@ -333,6 +333,12 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 		}
 	}
 
+	if data.hasProviderAzure() {
+		if err = data.saveAzureCredentialsToDisk(); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
 	return topo, secret, data, nil
 }
 

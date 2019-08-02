@@ -16,7 +16,7 @@ var cloudCmd = &cobra.Command{
 	Short: "sub command cloud is used to manage public cloud infra",
 	Long: `Cloud is a sub command used to manage
             public cloud infra. Currently
-            supported infra are Azure`,
+            supported infra are AWS, GCP and Azure`,
 	Run: func(cmd *cobra.Command, args []string) {
 		manageCloud()
 	},

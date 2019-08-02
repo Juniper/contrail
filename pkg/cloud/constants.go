@@ -16,6 +16,7 @@ const (
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
 	defaultGCPCredentialFile       = "/var/tmp/cloud/google-account.json"
+	defaultAzureCredentialFile     = "/var/tmp/cloud/microsoft-account.json"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"

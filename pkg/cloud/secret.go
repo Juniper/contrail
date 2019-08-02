@@ -2,12 +2,12 @@ package cloud
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 
@@ -50,6 +50,7 @@ func (s *secret) createSecretFile() error {
 	templateContext := pongo2.Context{
 		"secret":            s.sfc,
 		"gcpCredentialFile": defaultGCPCredentialFile,
+		"azureCredentialFile": defaultGCPCredentialFile,
 	}
 	content, err := template.Apply(s.getSecretTemplate(), templateContext)
 	if err != nil {
@@ -108,18 +109,25 @@ func (s *secret) updateFileConfig(d *Data) error {
 	if d.hasProviderAWS() {
 		s.sfc.providerType = aws
 		if user.AwsCredential.AccessKey == "" {
-			return fmt.Errorf("aws access key not specified")
+			return errors.New("aws access key not specified")
 		}
 		s.sfc.awsAccessKey = user.AwsCredential.AccessKey
 		if user.AwsCredential.SecretKey == "" {
-			return fmt.Errorf("aws secret key not specified")
+			return errors.New("aws secret key not specified")
 		}
 		s.sfc.awsSecretKey = user.AwsCredential.SecretKey
 	}
 	if d.hasProviderGCP() {
 		s.sfc.providerType = gcp
 		if user.GCPCredential == "" {
-			return fmt.Errorf("gcp credentials not specified")
+			return errors.New("gcp credentials not specified")
+		}
+	}
+
+	if d.hasProviderAzure() {
+		s.sfc.providerType = azure
+		if user.AzureCredential == "" {
+			return errors.New("azure credentials not specified")
 		}
 	}
 	return nil
@@ -159,11 +167,11 @@ func getSSHKeyIfValid(kp *models.Keypair, keyType string) ([]byte, error) {
 	} else if keyType == privateSSHKey {
 		sshKeyFileName = filepath.Join(kp.SSHKeyDirPath, kp.DisplayName)
 	} else {
-		return nil, fmt.Errorf("key type: %s is not valid", keyType)
+		return nil, errors.Errorf("key type: %s is not valid", keyType)
 	}
 
 	if _, err := os.Stat(sshKeyFileName); err != nil {
-		return nil, fmt.Errorf("ssh key file %s is not located", sshKeyFileName)
+		return nil, errors.Errorf("ssh key file %s is not located", sshKeyFileName)
 	}
 
 	if keyType == privateSSHKey {
