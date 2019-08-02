@@ -121,7 +121,7 @@ func init() {
 		baseservices.FieldsKey,
 		"",
 		"Comma-separated list of object fields returned in response "+
-			"(e.g. 'name,uuid'; default '' does not limit the output) [implementation broken]",
+			"(e.g. 'name,uuid'; default '' does not limit the output)",
 	)
 }
 

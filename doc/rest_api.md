@@ -265,7 +265,7 @@ Available query parameters:
 | parent_id | Comma-separated list of parents' UUIDs (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '') |
 | back_ref_id | Comma-separated list of back references' UUIDs (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '') |
 | obj_uuids | Comma-separated list of objects' UUIDs (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '') |
-| fields | Comma-separated list of object fields returned in response (e.g. 'name,uuid'; default '' does not limit the output) [implementation broken] |
+| fields | Comma-separated list of object fields returned in response (e.g. 'name,uuid'; default '' does not limit the output) |
 
 Example Request
 

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
@@ -24,9 +23,7 @@ const (
 	resourcesPath            = "testdata/resources.yml"
 	vmiSchemaID              = "virtual_machine_interface"
 	vmiUUID                  = "91611dcc-a7cc-11e9-ad85-27cb7a03275b"
-	vnBlueName               = "vn-blue"
 	vnBlueUUID               = "efb6aa60-9d8e-11e9-b056-13df9df3688a"
-	vnRedName                = "vn-red"
 	vnRedUUID                = "0ce792b6-9d8f-11e9-a76a-5b775b6d8012"
 	vnSchemaID               = "virtual_network"
 	vnsPath                  = "testdata/vns.yml"
@@ -58,7 +55,7 @@ func testCLIShowsSchema(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func vnSchema(t *testing.T) map[string]interface{} {
+func vnSchema(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnSchemaYAML())
 }
 
@@ -209,8 +206,13 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
 				assert: func(t *testing.T, response string) {
-					for _, e := range unmarshalEventList(t, response).Events {
-						assert.Equal(t, "", e.GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetHref())
+					for _, r := range unmarshalResources(t, response)[client.ResourcesKey] {
+						data, ok := r[client.DataKey].(map[interface{}]interface{})
+						assert.True(t, ok)
+
+						href, ok := data["href"]
+						assert.False(t, ok, "There should be no Href in data, but there is")
+						assert.Equal(t, "", href, "There should be no Href in data, but there is")
 					}
 				},
 			},
@@ -252,7 +254,6 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				skip: true, // TODO(Daniel): fix implementation and remove
 				name: "with parent UUID and fields",
 				lp: &client.ListParameters{
 					ParentUUIDs: projectUUID,
@@ -260,20 +261,11 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				},
 				expected: resources(vnRedFiltered(t), vnBlueFiltered(t)),
 				assert: func(t *testing.T, response string) {
-					el := unmarshalEventList(t, response).Events
-					assert.Equal(t, vnRedUUID, el[0].GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetUUID())
-					assert.Equal(t, vnRedName, el[0].GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetName())
-
-					assert.Equal(t, vnBlueUUID, el[1].GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetUUID())
-					assert.Equal(t, vnBlueName, el[1].GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetName())
-
-					for _, e := range el {
-						assert.Equal(t, "", e.GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetParentUUID())
-						assert.Equal(t, 0, len(e.GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetFQName()))
-						assert.Equal(t, false, e.GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetIsShared())
-						// FIXME: this field has non zero value (it should not)
-						assert.Equal(t, "", e.GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetHref())
-					}
+					assert.Equal(
+						t,
+						resources(vnRedFiltered(t), vnBlueFiltered(t)),
+						unmarshalData(t, response),
+					)
 				},
 			},
 		}
@@ -368,7 +360,7 @@ func testDeleteMultiple(cli *client.CLI) func(t *testing.T) {
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(t, resources(), o)
+		assertEqual(t, nil, o)
 	}
 }
 
@@ -385,7 +377,7 @@ func deleteVMI(t *testing.T, cli *client.CLI) {
 	require.Equal(t, "", o)
 }
 
-func withExternalIPAM(t *testing.T, resource map[string]interface{}, ei bool) map[string]interface{} {
+func withExternalIPAM(t *testing.T, resource map[interface{}]interface{}, ei bool) map[interface{}]interface{} {
 	data, ok := resource["data"].(map[interface{}]interface{})
 	require.True(t, ok)
 
@@ -393,19 +385,19 @@ func withExternalIPAM(t *testing.T, resource map[string]interface{}, ei bool) ma
 	return resource
 }
 
-func vnBlue(t *testing.T) map[string]interface{} {
+func vnBlue(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnBlueYAML())
 }
 
-func vnBlueFiltered(t *testing.T) map[string]interface{} {
+func vnBlueFiltered(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnBlueFilteredYAML())
 }
 
-func vnRed(t *testing.T) map[string]interface{} {
+func vnRed(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnRedYAML())
 }
 
-func vnRedFiltered(t *testing.T) map[string]interface{} {
+func vnRedFiltered(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnRedFilteredYAML())
 }
 
@@ -464,14 +456,21 @@ data:
   uuid: 0ce792b6-9d8f-11e9-a76a-5b775b6d8012`
 }
 
-func resources(resources ...interface{}) map[string]interface{} {
-	return map[string]interface{}{
-		"resources": append([]interface{}{}, resources...),
+func resources(resources ...interface{}) map[interface{}]interface{} {
+	return map[interface{}]interface{}{
+		client.ResourcesKey: append([]interface{}{}, resources...),
 	}
 }
 
-func unmarshalResource(t *testing.T, yamlData string) map[string]interface{} {
-	var r map[string]interface{}
+func unmarshalResources(t *testing.T, yamlData string) client.Resources {
+	var r client.Resources
+	err := yaml.Unmarshal([]byte(yamlData), &r)
+	require.NoError(t, err)
+	return r
+}
+
+func unmarshalResource(t *testing.T, yamlData string) map[interface{}]interface{} {
+	var r map[interface{}]interface{}
 	err := yaml.Unmarshal([]byte(yamlData), &r)
 	require.NoError(t, err)
 	return r
@@ -505,11 +504,4 @@ func unmarshalData(t *testing.T, yamlData string) interface{} {
 	err := yaml.Unmarshal([]byte(yamlData), &d)
 	require.NoError(t, err, "cannot parse data")
 	return d
-}
-
-func unmarshalEventList(t *testing.T, yamlEL string) *services.EventList {
-	var el services.EventList
-	err := yaml.Unmarshal([]byte(yamlEL), &el)
-	require.NoError(t, err, "cannot parse actual data")
-	return &el
 }
