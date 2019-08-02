@@ -10,6 +10,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
@@ -82,7 +83,7 @@ func (k *Client) tokenRequest(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(tokenURL)
+	server := newCustomSingleHostReverseProxy(tokenURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
@@ -105,7 +106,7 @@ func (k *Client) GetDomains(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server := newCustomSingleHostReverseProxy(projectURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
@@ -118,7 +119,7 @@ func (k *Client) GetProjects(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server := newCustomSingleHostReverseProxy(projectURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
@@ -133,7 +134,24 @@ func (k *Client) GetProject(c echo.Context, id string) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server := newCustomSingleHostReverseProxy(projectURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
+}
+
+func newCustomSingleHostReverseProxy(url *url.URL) (server *httputil.ReverseProxy) {
+	server = httputil.NewSingleHostReverseProxy(url)
+	//TODO:(ijohnson) add insecure to endpoint schema
+	if url.Scheme == "https" {
+		server.Transport = &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+			TLSHandshakeTimeout: 10 * time.Second,
+		}
+	}
+
+	return server
 }

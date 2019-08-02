@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/format"
@@ -551,6 +552,23 @@ func (v *VCenterData) updateClusterDetails(clusterID string, r *ResourceManager)
 	return nil
 }
 
+func (o *OpenstackData) isSSLEnabled() bool {
+	if g := o.ClusterInfo.GetKollaGlobals(); g != nil {
+		for _, keyValuePair := range g.GetKeyValuePair() {
+			switch keyValuePair.Key {
+			case "kolla_enable_tls_external":
+				yamlBoolTrue := []string{"yes", "true", "y", "on"}
+				if format.ContainsString(
+					yamlBoolTrue,
+					strings.ToLower(keyValuePair.Value)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func (o *OpenstackData) addKeypair(keypair *models.Keypair) {
 	o.keypairsInfo = append(o.keypairsInfo, keypair)
 }
@@ -820,6 +838,23 @@ func (o *OpenstackData) getOpenstackStoragePorts() (nodePorts map[string]interfa
 		}
 	}
 	return nodePorts
+}
+
+func (d *Data) isSSLEnabled() bool {
+	if c := d.ClusterInfo.GetContrailConfiguration(); c != nil {
+		for _, keyValuePair := range c.GetKeyValuePair() {
+			switch keyValuePair.Key {
+			case "SSL_ENABLE":
+				yamlBoolTrue := []string{"yes", "true", "y", "on"}
+				if format.ContainsString(
+					yamlBoolTrue,
+					strings.ToLower(keyValuePair.Value)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (d *Data) addKeypair(keypair *models.Keypair) {
