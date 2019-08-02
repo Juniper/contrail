@@ -23,6 +23,22 @@ const (
 	pathSep         = "/"
 )
 
+func newCustomSingleHostReverseProxy(url string) (server *httputil.ReverseProxy) {
+	server = httputil.NewSingleHostReverseProxy(url)
+	if url.Scheme == "https" {
+		server.Transport = &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
+			TLSHandshakeTimeout: 10 * time.Second,
+		}
+	}
+
+	return server
+}
+
 // Client represents a client.
 type Client struct {
 	AuthURL      string `yaml:"authurl"`
@@ -82,7 +98,7 @@ func (k *Client) tokenRequest(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(tokenURL)
+	server := newCustomSingleHostReverseProxy(tokenURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
@@ -105,7 +121,7 @@ func (k *Client) GetDomains(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server := newCustomSingleHostReverseProxy(projectURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
@@ -118,7 +134,7 @@ func (k *Client) GetProjects(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server := newCustomSingleHostReverseProxy(projectURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
@@ -133,7 +149,7 @@ func (k *Client) GetProject(c echo.Context, id string) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server := newCustomSingleHostReverseProxy(projectURL)
 	server.ServeHTTP(c.Response(), r)
 	return nil
 }
