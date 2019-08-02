@@ -1362,3 +1362,80 @@ func TestMCCluster(t *testing.T) {
 		"CONTROL_NODES": "",
 	})
 }
+
+func TestTripleoClusterImport(t *testing.T) {
+	// mock keystone to let access server after cluster create
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	defer ksPublic.Close()
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	defer ksPrivate.Close()
+
+	// Create the cluster and related objects
+	ts, err := integration.LoadTest(
+		allInOneClusterTemplatePath,
+		pongo2.Context{
+			"TYPE":                   "kernel",
+			"MGMT_INT_IP":            "127.0.0.1",
+			"OPENSTACK_INTERNAL_VIP": "overcloud.localdomain",
+			"CONTRAIL_EXTERNAL_VIP":  "overcloud.localdomain",
+			"SSL_ENABLE":             "yes",
+			"PROVISIONER_TYPE":       "tripleo",
+			"PROVISIONING_STATE":     "CREATED",
+			"PROVISIONING_ACTION":    "",
+		},
+	)
+	require.NoError(t, err, "failed to load cluster test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
+	config := &Config{
+		APIServer:    s,
+		ClusterID:    clusterID,
+		Action:       createAction,
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
+		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
+	}
+	// create cluster
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterDeployer, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
+	deployer, err := clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(import) tripleo cluster")
+
+	// Wait for the in-memory endpoint cache to get updated
+	server.ForceProxyUpdate()
+	// make sure all endpoints are created as part of import
+	err = verifyEndpoints(
+		t, ts,
+		map[string]string{
+			"config":    "https://overcloud.localdomain:9100",
+			"nodejs":    "https://overcloud.localdomain:8144",
+			"telemetry": "https://overcloud.localdomain:9101",
+			"baremetal": "https://overcloud.localdomain:6386",
+			"swift":     "https://overcloud.localdomain:8081",
+			"glance":    "https://overcloud.localdomain:9293",
+			"compute":   "https://overcloud.localdomain:8775",
+			"keystone":  "https://overcloud.localdomain:5000",
+		},
+	)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+}
