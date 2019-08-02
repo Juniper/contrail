@@ -47,10 +47,11 @@ func (s *secret) getSecretTemplate() string {
 func (s *secret) createSecretFile() error {
 	secretFile := GetSecretFile(s.cloud.config.CloudID)
 
-	context := pongo2.Context{
-		"secret": s.sfc,
+	templateContext := pongo2.Context{
+		"secret":            s.sfc,
+		"gcpCredentialFile": defaultGCPCredentialFile,
 	}
-	content, err := template.Apply(s.getSecretTemplate(), context)
+	content, err := template.Apply(s.getSecretTemplate(), templateContext)
 	if err != nil {
 		return err
 	}

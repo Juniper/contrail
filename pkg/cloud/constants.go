@@ -15,6 +15,7 @@ const (
 	defaultSecretTemplate          = "secret.tmpl"
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
+	defaultGCPCredentialFile       = "/var/tmp/cloud/google-account.json"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
