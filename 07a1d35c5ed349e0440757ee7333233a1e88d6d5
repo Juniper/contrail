@@ -973,6 +973,24 @@
     },
     {
       "key": {
+        "uuid": "d4791494_cf055d6c",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:54:41Z",
+      "side": 1,
+      "message": "Not done",
+      "parentUuid": "9b4e6630_399feb63",
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "96637663_f1b1e08b",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 6
@@ -984,6 +1002,30 @@
       "writtenOn": "2019-08-01T11:40:25Z",
       "side": 1,
       "message": "Please remove it",
+      "range": {
+        "startLine": 113,
+        "startChar": 0,
+        "endLine": 115,
+        "endChar": 2
+      },
+      "revId": "07a1d35c5ed349e0440757ee7333233a1e88d6d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a5879f31_f149d190",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T14:54:41Z",
+      "side": 1,
+      "message": "Not done",
+      "parentUuid": "96637663_f1b1e08b",
       "range": {
         "startLine": 113,
         "startChar": 0,
