@@ -319,14 +319,16 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
 	// initialize secret struct
 	secret, err := newSecret(c)
-	if !data.isCloudPrivate() {
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		err = secret.updateFileConfig(data)
-		if err != nil {
-			return nil, nil, nil, err
-		}
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	if err = secret.updateCloudData(data); err != nil {
+		return nil, nil, nil, err
+	}
+
+	if err = secret.saveCloudCredentials(data); err != nil {
+		return nil, nil, nil, err
 	}
 
 	return topo, secret, data, nil

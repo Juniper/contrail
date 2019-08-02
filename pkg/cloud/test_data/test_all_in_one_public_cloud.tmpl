@@ -52,6 +52,9 @@ test_data:
       access_key: XXXXXX
       secret_key: YYYYYYYYYYY
     {% endif %}
+    {% if "gcp" in CLOUD_TYPE %}
+    gcp_credential: XXXXXX
+    {% endif %}
     credential_refs:
       - uuid: cloud_credential_uuid
   cloud: &cloud
@@ -396,6 +399,9 @@ workflow:
       aws_credential:
         access_key: XXXXXX
         secret_key: YYYYYYYYYYY
+      {% endif %}
+      {% if "gcp" in CLOUD_TYPE %}
+      gcp_credential: XXXXXX
       {% endif %}
       credential_refs:
         - uuid: cloud_credential_uuid

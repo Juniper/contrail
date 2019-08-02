@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -1197,6 +1198,14 @@ func (d *Data) getDefaultCloudUser() (*models.CloudUser, error) {
 		return user, nil
 	}
 	return nil, errors.New("cloudUser ref not found with cloud object")
+}
+
+func (d *Data) saveGCPCredentialsToDisk() error {
+	user, err := d.getDefaultCloudUser()
+	if err != nil {
+		return err
+	}
+	return fileutil.WriteToFile(defaultGCPCredentialFile, []byte(user.GCPCredential), defaultRWOnlyPerm)
 }
 
 func (d *Data) getGatewayNodes() []*instanceData {
