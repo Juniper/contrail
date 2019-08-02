@@ -47,10 +47,10 @@ func (s *secret) getSecretTemplate() string {
 func (s *secret) createSecretFile() error {
 	secretFile := GetSecretFile(s.cloud.config.CloudID)
 
-	context := pongo2.Context{
+	ctx := pongo2.Context{
 		"secret": s.sfc,
 	}
-	content, err := template.Apply(s.getSecretTemplate(), context)
+	content, err := template.Apply(s.getSecretTemplate(), ctx)
 	if err != nil {
 		return err
 	}
@@ -90,23 +90,21 @@ func getKeyPairObject(ctx context.Context, uuid string,
 	}
 
 	return kpResp.GetKeypair(), nil
-
 }
 
 func (s *secret) updateFileConfig(d *Data) error {
-
 	keypair, err := s.getKeypair(d)
 	if err != nil {
 		return err
 	}
 	s.sfc.keypair = keypair
+	user, err := d.getDefaultCloudUser()
+	if err != nil {
+		return err
+	}
 
 	if d.hasProviderAWS() {
-		user, err := d.getDefaultCloudUser()
-		if err != nil {
-			return err
-		}
-
+		s.sfc.providerType = aws
 		if user.AwsCredential.AccessKey == "" {
 			return fmt.Errorf("aws access key not specified")
 		}
@@ -118,6 +116,10 @@ func (s *secret) updateFileConfig(d *Data) error {
 	}
 	if d.hasProviderGCP() {
 		s.sfc.providerType = gcp
+		err = fileutil.WriteToFile(defaultGCPCredentialFile, []byte(user.GCPCredential), defaultRWOnlyPerm)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -133,7 +135,6 @@ func newSecret(c *Cloud) (*secret, error) {
 }
 
 func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
-
 	// TODO(madhukar) - optimize handling of multiple cloud users
 	cloudID := d.info.UUID
 	if err := os.MkdirAll(getCloudSSHKeyDir(cloudID), sshDirPerm); err != nil {
@@ -151,7 +152,6 @@ func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
 }
 
 func getSSHKeyIfValid(kp *models.Keypair, keyType string) ([]byte, error) {
-
 	var sshKeyFileName string
 	if keyType == pubSSHKey {
 		sshKeyFileName = filepath.Join(kp.SSHKeyDirPath, kp.DisplayName+".pub")
@@ -259,7 +259,6 @@ func (s *secret) getCredKeyPairIfExists(d *Data,
 }
 
 func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
-
 	// check if pub key is valid
 	rawPubkey, err := getSSHKeyIfValid(keypair, pubSSHKey)
 	if err != nil {
