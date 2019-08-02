@@ -62,7 +62,7 @@ func init() {
 		&count,
 		baseservices.CountKey,
 		false,
-		"Return response with only resource count if 'true' provided (default 'false') [implementation broken]",
+		"Return response with only resource count if 'true' provided (default 'false')",
 	)
 	listCmd.Flags().BoolVarP(
 		&shared,
