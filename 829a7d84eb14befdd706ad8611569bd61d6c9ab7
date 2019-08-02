@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5580b1fd_c1497d42",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T15:21:42Z",
+      "side": 1,
+      "message": "Please move this helper function below its usages.",
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c8083b3_df7df9b7",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T15:21:42Z",
+      "side": 1,
+      "message": "Please use cleanhttp.DefaultPooledTransport() and jsut extend it with tls.Config.\nSee: https://godoc.org/github.com/hashicorp/go-cleanhttp#DefaultPooledTransport",
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b029897_72a1c1c0",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T15:21:42Z",
+      "side": 1,
+      "message": "Does it compile?",
+      "range": {
+        "startLine": 34,
+        "startChar": 56,
+        "endLine": 34,
+        "endChar": 64
+      },
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2719242b_7a63f06d",
+        "filename": "pkg/deploy/base/data.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 555,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-02T15:21:42Z",
+      "side": 1,
+      "message": "Does it compile?",
+      "range": {
+        "startLine": 555,
+        "startChar": 9,
+        "endLine": 555,
+        "endChar": 22
+      },
+      "revId": "829a7d84eb14befdd706ad8611569bd61d6c9ab7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
