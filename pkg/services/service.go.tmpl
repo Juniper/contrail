@@ -18,6 +18,8 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 )
 
+const xRequestIDHeader = "X-Request-Id"
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 	{{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
@@ -30,7 +32,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
 	}
 	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
+	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
 	response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
 	if err != nil {
 		return errutil.ToHTTPError(err)
@@ -174,7 +176,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 	}
 
 	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
+	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
 	model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
 	model.UUID = c.Param("id")
 	response, err := service.Update{{ schema.JSONSchema.GoName }}(
@@ -232,7 +234,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 		ID: c.Param("id"),
 	}
 	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
+	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
 	 _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
 		return errutil.ToHTTPError(err)
@@ -263,7 +265,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 		ID: c.Param("id"),
 	}
 	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
+	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
 	response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
 		return errutil.ToHTTPError(err)
@@ -300,27 +302,31 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
-	var err error
-	spec := baseservices.GetListSpec(c)
-	request := &List{{ schema.JSONSchema.GoName }}Request{
-		Spec: spec,
-	}
-	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
-	response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
+	ls := baseservices.GetListSpec(c)
+
+	response, err := service.List{{ schema.JSONSchema.GoName }}(
+		WithRequestID(
+			c.Request().Context(),
+			c.Request().Header.Get(xRequestIDHeader),
+		),
+		&List{{ schema.JSONSchema.GoName }}Request{
+			Spec: ls,
+		},
+	)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
+
 	for _, r := range response.{{ schema.JSONSchema.GoName }}s {
 		if err = applyHref(r, c.Request()); err != nil {
-			logrus.WithError(err).Error("Failed to apply href")
+			logrus.WithError(err).Error("Failed to apply href - ignoring")
 		}
 	}
 
-	if spec.Count == true {
+	if ls.Count {
 		return c.JSON(http.StatusOK, response.Count())
 	}
-	if spec.Detail == true {
+	if ls.Detail {
 		return c.JSON(http.StatusOK, response.Detailed())
 	}
 	return c.JSON(http.StatusOK, response.Data())

@@ -109,57 +109,56 @@ func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
 
 // Create send a create API request.
 func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.POST, path, nil, data, output, expected)
+	return h.Do(ctx, echo.POST, path, nil, data, output, []int{http.StatusOK})
 }
 
 // Read send a get API request.
 func (h *HTTP) Read(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.GET, path, nil, nil, output, expected)
+	return h.Do(ctx, echo.GET, path, nil, nil, output, []int{http.StatusOK})
 }
 
 // ReadWithQuery send a get API request with a query.
 func (h *HTTP) ReadWithQuery(
-	ctx context.Context, path string, query url.Values, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.GET, path, query, nil, output, expected)
+	ctx context.Context, path string, query url.Values, output interface{},
+) (*http.Response, error) {
+	return h.Do(ctx, echo.GET, path, query, nil, output, []int{http.StatusOK})
 }
 
 // Update send an update API request.
 func (h *HTTP) Update(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.PUT, path, nil, data, output, expected)
+	return h.Do(ctx, echo.PUT, path, nil, data, output, []int{http.StatusOK})
 }
 
 // Delete send a delete API request.
 func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
+	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK})
 }
 
 // RefUpdate sends a create/update API request/
 func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, expected)
+	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
 }
 
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusOK, http.StatusNotFound}
-	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
+	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
 }
 
 // CreateIntPool sends a create int pool request to remote int-pools.
 func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
-	expected := []int{http.StatusOK}
-	request := services.CreateIntPoolRequest{
-		Pool:  pool,
-		Start: start,
-		End:   end,
-	}
-	var output struct{}
-	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolsPath, nil, &request, &output, expected)
+	_, err := h.Do(
+		ctx,
+		echo.POST,
+		"/"+services.IntPoolsPath,
+		nil,
+		&services.CreateIntPoolRequest{
+			Pool:  pool,
+			Start: start,
+			End:   end,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
 	return errors.Wrap(err, "error creating int pool in int-pools via HTTP")
 }
 
@@ -171,48 +170,79 @@ func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (strin
 	var output struct {
 		Owner string `json:"owner"`
 	}
-	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, q, nil, &output, expected)
+
+	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
 	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
 }
 
 // DeleteIntPool sends a delete int pool request to remote int-pools.
 func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
-	request := services.DeleteIntPoolRequest{
-		Pool: pool,
-	}
-	var output struct{}
-	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.DELETE, "/"+services.IntPoolsPath, nil, &request, &output, expected)
+	_, err := h.Do(
+		ctx,
+		echo.DELETE,
+		"/"+services.IntPoolsPath,
+		nil,
+		&services.DeleteIntPoolRequest{
+			Pool: pool,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
 	return errors.Wrap(err, "error deleting int pool in int-pools via HTTP")
 }
 
 // AllocateInt sends an allocate int request to remote int-pool.
 func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, error) {
-	data := services.IntPoolAllocationBody{Pool: pool, Owner: owner}
 	var output struct {
 		Value int64 `json:"value"`
 	}
-	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolPath, nil, &data, &output, expected)
+	_, err := h.Do(
+		ctx,
+		echo.POST,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Owner: owner,
+		},
+		&output,
+		[]int{http.StatusOK},
+	)
 	return output.Value, errors.Wrap(err, "error allocating int in int-pool via HTTP")
 }
 
 // SetInt sends a set int request to remote int-pool.
 func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
-	data := services.IntPoolAllocationBody{Pool: pool, Value: &value, Owner: owner}
-	var output struct{}
-	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolPath, nil, &data, &output, expected)
+	_, err := h.Do(
+		ctx,
+		echo.POST,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Value: &value,
+			Owner: owner,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
 	return errors.Wrap(err, "error setting int in int-pool via HTTP")
 }
 
 // DeallocateInt sends a deallocate int request to remote int-pool.
 func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) error {
-	data := services.IntPoolAllocationBody{Pool: pool, Value: &value}
-	var output struct{}
-	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.DELETE, "/"+services.IntPoolPath, nil, &data, &output, expected)
+	_, err := h.Do(
+		ctx,
+		echo.DELETE,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Value: &value,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
 	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
 }
 
@@ -222,7 +252,15 @@ func (h *HTTP) NeutronPost(ctx context.Context, r *logic.Request, expected []int
 	if err != nil {
 		return nil, errors.Errorf("failed to get response type for request %v", r)
 	}
-	_, err = h.Do(ctx, echo.POST, fmt.Sprintf("/neutron/%s", r.Context.Type), nil, r, &response, expected)
+	_, err = h.Do(
+		ctx,
+		echo.POST,
+		fmt.Sprintf("/neutron/%s", r.Context.Type),
+		nil,
+		r,
+		&response,
+		expected,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +286,11 @@ func (h *HTTP) Do(
 	if err != nil {
 		return resp, errorFromResponse(err, resp)
 	}
-	defer resp.Body.Close() // nolint: errcheck
+	defer func() {
+		if cErr := resp.Body.Close(); cErr != nil {
+			logrus.WithError(err).Debug("client.HTTP: Error closing response body")
+		}
+	}()
 
 	err = checkStatusCode(expected, resp.StatusCode)
 	if err != nil {
