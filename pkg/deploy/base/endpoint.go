@@ -178,23 +178,6 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 	return endpointNodes
 }
 
-func (e *EndpointData) isSSLEnabled() bool {
-	if c := e.ClusterData.ClusterInfo.GetContrailConfiguration(); c != nil {
-		for _, keyValuePair := range c.GetKeyValuePair() {
-			switch keyValuePair.Key {
-			case "SSL_ENABLE":
-				yamlBoolTrue := []string{"yes", "true", "y", "on"}
-				if format.ContainsString(
-					yamlBoolTrue,
-					strings.ToLower(keyValuePair.Value)) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
 // nolint: gocyclo
 func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
@@ -286,7 +269,7 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 			case webui:
 				endpointProtocol = secureProtocol
 			case config:
-				if e.isSSLEnabled() {
+				if e.ClusterData.isSSLEnabled() {
 					endpointProtocol = secureProtocol
 				}
 			}
@@ -309,11 +292,15 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 	// openstack endpoints
 	if e.ClusterData.ClusterInfo.Orchestrator == "openstack" {
 		openstackEndpoints := e.getOpenstackEndpointNodes()
+		endpointProtocol := protocol
+		if e.ClusterData.getOpenstackClusterData().isSSLEnabled() {
+			endpointProtocol = secureProtocol
+		}
 		for service, endpointIPs := range openstackEndpoints {
 			e.Log.Infof("Creating %s endpoints", service)
 			for _, endpointIP := range endpointIPs {
 				publicURL := e.endpointToURL(
-					protocol, endpointIP, e.getPort(endpointIP, service))
+					endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 				privateURL := publicURL
 				endpointData := map[string]string{
 					"parent_uuid": e.ClusterID,

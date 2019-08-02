@@ -122,6 +122,7 @@ schema:
       enum:
       - ansible
       - helm
+      - tripleo
       permission:
       - create
       - update

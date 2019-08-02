@@ -856,11 +856,11 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		"config":    "https://10.1.1.100:8082",
 		"nodejs":    "https://10.1.1.100:8143",
 		"telemetry": "http://10.1.1.100:8081",
-		"baremetal": "http://127.0.0.1:6385",
-		"swift":     "http://127.0.0.1:8080",
-		"glance":    "http://127.0.0.1:9292",
-		"compute":   "http://127.0.0.1:8774",
-		"keystone":  "http://127.0.0.1:5000",
+		"baremetal": "https://127.0.0.1:6385",
+		"swift":     "https://127.0.0.1:8080",
+		"glance":    "https://127.0.0.1:9292",
+		"compute":   "https://127.0.0.1:8774",
+		"keystone":  "https://127.0.0.1:5000",
 	}
 
 	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", "", pContext, expectedEndpoints)
