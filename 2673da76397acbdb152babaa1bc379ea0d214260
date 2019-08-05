@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "ed4ea1e4_c37a19f4",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-08-05T10:42:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "76943f05_22d3cd50",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 334,
+        "endChar": 2
+      },
+      "revId": "2673da76397acbdb152babaa1bc379ea0d214260",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dc9b5b97_5079ef4f",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 6
