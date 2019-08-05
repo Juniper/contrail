@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "88f806e4_789072ba",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-08-05T09:12:50Z",
+      "side": 1,
+      "message": "move this to updateFileConfig method.",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 334,
+        "endChar": 2
+      },
+      "revId": "2673da76397acbdb152babaa1bc379ea0d214260",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dc9b5b97_5079ef4f",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-08-05T09:12:50Z",
+      "side": 1,
+      "message": "Where do you use that?",
+      "range": {
+        "startLine": 52,
+        "startChar": 2,
+        "endLine": 52,
+        "endChar": 48
+      },
+      "revId": "2673da76397acbdb152babaa1bc379ea0d214260",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
