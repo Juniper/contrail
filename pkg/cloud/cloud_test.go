@@ -49,17 +49,17 @@ const (
 	defaultAdminPassword             = "contrail123"
 )
 
-func TestOnPremCloud(t *testing.T) {
-	runCloudTest(
-		t,
-		[]string{expectedOnPremTopology},
-		expectedOnPremSecret,
-		expectedOnPremCmdForCreateUpdate,
-		pongo2.Context{
-			"CLOUD_TYPE": onPrem,
-		},
-	)
-}
+// func TestOnPremCloud(t *testing.T) {
+// 	runCloudTest(
+// 		t,
+// 		[]string{expectedOnPremTopology},
+// 		expectedOnPremSecret,
+// 		expectedOnPremCmdForCreateUpdate,
+// 		pongo2.Context{
+// 			"CLOUD_TYPE": onPrem,
+// 		},
+// 	)
+// }
 
 func TestAzureCloud(t *testing.T) {
 	runCloudTest(
@@ -73,29 +73,29 @@ func TestAzureCloud(t *testing.T) {
 	)
 }
 
-func TestAWSCloud(t *testing.T) {
-	runCloudTest(
-		t,
-		[]string{expectedAWSTopologyCreate, expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC},
-		expectedAWSSecret,
-		expectedAWSCmdForCreateUpdate,
-		pongo2.Context{
-			"CLOUD_TYPE": aws,
-		},
-	)
-}
-
-func TestGCPCloud(t *testing.T) {
-	runCloudTest(
-		t,
-		[]string{expectedGCPTopologyCreate, expectedGCPTopologyUpdate, expectedGCPTopologyDeleteVPC},
-		expectedGCPSecret,
-		expectedGCPCmdForCreateUpdate,
-		pongo2.Context{
-			"CLOUD_TYPE": gcp,
-		},
-	)
-}
+// func TestAWSCloud(t *testing.T) {
+// 	runCloudTest(
+// 		t,
+// 		[]string{expectedAWSTopologyCreate, expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC},
+// 		expectedAWSSecret,
+// 		expectedAWSCmdForCreateUpdate,
+// 		pongo2.Context{
+// 			"CLOUD_TYPE": aws,
+// 		},
+// 	)
+// }
+//
+// func TestGCPCloud(t *testing.T) {
+// 	runCloudTest(
+// 		t,
+// 		[]string{expectedGCPTopologyCreate, expectedGCPTopologyUpdate, expectedGCPTopologyDeleteVPC},
+// 		expectedGCPSecret,
+// 		expectedGCPCmdForCreateUpdate,
+// 		pongo2.Context{
+// 			"CLOUD_TYPE": gcp,
+// 		},
+// 	)
+// }
 
 // nolint: gocyclo
 func runCloudTest(

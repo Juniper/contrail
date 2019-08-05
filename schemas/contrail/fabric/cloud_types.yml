@@ -32,6 +32,53 @@
       - update
       sql: ""
       title: GCP Access Key
+    AzureCredential:
+      type: "object"
+      properties:
+        azure_subscription_id:
+          description: Subscription ID for Azure cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Azure subscription ID
+          view:
+          - detail
+        azure_client_id:
+          description: Client ID for Azure cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Azure client ID
+          view:
+          - detail
+        azure_client_secret:
+          description: Client secret for Azure cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Azure client secret
+          view:
+          - detail
+        azure_tenant_id:
+          description: Tenant ID for Azure cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Azure tenant ID
+          view:
+          - detail
     MCGWClusterInfo:
       type: "object"
       properties:

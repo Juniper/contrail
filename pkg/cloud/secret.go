@@ -26,10 +26,14 @@ const (
 )
 
 type secretFileConfig struct {
-	keypair      *models.Keypair
-	awsAccessKey string
-	awsSecretKey string
-	providerType string
+	keypair             *models.Keypair
+	providerType        string
+	awsAccessKey        string
+	awsSecretKey        string
+	azureSubscriptionId string
+	azureClientId       string
+	azureClientSecret   string
+	azureTenantId       string
 }
 
 type secret struct {
@@ -56,6 +60,7 @@ func (s *secret) createSecretFile() error {
 		return err
 	}
 
+	_ = fileutil.WriteToFile("/var/tmp/cloud/aws_secret.yaml", content, defaultRWOnlyPerm)
 	err = fileutil.WriteToFile(secretFile, content, defaultRWOnlyPerm)
 	if err != nil {
 		return err
@@ -121,6 +126,29 @@ func (s *secret) updateCloudData(d *Data) error {
 		if user.GCPCredential == "" {
 			return fmt.Errorf("gcp credentials not specified")
 		}
+	}
+
+	if d.hasProviderAzure() {
+		s.sfc.providerType = azure
+		if user.AzureCredential.AzureTenantID == "" {
+			return fmt.Errorf("azure tenant id not specified")
+		}
+		s.sfc.azureTenantId = user.AzureCredential.AzureTenantID
+
+		if user.AzureCredential.AzureSubscriptionID == "" {
+			return fmt.Errorf("azure subscription id not specified")
+		}
+		s.sfc.azureSubscriptionId = user.AzureCredential.AzureSubscriptionID
+
+		if user.AzureCredential.AzureClientID == "" {
+			return fmt.Errorf("azure client id not specified")
+		}
+		s.sfc.azureClientId = user.AzureCredential.AzureClientID
+
+		if user.AzureCredential.AzureClientSecret == "" {
+			return fmt.Errorf("azure client secret not specified")
+		}
+		s.sfc.azureClientSecret = user.AzureCredential.AzureClientSecret
 	}
 	return nil
 }

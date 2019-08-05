@@ -55,6 +55,13 @@ test_data:
     {% if "gcp" in CLOUD_TYPE %}
     gcp_credential: XXXXXX
     {% endif %}
+    {% if "azure" in CLOUD_TYPE %}
+    azure_credential:
+      azure_subscription_id: XXXX
+      azure_client_id: YYYY
+      azure_client_secret: ZZZZ
+      azure_tenant_id: VVVV
+    {% endif %}
     credential_refs:
       - uuid: cloud_credential_uuid
   cloud: &cloud
@@ -402,6 +409,13 @@ workflow:
       {% endif %}
       {% if "gcp" in CLOUD_TYPE %}
       gcp_credential: XXXXXX
+      {% endif %}
+      {% if "azure" in CLOUD_TYPE %}
+      azure_credential:
+        azure_subscription_id: XXXX
+        azure_client_id: YYYY
+        azure_client_secret: ZZZZ
+        azure_tenant_id: VVVV
       {% endif %}
       credential_refs:
         - uuid: cloud_credential_uuid
