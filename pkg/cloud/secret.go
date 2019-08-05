@@ -27,9 +27,20 @@ const (
 
 type secretFileConfig struct {
 	keypair      *models.Keypair
-	awsAccessKey string
-	awsSecretKey string
 	providerType string
+	aws          struct {
+		accessKey string
+		secretKey string
+	}
+	azure struct {
+		clientID       string
+		clientSecret   string
+		subscriptionID string
+		tenantID       string
+	}
+	gcp struct {
+		credentialFile string
+	}
 }
 
 type secret struct {
@@ -48,8 +59,7 @@ func (s *secret) createSecretFile() error {
 	secretFile := GetSecretFile(s.cloud.config.CloudID)
 
 	templateContext := pongo2.Context{
-		"secret":            s.sfc,
-		"gcpCredentialFile": defaultGCPCredentialFile,
+		"secret": s.sfc,
 	}
 	content, err := template.Apply(s.getSecretTemplate(), templateContext)
 	if err != nil {
@@ -106,22 +116,69 @@ func (s *secret) updateCloudData(d *Data) error {
 	}
 
 	if d.hasProviderAWS() {
-		s.sfc.providerType = aws
-		if user.AwsCredential.AccessKey == "" {
-			return fmt.Errorf("aws access key not specified")
+		if err = s.setAWSCloudSecrets(user); err != nil {
+			return err
 		}
-		s.sfc.awsAccessKey = user.AwsCredential.AccessKey
-		if user.AwsCredential.SecretKey == "" {
-			return fmt.Errorf("aws secret key not specified")
-		}
-		s.sfc.awsSecretKey = user.AwsCredential.SecretKey
 	}
 	if d.hasProviderGCP() {
-		s.sfc.providerType = gcp
-		if user.GCPCredential == "" {
-			return fmt.Errorf("gcp credentials not specified")
+		if err = s.setGCPCloudSecrets(user); err != nil {
+			return err
 		}
 	}
+	if d.hasProviderAzure() {
+		if err = s.setAzureCloudSecrets(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *secret) setAWSCloudSecrets(user *models.CloudUser) error {
+	s.sfc.providerType = aws
+
+	if user.AwsCredential.AccessKey == "" {
+		return fmt.Errorf("aws access key not specified")
+	}
+	s.sfc.aws.accessKey = user.AwsCredential.AccessKey
+	if user.AwsCredential.SecretKey == "" {
+		return fmt.Errorf("aws secret key not specified")
+	}
+	s.sfc.aws.secretKey = user.AwsCredential.SecretKey
+	return nil
+}
+
+func (s *secret) setGCPCloudSecrets(user *models.CloudUser) error {
+	s.sfc.providerType = gcp
+
+	if user.GCPCredential == "" {
+		return fmt.Errorf("gcp credentials not specified")
+	}
+	s.sfc.gcp.credentialFile = defaultGCPCredentialFile
+	return nil
+}
+
+func (s *secret) setAzureCloudSecrets(user *models.CloudUser) error {
+	s.sfc.providerType = azure
+
+	if user.AzureCredential.AzureClientID == "" {
+		return fmt.Errorf("azure client id not specified")
+	}
+	s.sfc.azure.clientID = user.AzureCredential.AzureClientID
+
+	if user.AzureCredential.AzureClientSecret == "" {
+		return fmt.Errorf("azure client secret not specified")
+	}
+	s.sfc.azure.clientSecret = user.AzureCredential.AzureClientSecret
+
+	if user.AzureCredential.AzureSubscriptionID == "" {
+		return fmt.Errorf("azure subscription id not specified")
+	}
+	s.sfc.azure.subscriptionID = user.AzureCredential.AzureSubscriptionID
+
+	if user.AzureCredential.AzureTenantID == "" {
+		return fmt.Errorf("azure tenant id not specified")
+	}
+	s.sfc.azure.tenantID = user.AzureCredential.AzureTenantID
 	return nil
 }
 

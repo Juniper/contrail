@@ -21,6 +21,10 @@ schema:
       presence: "optional"
       description: "GCP Credential Details"
       $ref: "cloud_types.json#/definitions/GCPCredential"
+    azure_credential:
+      presence: "optional"
+      description: "Azure Credential Details"
+      $ref: "cloud_types.json#/definitions/AzureCredential"
   type: object
 singular: cloud_user
 title: Cloud User
