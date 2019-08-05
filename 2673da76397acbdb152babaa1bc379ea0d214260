@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "76943f05_22d3cd50",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-08-05T09:19:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "88f806e4_789072ba",
+      "range": {
+        "startLine": 330,
+        "startChar": 1,
+        "endLine": 334,
+        "endChar": 2
+      },
+      "revId": "2673da76397acbdb152babaa1bc379ea0d214260",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dc9b5b97_5079ef4f",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 6
@@ -45,6 +69,30 @@
       "revId": "2673da76397acbdb152babaa1bc379ea0d214260",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a0fa302e_7416f8f9",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-08-05T09:19:05Z",
+      "side": 1,
+      "message": "This is a template context for `secret.tmpl` file. We don\u0027t want to hard code file paths in two different places (template and constants).\nBy passing constant to template, we are sure there is only single place of truth.",
+      "parentUuid": "dc9b5b97_5079ef4f",
+      "range": {
+        "startLine": 52,
+        "startChar": 2,
+        "endLine": 52,
+        "endChar": 48
+      },
+      "revId": "2673da76397acbdb152babaa1bc379ea0d214260",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
