@@ -400,7 +400,7 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
 		return cloud.TestCmdHelper(cmd, args, workDir, testTemplate)
 	}
 
-	err := osutil.ExecCmdAndWait(m.Reporter, cmd, args, workDir)
+	err := osutil.ExecCmdAndWait(m.Reporter, cmd, args, cloud.GetMultiCloudRepodir())
 	if err != nil {
 		return err
 	}
