@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "98e1ab15_109766f5",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1367,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:15:50Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 1367,
+        "startChar": 1,
+        "endLine": 1367,
+        "endChar": 9
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "844ac931_9414c77f",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1377,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:15:50Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 1377,
+        "startChar": 1,
+        "endLine": 1377,
+        "endChar": 18
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
