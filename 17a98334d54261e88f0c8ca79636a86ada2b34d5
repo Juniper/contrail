@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dc71af12_f1e27c75",
+        "filename": "schemas/contrail/fabric/cloud_types.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-07T05:08:59Z",
+      "side": 1,
+      "message": "Earlier we had discussion around this with Sanju, he was against storing secret information in psql. Did you guys discuss with him about this change?",
+      "revId": "17a98334d54261e88f0c8ca79636a86ada2b34d5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
