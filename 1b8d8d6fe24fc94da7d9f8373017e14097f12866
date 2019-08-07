@@ -25,6 +25,46 @@
     },
     {
       "key": {
+        "uuid": "3e3af623_bd75560c",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1371,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Is it needed?",
+      "range": {
+        "startLine": 1370,
+        "startChar": 0,
+        "endLine": 1371,
+        "endChar": 28
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26e448b3_25f7ecc7",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1375,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Is it needed?",
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "844ac931_9414c77f",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 3
@@ -41,6 +81,144 @@
         "startChar": 1,
         "endLine": 1377,
         "endChar": 18
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3e287d42_af5aacc4",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1388,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 1388,
+        "startChar": 1,
+        "endLine": 1388,
+        "endChar": 16
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce086add_4f5035f1",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1403,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Please use require.NoError(), because continuing on failure is pointless",
+      "range": {
+        "startLine": 1403,
+        "startChar": 1,
+        "endLine": 1403,
+        "endChar": 15
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "19a5a580_14ea3d30",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1405,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 1405,
+        "startChar": 1,
+        "endLine": 1405,
+        "endChar": 7
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d146ca9b_e8d12adf",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1422,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "This code is duplicated across tests",
+      "range": {
+        "startLine": 1416,
+        "startChar": 2,
+        "endLine": 1422,
+        "endChar": 2
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "419a0523_d59e801d",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1428,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Please use require.NoError() in all 3 assertions in this block, because continuing on failure is pointless",
+      "range": {
+        "startLine": 1424,
+        "startChar": 1,
+        "endLine": 1428,
+        "endChar": 67
+      },
+      "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c423553_8245155d",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1436,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-07T13:34:39Z",
+      "side": 1,
+      "message": "Just assert.NoError(...)",
+      "range": {
+        "startLine": 1434,
+        "startChar": 1,
+        "endLine": 1436,
+        "endChar": 2
       },
       "revId": "1b8d8d6fe24fc94da7d9f8373017e14097f12866",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
