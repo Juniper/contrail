@@ -1362,3 +1362,76 @@ func TestMCCluster(t *testing.T) {
 		"CONTROL_NODES": "",
 	})
 }
+
+func TestTripleClusterImport(t *testing.T) {
+	pContext := pongo2.Context{
+		"TYPE":                "kernel",
+		"MGMT_INT_IP":         "127.0.0.1",
+		"CONTROL_NODES":       "",
+		"OPENSTACK_NODES":     "",
+		"SSL_ENABLE":          "yes",
+		"PROVISIONER_TYPE":    "tripleo",
+		"PROVISIONING_STATE":  "CREATED",
+		"PROVISIONING_ACTION": "",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "https://127.0.0.1:9100",
+		"nodejs":    "https://127.0.0.1:8144",
+		"telemetry": "https://127.0.0.1:9101",
+		"baremetal": "https://127.0.0.1:6386",
+		"swift":     "https://127.0.0.1:8081",
+		"glance":    "https://127.0.0.1:9293",
+		"compute":   "https://127.0.0.1:8775",
+		"keystone":  "https://127.0.0.1:5000",
+	}
+	// mock keystone to let access server after cluster create
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	defer ksPublic.Close()
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	defer ksPrivate.Close()
+
+	// Create the cluster and related objects
+	ts, err := integration.LoadTest(allInOneClusterTemplatePath, pContext)
+	require.NoError(t, err, "failed to load cluster test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
+	config := &Config{
+		APIServer:    s,
+		ClusterID:    clusterID,
+		Action:       createAction,
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
+		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
+	}
+	// create cluster
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterDeployer, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
+	deployer, err := clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(import) tripleo cluster")
+
+	// Wait for the in-memory endpoint cache to get updated
+	server.ForceProxyUpdate()
+	// make sure all endpoints are created as part of import
+	err = verifyEndpoints(t, ts, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+}
