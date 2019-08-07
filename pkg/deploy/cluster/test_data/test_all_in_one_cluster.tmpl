@@ -82,6 +82,11 @@ test_data:
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+    {% if PROVISIONER_TYPE == "tripleo" %}
+    nova_public_port: 8775
+    glance_public_port: 9293
+    ironic_public_port: 6386
+    {% endif %}
   openstack_monitoring_nodes: &openstack_monitoring_nodes
     uuid: openstack_monitoring_nodes_uuid
     parent_type: openstack-cluster
@@ -100,6 +105,9 @@ test_data:
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+    {% if PROVISIONER_TYPE == "tripleo" %}
+    swift_public_port: 8081
+    {% endif %}
   openstack_compute_nodes: &openstack_compute_nodes
     uuid: openstack_compute_nodes_uuid
     parent_type: openstack-cluster
@@ -120,7 +128,11 @@ test_data:
     container_registry_password: {{CONTAINER_REGISTRY_PASSWORD}}
     {%endif%}
     contrail_version: ocata-5.0-x
+    {% if PROVISIONER_TYPE %}
+    provisioner_type: {{ PROVISIONER_TYPE }}
+    {%else%}
     provisioner_type: ansible
+    {%endif%}
     orchestrator: openstack
     default_gateway: 127.0.0.254
     ntp_server: 10.1.1.100
@@ -138,6 +150,10 @@ test_data:
       key_value_pair:
         - key: CONTRAIL_CONTAINER_TAG
           value: "master.100"
+    {% if SSL_ENABLE %}
+        - key: SSL_ENABLE
+          value: "yes"
+    {%endif%}
     {% if CONTROL_NODES %}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
@@ -153,10 +169,6 @@ test_data:
         - key: OPENSTACK_NODES
           value: {{OPENSTACK_NODES}}
         {%endif%}
-        {% if SSL_ENABLE %}
-        - key: SSL_ENABLE
-          value: "yes"
-        {%endif%}
     {%endif%}
     {% if CONTRAIL_EXTERNAL_VIP %}
     annotations:
@@ -170,6 +182,9 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+    {% if PROVISIONER_TYPE == "tripleo" %}
+    api_public_port: 9100
+    {% endif %}
   {% if ZTP_ROLE %}
   contrail_ztp_dhcp_nodes: &contrail_ztp_dhcp_nodes
     uuid: contrail_ztp_dhcp_nodes_uuid
@@ -196,6 +211,9 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+    {% if PROVISIONER_TYPE == "tripleo" %}
+    api_public_port: 9101
+    {% endif %}
   contrail_analytics_database_nodes: &contrail_analytics_database_nodes
     uuid: contrail_analytics_database_nodes_uuid
     parent_type: contrail-cluster
@@ -220,6 +238,9 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+    {% if PROVISIONER_TYPE == "tripleo" %}
+    public_port: 8144
+    {% endif %}
   contrail_control_nodes: &contrail_control_nodes
     uuid: contrail_control_nodes_uuid
     parent_type: contrail-cluster
@@ -311,7 +332,11 @@ workflow:
       {%endif%}
       registry_private_insecure: true
       contrail_version: ocata-5.0-x
+      {% if PROVISIONER_TYPE %}
+      provisioner_type: {{ PROVISIONER_TYPE }}
+      {%else%}
       provisioner_type: ansible
+      {%endif%}
       orchestrator: openstack
       default_gateway: 127.0.0.254
       ntp_server: 10.1.1.100

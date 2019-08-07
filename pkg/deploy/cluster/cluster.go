@@ -67,7 +67,7 @@ func (c *Cluster) GetDeployer() (base.Deployer, error) {
 	switch deployerType(cData, c.config.Action) {
 	case "rhospd":
 		return newOvercloudDeployer(c)
-	case "ansible":
+	case "ansible", "tripleo":
 		return newAnsibleDeployer(c, cData), nil
 	case mCProvisioner:
 		return newMCProvisioner(c, cData), nil
