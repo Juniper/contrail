@@ -6,6 +6,13 @@
   when:
     - ansible_distribution == 'RedHat'
 
+- name: "Update python2 requests"
+  command: yum update -y python2-requests
+  become: yes
+  become_user: root
+  when:
+    - ansible_distribution == 'RedHat'
+
 - name: "Install docker"
   pip:
     name: docker
