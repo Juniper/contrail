@@ -4,7 +4,6 @@ This repository holds Go implementation for Contrail projects.
 The goal of this project is
 to realize Go-based implementation & etcd based such as Kubernetes
 in order to improve performance, scale and ease operation.
-
 We are planning to add following sub components.
 
 - API Server (Python-based VNC API Server equivalent)
