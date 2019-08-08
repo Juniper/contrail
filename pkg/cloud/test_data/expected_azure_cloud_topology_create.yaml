@@ -2,6 +2,7 @@
 - provider: azure
   organization: unit_test
   project: test2
+  prebuild: test_docker_image
   regions:
     - name: WestUS
       resource_group: unit_test

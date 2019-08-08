@@ -27,6 +27,19 @@ schema:
       view:
       - create
       - detail
+    prebuild:
+      description: Name of the prebuild image
+      nullable: true
+      default: "nightly"
+      permission:
+      - create
+      - update
+      sql: ""
+      title: prebuild image name
+      type: string
+      view:
+      - create
+      - detail
   type: object
 singular: cloud
 title: Cloud

@@ -52,10 +52,10 @@ func newTopology(c *Cloud, data *Data) *topology {
 }
 
 func (t *topology) createTopologyFile(topoFile string) error {
-	context := pongo2.Context{
+	templateContext := pongo2.Context{
 		"cloud": t.cloudData,
 	}
-	content, err := template.Apply(t.getTmplFilePath(), context)
+	content, err := template.Apply(t.getTmplFilePath(), templateContext)
 	if err != nil {
 		return err
 	}

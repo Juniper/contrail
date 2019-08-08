@@ -8,8 +8,8 @@
 {% endif %}
   organization: {{ cloud.info.Organization }}
   project: {{ provider.info.Project }}
+  prebuild: {% if cloud.info.Prebuild %}{{ cloud.info.Prebuild }}{% else %}nightly{% endif %}
   {% if gcp in cloudType %}
-  prebuild: nightly
   tags:
     owner: juniper
     project: contrail_multicloud

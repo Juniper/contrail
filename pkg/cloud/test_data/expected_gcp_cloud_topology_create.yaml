@@ -2,7 +2,7 @@
 - provider: google
   organization: unit_test
   project: test2
-  prebuild: nightly
+  prebuild: test_docker_image
   tags:
     owner: juniper
     project: contrail_multicloud
