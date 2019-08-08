@@ -62,6 +62,7 @@ test_data:
     name: cloud
     uuid: cloud_uuid
     organization: unit_test
+    prebuild: test_docker_image
     cloud_user_refs:
       - uuid: cloud_user_uuid
   cloud_provider: &cloud_provider
@@ -421,6 +422,7 @@ workflow:
       provisioning_state: NOSTATE
       uuid: cloud_uuid
       organization: unit_test
+      prebuild: test_docker_image
       cloud_user_refs:
         - uuid: cloud_user_uuid
 

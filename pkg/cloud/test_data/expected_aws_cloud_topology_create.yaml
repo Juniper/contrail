@@ -2,6 +2,7 @@
 - provider: aws
   organization: unit_test
   project: test2
+  prebuild: test_docker_image
   regions:
     - name: us-west-1
       vpc:
