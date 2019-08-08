@@ -30,7 +30,7 @@
       permission:
       - create
       - update
-      sql: ""
+      sql: text
       title: GCP Access Key
     MCGWClusterInfo:
       type: "object"
