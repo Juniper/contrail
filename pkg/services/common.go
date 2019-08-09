@@ -2,8 +2,12 @@ package services
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -31,6 +35,7 @@ const (
 	IntPoolPath              = "int-pool"
 	IntPoolsPath             = "int-pools"
 	ObjPerms                 = "obj-perms"
+	UploadFilePath           = "upload"
 )
 
 // Reference is a generic reference that can be retrieved from ref update event.
@@ -595,6 +600,43 @@ func (service *ContrailService) DeallocateInt(
 		return nil, err
 	}
 	return &types.Empty{}, nil
+}
+
+// UploadFileBody defines data format for /upload endpoint.
+type UploadFileBody struct {
+	DestinationPath string `json:"destination_path"`
+	FileContent     string `json:"file_content"`
+}
+
+// RESTUploadFile handles an /upload REST request.
+func (service *ContrailService) RESTUploadFile(c echo.Context) error {
+	var request UploadFileBody
+	if err := c.Bind(&request); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	if request.DestinationPath == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "destination path is empty")
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(request.FileContent)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest,
+			fmt.Sprintf("failed to base64-decode file content: %v", err))
+	}
+
+	err = os.MkdirAll(path.Dir(request.DestinationPath), 0755)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			fmt.Sprintf("failed to create directory for file %q: %v", request.DestinationPath, err))
+	}
+
+	if err = ioutil.WriteFile(request.DestinationPath, decoded, 0644); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			fmt.Sprintf("failed to write file %q: %v", request.DestinationPath, err))
+	}
+
+	return nil
 }
 
 type routeRegistry interface {
