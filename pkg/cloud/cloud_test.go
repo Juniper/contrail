@@ -151,6 +151,13 @@ func runCloudTest(
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
+	createAWSAccessKey(t, "/var/tmp/contrail/cloud_uuid/aws_access.key")
+	createAWSSecretKey(t, "/var/tmp/contrail/cloud_uuid/aws_secret.key")
+	defer os.Remove("/var/tmp/contrail/cloud_uuid/aws_access.key")
+	defer os.Remove("/var/tmp/contrail/cloud_uuid/aws_secret.key")
+
+	createDockerCreds(t, "/var/tmp/contrail/docker_creds.yml")
+
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
 
@@ -338,6 +345,28 @@ func verifyGeneratedSSHKeyFiles(t *testing.T) bool {
 	pubKeyPath := getCloudSSHKeyPath(cloudID, "cloud_keypair.pub")
 	return compareFiles(t, expectedPvtKey,
 		pvtKeyPath) && compareFiles(t, expectedPubKey, pubKeyPath)
+}
+
+func createDockerCreds(t *testing.T, path string) {
+	data, err := ioutil.ReadFile("./test_data/docker_creds.yml")
+	assert.NoError(t, err)
+
+	err = fileutil.WriteToFile(path, data, sshPubKeyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", path)
+}
+
+func createAWSAccessKey(t *testing.T, path string) {
+	data := []byte("access_key")
+
+	err := fileutil.WriteToFile(path, data, sshPubKeyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", path)
+}
+
+func createAWSSecretKey(t *testing.T, path string) {
+	data := []byte("secret_key")
+
+	err := fileutil.WriteToFile(path, data, sshPubKeyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", path)
 }
 
 func createDummySSHKeyFiles(t *testing.T) func() {
