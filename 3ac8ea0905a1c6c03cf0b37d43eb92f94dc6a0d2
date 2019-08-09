@@ -42,6 +42,29 @@
     },
     {
       "key": {
+        "uuid": "1d3e8e21_4a467f54",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-09T16:55:30Z",
+      "side": 1,
+      "message": "two notes here:\n1) what if there is another azure cloud worker running in parallel? is it possible?\n2) can this command fail?",
+      "range": {
+        "startLine": 509,
+        "startChar": 5,
+        "endLine": 509,
+        "endChar": 69
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e5d58448_0f610694",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 4
