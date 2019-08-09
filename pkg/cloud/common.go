@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -89,6 +92,36 @@ func GetSecretFile(cloudID string) string {
 // GetTFStateFile get terraform state file
 func GetTFStateFile(cloudID string) string {
 	return filepath.Join(GetCloudDir(cloudID), defaultTFStateFile)
+}
+
+// GetTerraformAWSPlanFile gets terraform AWS plan file
+func GetTerraformAWSPlanFile(cloudID string) string {
+	return filepath.Join(GetCloudDir(cloudID), defaultAWSPlanTF)
+}
+
+// GetTerraformAzurePlanFile gets terraform Azure plan file
+func GetTerraformAzurePlanFile(cloudID string) string {
+	return filepath.Join(GetCloudDir(cloudID), defaultAzurePlanTF)
+}
+
+// GetTerraformGCPPlanFile gets terraform GCP plan file
+func GetTerraformGCPPlanFile(cloudID string) string {
+	return filepath.Join(GetCloudDir(cloudID), defaultGCPPlanTF)
+}
+
+// GetTerraformGCPSecret gets GCP secret file
+func GetTerraformGCPSecret(cloudSecretFile string) string {
+	gcpStruct := struct{gcpCred string `yaml:"google_credentials"`}{}
+
+	secret, err := ioutil.ReadFile(cloudSecretFile)
+    if err != nil {
+        return ""
+    }
+    if err = yaml.Unmarshal(secret, gcpStruct); err != nil {
+        return ""
+    }
+
+    return gcpStruct.gcpCred
 }
 
 func deleteNodeObjects(ctx context.Context,

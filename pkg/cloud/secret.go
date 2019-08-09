@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
@@ -26,10 +28,31 @@ const (
 )
 
 type secretFileConfig struct {
-	keypair      *models.Keypair
-	awsAccessKey string
-	awsSecretKey string
-	providerType string
+	keypair      *models.Keypair	`yaml:"public_key"`
+	awsAccessKey string	`yaml:"aws_access_key"`
+	awsSecretKey string	`yaml:"aws_secret_key"`
+	// TODO: Ensure this is proper tag
+	providerType string	`yaml:"provider_type"`
+	authorizedRegistries []dockerRegistry `yaml:"authorized_registries"`
+}
+
+func (s *secretFileConfig) addRegistries(registries []dockerRegistry) {
+	s.authorizedRegistries = append(s.authorizedRegistries, registries...)
+	s.removeExistingRegistries()
+}
+
+func (s *secretFileConfig) removeExistingRegistries() {
+	updatedRegistries := []dockerRegistry{}
+	regAlreadyExists := map[[3]string]bool{}
+
+	for _, registry := range s.authorizedRegistries {
+		regKey := [3]string{registry.registry, registry.username, registry.password}
+		if !regAlreadyExists[regKey] {
+			updatedRegistries = append(updatedRegistries, registry)
+			regAlreadyExists[regKey] = true
+		}
+	}
+	s.authorizedRegistries = updatedRegistries
 }
 
 type secret struct {
@@ -102,24 +125,43 @@ func (s *secret) updateFileConfig(d *Data) error {
 	s.sfc.keypair = keypair
 
 	if d.hasProviderAWS() {
-		user, err := d.getDefaultCloudUser()
+		awsCreds, err := loadAWSCredentialsFromFile(GetSecretFile(d.cloud.config.CloudID))
 		if err != nil {
 			return err
 		}
 
-		if user.AwsCredential.AccessKey == "" {
+		if awsCreds.AccessKey == "" {
 			return fmt.Errorf("aws access key not specified")
 		}
-		s.sfc.awsAccessKey = user.AwsCredential.AccessKey
-		if user.AwsCredential.SecretKey == "" {
+		s.sfc.awsAccessKey = awsCreds.AccessKey
+		if awsCreds.SecretKey == "" {
 			return fmt.Errorf("aws secret key not specified")
 		}
-		s.sfc.awsSecretKey = user.AwsCredential.SecretKey
+		s.sfc.awsSecretKey = awsCreds.SecretKey
 	}
 	if d.hasProviderGCP() {
 		s.sfc.providerType = gcp
 	}
 	return nil
+}
+
+func loadAWSCredentialsFromFile(credFile string) (*models.AWSCredential, error) {
+	data, err := ioutil.ReadFile(credFile)
+    if err != nil {
+        return nil, err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	if len(lines) != 2 {
+		return nil, errors.New("Invalid AWS Credential File")
+	}
+
+	creds := strings.Split(string(data), ",")
+	if len(creds) != 2 {
+		return nil, errors.New("Invalid AWS Credential File")
+	}
+
+    return &models.AWSCredential{AccessKey: creds[0], SecretKey: creds[1]}, nil
 }
 
 func newSecret(c *Cloud) (*secret, error) {
