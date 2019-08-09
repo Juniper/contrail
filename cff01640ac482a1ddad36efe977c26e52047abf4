@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "232ab315_c4c571f2",
+        "filename": "pkg/services/common.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 630,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-09T18:01:33Z",
+      "side": 1,
+      "message": "What happens if DestinationPath contains ../? eg, ../../../../etc? can I end up writing arbitrary files in /etc?\n\n(why is a path supplied by the UI at all, can they instead supply an eg, \"name of the key\", and then the golang code chooses the path)",
+      "range": {
+        "startLine": 630,
+        "startChar": 0,
+        "endLine": 630,
+        "endChar": 59
+      },
+      "revId": "cff01640ac482a1ddad36efe977c26e52047abf4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
