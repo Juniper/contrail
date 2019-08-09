@@ -1270,13 +1270,6 @@ func (d *Data) hasProviderGCP() bool {
 	return false
 }
 
-func (d *Data) getDefaultCloudUser() (*models.CloudUser, error) {
-	for _, user := range d.users {
-		return user, nil
-	}
-	return nil, errors.New("cloudUser ref not found with cloud object")
-}
-
 func (d *Data) getGatewayNodes() []*instanceData {
 	gwNodes := []*instanceData{}
 	for _, inst := range d.instances {

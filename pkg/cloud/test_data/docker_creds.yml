@@ -1,0 +1,4 @@
+authorized_registries:
+- registry: test_registry
+  username: user
+  password: pass
