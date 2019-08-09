@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ab8cff2_36fdf41c",
+        "filename": "pkg/services/common.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 607,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-09T13:02:39Z",
+      "side": 1,
+      "message": "Add a comment:\n// DestinationPath is the path of the file to be created on API Server host.",
+      "revId": "8f3c280da06222ebffe3f1dcd9eda5f496aface0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d694688f_df8e32db",
+        "filename": "pkg/services/common.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 608,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-08-09T13:02:39Z",
+      "side": 1,
+      "message": "Add a comment:\n// FileContent is the base64-encoded content the created file should have.",
+      "revId": "8f3c280da06222ebffe3f1dcd9eda5f496aface0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
