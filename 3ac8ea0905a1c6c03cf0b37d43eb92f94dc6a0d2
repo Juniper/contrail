@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "2ddfd8af_da8fbce7",
+        "filename": "pkg/cloud/common.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-09T16:49:46Z",
+      "side": 1,
+      "message": "go fmt",
+      "range": {
+        "startLine": 117,
+        "startChar": 1,
+        "endLine": 124,
+        "endChar": 28
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c2a2d497_17d763d2",
         "filename": "pkg/cloud/configs/secret.tmpl",
         "patchSetId": 4
@@ -13,6 +36,52 @@
       "writtenOn": "2019-08-09T15:32:54Z",
       "side": 1,
       "message": "awsAccessKey and awsSecretKey will not be stored in DB, it will be available in a file uploaded by user in the command container under /tmp/\u003ccloudUserUUID\u003e/aws_access.key and /tmp/\u003ccloudUserUUID\u003e/aws_secret_key. is there a code change to read and use it in secret.yml?",
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e5d58448_0f610694",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-09T16:49:46Z",
+      "side": 1,
+      "message": "I know this code very little, so please don\u0027t be shy in telling me that I\u0027m wrong.\n\nBut the files removed here are not created by this go code, correct? they are default paths for files that terraform creates?\n\nIf terraform is updated and eg, creates an extra file? or starts using a different file name, this code will break.\n\nHow do we catch those breakages? How do we catch an eventual leak? (automatically, without manual work).\n\nIdeas:\n1) can we run terraform from a directory, remove the directory? Or remove all but the safe files (if some files need to be preserved? basically, err to be safe by default).\n\n2) can we have a unit test that tries to run terraform, and checks if there are unexpected files left in a test directory?",
+      "range": {
+        "startLine": 511,
+        "startChar": 0,
+        "endLine": 511,
+        "endChar": 67
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "69c9b59e_2fe210fc",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 612,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-09T16:49:46Z",
+      "side": 1,
+      "message": "I thought at meeting it was said that the cluster topology file is used by terraform to compute diffs in terms of minimal operations to bring the cluster to the desired state. Is that a different file? (just double checking)",
+      "range": {
+        "startLine": 612,
+        "startChar": 4,
+        "endLine": 612,
+        "endChar": 22
+      },
       "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
