@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c2a2d497_17d763d2",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-09T15:32:54Z",
+      "side": 1,
+      "message": "awsAccessKey and awsSecretKey will not be stored in DB, it will be available in a file uploaded by user in the command container under /tmp/\u003ccloudUserUUID\u003e/aws_access.key and /tmp/\u003ccloudUserUUID\u003e/aws_secret_key. is there a code change to read and use it in secret.yml?",
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
