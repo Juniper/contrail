@@ -106,6 +106,15 @@ type PubKeyConfig struct {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) Deploy() error {
+	err := m.deploy()
+	if deleteErr := m.removeVulnerableFiles(); deleteErr != nil {
+		return errors.Wrapf(err, "Deletion of vulnerable files finished with error: %s", deleteErr.Error())
+	}
+	return err
+}
+
+// nolint: gocyclo
+func (m *multiCloudProvisioner) deploy() error {
 
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
@@ -593,6 +602,16 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 	}
 	return nil
 
+}
+
+func (m *multiCloudProvisioner) removeVulnerableFiles() error {
+	filesToRemove := []string{m.getClusterSecretFile(m.workDir),
+		m.getClusterTopoFile(m.workDir),
+		m.getInventoryFile(),
+		m.getInstanceFile(),
+		m.getContrailCommonFile(m.workDir),
+	}
+	return osutil.ForceRemoveFiles(filesToRemove, m.Log)
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
