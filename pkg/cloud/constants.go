@@ -7,6 +7,9 @@ const (
 	defaultWorkRoot                = "/var/tmp/cloud"
 	defaultTemplateRoot            = "./pkg/cloud/configs"
 	defaultGenInventoryScript      = "transform/generate_inventories.py"
+	defaultAWSPlanTF               = "aws.tf.json"
+	defaultAzurePlanTF             = "azure.tf.json"
+	defaultGCPPlanTF               = "google.tf.json"
 	defaultTFStateFile             = "terraform.tfstate"
 	defaultTopologyFile            = "topology.yml"
 	defaultPublicCloudTopoTemplate = "public_cloud_topology.tmpl"
@@ -15,7 +18,7 @@ const (
 	defaultSecretTemplate          = "secret.tmpl"
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
-	defaultGCPCredentialFile       = "/var/tmp/cloud/google-account.json"
+	defaultGCPCredentialFile       = "/var/tmp/contrail/google-account.json"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"

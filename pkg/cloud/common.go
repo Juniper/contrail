@@ -87,6 +87,21 @@ func GetTFStateFile(cloudID string) string {
 	return filepath.Join(GetCloudDir(cloudID), defaultTFStateFile)
 }
 
+// GetTerraformAWSPlanFile gets terraform AWS plan file
+func GetTerraformAWSPlanFile(cloudID string) string {
+	return filepath.Join(GetCloudDir(cloudID), defaultAWSPlanTF)
+}
+
+// GetTerraformAzurePlanFile gets terraform Azure plan file
+func GetTerraformAzurePlanFile(cloudID string) string {
+	return filepath.Join(GetCloudDir(cloudID), defaultAzurePlanTF)
+}
+
+// GetTerraformGCPPlanFile gets terraform GCP plan file
+func GetTerraformGCPPlanFile(cloudID string) string {
+	return filepath.Join(GetCloudDir(cloudID), defaultGCPPlanTF)
+}
+
 func deleteNodeObjects(ctx context.Context,
 	client *client.HTTP, nodeList []*instanceData) []string {
 

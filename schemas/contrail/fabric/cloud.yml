@@ -15,6 +15,13 @@ plural: clouds
 prefix: /
 schema:
   properties:
+    is_multicloud_provisioning:
+      description: Boolean value that checks if it's request from MC provisioning
+      permission:
+      - create
+      - update
+      type: boolean
+      default: false
     organization:
       description: Name of the organization
       nullable: false
