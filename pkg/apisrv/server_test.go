@@ -2,6 +2,11 @@ package apisrv_test
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -160,4 +165,80 @@ func TestPagination(t *testing.T) {
 	}
 
 	RunTestTemplate(t, "./test_data/test_pagination.tmpl", context)
+}
+
+func TestUploadFileHTTPEndpoint(t *testing.T) {
+	const outputDirectory = "test_data/test_upload"
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	for _, tt := range []struct {
+		name       string
+		path       string
+		content    string
+		statusCode int
+	}{
+		{
+			name:       "valid relative path",
+			path:       path.Join(outputDirectory, "file"),
+			content:    "test content",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "valid absolute path",
+			path:       path.Join(wd, outputDirectory, "file"),
+			content:    "test content",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "relative path with nonexistent directories",
+			path:       path.Join(outputDirectory, "bar", "baz", "file"),
+			content:    "test content",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "absolute path with nonexistent directories",
+			path:       path.Join(wd, outputDirectory, "bar", "baz", "file"),
+			content:    "test content",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "empty path",
+			path:       "",
+			content:    "test content",
+			statusCode: http.StatusBadRequest,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			err = os.RemoveAll(outputDirectory)
+			require.NoError(t, err)
+
+			err = os.MkdirAll(outputDirectory, 0755)
+			require.NoError(t, err)
+
+			defer func() {
+				if err = os.RemoveAll(outputDirectory); err != nil {
+					fmt.Println("Failed to clean up", outputDirectory, ":", err)
+				}
+			}()
+
+			hc, err := integration.NewHTTPClient(server.URL())
+			require.NoError(t, err)
+
+			r, err := hc.UploadFile(context.Background(), tt.path, tt.content)
+
+			assert.Equal(t, tt.statusCode, r.StatusCode)
+
+			if tt.statusCode != http.StatusOK {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+
+			b, err := ioutil.ReadFile(tt.path)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.content, string(b))
+		})
+	}
 }

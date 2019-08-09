@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -262,6 +263,25 @@ func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) erro
 		[]int{http.StatusOK},
 	)
 	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
+}
+
+// UploadFile sends a upload file request with given data.
+func (h *HTTP) UploadFile(ctx context.Context, path, content string) (*http.Response, error) {
+	encodedContent := base64.StdEncoding.EncodeToString([]byte(content))
+
+	r, err := h.Do(
+		ctx,
+		echo.POST,
+		"/"+services.UploadFilePath,
+		nil,
+		&services.UploadFileBody{
+			DestinationPath: path,
+			FileContent:     encodedContent,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return r, errors.Wrap(err, "error uploading file via HTTP")
 }
 
 // NeutronPost sends Neutron request
