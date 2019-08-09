@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -138,6 +139,17 @@ func NewCloud(c *Config) (*Cloud, error) {
 
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
+	err := c.manage()
+	if c.config.Test {
+		return err
+	}
+	if deleteErr := c.removeVulnerableFiles(); deleteErr != nil {
+		return errors.Wrapf(err, "Deletion of vulnerable files finished with error: %s", deleteErr.Error())
+	}
+	return err
+}
+
+func (c *Cloud) manage() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 
@@ -331,6 +343,7 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
 	return topo, secret, data, nil
 }
+
 func (c *Cloud) delete() error {
 	// get cloud data
 	data, err := c.getCloudData(true)
@@ -366,6 +379,75 @@ func (c *Cloud) delete() error {
 	}
 
 	return os.RemoveAll(GetCloudDir(c.config.CloudID))
+}
+
+type dockerRegistry struct {
+	registry string `yaml:"registry,omitempty"`
+	username string `yaml:"username,omitempty"`
+	password string `yaml:"password,omitempty"`
+}
+
+func addDockerCredentialsToSecret(secretFile, credsFile string) error {
+	registries, err := loadDockerRegistries(credsFile)
+	if err != nil {
+		return errors.Wrap(err, "Could not load authorized registries from file")
+	}
+	if err = appendRegistriesToSecret(secretFile, registries); err != nil {
+		return errors.Wrap(err, "Could not append registries to secret file")
+	}
+	return nil
+}
+
+func loadDockerRegistries(credsFile string) ([]dockerRegistry, error) {
+	dockerCreds := struct {
+		authorizedRegistries []dockerRegistry `yaml:"authorized_registries"`
+	}{}
+	creds, err := ioutil.ReadFile(credsFile)
+	if err != nil {
+		return nil, err
+	}
+	if err = yaml.Unmarshal(creds, dockerCreds); err != nil {
+		return nil, err
+	}
+	return dockerCreds.authorizedRegistries, nil
+}
+
+func appendRegistriesToSecret(secretFile string, registries []dockerRegistry) error {
+	secret, err := loadSecretFileConfig(secretFile)
+	if err != nil {
+		return err
+	}
+	secret.addRegistries(registries)
+	return saveSecretFileConfig(secretFile, secret)
+}
+
+func addGoogleCredentialsPathToSecret(secretFile, credPath string) error {
+	secret, err := loadSecretFileConfig(secretFile)
+	if err != nil {
+		return err
+	}
+	secret.googleCredentials = credPath
+	return saveSecretFileConfig(secretFile, secret)
+}
+
+func loadSecretFileConfig(secretFile string) (*secretFileConfig, error) {
+	secret := &secretFileConfig{}
+	secretData, err := ioutil.ReadFile(secretFile)
+	if err != nil {
+		return nil, err
+	}
+	if err = yaml.Unmarshal(secretData, secret); err != nil {
+		return nil, err
+	}
+	return secret, nil
+}
+
+func saveSecretFileConfig(secretFile string, secret *secretFileConfig) error {
+	secretData, err := yaml.Marshal(secret)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(secretFile, secretData, 0777)
 }
 
 func (c *Cloud) getCloudData(isDelRequest bool) (*Data, error) {
@@ -476,4 +558,28 @@ func (c *Cloud) getTemplateRoot() string {
 		templateRoot = defaultTemplateRoot
 	}
 	return templateRoot
+}
+
+func (c *Cloud) removeVulnerableFiles() error {
+	if data, err := c.getCloudData(false); err == nil && !data.isCloudPublic() {
+		return nil
+	}
+
+	cloudID := c.config.CloudID
+
+	keyFileDefaults, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
+	}
+
+	return osutil.ForceRemoveFiles([]string{
+		GetSecretFile(cloudID),
+		GetTerraformAWSPlanFile(cloudID),
+		GetTerraformAzurePlanFile(cloudID),
+		GetTerraformGCPPlanFile(cloudID),
+		keyFileDefaults.GetAWSAccessPath(cloudID),
+		keyFileDefaults.GetAWSSecretPath(cloudID),
+		keyFileDefaults.GetAzureProfilePath(),
+		keyFileDefaults.GetAzureAccessTokenPath(),
+		keyFileDefaults.GetGoogleAccountPath()}, c.log)
 }
