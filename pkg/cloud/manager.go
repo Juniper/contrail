@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -138,6 +139,24 @@ func NewCloud(c *Config) (*Cloud, error) {
 
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
+	data, err := c.getCloudData(false)
+	if err != nil {
+		return errors.Wrap(err, "failed to get Cloud data")
+	}
+	manageErr := c.manage()
+
+	if err := c.removeVulnerableFiles(data); err != nil {
+		return errors.Errorf(
+			"failed to delete vulnerable files: %s; manage error (if any): %s",
+			err,
+			manageErr,
+		)
+	}
+
+	return manageErr
+}
+
+func (c *Cloud) manage() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 
@@ -183,11 +202,16 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 	return false, nil
 }
 
+// nolint: gocyclo
 func (c *Cloud) create() error {
-	status := map[string]interface{}{statusField: statusCreateProgress}
+	// Initialization // TODO(Daniel): extract function
+	data, err := c.getCloudData(false)
+	if err != nil {
+		return err
+	}
 
-	// Run pre-install steps
-	topo, secret, data, err := c.initialize()
+	status := map[string]interface{}{statusField: statusCreateProgress}
+	topo, secret, err := c.initialize(data)
 	if err != nil {
 		status[statusField] = statusCreateFailed
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -198,6 +222,7 @@ func (c *Cloud) create() error {
 		return nil
 	}
 
+	// Performing create // TODO(Daniel): extract function
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -241,29 +266,38 @@ func (c *Cloud) create() error {
 
 // nolint: gocyclo
 func (c *Cloud) update() error {
-	status := map[string]interface{}{statusField: statusUpdateProgress}
-
-	// Run pre-install steps
-	topo, secret, data, err := c.initialize()
+	// Initialization // TODO(Daniel): extract function
+	data, err := c.getCloudData(false)
 	if err != nil {
-		status[statusField] = statusUpdateFailed
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
 	}
 
-	if !data.isCloudUpdateRequest() {
-		var topoIsAlreadyUpdated bool
-		topoIsAlreadyUpdated, err = topo.isUpdated(defaultCloudResource)
+	topo := newTopology(c, data)
+	if data.info.ProvisioningState != statusNoState {
+		topoUpToDate, tErr := topo.isUpToDate(defaultCloudResource)
+		if tErr != nil {
+			c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusUpdateFailed}, defaultCloudResource)
+			return errors.Wrapf(tErr, "failed to check if topology is up to date for cloud %s", c.config.CloudID)
+		}
+
+		if topoUpToDate {
+			c.log.WithField("cloudID", c.config.CloudID).Debug("Topology is already up to date - skipping update")
+			return nil
+		}
+	}
+
+	status := map[string]interface{}{statusField: statusUpdateProgress}
+	var secret *secret
+	if data.isCloudPublic() {
+		secret, err = c.initializeSecret(data)
 		if err != nil {
 			status[statusField] = statusUpdateFailed
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		if topoIsAlreadyUpdated {
-			return nil
-		}
 	}
 
+	// Performing update // TODO(Daniel): extract function
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -306,32 +340,36 @@ func (c *Cloud) update() error {
 	return nil
 }
 
-func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
-	data, err := c.getCloudData(false)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	topo := newTopology(c, data)
-
-	if data.isCloudPrivate() {
-		return topo, nil, data, nil
-	}
-
-	// initialize secret struct
-	secret, err := newSecret(c)
-	if err != nil {
-		return nil, nil, nil, err
+func (c *Cloud) initialize(d *Data) (*topology, *secret, error) {
+	var secret *secret
+	var err error
+	if d.isCloudPublic() {
+		secret, err = c.initializeSecret(d)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
-	if err = secret.updateCloudData(data); err != nil {
-		return nil, nil, nil, err
+	return newTopology(c, d), secret, nil
+}
+
+func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
+	s, err := newSecret(c)
+	if d.isCloudPublic() {
+		if err != nil {
+			return nil, err
+		}
+		kp, err := s.getKeypair(d)
+		if err != nil {
+			return nil, err
+		}
+		err = s.sfc.Update(c.config.CloudID, d.getProviders(), kp)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if err = secret.saveCloudCredentials(data); err != nil {
-		return nil, nil, nil, err
-	}
-
-	return topo, secret, data, nil
+	return s, nil
 }
 
 func (c *Cloud) delete() error {
@@ -351,7 +389,19 @@ func (c *Cloud) delete() error {
 		}
 	}
 
-	if !data.isCloudPrivate() {
+	if data.isCloudPublic() {
+		var secret *secret
+		secret, err = c.initializeSecret(data)
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+		err = secret.createSecretFile()
+		if err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
 		if tfStateOutputExists(c.config.CloudID) {
 			err = destroyTopology(c, c.reporter)
 			if err != nil {
@@ -479,4 +529,29 @@ func (c *Cloud) getTemplateRoot() string {
 		templateRoot = defaultTemplateRoot
 	}
 	return templateRoot
+}
+
+func (c *Cloud) removeVulnerableFiles(data *Data) error {
+	if !data.isCloudPublic() {
+		return nil
+	}
+
+	kfd, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
+	}
+
+	return osutil.ForceRemoveFiles([]string{
+		GetTerraformAWSPlanFile(c.config.CloudID),
+		GetTerraformAzurePlanFile(c.config.CloudID),
+		GetTerraformGCPPlanFile(c.config.CloudID),
+		GetSecretFile(c.config.CloudID),
+		kfd.GetAWSAccessPath(data.awsProviderUUID()),
+		kfd.GetAWSSecretPath(data.awsProviderUUID()),
+		kfd.GetAzureProfilePath(),
+		kfd.GetAzureAccessTokenPath(),
+		kfd.GetGoogleAccountPath(),
+	},
+		c.log,
+	)
 }

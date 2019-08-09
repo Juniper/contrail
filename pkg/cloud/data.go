@@ -1149,19 +1149,18 @@ func (d *Data) isCloudCreated() bool {
 	return true
 }
 
-func (d *Data) isCloudUpdateRequest() bool {
-	status := d.info.ProvisioningState
-	if d.cloud.config.Action == updateAction && (status == statusNoState) {
-		return true
-	}
-	return false
-}
-
 func (d *Data) isCloudPrivate() bool {
 	for _, provider := range d.info.CloudProviders {
 		if provider.Type == onPrem {
 			return true
 		}
+	}
+	return false
+}
+
+func (d *Data) isCloudPublic() bool {
+	if !d.isCloudPrivate() {
+		return true
 	}
 	return false
 }
@@ -1193,19 +1192,45 @@ func (d *Data) hasProviderGCP() bool {
 	return false
 }
 
-func (d *Data) getDefaultCloudUser() (*models.CloudUser, error) {
-	for _, user := range d.users {
-		return user, nil
+func (d *Data) getProviders() (providers map[string]string) {
+	providers = make(map[string]string)
+	if d.hasProviderAWS() {
+		providers[aws] = d.awsProviderUUID()
 	}
-	return nil, errors.New("cloudUser ref not found with cloud object")
+	if d.hasProviderGCP() {
+		providers[gcp] = d.gcpProviderUUID()
+	}
+	if d.hasProviderAzure() {
+		providers[azure] = d.azureProviderUUID()
+	}
+	return providers
 }
 
-func (d *Data) saveGCPCredentialsToDisk() error {
-	user, err := d.getDefaultCloudUser()
-	if err != nil {
-		return err
+func (d *Data) awsProviderUUID() string {
+	for _, p := range d.providers {
+		if p.info.Type == aws {
+			return p.info.UUID
+		}
 	}
-	return fileutil.WriteToFile(defaultGCPCredentialFile, []byte(user.GCPCredential), defaultRWOnlyPerm)
+	return ""
+}
+
+func (d *Data) gcpProviderUUID() string {
+	for _, p := range d.providers {
+		if p.info.Type == gcp {
+			return p.info.UUID
+		}
+	}
+	return ""
+}
+
+func (d *Data) azureProviderUUID() string {
+	for _, p := range d.providers {
+		if p.info.Type == azure {
+			return p.info.UUID
+		}
+	}
+	return ""
 }
 
 func (d *Data) getGatewayNodes() []*instanceData {

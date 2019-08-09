@@ -2,12 +2,13 @@ package cloud
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 
@@ -25,16 +26,17 @@ const (
 	sshPubKeyPerm = 0644
 )
 
-type secretFileConfig struct {
-	keypair      *models.Keypair
-	awsAccessKey string
-	awsSecretKey string
-	providerType string
+// SecretFileConfig holds the secret keys of the cloud
+type SecretFileConfig struct {
+	AWSAccessKey string
+	AWSSecretKey string
+	ProviderType string
+	Keypair      *models.Keypair
 }
 
 type secret struct {
 	cloud  *Cloud
-	sfc    *secretFileConfig
+	sfc    *SecretFileConfig
 	log    *logrus.Entry
 	action string
 	ctx    context.Context
@@ -45,7 +47,7 @@ func (s *secret) getSecretTemplate() string {
 }
 
 func (s *secret) createSecretFile() error {
-	secretFile := GetSecretFile(s.cloud.config.CloudID)
+	sf := GetSecretFile(s.cloud.config.CloudID)
 
 	templateContext := pongo2.Context{
 		"secret":            s.sfc,
@@ -56,12 +58,12 @@ func (s *secret) createSecretFile() error {
 		return err
 	}
 
-	err = fileutil.WriteToFile(secretFile, content, defaultRWOnlyPerm)
+	err = fileutil.WriteToFile(sf, content, defaultRWOnlyPerm)
 	if err != nil {
 		return err
 	}
-	s.log.Infof("Created secret file for cloud with uuid: %s ",
-		s.cloud.config.CloudID)
+
+	s.log.Infof("Created secret file for cloud with uuid: %s ", s.cloud.config.CloudID)
 	return nil
 }
 
@@ -93,53 +95,61 @@ func getKeyPairObject(ctx context.Context, uuid string,
 	return kpResp.GetKeypair(), nil
 }
 
-func (s *secret) updateCloudData(d *Data) error {
-	keypair, err := s.getKeypair(d)
-	if err != nil {
-		return err
-	}
-	s.sfc.keypair = keypair
+// Update fills the secret file config
+func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string, kp *models.Keypair) error {
+	sfc.Keypair = kp
 
-	user, err := d.getDefaultCloudUser()
+	kfd, err := services.NewKeyFileDefaults()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not get file defaults")
 	}
 
-	if d.hasProviderAWS() {
-		s.sfc.providerType = aws
-		if user.AwsCredential.AccessKey == "" {
-			return fmt.Errorf("aws access key not specified")
+	for providerType, providerUUID := range providers {
+		if providerType == aws {
+			awsCreds, err := loadAWSCredentials(
+				cloudID,
+				kfd.GetAWSAccessPath(providerUUID),
+				kfd.GetAWSSecretPath(providerUUID),
+			)
+			if err != nil {
+				return err
+			}
+			sfc.AWSAccessKey = awsCreds.AccessKey
+			sfc.AWSSecretKey = awsCreds.SecretKey
 		}
-		s.sfc.awsAccessKey = user.AwsCredential.AccessKey
-		if user.AwsCredential.SecretKey == "" {
-			return fmt.Errorf("aws secret key not specified")
-		}
-		s.sfc.awsSecretKey = user.AwsCredential.SecretKey
-	}
-	if d.hasProviderGCP() {
-		s.sfc.providerType = gcp
-		if user.GCPCredential == "" {
-			return fmt.Errorf("gcp credentials not specified")
+		if providerType == gcp {
+			sfc.ProviderType = providerType
 		}
 	}
 	return nil
 }
 
-func (s *secret) saveCloudCredentials(d *Data) error {
-	if d.hasProviderGCP() {
-		if err := d.saveGCPCredentialsToDisk(); err != nil {
-			return err
-		}
+func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCredential, error) {
+	accessKey, err := ioutil.ReadFile(accessPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve AWS Access Key")
 	}
-	return nil
+	if len(accessKey) == 0 {
+		return nil, errors.New("AWS Access Key not specified")
+	}
+
+	secretKey, err := ioutil.ReadFile(secretPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve AWS Secret Key")
+	}
+	if len(secretKey) == 0 {
+		return nil, errors.New("AWS Secret Key not specified")
+	}
+
+	return &models.AWSCredential{AccessKey: string(accessKey), SecretKey: string(secretKey)}, nil
 }
 
 func newSecret(c *Cloud) (*secret, error) {
 	return &secret{
 		cloud:  c,
-		log:    logutil.NewFileLogger("topology", c.config.LogFile),
+		log:    logutil.NewFileLogger("secret", c.config.LogFile),
 		action: c.config.Action,
-		sfc:    &secretFileConfig{},
+		sfc:    &SecretFileConfig{},
 		ctx:    c.ctx,
 	}, nil
 }

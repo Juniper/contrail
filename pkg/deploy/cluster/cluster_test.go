@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -56,7 +57,6 @@ const (
 	clusterID                             = "test_cluster_uuid"
 
 	expectedMCClusterTopology = "./test_data/expected_mc_cluster_topology.yml"
-	expectedMCClusterSecret   = "./test_data/expected_mc_cluster_secret.yml"
 	expectedContrailCommon    = "./test_data/expected_mc_contrail_common.yml"
 	expectedGatewayCommon     = "./test_data/expected_mc_gateway_common.yml"
 )
@@ -186,10 +186,6 @@ func compareGeneratedTopology(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedTopologyPath())
 }
 
-func compareGeneratedSecret(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedSecretPath())
-}
-
 func compareGeneratedContrailCommon(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedContrailCommonPath())
 }
@@ -242,6 +238,17 @@ func executedMCCommandPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
 }
 
+func createDummyCloudSecretFile(t *testing.T) {
+	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
+	}
+	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
+	}
+}
+
 func createDummyCloudFiles(t *testing.T) func() {
 
 	// create public cloud topology.yaml
@@ -263,14 +270,7 @@ func createDummyCloudFiles(t *testing.T) func() {
 		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
 	}
 	// create public cloud secret.yml
-	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
-	}
-	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
-	}
+	createDummyCloudSecretFile(t)
 
 	return func() {
 		// best effort method of deleting all the files
@@ -1227,20 +1227,25 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during create")
+
 	ts, err = integration.LoadTest(allInOneMCCloudUpdateTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc pvt cloud update test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 
 	// now get cluster data again
+	createDummyCloudSecretFile(t)
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
 
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during create")
+
 	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
 		"Topolgy file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
-		"Secret file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
@@ -1294,6 +1299,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		}
 	}
 
+	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterUpdateTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
@@ -1304,10 +1310,11 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
 
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during update")
+
 	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
 		"Topolgy file created during cluster update is not as expected")
-	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
-		"Secret file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
 		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
@@ -1332,6 +1339,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		}
 	}
 
+	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
@@ -1341,6 +1349,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cloud")
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during delete")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_delete_mc_playbook.yml"),
 		"Expected list of delete playbooks are not executed")
 	// make sure cluster is removed
@@ -1354,6 +1364,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete cloud secrets during delete")
 
 }
 
@@ -1362,3 +1374,105 @@ func TestMCCluster(t *testing.T) {
 		"CONTROL_NODES": "",
 	})
 }
+<<<<<<< HEAD
+=======
+
+func isCloudSecretFilesDeleted() error {
+	errstrings := []string{}
+	for _, secret := range []string{
+		"/var/tmp/cloud/public_cloud_uuid/secret.yml",
+		generatedSecretPath(),
+	} {
+		_, err := os.Stat(secret)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				errstrings = append(errstrings, fmt.Sprintf(
+					"Unable to verify the non existence of secret file: %s is not deleted: %v", secret, err))
+			}
+		} else {
+			errstrings = append(errstrings, fmt.Sprintf("secret file: %s is not deleted: %v", secret, err))
+		}
+	}
+	if len(errstrings) != 0 {
+		return fmt.Errorf(strings.Join(errstrings, "\n"))
+	}
+	return nil
+}
+
+func TestTripleoClusterImport(t *testing.T) {
+	// mock keystone to let access server after cluster create
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	defer ksPublic.Close()
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	defer ksPrivate.Close()
+
+	// Create the cluster and related objects
+	ts, err := integration.LoadTest(
+		allInOneClusterTemplatePath,
+		pongo2.Context{
+			"TYPE":                   "kernel",
+			"MGMT_INT_IP":            "127.0.0.1",
+			"OPENSTACK_INTERNAL_VIP": "overcloud.localdomain",
+			"CONTRAIL_EXTERNAL_VIP":  "overcloud.localdomain",
+			"SSL_ENABLE":             "yes",
+			"PROVISIONER_TYPE":       "tripleo",
+			"PROVISIONING_STATE":     "CREATED",
+			"PROVISIONING_ACTION":    "",
+		},
+	)
+	require.NoError(t, err, "failed to load cluster test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
+	config := &Config{
+		APIServer:    s,
+		ClusterID:    clusterID,
+		Action:       createAction,
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
+		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
+	}
+	// create cluster
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterDeployer, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
+	deployer, err := clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(import) tripleo cluster")
+
+	// Wait for the in-memory endpoint cache to get updated
+	server.ForceProxyUpdate()
+	// make sure all endpoints are created as part of import
+	err = verifyEndpoints(
+		t, ts,
+		map[string]string{
+			"config":    "https://overcloud.localdomain:9100",
+			"nodejs":    "https://overcloud.localdomain:8144",
+			"telemetry": "https://overcloud.localdomain:9101",
+			"baremetal": "https://overcloud.localdomain:6386",
+			"swift":     "https://overcloud.localdomain:8081",
+			"glance":    "https://overcloud.localdomain:9293",
+			"compute":   "https://overcloud.localdomain:8775",
+			"keystone":  "https://overcloud.localdomain:5000",
+		},
+	)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+}
+>>>>>>> cfc902be... Add UT's for the secret file removal logic

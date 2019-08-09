@@ -481,6 +481,7 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 	s.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
 	s.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
 	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
+	s.Echo.POST(services.UploadCloudKeysPath, cs.RESTUploadCloudKeys)
 }
 
 type recorderTask struct {
