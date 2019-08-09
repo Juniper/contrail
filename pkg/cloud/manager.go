@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -138,6 +139,17 @@ func NewCloud(c *Config) (*Cloud, error) {
 
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
+	err := c.manage()
+	if c.config.Test {
+		return err
+	}
+	if deleteErr := c.removeVulnerableFiles(); deleteErr != nil {
+		return errors.Wrapf(err, "Deletion of vulnerable files finished with error: %s", deleteErr.Error())
+	}
+	return err
+}
+
+func (c *Cloud) manage() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 
@@ -331,6 +343,7 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
 	return topo, secret, data, nil
 }
+
 func (c *Cloud) delete() error {
 	// get cloud data
 	data, err := c.getCloudData(true)
@@ -476,4 +489,28 @@ func (c *Cloud) getTemplateRoot() string {
 		templateRoot = defaultTemplateRoot
 	}
 	return templateRoot
+}
+
+func (c *Cloud) removeVulnerableFiles() error {
+	if data, err := c.getCloudData(false); err == nil && !data.isCloudPublic() {
+		return nil
+	}
+
+	cloudID := c.config.CloudID
+
+	keyFileDefaults, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
+	}
+
+	return osutil.ForceRemoveFiles([]string{
+		GetSecretFile(cloudID),
+		GetTerraformAWSPlanFile(cloudID),
+		GetTerraformAzurePlanFile(cloudID),
+		GetTerraformGCPPlanFile(cloudID),
+		keyFileDefaults.GetAWSAccessPath(cloudID),
+		keyFileDefaults.GetAWSSecretPath(cloudID),
+		keyFileDefaults.GetAzureProfilePath(),
+		keyFileDefaults.GetAzureAccessTokenPath(),
+		keyFileDefaults.GetGoogleAccountPath()}, c.log)
 }
