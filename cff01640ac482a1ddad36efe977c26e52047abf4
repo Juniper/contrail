@@ -22,6 +22,30 @@
       "revId": "cff01640ac482a1ddad36efe977c26e52047abf4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a2abe3ae_c6b91fb0",
+        "filename": "pkg/services/common.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 630,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-09T22:24:07Z",
+      "side": 1,
+      "message": "Right now this is implemented as a generic API,\n\nIf we work with a key and make goAPI decide the path based on the key - the /upload API will change to a specific API.\n\nAlso the path is not inputed by the user, Instead UI determines and send in in the request payload.\n\nHowever if any other client uses this API, they can send arbitrary file path. the goAPI will end up writing arbitrary files.\n\nSo it is better to make this API specific.\nLet me fix it",
+      "parentUuid": "232ab315_c4c571f2",
+      "range": {
+        "startLine": 630,
+        "startChar": 0,
+        "endLine": 630,
+        "endChar": 59
+      },
+      "revId": "cff01640ac482a1ddad36efe977c26e52047abf4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
