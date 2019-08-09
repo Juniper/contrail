@@ -2,12 +2,13 @@ package cloud
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 
@@ -25,11 +26,44 @@ const (
 	sshPubKeyPerm = 0644
 )
 
+type secretFile struct {
+	AwsAccessKey string          `yaml:"aws_access_key,omitempty"`
+	AwsSecretKey string          `yaml:"aws_secret_key,omitempty"`
+	AuthorizedRegistries []dockerRegistry `yaml:"authorized_registries,omitempty"`
+	GoogleCredentials    string           `yaml:"google_credentials,omitempty"`
+	PubKey      pubKey `yaml:"public_key,omitempty"`
+}
+
+type pubKey struct {
+	Name string `yaml:"name,omitempty"`
+	Value string `yaml:"value,omitempty"`
+}
+
 type secretFileConfig struct {
-	keypair      *models.Keypair
 	awsAccessKey string
 	awsSecretKey string
-	providerType string
+	providerType         string
+	googleCredentials    string
+	keypair      *models.Keypair
+}
+
+func (s *secretFile) addRegistries(registries []dockerRegistry) {
+	s.AuthorizedRegistries = append(s.AuthorizedRegistries, registries...)
+	s.removeCopyRegistries()
+}
+
+func (s *secretFile) removeCopyRegistries() {
+	updatedRegistries := []dockerRegistry{}
+	regAlreadyExists := map[[3]string]bool{}
+
+	for _, registry := range s.AuthorizedRegistries {
+		regKey := [3]string{registry.Registry, registry.Username, registry.Password}
+		if !regAlreadyExists[regKey] {
+			updatedRegistries = append(updatedRegistries, registry)
+			regAlreadyExists[regKey] = true
+		}
+	}
+	s.AuthorizedRegistries = updatedRegistries
 }
 
 type secret struct {
@@ -61,7 +95,31 @@ func (s *secret) createSecretFile() error {
 	}
 	s.log.Infof("Created secret file for cloud with uuid: %s ",
 		s.cloud.config.CloudID)
-	return nil
+
+	data, err := s.cloud.getCloudData(false)
+	if err != nil {
+		return err
+	}
+
+	keyFileDefaults, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return errors.New("Could not get file defaults")
+	}
+	cloudID := data.cloud.config.CloudID
+
+	if data.hasProviderGCP() {
+		if err = addGoogleCredentialsPathToSecret(GetSecretFile(cloudID), keyFileDefaults.GetGoogleAccountPath()); err != nil {
+			return err
+		}
+	}
+
+	if data.hasProviderAWS() {
+		if err = addAWSCredentialsToSecret(GetSecretFile(cloudID), s.sfc.awsAccessKey, s.sfc.awsSecretKey); err != nil {
+			return err
+		}
+	}
+
+	return addDockerCredentialsToSecret(GetSecretFile(cloudID), "/var/tmp/contrail/docker_creds.yml")
 }
 
 func getCredObject(ctx context.Context, client *client.HTTP,
@@ -101,25 +159,47 @@ func (s *secret) updateFileConfig(d *Data) error {
 	}
 	s.sfc.keypair = keypair
 
+	keyFileDefaults, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return errors.New("Could not get file defaults")
+	}
+	cloudID := d.cloud.config.CloudID
+
 	if d.hasProviderAWS() {
-		user, err := d.getDefaultCloudUser()
+		awsCreds, err := loadAWSCredentials(
+			cloudID, keyFileDefaults.GetAWSAccessPath(cloudID), keyFileDefaults.GetAWSSecretPath(cloudID),
+		)
 		if err != nil {
 			return err
 		}
-
-		if user.AwsCredential.AccessKey == "" {
-			return fmt.Errorf("aws access key not specified")
-		}
-		s.sfc.awsAccessKey = user.AwsCredential.AccessKey
-		if user.AwsCredential.SecretKey == "" {
-			return fmt.Errorf("aws secret key not specified")
-		}
-		s.sfc.awsSecretKey = user.AwsCredential.SecretKey
+		s.sfc.awsAccessKey = awsCreds.AccessKey
+		s.sfc.awsSecretKey = awsCreds.SecretKey
 	}
 	if d.hasProviderGCP() {
 		s.sfc.providerType = gcp
 	}
+
 	return nil
+}
+
+func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCredential, error) {
+	accessKey, err := ioutil.ReadFile(accessPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve AWS Access Key")
+	}
+	if len(accessKey) == 0 {
+		return nil, errors.New("AWS Access Key not specified")
+	}
+
+	secretKey, err := ioutil.ReadFile(secretPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve AWS Secret Key")
+	}
+	if len(secretKey) == 0 {
+		return nil, errors.New("AWS Secret Key not specified")
+	}
+
+	return &models.AWSCredential{AccessKey: string(accessKey), SecretKey: string(secretKey)}, nil
 }
 
 func newSecret(c *Cloud) (*secret, error) {
