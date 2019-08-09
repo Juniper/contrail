@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -476,4 +477,25 @@ func (c *Cloud) getTemplateRoot() string {
 		templateRoot = defaultTemplateRoot
 	}
 	return templateRoot
+}
+
+func (c *Cloud) removeVulnerableFiles() error {
+	if data, err := c.getCloudData(false); err == nil && !data.isCloudPublic() {
+		return nil
+	}
+
+	cloudID := c.config.CloudID
+	secretFile := GetSecretFile(cloudID)
+
+	tfPlanAWSFile := GetTerraformAWSPlanFile(cloudID)
+	tfPlanAzureFile := GetTerraformAzurePlanFile(cloudID)
+	tfPlanGCPFile := GetTerraformGCPPlanFile(cloudID)
+
+	GCPSecretFile := GetTerraformGCPSecret(secretFile)
+
+	// Remove Azure secrets
+	_ = osutil.ExecCmdAndWait(c.reporter, "az", []string{"logout"}, "/")
+
+	return osutil.ForceRemoveFiles([]string{secretFile, tfPlanAWSFile,
+		tfPlanAzureFile, tfPlanGCPFile, GCPSecretFile}, c.log)
 }
