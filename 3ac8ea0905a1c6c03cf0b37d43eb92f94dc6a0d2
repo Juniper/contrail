@@ -42,6 +42,24 @@
     },
     {
       "key": {
+        "uuid": "b29ad924_32d644ba",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-10T09:54:18Z",
+      "side": 1,
+      "message": "sorry it will be /var/tmp/\u003ccloudUserUUID\u003e/aws_access.key and /var/tmp/\u003ccloudUserUUID\u003e/aws_secret.key",
+      "parentUuid": "c2a2d497_17d763d2",
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1d3e8e21_4a467f54",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 4
