@@ -60,6 +60,24 @@
     },
     {
       "key": {
+        "uuid": "0c7194d9_f2d66832",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-11T23:38:39Z",
+      "side": 1,
+      "message": "Hi Ignacy, as per the new API, keys will be under keyHomeDir https://review.opencontrail.org/c/Juniper/contrail/+/53074/4/pkg/services/cloud.go#19 , for aws in the files /var/tmp/contrail/\u003ccloudUserUUID\u003e/aws_access.key and /var/tmp/contrail/\u003ccloudUserUUID\u003e/aws_secret.key",
+      "parentUuid": "b29ad924_32d644ba",
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1d3e8e21_4a467f54",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 4
@@ -117,6 +135,30 @@
       "writtenOn": "2019-08-09T16:49:46Z",
       "side": 1,
       "message": "I thought at meeting it was said that the cluster topology file is used by terraform to compute diffs in terms of minimal operations to bring the cluster to the desired state. Is that a different file? (just double checking)",
+      "range": {
+        "startLine": 612,
+        "startChar": 4,
+        "endLine": 612,
+        "endChar": 22
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e8f86c3_f3d505e2",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 612,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-11T23:38:39Z",
+      "side": 1,
+      "message": "Hi Ignacy, yes AFAIK, if the instances.yml file is removed the \"deploy cluster\" executale withh treat any new change in the cluster by user via API, will be treated as new deployment and will trrigger the ansible playbook. \n\nWhy do we need to remove these files, we don\u0027t store any cloud related credentials in these files.",
+      "parentUuid": "69c9b59e_2fe210fc",
       "range": {
         "startLine": 612,
         "startChar": 4,
