@@ -1,4 +1,4 @@
-ansible/contrail/playbooks/cleanup.yml:
-  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml
-ansible/gateway/playbooks/cleanup.yml:
-  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml
+ansible-multicloud/contrail/playbooks/cleanup.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml
+ansible-multicloud/gateway/playbooks/cleanup.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml
