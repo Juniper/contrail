@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "37b4ee12_b3ca0993",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-12T20:22:09Z",
+      "side": 1,
+      "message": "ok it is from here https://github.com/Juniper/contrail/blob/1e2a0a1ba7c27ab81b29036d5fe4fe0e0261f2b3/pkg/deploy/cluster/templates/authorized_registries.tmpl\n\nhttps://github.com/Juniper/contrail/blob/e4d24b17ff5283b47829107ba752a4358010a874/pkg/deploy/cluster/multi_cloud.go#L752\n\nLet us leave it as such",
+      "parentUuid": "eaebfa04_b9c82069",
+      "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d66396ac_f459d0d9",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 11
@@ -64,6 +82,24 @@
       "writtenOn": "2019-08-12T20:16:27Z",
       "side": 1,
       "message": "Before this commit , where and how was the authorized registries populated? Why do we need to change it as part of fixing cloud credentials security issue?",
+      "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e13e9dc_1d1b4441",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-12T20:22:09Z",
+      "side": 1,
+      "message": "ok it is from here https://github.com/Juniper/contrail/blob/1e2a0a1ba7c27ab81b29036d5fe4fe0e0261f2b3/pkg/deploy/cluster/templates/authorized_registries.tmpl\n\nhttps://github.com/Juniper/contrail/blob/e4d24b17ff5283b47829107ba752a4358010a874/pkg/deploy/cluster/multi_cloud.go#L752\n\nLet us leave it as such",
+      "parentUuid": "ee2132c5_d0da7a2d",
       "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
