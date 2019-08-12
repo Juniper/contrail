@@ -38,9 +38,9 @@ const (
 	mcWorkDir                 = "multi-cloud"
 	mcAnsibleRepo             = "contrail-multi-cloud"
 	defaultSSHKeyRepo         = "keypair"
-	defaultContrailCommonFile = "ansible/contrail/common.yml"
-	defaultTORCommonFile      = "ansible/tor/common.yml"
-	defaultGatewayCommonFile  = "ansible/gateway/common.yml"
+	defaultContrailCommonFile = "ansible-multicloud/contrail/common.yml"
+	defaultTORCommonFile      = "ansible-multicloud/tor/common.yml"
+	defaultGatewayCommonFile  = "ansible-multicloud/gateway/common.yml"
 	defaultMCInventoryFile    = "inventories/inventory.yml"
 	defaultTopologyFile       = "topology.yml"
 	defaultSecretFile         = "secret.yml"
@@ -59,15 +59,15 @@ const (
 
 	mcState = "state.yml"
 
-	defaultMCGWDeployPlay        = "ansible/gateway/playbooks/deploy_and_run_all.yml"
-	defaultMCInstanceConfPlay    = "ansible/contrail/playbooks/configure.yml"
-	defaultMCKubernetesProvPlay  = "ansible/contrail/playbooks/orchestrator.yml"
-	defaultMCTORPlay             = "ansible/tor/playbooks/deploy_and_run_all.yml"
-	defaultMCDeployContrail      = "ansible/contrail/playbooks/deploy.yml"
-	defaultMCSetupContrailRoutes = "ansible/contrail/playbooks/add_tunnel_routes.yml"
-	defaultMCFixComputeDNS       = "ansible/contrail/playbooks/fix_compute_dns.yml"
-	defaultMCContrailCleanup     = "ansible/contrail/playbooks/cleanup.yml"
-	defaultMCGatewayCleanup      = "ansible/gateway/playbooks/cleanup.yml"
+	defaultMCGWDeployPlay        = "ansible-multicloud/gateway/playbooks/deploy_and_run_all.yml"
+	defaultMCInstanceConfPlay    = "ansible-multicloud/contrail/playbooks/configure.yml"
+	defaultMCKubernetesProvPlay  = "ansible-multicloud/contrail/playbooks/orchestrator.yml"
+	defaultMCTORPlay             = "ansible-multicloud/tor/playbooks/deploy_and_run_all.yml"
+	defaultMCDeployContrail      = "ansible-multicloud/contrail/playbooks/deploy.yml"
+	defaultMCSetupContrailRoutes = "ansible-multicloud/contrail/playbooks/add_tunnel_routes.yml"
+	defaultMCFixComputeDNS       = "ansible-multicloud/contrail/playbooks/fix_compute_dns.yml"
+	defaultMCContrailCleanup     = "ansible-multicloud/contrail/playbooks/cleanup.yml"
+	defaultMCGatewayCleanup      = "ansible-multicloud/gateway/playbooks/cleanup.yml"
 	testTemplate                 = "./../../cloud/test_data/test_cmd.tmpl"
 
 	openstack            = "openstack"
@@ -421,7 +421,7 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) mcPlayBook() error {
-	args := []string{"-i", m.getMCInventoryFile(m.workDir)}
+	args := []string{"-i", m.getMCInventoryFile(cloud.GetMultiCloudRepodir())}
 	if m.cluster.config.AnsibleSudoPass != "" {
 		sudoArg := "-e ansible_sudo_pass=" + m.cluster.config.AnsibleSudoPass
 		args = append(args, sudoArg)
@@ -429,6 +429,9 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
+		if err := m.copySSHKeyPairToMC(); err != nil {
+			return err
+		}
 		if err := m.playDeployMCGW(args); err != nil {
 			return err
 		}
@@ -490,7 +493,9 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		return m.playMCFixComputeDNS(args)
 
 	case updateCloud:
-
+		if err := m.copySSHKeyPairToMC(); err != nil {
+			return err
+		}
 		if err := m.playDeployMCGW(args); err != nil {
 			return err
 		}
@@ -717,6 +722,29 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
 		}
 	}
 	if m.cluster.config.Test {
+		keypairDir := filepath.Join(m.getMCWorkingDir(m.getWorkingDir()), defaultSSHKeyRepo)
+		if err = os.MkdirAll(keypairDir, 0755); err != nil {
+			return err
+		}
+		var pubKey *PubKeyConfig
+		pubKey, err = m.readPubKeyConfig()
+		if err != nil {
+			return err
+		}
+		sshKeyName, ok := pubKey.Info["name"]
+		if !ok {
+			return errors.New("secret file format is not valid")
+		}
+		if err = fileutil.WriteToFile(
+			filepath.Join(keypairDir, sshKeyName), []byte("test pvt key"), defaultFilePermRWOnly,
+		); err != nil {
+			return err
+		}
+		if err = fileutil.WriteToFile(
+			filepath.Join(keypairDir, sshKeyName+".pub"), []byte("test pub key"), defaultFilePermRWOnly,
+		); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -827,6 +855,21 @@ func copySSHKeyPair(srcSSHKeyDir string,
 		return err
 	}
 	return nil
+}
+
+func (m *multiCloudProvisioner) copySSHKeyPairToMC() error {
+	pubKey, err := m.readPubKeyConfig()
+	if err != nil {
+		return err
+	}
+	sourceDir := filepath.Join(m.getMCWorkingDir(m.getWorkingDir()), defaultSSHKeyRepo)
+	keyName, ok := pubKey.Info["name"]
+
+	if !ok {
+		return errors.New("secret file format is not valid")
+	}
+
+	return copySSHKeyPair(sourceDir, filepath.Join(m.getMCDeployerRepoDir(), "keys"), keyName)
 }
 
 // nolint: gocyclo
