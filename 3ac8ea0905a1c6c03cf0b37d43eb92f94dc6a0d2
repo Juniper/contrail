@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "acd8375c_c5a88d33",
+        "filename": "pkg/cloud/common.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-08-12T16:25:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2ddfd8af_da8fbce7",
+      "range": {
+        "startLine": 117,
+        "startChar": 1,
+        "endLine": 124,
+        "endChar": 28
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c2a2d497_17d763d2",
         "filename": "pkg/cloud/configs/secret.tmpl",
         "patchSetId": 4
@@ -78,6 +102,24 @@
     },
     {
       "key": {
+        "uuid": "f22be8b8_16b8e2bf",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-08-12T16:25:49Z",
+      "side": 1,
+      "message": "I rebased that and added logic for this.",
+      "parentUuid": "0c7194d9_f2d66832",
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1d3e8e21_4a467f54",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 4
@@ -89,6 +131,30 @@
       "writtenOn": "2019-08-09T16:55:30Z",
       "side": 1,
       "message": "two notes here:\n1) what if there is another azure cloud worker running in parallel? is it possible?\n2) can this command fail?",
+      "range": {
+        "startLine": 509,
+        "startChar": 5,
+        "endLine": 509,
+        "endChar": 69
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f83087de_40816c15",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-08-12T16:25:49Z",
+      "side": 1,
+      "message": "It\u0027s switched to remove files.",
+      "parentUuid": "1d3e8e21_4a467f54",
       "range": {
         "startLine": 509,
         "startChar": 5,
@@ -159,6 +225,30 @@
       "side": 1,
       "message": "Hi Ignacy, yes AFAIK, if the instances.yml file is removed the \"deploy cluster\" executale withh treat any new change in the cluster by user via API, will be treated as new deployment and will trrigger the ansible playbook. \n\nWhy do we need to remove these files, we don\u0027t store any cloud related credentials in these files.",
       "parentUuid": "69c9b59e_2fe210fc",
+      "range": {
+        "startLine": 612,
+        "startChar": 4,
+        "endLine": 612,
+        "endChar": 22
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aef16cfa_cda1048f",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 612,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-08-12T16:25:49Z",
+      "side": 1,
+      "message": "According to call: not removing instances.yml and topology.yml.",
+      "parentUuid": "7e8f86c3_f3d505e2",
       "range": {
         "startLine": 612,
         "startChar": 4,
