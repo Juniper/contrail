@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "24fa147d_6e89e841",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 11
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-12T20:16:27Z",
+      "side": 0,
+      "message": "As we are updating the \"secret\" of pongo2.Context with values loaded from the file  here https://review.opencontrail.org/c/Juniper/contrail/+/53078/11/pkg/cloud/secret.go#175. Why are we removing below lines from the template?",
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
