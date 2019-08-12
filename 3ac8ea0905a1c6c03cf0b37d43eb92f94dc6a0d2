@@ -167,6 +167,30 @@
     },
     {
       "key": {
+        "uuid": "11257abd_992ded11",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T18:00:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f83087de_40816c15",
+      "range": {
+        "startLine": 509,
+        "startChar": 5,
+        "endLine": 509,
+        "endChar": 69
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e5d58448_0f610694",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 4
@@ -202,6 +226,30 @@
       "side": 1,
       "message": "AWS, Azure and GCP plan files are the same values as const values in MultiCloud repository. MC Repo is the one that creates them - not terraform. Terraform seeks for json files inside the directory and run them.",
       "parentUuid": "e5d58448_0f610694",
+      "range": {
+        "startLine": 511,
+        "startChar": 0,
+        "endLine": 511,
+        "endChar": 67
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "61e2c544_36756c1d",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T18:00:45Z",
+      "side": 1,
+      "message": "Does not address my comment, though?\n\nEg, if we change the name in the code creating the file, or change the convention, how do we notice that the removal is out of date, and now leaking secrets on disk?\n\na) There should be a unit test or similar, using both pieces of code.\nb) Still recommend changing the logic, so instead of removing \"known bad files\", we remove all \"but known good files\". Alternatively or in addition, keep all in a directory, remove directory.",
+      "parentUuid": "bf081759_253f257b",
       "range": {
         "startLine": 511,
         "startChar": 0,
