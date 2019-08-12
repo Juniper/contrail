@@ -1,0 +1,159 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "25dce6b8_9bb8d3a0",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "There is a single instance of this golang code, correct?\n\nCan there be multiple operations on different google or azure clouds going on at the same time?\n\nEg, customer has \"2 google clouds, A and B\" with \"different accounts\". Starts an operation on \"google cloud A\", while it is in progress, starts operation on \"google cloud B\"?\n\nIf this is the case, the directories here are wrong? The second operation will overwrite the credentials of the first operation?\n\nAlso, can you confirm that there is one and only one operation for cloudProviderUUID happening at any given time?\n\nI don\u0027t see any enforcement in this code, and given that the UI is running in the browser, 1) it should be considered untrusted / malicious, 2) there can be multiple tabs / sessions, so it\u0027s hard to enforce in there.\n\nThe typical approach here is to create an entirely random directory with tempdir functions or similar, and use that as operation id for subsequent uses.",
+      "range": {
+        "startLine": 82,
+        "startChar": 0,
+        "endLine": 96,
+        "endChar": 0
+      },
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6c0dd5d1_6de376c8",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "Use anonymous structs instead of untyped maps wherever you can, like:\n\n\tfor _, secret :\u003d range []struct{name, encoded, path string}{\n\t    {\"aws-secret-key\", request.AWSSecretKey, keyDefaults...},\n\t    {\"aws-whatever-key\", request.AWSAccessKey, keyDefaults...},\n            {...}\n        } {\n          decodeAndStoreCloudKey(secret.name, secret.path, secret.encoded, keyPaths)\n        }\n\nNot because it\u0027s faster, but because the compiler will throw errors if you have typos, and leads to a more predictable behavior (did you notice that each time this is run, the loop is processed in a different order? maps are randomized in golang).",
+      "range": {
+        "startLine": 119,
+        "startChar": 0,
+        "endLine": 119,
+        "endChar": 59
+      },
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "471d906e_4e8b0fb9",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "the directory will contain key material, privileges should probably be 0700?\n\nI understand this is a dedicated container, but 1) we should eventually change things so they don\u0027t run as root, and 2) if there\u0027s anything else that ends up running in there (like a cron job), there are no risks.",
+      "range": {
+        "startLine": 158,
+        "startChar": 38,
+        "endLine": 158,
+        "endChar": 42
+      },
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "36af853c_321e54e9",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "same comment as previous one, 0600.",
+      "range": {
+        "startLine": 165,
+        "startChar": 51,
+        "endLine": 165,
+        "endChar": 55
+      },
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e362d3a3_2aade70b",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "minor nit... but WriteFile can fail with a partial write - failure to close the file. Upon error of ioutil.WriteFile. By peeking at the source of WriteFile, it does not do any cleanup on its own.\n\nUpon failure of WriteFile, we should attempt to remove the file anyway, or we may leave partial (how much data, depends on error) secrets on disk.\n\n(A safer approach, in general, would be to simplify the code and always attempt to remove all the keyfiles. Check the error value, if \"file not found\" or \"removed successfully\" than it is all good, if any other error then report it back)",
+      "range": {
+        "startLine": 165,
+        "startChar": 17,
+        "endLine": 165,
+        "endChar": 26
+      },
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fee2106b_c4d1c6d7",
+        "filename": "pkg/services/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "same comment as per main file, recommend using anonymous structs with plain arrays rather than map.",
+      "range": {
+        "startLine": 88,
+        "startChar": 44,
+        "endLine": 88,
+        "endChar": 50
+      },
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4288a104_12d7ea62",
+        "filename": "pkg/services/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-12T15:17:58Z",
+      "side": 1,
+      "message": "no test for error handling? and cleanup code? there is a bit of complexity there, and it would be relatively straightforward to test? (eg, create a file with the same name and privs 000, for example, so that the write will fail, or something like a symlink to non existing dir, ...)",
+      "revId": "b94ff5a4210e866cdb13a9f31f1ab034b8f5e92c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
