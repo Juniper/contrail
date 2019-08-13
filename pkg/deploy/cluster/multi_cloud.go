@@ -625,7 +625,7 @@ func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
 	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
 		_, err := m.cluster.APIServer.DeleteContrailClusterCloudRef(
 			context.Background(), &services.DeleteContrailClusterCloudRefRequest{
-				ID: m.clusterData.ClusterInfo.UUID,
+				ID:                      m.clusterData.ClusterInfo.UUID,
 				ContrailClusterCloudRef: cloudRef,
 			},
 		)
