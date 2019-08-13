@@ -49,6 +49,23 @@
     },
     {
       "key": {
+        "uuid": "efedf7ee_c52ac5d7",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-13T17:18:21Z",
+      "side": 1,
+      "message": "Add test to Make sure cloud.Manage() removes the secret files, after all cloud.Manage() in all the test of different cloud types",
+      "revId": "9b5288d3ed08e80358558df68959cca1aa55b4b1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ac786857_849cd344",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 1
