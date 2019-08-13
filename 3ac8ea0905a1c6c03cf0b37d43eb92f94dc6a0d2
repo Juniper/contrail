@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "95b40a1d_7ce587a8",
+        "filename": "pkg/cloud/common.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-13T03:32:02Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "acd8375c_c5a88d33",
+      "range": {
+        "startLine": 117,
+        "startChar": 1,
+        "endLine": 124,
+        "endChar": 28
+      },
+      "revId": "3ac8ea0905a1c6c03cf0b37d43eb92f94dc6a0d2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c2a2d497_17d763d2",
         "filename": "pkg/cloud/configs/secret.tmpl",
         "patchSetId": 4
