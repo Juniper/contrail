@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8f487dd7_5fd0bc59",
+        "filename": "pkg/cloud/test_data/docker_creds.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-13T15:42:15Z",
+      "side": 0,
+      "message": "Can you explain the reason for this removal",
+      "revId": "51bb268dff5aab58a458f655d901f71c3e375f67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
