@@ -613,10 +613,18 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 }
 
 func (m *multiCloudProvisioner) removeVulnerableFiles() error {
-	filesToRemove := []string{m.getClusterSecretFile(m.workDir),
+	filesToRemove := []string{
+		m.getClusterSecretFile(m.workDir),
 		m.getInventoryFile(),
 		m.getContrailCommonFile(m.workDir),
 	}
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		removeErr := osutil.ForceRemoveFiles(filesToRemove, m.Log)
+		return errors.Wrapf(err,
+			"Cannot remove secret file! Please remove secrets.yml from cloud directory! %s", removeErr.Error())
+	}
+	filesToRemove = append(filesToRemove, cloud.GetSecretFile(pubCloudID))
 	return osutil.ForceRemoveFiles(filesToRemove, m.Log)
 }
 
