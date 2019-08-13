@@ -139,14 +139,20 @@ func NewCloud(c *Config) (*Cloud, error) {
 
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
-	err := c.manage()
+	manageErr := c.manage()
 	if c.config.Test {
-		return err
+		return manageErr
 	}
-	if deleteErr := c.removeVulnerableFiles(); deleteErr != nil {
-		return errors.Wrapf(err, "Deletion of vulnerable files finished with error: %s", deleteErr.Error())
+
+	if err := c.removeVulnerableFiles(); err != nil {
+		return errors.Errorf(
+			"failed to delete vulnerable files: %s; manage error (if any): %s",
+			err,
+			manageErr,
+		)
 	}
-	return err
+
+	return manageErr
 }
 
 func (c *Cloud) manage() error {
@@ -492,25 +498,35 @@ func (c *Cloud) getTemplateRoot() string {
 }
 
 func (c *Cloud) removeVulnerableFiles() error {
-	if data, err := c.getCloudData(false); err == nil && !data.isCloudPublic() {
+	data, err := c.getCloudData(false)
+	if err != nil {
+		return errors.Wrap(err, "failed to get Cloud data")
+	}
+
+	if !data.isCloudPublic() {
 		return nil
 	}
 
-	cloudID := c.config.CloudID
-
-	keyFileDefaults, err := services.NewKeyFileDefaults()
+	kfd, err := services.NewKeyFileDefaults()
 	if err != nil {
 		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
 	}
 
-	return osutil.ForceRemoveFiles([]string{
-		GetSecretFile(cloudID),
-		GetTerraformAWSPlanFile(cloudID),
-		GetTerraformAzurePlanFile(cloudID),
-		GetTerraformGCPPlanFile(cloudID),
-		keyFileDefaults.GetAWSAccessPath(cloudID),
-		keyFileDefaults.GetAWSSecretPath(cloudID),
-		keyFileDefaults.GetAzureProfilePath(),
-		keyFileDefaults.GetAzureAccessTokenPath(),
-		keyFileDefaults.GetGoogleAccountPath()}, c.log)
+	filesToRemove := []string{
+		GetTerraformAWSPlanFile(c.config.CloudID),
+		GetTerraformAzurePlanFile(c.config.CloudID),
+		GetTerraformGCPPlanFile(c.config.CloudID),
+		kfd.GetAWSAccessPath(data.awsProviderUUID()),
+		kfd.GetAWSSecretPath(data.awsProviderUUID()),
+		kfd.GetAzureProfilePath(),
+		kfd.GetAzureAccessTokenPath(),
+		kfd.GetGoogleAccountPath()}
+
+	// Provisioning multicloud need secret file so cloud cannot delete this.
+	// Deploy package needs to remove this file.
+	if !data.info.IsMulticloudProvisioning {
+		filesToRemove = append(filesToRemove, GetSecretFile(c.config.CloudID))
+	}
+
+	return osutil.ForceRemoveFiles(filesToRemove, c.log)
 }
