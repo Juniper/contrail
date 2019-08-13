@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9b404977_117b10f1",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-13T15:41:54Z",
+      "side": 1,
+      "message": "Never use system paths to read/write files in unit tests.\n\nUse ioutil.TempDir or similar instead. Otherwise the test is not hermetic, multiple instances of the tests running in parallel will break each other.",
+      "range": {
+        "startLine": 50,
+        "startChar": 1,
+        "endLine": 50,
+        "endChar": 17
+      },
+      "revId": "9b5288d3ed08e80358558df68959cca1aa55b4b1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac786857_849cd344",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-13T15:41:54Z",
+      "side": 1,
+      "message": "I don\u0027t understand what this assert is testing. Eg, os.Remove on line 319 is removing the awsAccessKey file. It\u0027s a function provided by the golang standard library. ioutil.ReadFile tries to read the file, the assert here fails if the file still exists.\n\nSo, in effects, this is verifying that os.Remove() from golang is working as intended?\n\nThe test we need to add is that: a) at the end of a setup** process, the \"known dangerous files\" are removed, and b) no secrets / unexpected files are left behind.\n\n[**]: a mocked out / fake / isolated setup process.",
+      "range": {
+        "startLine": 323,
+        "startChar": 1,
+        "endLine": 323,
+        "endChar": 12
+      },
+      "revId": "9b5288d3ed08e80358558df68959cca1aa55b4b1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
