@@ -492,25 +492,42 @@ func (c *Cloud) getTemplateRoot() string {
 }
 
 func (c *Cloud) removeVulnerableFiles() error {
-	if data, err := c.getCloudData(false); err == nil && !data.isCloudPublic() {
+	data, err := c.getCloudData(false)
+	if err == nil && !data.isCloudPublic() {
 		return nil
 	}
 
 	cloudID := c.config.CloudID
+
+	// loop through data.providers, match info.type to enum AWS
+	// then get this provider UUID
+	//for _, prov := range data.providers {
+	//	if prov.info.Type == aws {
+	//
+	//	}
+	//}
+	cloudProviderUUID := cloudID // TODO(Daniel): get proper cloudProviderUUID
 
 	keyFileDefaults, err := services.NewKeyFileDefaults()
 	if err != nil {
 		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
 	}
 
-	return osutil.ForceRemoveFiles([]string{
-		GetSecretFile(cloudID),
+	filesToRemove := []string{
 		GetTerraformAWSPlanFile(cloudID),
 		GetTerraformAzurePlanFile(cloudID),
 		GetTerraformGCPPlanFile(cloudID),
-		keyFileDefaults.GetAWSAccessPath(cloudID),
-		keyFileDefaults.GetAWSSecretPath(cloudID),
+		keyFileDefaults.GetAWSAccessPath(cloudProviderUUID),
+		keyFileDefaults.GetAWSSecretPath(cloudProviderUUID),
 		keyFileDefaults.GetAzureProfilePath(),
 		keyFileDefaults.GetAzureAccessTokenPath(),
-		keyFileDefaults.GetGoogleAccountPath()}, c.log)
+		keyFileDefaults.GetGoogleAccountPath()}
+
+	// Provisioning multicloud need secret file so cloud cannot delete this.
+	// Deploy package needs to remove this file.
+	if !data.info.IsMulticloudProvisioning {
+		filesToRemove = append(filesToRemove, GetSecretFile(cloudID))
+	}
+
+	return osutil.ForceRemoveFiles(filesToRemove, c.log)
 }
