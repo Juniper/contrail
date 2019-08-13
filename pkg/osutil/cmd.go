@@ -42,7 +42,7 @@ func ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
 
 // ForceRemoveFiles removes files.
 func ForceRemoveFiles(files []string, log *logrus.Entry) error {
-	log.Info("Removing vulnerable files")
+	log.Info("Removing credentials")
 	unremovedFiles := []string{}
 	for _, file := range files {
 		if err := os.Remove(file); err == nil {
@@ -50,12 +50,12 @@ func ForceRemoveFiles(files []string, log *logrus.Entry) error {
 		} else if os.IsNotExist(err) {
 			log.Infof("There is no such file as: %s", file)
 		} else {
-			log.Fatalf("Could not remove file: %s", file)
+			log.Errorf("Could not remove file: %s", file)
 			unremovedFiles = append(unremovedFiles, file)
 		}
 	}
 	if len(unremovedFiles) != 0 {
-		return errors.New("Removing vulnerable files failed for files:" + strings.Join(unremovedFiles, ";") +
+		return errors.New("Removing credentials failed for files:" + strings.Join(unremovedFiles, ";") +
 			"Please SSH on your machine and remove them manually otherwise they won't be removed at all!")
 	}
 	return nil
