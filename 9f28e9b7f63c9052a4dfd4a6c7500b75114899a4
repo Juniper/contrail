@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "c2fd942f_da1ab3c1",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-13T01:52:12Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "37b4ee12_b3ca0993",
+      "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d66396ac_f459d0d9",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 11
@@ -54,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "8e08a847_05d2ad70",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-13T01:52:12Z",
+      "side": 1,
+      "message": "Removed",
+      "parentUuid": "d66396ac_f459d0d9",
+      "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1034dc43_cd08f01e",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 11
@@ -65,6 +101,24 @@
       "writtenOn": "2019-08-12T20:16:27Z",
       "side": 1,
       "message": "We can avoid this, if we use the dame old secret.yml template. the change will be minimal",
+      "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3259fddd_05d844c9",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-13T01:52:12Z",
+      "side": 1,
+      "message": "Removed",
+      "parentUuid": "1034dc43_cd08f01e",
       "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -100,6 +154,24 @@
       "side": 1,
       "message": "ok it is from here https://github.com/Juniper/contrail/blob/1e2a0a1ba7c27ab81b29036d5fe4fe0e0261f2b3/pkg/deploy/cluster/templates/authorized_registries.tmpl\n\nhttps://github.com/Juniper/contrail/blob/e4d24b17ff5283b47829107ba752a4358010a874/pkg/deploy/cluster/multi_cloud.go#L752\n\nLet us leave it as such",
       "parentUuid": "ee2132c5_d0da7a2d",
+      "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9421376b_a260f5d1",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-13T01:52:12Z",
+      "side": 1,
+      "message": "Removed",
+      "parentUuid": "7e13e9dc_1d1b4441",
       "revId": "9f28e9b7f63c9052a4dfd4a6c7500b75114899a4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
