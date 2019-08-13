@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7ecc64fe_7818001e",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-13T04:40:41Z",
+      "side": 1,
+      "message": "please add test code verifying that credential files are deleted as necessary.",
+      "range": {
+        "startLine": 154,
+        "startChar": 1,
+        "endLine": 154,
+        "endChar": 19
+      },
+      "revId": "142da13fccf44c56074fa0cd37d46371940bea9f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8939812a_2f1a71b8",
+        "filename": "pkg/osutil/cmd.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-13T04:40:41Z",
+      "side": 1,
+      "message": "Fatalf causes the code to exit immediately. Did you mean Errorf here? why the unremovedFiles append and check at the end?",
+      "range": {
+        "startLine": 53,
+        "startChar": 7,
+        "endLine": 53,
+        "endChar": 13
+      },
+      "revId": "142da13fccf44c56074fa0cd37d46371940bea9f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "804c20f2_cf91a975",
+        "filename": "pkg/osutil/cmd.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-13T04:40:41Z",
+      "side": 1,
+      "message": "nit: change from \u0027vulnerable files failed for files\u0027 to \u0027credentials failed for files\u0027?\n(it is clearer what is in the files, does not cause me/user to think \u0027why did the code create vulnerable files in the first place\u0027, clarifies why it is important to remove the files)",
+      "range": {
+        "startLine": 58,
+        "startChar": 30,
+        "endLine": 58,
+        "endChar": 40
+      },
+      "revId": "142da13fccf44c56074fa0cd37d46371940bea9f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
