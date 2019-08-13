@@ -45,6 +45,30 @@
       "revId": "9b5288d3ed08e80358558df68959cca1aa55b4b1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9214470d_a134c64c",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 787
+      },
+      "writtenOn": "2019-08-13T15:47:37Z",
+      "side": 1,
+      "message": "For clarity, when in a) I say you need to test that the files are removed as expected, I\u0027m _not_ talking about ensuring that _the test is removing the files, but that the main code, the functions we wrote to do the cloud work do removes the files at the end of the process.",
+      "parentUuid": "ac786857_849cd344",
+      "range": {
+        "startLine": 323,
+        "startChar": 1,
+        "endLine": 323,
+        "endChar": 12
+      },
+      "revId": "9b5288d3ed08e80358558df68959cca1aa55b4b1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
