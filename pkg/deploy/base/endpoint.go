@@ -89,18 +89,6 @@ func (e *EndpointData) getPort(nodeIP, service string) string {
 
 }
 
-func (e *EndpointData) getOpenstackPublicVip() (vip string) {
-	vip = ""
-	o := e.ClusterData.getOpenstackClusterData()
-	if o.ClusterInfo.OpenstackExternalVip != "" {
-		vip = o.ClusterInfo.OpenstackExternalVip
-	} else if o.ClusterInfo.OpenstackInternalVip != "" {
-		vip = o.ClusterInfo.OpenstackInternalVip
-	}
-
-	return vip
-}
-
 func (e *EndpointData) getkeystoneAdminCredential() (adminUser, adminPassword string) {
 	var k []*models.KeyValuePair
 	if o := e.ClusterData.GetOpenstackClusterInfo(); o != nil {
@@ -153,11 +141,11 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 	}
 	if _, ok := endpointNodes[identity]; !ok {
 		var openstackControlNodes []string
-		vip := e.getOpenstackPublicVip()
+		o := e.ClusterData.getOpenstackClusterData()
+		vip := o.getOpenstackPublicVip()
 		if vip != "" {
 			openstackControlNodes = []string{vip}
 		} else {
-			o := e.ClusterData.getOpenstackClusterData()
 			openstackControlNodes = o.getControlNodeIPs()
 		}
 		endpointNodes[identity] = openstackControlNodes
@@ -167,11 +155,11 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 	}
 	if _, ok := endpointNodes[swift]; !ok {
 		var openstackStorageNodes []string
-		vip := e.getOpenstackPublicVip()
+		o := e.ClusterData.getOpenstackClusterData()
+		vip := o.getOpenstackPublicVip()
 		if vip != "" {
 			openstackStorageNodes = []string{vip}
 		} else {
-			o := e.ClusterData.getOpenstackClusterData()
 			openstackStorageNodes = o.getStorageNodeIPs()
 		}
 		endpointNodes[swift] = openstackStorageNodes
@@ -205,15 +193,11 @@ func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]st
 			}
 		}
 	}
-	if a := e.ClusterData.ClusterInfo.GetAnnotations(); a != nil {
-		for _, keyValuePair := range a.GetKeyValuePair() {
-			switch keyValuePair.Key {
-			case "contrail_external_vip":
-				endpointNodes[config] = []string{keyValuePair.Value}
-				endpointNodes[analytics] = []string{keyValuePair.Value}
-				endpointNodes[webui] = []string{keyValuePair.Value}
-			}
-		}
+	vip := e.ClusterData.getContrailExternalVip()
+	if vip != "" {
+		endpointNodes[config] = []string{vip}
+		endpointNodes[analytics] = []string{vip}
+		endpointNodes[webui] = []string{vip}
 	}
 	if _, ok := endpointNodes[config]; !ok {
 		endpointNodes[config] = e.ClusterData.getConfigNodeIPs()

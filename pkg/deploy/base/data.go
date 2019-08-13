@@ -552,6 +552,17 @@ func (v *VCenterData) updateClusterDetails(clusterID string, r *ResourceManager)
 	return nil
 }
 
+func (o *OpenstackData) getOpenstackPublicVip() (vip string) {
+	vip = ""
+	if o.ClusterInfo.OpenstackExternalVip != "" {
+		vip = o.ClusterInfo.OpenstackExternalVip
+	} else if o.ClusterInfo.OpenstackInternalVip != "" {
+		vip = o.ClusterInfo.OpenstackInternalVip
+	}
+
+	return vip
+}
+
 func (o *OpenstackData) isSSLEnabled() bool {
 	if g := o.ClusterInfo.GetKollaGlobals(); g != nil {
 		for _, keyValuePair := range g.GetKeyValuePair() {
@@ -797,6 +808,14 @@ func (o *OpenstackData) getControlNodeIPs() (nodeIPs []string) {
 func (o *OpenstackData) getOpenstackControlPorts() (nodePorts map[string]interface{}) {
 	nodePorts = make(map[string]interface{})
 	for _, controlNode := range o.ClusterInfo.OpenstackControlNodes {
+		if vip := o.getOpenstackPublicVip(); vip != "" {
+			nodePorts[vip] = make(map[string]int64)
+			format.InterfaceToInt64Map(nodePorts[vip])[identity] = controlNode.KeystonePublicPort
+			format.InterfaceToInt64Map(nodePorts[vip])[nova] = controlNode.NovaPublicPort
+			format.InterfaceToInt64Map(nodePorts[vip])[glance] = controlNode.GlancePublicPort
+			format.InterfaceToInt64Map(nodePorts[vip])[ironic] = controlNode.IronicPublicPort
+			return nodePorts
+		}
 		for _, nodeRef := range controlNode.NodeRefs {
 			nodeIPAddress := getNodeIPAddress(o.Reader, nodeRef.UUID)
 			portMap := make(map[string]int64)
@@ -828,6 +847,11 @@ func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 func (o *OpenstackData) getOpenstackStoragePorts() (nodePorts map[string]interface{}) {
 	nodePorts = make(map[string]interface{})
 	for _, storageNode := range o.ClusterInfo.OpenstackStorageNodes {
+		if vip := o.getOpenstackPublicVip(); vip != "" {
+			nodePorts[vip] = make(map[string]int64)
+			format.InterfaceToInt64Map(nodePorts[vip])[swift] = storageNode.SwiftPublicPort
+			return nodePorts
+		}
 		for _, nodeRef := range storageNode.NodeRefs {
 			nodeIPAddress := getNodeIPAddress(o.Reader, nodeRef.UUID)
 			portMap := make(map[string]int64)
@@ -838,6 +862,18 @@ func (o *OpenstackData) getOpenstackStoragePorts() (nodePorts map[string]interfa
 		}
 	}
 	return nodePorts
+}
+
+func (d *Data) getContrailExternalVip() (vip string) {
+	if a := d.ClusterInfo.GetAnnotations(); a != nil {
+		for _, keyValuePair := range a.GetKeyValuePair() {
+			switch keyValuePair.Key {
+			case "contrail_external_vip":
+				vip = keyValuePair.Value
+			}
+		}
+	}
+	return vip
 }
 
 func (d *Data) isSSLEnabled() bool {
@@ -1500,6 +1536,11 @@ func (d *Data) getConfigNodeIPs() (nodeIPs []string) {
 func (d *Data) getConfigNodePorts() (nodePorts map[string]interface{}) {
 	nodePorts = make(map[string]interface{})
 	for _, configNode := range d.ClusterInfo.ContrailConfigNodes {
+		if vip := d.getContrailExternalVip(); vip != "" {
+			nodePorts[vip] = make(map[string]int64)
+			format.InterfaceToInt64Map(nodePorts[vip])[config] = configNode.APIPublicPort
+			return nodePorts
+		}
 		for _, nodeRef := range configNode.NodeRefs {
 			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
 			portMap := make(map[string]int64)
@@ -1528,6 +1569,11 @@ func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 func (d *Data) getAnalyticsNodePorts() (nodePorts map[string]interface{}) {
 	nodePorts = make(map[string]interface{})
 	for _, analyticsNode := range d.ClusterInfo.ContrailAnalyticsNodes {
+		if vip := d.getContrailExternalVip(); vip != "" {
+			nodePorts[vip] = make(map[string]int64)
+			format.InterfaceToInt64Map(nodePorts[vip])[analytics] = analyticsNode.APIPublicPort
+			return nodePorts
+		}
 		for _, nodeRef := range analyticsNode.NodeRefs {
 			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
 			portMap := make(map[string]int64)
@@ -1556,6 +1602,11 @@ func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 func (d *Data) getWebuiNodePorts() (nodePorts map[string]interface{}) {
 	nodePorts = make(map[string]interface{})
 	for _, webuiNode := range d.ClusterInfo.ContrailWebuiNodes {
+		if vip := d.getContrailExternalVip(); vip != "" {
+			nodePorts[vip] = make(map[string]int64)
+			format.InterfaceToInt64Map(nodePorts[vip])[webui] = webuiNode.PublicPort
+			return nodePorts
+		}
 		for _, nodeRef := range webuiNode.NodeRefs {
 			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
 			portMap := make(map[string]int64)

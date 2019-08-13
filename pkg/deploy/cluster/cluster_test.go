@@ -1387,26 +1387,6 @@ func TestMCCluster(t *testing.T) {
 }
 
 func TestTripleoClusterImport(t *testing.T) {
-	pContext := pongo2.Context{
-		"TYPE":                "kernel",
-		"MGMT_INT_IP":         "127.0.0.1",
-		"CONTROL_NODES":       "",
-		"OPENSTACK_NODES":     "",
-		"SSL_ENABLE":          "yes",
-		"PROVISIONER_TYPE":    "tripleo",
-		"PROVISIONING_STATE":  "CREATED",
-		"PROVISIONING_ACTION": "",
-	}
-	expectedEndpoints := map[string]string{
-		"config":    "https://127.0.0.1:9100",
-		"nodejs":    "https://127.0.0.1:8144",
-		"telemetry": "https://127.0.0.1:9101",
-		"baremetal": "https://127.0.0.1:6386",
-		"swift":     "https://127.0.0.1:8081",
-		"glance":    "https://127.0.0.1:9293",
-		"compute":   "https://127.0.0.1:8775",
-		"keystone":  "https://127.0.0.1:5000",
-	}
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystoneTestUser(
@@ -1417,7 +1397,19 @@ func TestTripleoClusterImport(t *testing.T) {
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
-	ts, err := integration.LoadTest(allInOneClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(
+		allInOneClusterTemplatePath,
+		pongo2.Context{
+			"TYPE":                   "kernel",
+			"MGMT_INT_IP":            "127.0.0.1",
+			"OPENSTACK_INTERNAL_VIP": "overcloud.localdomain",
+			"CONTRAIL_EXTERNAL_VIP":  "overcloud.localdomain",
+			"SSL_ENABLE":             "yes",
+			"PROVISIONER_TYPE":       "tripleo",
+			"PROVISIONING_STATE":     "CREATED",
+			"PROVISIONING_ACTION":    "",
+		},
+	)
 	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
@@ -1453,7 +1445,19 @@ func TestTripleoClusterImport(t *testing.T) {
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created as part of import
-	err = verifyEndpoints(t, ts, expectedEndpoints)
+	err = verifyEndpoints(
+		t, ts,
+		map[string]string{
+			"config":    "https://overcloud.localdomain:9100",
+			"nodejs":    "https://overcloud.localdomain:8144",
+			"telemetry": "https://overcloud.localdomain:9101",
+			"baremetal": "https://overcloud.localdomain:6386",
+			"swift":     "https://overcloud.localdomain:8081",
+			"glance":    "https://overcloud.localdomain:9293",
+			"compute":   "https://overcloud.localdomain:8775",
+			"keystone":  "https://overcloud.localdomain:5000",
+		},
+	)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
