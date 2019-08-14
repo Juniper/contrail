@@ -23,7 +23,8 @@ RUN ln -s /usr/share/contrail/contrail-ansible-deployer /tmp/
 RUN yum install -y \
     postgresql \
     git \
-    python-requests python-pip
+    python-requests python-pip && \
+    yum clean all -y
 
 RUN pip install ansible==2.7.11
 
