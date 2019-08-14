@@ -108,10 +108,6 @@ type PubKeyConfig struct {
 func (m *multiCloudProvisioner) Deploy() error {
 	deployErr := m.deploy()
 
-	if m.cluster.config.Test {
-		return deployErr
-	}
-
 	if err := m.removeVulnerableFiles(); err != nil {
 		return errors.Errorf(
 			"failed to delete vulnerable files: %s; deploy error (if any): %s",
@@ -307,10 +303,16 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 }
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
+	// nolint: errcheck
+	defer m.removeVulnerableFiles()
+	err := m.manageClusterSecret(m.workDir)
+	if err != nil {
+		return err
+	}
 
 	// best effort cleaning of nodes
 	// need to export ssh-agent variables before killing the process
-	err := m.manageSSHAgent(m.workDir, updateAction)
+	err = m.manageSSHAgent(m.workDir, updateAction)
 	if err != nil {
 		return err
 	}
@@ -646,8 +648,6 @@ func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 func (m *multiCloudProvisioner) filesToRemove() []string {
 	return []string{
 		m.getClusterSecretFile(m.workDir),
-		m.getInventoryFile(),
-		m.getContrailCommonFile(m.workDir),
 	}
 }
 

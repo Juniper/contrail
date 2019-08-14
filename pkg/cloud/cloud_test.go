@@ -3,8 +3,10 @@ package cloud
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -153,12 +155,17 @@ func runCloudTest(
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
-	createAWSAccessKey(t, awsAccessKeyFile)
-	createAWSSecretKey(t, awsSecretKeyFile)
-	defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
+	if context["CLOUD_TYPE"] == aws {
+		createAWSAccessKey(t, awsAccessKeyFile)
+		createAWSSecretKey(t, awsSecretKeyFile)
+		defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
+	}
 
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
+
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete cloud secrets during create")
 
 	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud create is not as expected")
@@ -168,8 +175,6 @@ func runCloudTest(
 		assert.True(t, verifyNodeType(cloud.ctx, cloud.APIServer, ts),
 			"public cloud nodes are not updated as type private")
 
-		assert.True(t, compareGeneratedSecret(t, expectedSecret),
-			"secret file created during cloud create is not as expected")
 		assert.True(t, verifyCommandsExecuted(t, expectedCmdFile),
 			"Expected list of create commands are not executed")
 		// check if ssh keys are created
@@ -194,10 +199,6 @@ func runCloudTest(
 		if err != nil {
 			assert.NoError(t, err, "failed to delete topology.yml file, during update")
 		}
-		err = os.Remove(generatedSecretPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete secret.yml file, during update")
-		}
 
 		if _, err = os.Stat(executedCommandsPath()); err == nil {
 			// cleanup old executed command file
@@ -210,13 +211,18 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
+		if context["CLOUD_TYPE"] == aws {
+			createAWSAccessKey(t, awsAccessKeyFile)
+			createAWSSecretKey(t, awsSecretKeyFile)
+		}
 		err = cloud.Manage()
-		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
+		assert.NoError(t, err, "failed to manage cloud, while updating onprem cloud")
+
+		err = isCloudSecretFilesDeleted()
+		require.NoError(t, err, "failed to delete cloud secrets during update")
 
 		assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 			"topology file created during cloud update is not as expected")
-		assert.True(t, compareGeneratedSecret(t, expectedSecret),
-			"secret file created during cloud update is not as expected")
 		assert.True(t, verifyCommandsExecuted(t, expectedCmdFile),
 			"Expected list of update commands are not executed")
 
@@ -233,10 +239,6 @@ func runCloudTest(
 		if err != nil {
 			assert.NoError(t, err, "failed to delete topology.yml file, during vpc delete")
 		}
-		err = os.Remove(generatedSecretPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete secret.yml file, during vpc delete")
-		}
 
 		if _, err = os.Stat(executedCommandsPath()); err == nil {
 			// cleanup old executed command file
@@ -249,8 +251,15 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
+		if context["CLOUD_TYPE"] == aws {
+			createAWSAccessKey(t, awsAccessKeyFile)
+			createAWSSecretKey(t, awsSecretKeyFile)
+		}
 		err = cloud.Manage()
 		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
+
+		err = isCloudSecretFilesDeleted()
+		require.NoError(t, err, "failed to delete cloud secrets during onprem delete")
 
 		assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 			"topology file created during cloud delete vpc is not as expected")
@@ -276,7 +285,13 @@ func runCloudTest(
 	cloud, err = NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct for delete action")
 
+	if context["CLOUD_TYPE"] == aws {
+		createAWSAccessKey(t, awsAccessKeyFile)
+		createAWSSecretKey(t, awsSecretKeyFile)
+	}
 	err = cloud.Manage()
+	ok := isCloudSecretFilesDeleted()
+	require.NoError(t, ok, "failed to delete cloud secrets during delete")
 	if context["CLOUD_TYPE"] == onPrem {
 		assert.Error(t, err,
 			"delete cloud should fail because cluster p_action is not set to DELETE_CLOUD")
@@ -291,9 +306,16 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
+		if context["CLOUD_TYPE"] == aws {
+			createAWSAccessKey(t, awsAccessKeyFile)
+			createAWSSecretKey(t, awsSecretKeyFile)
+		}
 		err = cloud.Manage()
 		assert.Error(t, err,
 			"delete cloud should fail because cluster p_a is not set to DELETE_CLOUD but p_s is UPDATE_FAILED")
+
+		err = isCloudSecretFilesDeleted()
+		require.NoError(t, err, "failed to delete cloud secrets during delete")
 
 		// updates p_a of cluster to DELETE_CLOUD
 		// sets p_s of cluster to UPDATED
@@ -305,7 +327,14 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
+		if context["CLOUD_TYPE"] == aws {
+			createAWSAccessKey(t, awsAccessKeyFile)
+			createAWSSecretKey(t, awsSecretKeyFile)
+		}
 		err = cloud.Manage()
+
+		ok := isCloudSecretFilesDeleted()
+		require.NoError(t, ok, "failed to delete cloud secrets during delete")
 	}
 	assert.NoError(t, err, "failed to manage cloud, while deleting cloud")
 
@@ -340,10 +369,6 @@ func compareGeneratedTopology(t *testing.T, expectedTopologies []string) bool {
 		}
 	}
 	return false
-}
-
-func compareGeneratedSecret(t *testing.T, expectedSecretFile string) bool {
-	return compareFiles(t, expectedSecretFile, generatedSecretPath())
 }
 
 func verifyCommandsExecuted(t *testing.T, expectedCmdFile string) bool {
@@ -454,4 +479,36 @@ func verifyCloudDeleted(ctx context.Context, httpClient *client.HTTP) bool {
 		return false
 	}
 	return true
+}
+
+func isCloudSecretFilesDeleted() error {
+	keyDefaults, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return err
+	}
+	errstrings := []string{}
+	for _, secret := range []string{
+		GetTerraformAWSPlanFile(cloudID),
+		GetTerraformAzurePlanFile(cloudID),
+		GetTerraformGCPPlanFile(cloudID),
+		awsAccessKeyFile,
+		awsSecretKeyFile,
+		keyDefaults.GetAzureAccessTokenPath(),
+		keyDefaults.GetAzureProfilePath(),
+		keyDefaults.GetGoogleAccountPath(),
+	} {
+		_, err := os.Stat(secret)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				errstrings = append(errstrings, fmt.Sprintf(
+					"Unable to verify the non existence of secret file: %s is not deleted: %v", secret, err))
+			}
+		} else {
+			errstrings = append(errstrings, fmt.Sprintf("secret file: %s is not deleted: %v", secret, err))
+		}
+	}
+	if len(errstrings) != 0 {
+		return fmt.Errorf(strings.Join(errstrings, "\n"))
+	}
+	return nil
 }

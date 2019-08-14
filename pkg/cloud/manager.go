@@ -139,12 +139,13 @@ func NewCloud(c *Config) (*Cloud, error) {
 
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
-	manageErr := c.manage()
-	if c.config.Test {
-		return manageErr
+	data, err := c.getCloudData(false)
+	if err != nil {
+		return errors.Wrap(err, "failed to get Cloud data")
 	}
+	manageErr := c.manage()
 
-	if err := c.removeVulnerableFiles(); err != nil {
+	if err := c.removeVulnerableFiles(data); err != nil {
 		return errors.Errorf(
 			"failed to delete vulnerable files: %s; manage error (if any): %s",
 			err,
@@ -497,12 +498,7 @@ func (c *Cloud) getTemplateRoot() string {
 	return templateRoot
 }
 
-func (c *Cloud) removeVulnerableFiles() error {
-	data, err := c.getCloudData(false)
-	if err != nil {
-		return errors.Wrap(err, "failed to get Cloud data")
-	}
-
+func (c *Cloud) removeVulnerableFiles(data *Data) error {
 	if !data.isCloudPublic() {
 		return nil
 	}
