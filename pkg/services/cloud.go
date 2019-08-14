@@ -34,7 +34,7 @@ type UploadCloudKeysBody struct {
 	// AWSAccessKey is the access key to created on API Server host.
 	AWSAccessKey string `json:"aws_access_key"`
 	// AzureAccessTokenJson is the token file to created on API Server host.
-	AzureAccessToken string `json:"azure_access_token_json"`
+	AzureAccessTokens string `json:"azure_access_tokens_json"`
 	// AzureProfileJson is the profile file to created on API Server host.
 	AzureProfile string `json:"azure_profile_json"`
 	// GoogleAccountJson is the account file to created on API Server host.
@@ -116,6 +116,7 @@ func (service *ContrailService) UploadCloudKeys(request *UploadCloudKeysBody, ke
 	}
 
 	keyPaths := []string{}
+	// TODO: use anonymous struct instead of map
 	for keyType, secret := range map[string]map[string]string{
 		"aws-secret-key": {
 			"encoded": request.AWSSecretKey,
@@ -126,7 +127,7 @@ func (service *ContrailService) UploadCloudKeys(request *UploadCloudKeysBody, ke
 			"path":    keyDefaults.GetAWSAccessPath(request.CloudProviderUUID),
 		},
 		"azure-access-token": {
-			"encoded": request.AzureAccessToken,
+			"encoded": request.AzureAccessTokens,
 			"path":    keyDefaults.GetAzureAccessTokenPath(),
 		},
 		"azure-profile": {

@@ -76,7 +76,7 @@ func TestUploadCloudKeys(t *testing.T) {
 				CloudProviderUUID: tt.cloudProviderUUID,
 				AWSAccessKey:      base64.StdEncoding.EncodeToString([]byte(tt.awsAccessKey)),
 				AWSSecretKey:      base64.StdEncoding.EncodeToString([]byte(tt.awsSecretKey)),
-				AzureAccessToken:  base64.StdEncoding.EncodeToString([]byte(tt.azureAccessToken)),
+				AzureAccessTokens: base64.StdEncoding.EncodeToString([]byte(tt.azureAccessToken)),
 				AzureProfile:      base64.StdEncoding.EncodeToString([]byte(tt.azureProfile)),
 				GoogleAccount:     base64.StdEncoding.EncodeToString([]byte(tt.googleAccount)),
 			}

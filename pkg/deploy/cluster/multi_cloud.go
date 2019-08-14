@@ -104,16 +104,31 @@ type PubKeyConfig struct {
 	AuthReg      []map[string]string `yaml:"authorized_registries"`
 }
 
-// nolint: gocyclo
+// Deploy performs Multicloud provisioning.
 func (m *multiCloudProvisioner) Deploy() error {
-	err := m.deploy()
+	deployErr := m.deploy()
+
 	if m.cluster.config.Test {
-		return err
+		return deployErr
 	}
-	if deleteErr := m.removeVulnerableFiles(); deleteErr != nil {
-		return errors.Wrapf(err, "Deletion of vulnerable files finished with error: %s", deleteErr.Error())
+
+	if err := m.removeVulnerableFiles(); err != nil {
+		return errors.Errorf(
+			"failed to delete vulnerable files: %s; deploy error (if any): %s",
+			err,
+			deployErr,
+		)
 	}
-	return err
+
+	if err := m.unsetMulticloudProvisioningFlag(); err != nil {
+		return errors.Errorf(
+			"failed to unset cloud.is_multicloud_provisioning flag: %s; deploy error (if any): %s",
+			err,
+			deployErr,
+		)
+	}
+
+	return deployErr
 }
 
 // nolint: gocyclo
@@ -613,11 +628,52 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 }
 
 func (m *multiCloudProvisioner) removeVulnerableFiles() error {
-	filesToRemove := []string{m.getClusterSecretFile(m.workDir),
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		removeErr := osutil.ForceRemoveFiles(m.filesToRemove(), m.Log)
+		return errors.Errorf(
+			"cannot remove secret.yaml file: cannot get public cloud ID: %s "+
+				"- please remove secret.yaml from cloud directory; "+
+				"other files remove error (if any): %s",
+			err,
+			removeErr,
+		)
+	}
+
+	return osutil.ForceRemoveFiles(append(m.filesToRemove(), cloud.GetSecretFile(pubCloudID)), m.Log)
+}
+
+func (m *multiCloudProvisioner) filesToRemove() []string {
+	return []string{
+		m.getClusterSecretFile(m.workDir),
 		m.getInventoryFile(),
 		m.getContrailCommonFile(m.workDir),
 	}
-	return osutil.ForceRemoveFiles(filesToRemove, m.Log)
+}
+
+// unsetMulticloudProvisioningFlag unsets cloud.is_multicloud_provisioning flag.
+// See pkg/cloud.Cloud.removeVulnerableFiles() comment regarding cloud.is_multicloud_provisioning flag purpose.
+func (m *multiCloudProvisioner) unsetMulticloudProvisioningFlag() error {
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return errors.Wrap(err, "failed to to get public Cloud ID")
+	}
+
+	_, err = m.cluster.APIServer.UpdateCloud(
+		context.Background(),
+		&services.UpdateCloudRequest{
+			Cloud: &models.Cloud{
+				UUID:                     pubCloudID,
+				IsMulticloudProvisioning: false,
+			},
+		},
+	)
+	if err != nil {
+		return errors.Wrapf(err, "failed to update Cloud with UUID: %s", pubCloudID)
+	}
+
+	m.Log.WithField("pubCloudID", pubCloudID).Debug("Successfully unset cloud.is_multicloud_provisioning flag")
+	return nil
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {

@@ -1234,7 +1234,6 @@ func (d *Data) isCloudPrivate() bool {
 }
 
 func (d *Data) isCloudPublic() bool {
-
 	if !d.isCloudPrivate() {
 		return true
 	}
@@ -1242,14 +1241,12 @@ func (d *Data) isCloudPublic() bool {
 }
 
 func (d *Data) hasProviderAWS() bool {
-
 	for _, prov := range d.providers {
 		if prov.info.Type == aws {
 			return true
 		}
 	}
 	return false
-
 }
 
 func (d *Data) hasProviderAzure() bool {
@@ -1268,6 +1265,15 @@ func (d *Data) hasProviderGCP() bool {
 		}
 	}
 	return false
+}
+
+func (d *Data) awsProviderUUID() string {
+	for _, p := range d.providers {
+		if p.info.Type == aws {
+			return p.info.UUID
+		}
+	}
+	return ""
 }
 
 func (d *Data) getGatewayNodes() []*instanceData {

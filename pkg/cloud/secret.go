@@ -95,22 +95,22 @@ func getKeyPairObject(ctx context.Context, uuid string,
 }
 
 func (s *secret) updateFileConfig(d *Data) error {
-
-	keypair, err := s.getKeypair(d)
+	kp, err := s.getKeypair(d)
 	if err != nil {
 		return err
 	}
-	s.sfc.keypair = keypair
+	s.sfc.keypair = kp
 
-	keyFileDefaults, err := services.NewKeyFileDefaults()
+	kfd, err := services.NewKeyFileDefaults()
 	if err != nil {
 		return errors.Wrap(err, "could not get file defaults")
 	}
-	cloudID := d.cloud.config.CloudID
 
 	if d.hasProviderAWS() {
 		awsCreds, err := loadAWSCredentials(
-			cloudID, keyFileDefaults.GetAWSAccessPath(cloudID), keyFileDefaults.GetAWSSecretPath(cloudID),
+			d.cloud.config.CloudID,
+			kfd.GetAWSAccessPath(d.awsProviderUUID()),
+			kfd.GetAWSSecretPath(d.awsProviderUUID()),
 		)
 		if err != nil {
 			return err

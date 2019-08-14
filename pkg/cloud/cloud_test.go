@@ -47,6 +47,8 @@ const (
 	cloudID                          = "cloud_uuid"
 	defaultAdminUser                 = "admin"
 	defaultAdminPassword             = "contrail123"
+	awsAccessKeyFile                 = "/var/tmp/contrail/cloud_provider_uuid/aws_access.key"
+	awsSecretKeyFile                 = "/var/tmp/contrail/cloud_provider_uuid/aws_secret.key"
 )
 
 func TestOnPremCloud(t *testing.T) {
@@ -151,12 +153,9 @@ func runCloudTest(
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
-	createAWSAccessKey(t, "/var/tmp/contrail/cloud_uuid/aws_access.key")
-	createAWSSecretKey(t, "/var/tmp/contrail/cloud_uuid/aws_secret.key")
-	defer os.Remove("/var/tmp/contrail/cloud_uuid/aws_access.key") // nolint: errcheck
-	defer os.Remove("/var/tmp/contrail/cloud_uuid/aws_secret.key") // nolint: errcheck
-
-	createDockerCreds(t, "/var/tmp/contrail/docker_creds.yml")
+	createAWSAccessKey(t, awsAccessKeyFile)
+	createAWSSecretKey(t, awsSecretKeyFile)
+	defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
 
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
@@ -315,6 +314,17 @@ func runCloudTest(
 		"Cloud dir/Cloud object is not deleted during cloud delete")
 }
 
+func removeAWSCredentials(t *testing.T, awsAccessKey, awsSecretKey string) {
+	// nolint: errcheck
+	_ = os.Remove(awsAccessKey)
+	// nolint: errcheck
+	_ = os.Remove(awsSecretKey)
+	_, err := ioutil.ReadFile(awsAccessKey)
+	assert.True(t, os.IsNotExist(err), "File %s was not removed!", awsAccessKey)
+	_, err = ioutil.ReadFile(awsSecretKey)
+	assert.True(t, os.IsNotExist(err), "File %s was not removed!", awsSecretKey)
+}
+
 func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	generatedData, err := ioutil.ReadFile(generatedFile)
 	assert.NoErrorf(t, err, "unable to read generated: %s", generatedFile)
@@ -345,14 +355,6 @@ func verifyGeneratedSSHKeyFiles(t *testing.T) bool {
 	pubKeyPath := getCloudSSHKeyPath(cloudID, "cloud_keypair.pub")
 	return compareFiles(t, expectedPvtKey,
 		pvtKeyPath) && compareFiles(t, expectedPubKey, pubKeyPath)
-}
-
-func createDockerCreds(t *testing.T, path string) {
-	data, err := ioutil.ReadFile("./test_data/docker_creds.yml")
-	assert.NoError(t, err)
-
-	err = fileutil.WriteToFile(path, data, sshPubKeyPerm)
-	assert.NoErrorf(t, err, "Unable to write file: %s", path)
 }
 
 func createAWSAccessKey(t *testing.T, path string) {
