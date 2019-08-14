@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -56,7 +57,6 @@ const (
 	clusterID                             = "test_cluster_uuid"
 
 	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
-	expectedMCClusterSecret     = "./test_data/expected_mc_cluster_secret.yml"
 	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
 	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
 	expectedTORCommon           = "./test_data/expected_mc_tor_common.yml"
@@ -189,10 +189,6 @@ func compareGeneratedTopology(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedTopologyPath())
 }
 
-func compareGeneratedSecret(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedSecretPath())
-}
-
 func compareGeneratedContrailCommon(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedContrailCommonPath())
 }
@@ -257,6 +253,17 @@ func executedMCCommandPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
 }
 
+func createDummyCloudSecretFile(t *testing.T) {
+	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
+	}
+	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
+	}
+}
+
 func createDummyCloudFiles(t *testing.T) func() {
 
 	// create public cloud topology.yaml
@@ -278,14 +285,7 @@ func createDummyCloudFiles(t *testing.T) func() {
 		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
 	}
 	// create public cloud secret.yml
-	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
-	}
-	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
-	}
+	createDummyCloudSecretFile(t)
 
 	return func() {
 		// best effort method of deleting all the files
@@ -1242,20 +1242,25 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during create")
+
 	ts, err = integration.LoadTest(allInOneMCCloudUpdateTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc pvt cloud update test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 
 	// now get cluster data again
+	createDummyCloudSecretFile(t)
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
 
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during create")
+
 	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
 		"Topolgy file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
-		"Secret file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
@@ -1313,6 +1318,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		}
 	}
 
+	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterUpdateTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
@@ -1323,10 +1329,11 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
 
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during update")
+
 	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
 		"Topolgy file created during cluster update is not as expected")
-	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
-		"Secret file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
 		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
@@ -1355,6 +1362,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		}
 	}
 
+	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
@@ -1364,6 +1372,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cloud")
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete public cloud secrets during delete")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_delete_mc_playbook.yml"),
 		"Expected list of delete playbooks are not executed")
 	// make sure cluster is removed
@@ -1377,6 +1387,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete cloud secrets during delete")
 
 }
 
@@ -1384,6 +1396,28 @@ func TestMCCluster(t *testing.T) {
 	runMCClusterTest(t, pongo2.Context{
 		"CONTROL_NODES": "",
 	})
+}
+
+func isCloudSecretFilesDeleted() error {
+	errstrings := []string{}
+	for _, secret := range []string{
+		"/var/tmp/cloud/public_cloud_uuid/secret.yml",
+		generatedSecretPath(),
+	} {
+		_, err := os.Stat(secret)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				errstrings = append(errstrings, fmt.Sprintf(
+					"Unable to verify the non existence of secret file: %s is not deleted: %v", secret, err))
+			}
+		} else {
+			errstrings = append(errstrings, fmt.Sprintf("secret file: %s is not deleted: %v", secret, err))
+		}
+	}
+	if len(errstrings) != 0 {
+		return fmt.Errorf(strings.Join(errstrings, "\n"))
+	}
+	return nil
 }
 
 func TestTripleoClusterImport(t *testing.T) {

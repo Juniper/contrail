@@ -3,8 +3,10 @@ package cloud
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -155,10 +157,12 @@ func runCloudTest(
 
 	createAWSAccessKey(t, awsAccessKeyFile)
 	createAWSSecretKey(t, awsSecretKeyFile)
-	defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
 
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
+
+	err = isCloudSecretFilesDeleted()
+	require.NoError(t, err, "failed to delete cloud secrets during create")
 
 	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud create is not as expected")
@@ -211,7 +215,10 @@ func runCloudTest(
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
 		err = cloud.Manage()
-		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
+		assert.NoError(t, err, "failed to manage cloud, while updating onprem cloud")
+
+		err = isCloudSecretFilesDeleted()
+		require.NoError(t, err, "failed to delete cloud secrets during update")
 
 		assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 			"topology file created during cloud update is not as expected")
@@ -252,6 +259,9 @@ func runCloudTest(
 		err = cloud.Manage()
 		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
 
+		err = isCloudSecretFilesDeleted()
+		require.NoError(t, err, "failed to delete cloud secrets during onprem delete")
+
 		assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 			"topology file created during cloud delete vpc is not as expected")
 
@@ -277,6 +287,8 @@ func runCloudTest(
 	assert.NoError(t, err, "failed to create cloud struct for delete action")
 
 	err = cloud.Manage()
+	ok := isCloudSecretFilesDeleted()
+	require.NoError(t, ok, "failed to delete cloud secrets during delete")
 	if context["CLOUD_TYPE"] == onPrem {
 		assert.Error(t, err,
 			"delete cloud should fail because cluster p_action is not set to DELETE_CLOUD")
@@ -295,6 +307,9 @@ func runCloudTest(
 		assert.Error(t, err,
 			"delete cloud should fail because cluster p_a is not set to DELETE_CLOUD but p_s is UPDATE_FAILED")
 
+		err = isCloudSecretFilesDeleted()
+		require.NoError(t, err, "failed to delete cloud secrets during delete")
+
 		// updates p_a of cluster to DELETE_CLOUD
 		// sets p_s of cluster to UPDATED
 		ts, err = integration.LoadTest(clusterUpdatedTemplatePath, context)
@@ -306,6 +321,9 @@ func runCloudTest(
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
 		err = cloud.Manage()
+
+		ok := isCloudSecretFilesDeleted()
+		require.NoError(t, ok, "failed to delete cloud secrets during delete")
 	}
 	assert.NoError(t, err, "failed to manage cloud, while deleting cloud")
 
@@ -314,6 +332,7 @@ func runCloudTest(
 		"Cloud dir/Cloud object is not deleted during cloud delete")
 }
 
+/*
 func removeAWSCredentials(t *testing.T, awsAccessKey, awsSecretKey string) {
 	// nolint: errcheck
 	_ = os.Remove(awsAccessKey)
@@ -324,6 +343,8 @@ func removeAWSCredentials(t *testing.T, awsAccessKey, awsSecretKey string) {
 	_, err = ioutil.ReadFile(awsSecretKey)
 	assert.True(t, os.IsNotExist(err), "File %s was not removed!", awsSecretKey)
 }
+
+*/
 
 func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	generatedData, err := ioutil.ReadFile(generatedFile)
@@ -454,4 +475,33 @@ func verifyCloudDeleted(ctx context.Context, httpClient *client.HTTP) bool {
 		return false
 	}
 	return true
+}
+
+func isCloudSecretFilesDeleted() error {
+	keyDefaults, err := services.NewKeyFileDefaults()
+	if err != nil {
+		return err
+	}
+	errstrings := []string{}
+	for _, secret := range []string{
+		awsAccessKeyFile,
+		awsSecretKeyFile,
+		keyDefaults.GetAzureAccessTokenPath(),
+		keyDefaults.GetAzureProfilePath(),
+		keyDefaults.GetGoogleAccountPath(),
+	} {
+		_, err := os.Stat(secret)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				errstrings = append(errstrings, fmt.Sprintf(
+					"Unable to verify the non existence of secret file: %s is not deleted: %v", secret, err))
+			}
+		} else {
+			errstrings = append(errstrings, fmt.Sprintf("secret file: %s is not deleted: %v", secret, err))
+		}
+	}
+	if len(errstrings) != 0 {
+		return fmt.Errorf(strings.Join(errstrings, "\n"))
+	}
+	return nil
 }
