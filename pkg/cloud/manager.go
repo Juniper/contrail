@@ -202,11 +202,16 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 	return false, nil
 }
 
+// nolint: gocyclo
 func (c *Cloud) create() error {
-	status := map[string]interface{}{statusField: statusCreateProgress}
+	// Initialization // TODO(Daniel): extract function
+	data, err := c.getCloudData(false)
+	if err != nil {
+		return err
+	}
 
-	// Run pre-install steps
-	topo, secret, data, err := c.initialize()
+	status := map[string]interface{}{statusField: statusCreateProgress}
+	topo, secret, err := c.initialize(data)
 	if err != nil {
 		status[statusField] = statusCreateFailed
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -217,6 +222,7 @@ func (c *Cloud) create() error {
 		return nil
 	}
 
+	// Performing create // TODO(Daniel): extract function
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -260,29 +266,38 @@ func (c *Cloud) create() error {
 
 // nolint: gocyclo
 func (c *Cloud) update() error {
-	status := map[string]interface{}{statusField: statusUpdateProgress}
-
-	// Run pre-install steps
-	topo, secret, data, err := c.initialize()
+	// Initialization // TODO(Daniel): extract function
+	data, err := c.getCloudData(false)
 	if err != nil {
-		status[statusField] = statusUpdateFailed
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
 	}
 
-	if !data.isCloudUpdateRequest() {
-		var topoIsAlreadyUpdated bool
-		topoIsAlreadyUpdated, err = topo.isUpdated(defaultCloudResource)
+	topo := newTopology(c, data)
+	if data.info.ProvisioningState != statusNoState {
+		topoUpToDate, tErr := topo.isUpToDate(defaultCloudResource)
+		if tErr != nil {
+			c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusUpdateFailed}, defaultCloudResource)
+			return errors.Wrapf(tErr, "failed to check if topology is up to date for cloud %s", c.config.CloudID)
+		}
+
+		if topoUpToDate {
+			c.log.WithField("cloudID", c.config.CloudID).Debug("Topology is already up to date - skipping update")
+			return nil
+		}
+	}
+
+	status := map[string]interface{}{statusField: statusUpdateProgress}
+	var secret *secret
+	if data.isCloudPublic() {
+		secret, err = c.initializeSecret(data)
 		if err != nil {
 			status[statusField] = statusUpdateFailed
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		if topoIsAlreadyUpdated {
-			return nil
-		}
 	}
 
+	// Performing update // TODO(Daniel): extract function
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -325,30 +340,33 @@ func (c *Cloud) update() error {
 	return nil
 }
 
-func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
-	data, err := c.getCloudData(false)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	topo := newTopology(c, data)
-
-	if data.isCloudPrivate() {
-		return topo, nil, data, nil
-	}
-
-	// initialize secret struct
-	secret, err := newSecret(c)
-	if data.isCloudPublic() {
+func (c *Cloud) initialize(d *Data) (*topology, *secret, error) {
+	var secret *secret
+	var err error
+	if d.isCloudPublic() {
+		secret, err = c.initializeSecret(d)
 		if err != nil {
-			return nil, nil, nil, err
-		}
-		err = secret.updateFileConfig(data)
-		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, err
 		}
 	}
 
-	return topo, secret, data, nil
+	return newTopology(c, d), secret, nil
+}
+
+func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
+	s, err := newSecret(c)
+	if d.isCloudPublic() {
+		if err != nil {
+			return nil, err
+		}
+
+		err = s.updateFileConfig(d)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return s, nil
 }
 
 func (c *Cloud) delete() error {
