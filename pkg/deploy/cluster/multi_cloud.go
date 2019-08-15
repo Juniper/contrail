@@ -44,6 +44,8 @@ const (
 	defaultMCInventoryFile    = "inventories/inventory.yml"
 	defaultTopologyFile       = "topology.yml"
 	defaultSecretFile         = "secret.yml"
+	defaultCloudTemplateRoot  = "../../cloud/configs"
+	defaultSecretTemplate     = "secret.tmpl"
 	defaultSSHAgentFile       = "ssh-agent-config.yml"
 
 	defaultContrailUser       = "admin"
@@ -111,14 +113,6 @@ func (m *multiCloudProvisioner) Deploy() error {
 	if err := m.removeVulnerableFiles(); err != nil {
 		return errors.Errorf(
 			"failed to delete vulnerable files: %s; deploy error (if any): %s",
-			err,
-			deployErr,
-		)
-	}
-
-	if err := m.unsetMulticloudProvisioningFlag(); err != nil {
-		return errors.Errorf(
-			"failed to unset cloud.is_multicloud_provisioning flag: %s; deploy error (if any): %s",
 			err,
 			deployErr,
 		)
@@ -304,14 +298,15 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
 	// nolint: errcheck
-	defer m.removeVulnerableFiles()
-	err := m.manageClusterSecret(m.workDir)
+	defer func() {
+		if err := m.removeVulnerableFiles(); err != nil {
+			m.Log.WithError(err).Error("Failed to remove vulnerable files post delete")
+		}
+	}()
+	err := m.createClusterSecretFile()
 	if err != nil {
 		return err
 	}
-
-	// best effort cleaning of nodes
-	// need to export ssh-agent variables before killing the process
 	err = m.manageSSHAgent(m.workDir, updateAction)
 	if err != nil {
 		return err
@@ -608,7 +603,7 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 		return err
 	}
 
-	err = m.manageClusterSecret(workDir)
+	err = m.createClusterSecretFile()
 	if err != nil {
 		return err
 	}
@@ -649,31 +644,6 @@ func (m *multiCloudProvisioner) filesToRemove() []string {
 	return []string{
 		m.getClusterSecretFile(m.workDir),
 	}
-}
-
-// unsetMulticloudProvisioningFlag unsets cloud.is_multicloud_provisioning flag.
-// See pkg/cloud.Cloud.removeVulnerableFiles() comment regarding cloud.is_multicloud_provisioning flag purpose.
-func (m *multiCloudProvisioner) unsetMulticloudProvisioningFlag() error {
-	pubCloudID, _, err := m.getPubPvtCloudID()
-	if err != nil {
-		return errors.Wrap(err, "failed to to get public Cloud ID")
-	}
-
-	_, err = m.cluster.APIServer.UpdateCloud(
-		context.Background(),
-		&services.UpdateCloudRequest{
-			Cloud: &models.Cloud{
-				UUID:                     pubCloudID,
-				IsMulticloudProvisioning: false,
-			},
-		},
-	)
-	if err != nil {
-		return errors.Wrapf(err, "failed to update Cloud with UUID: %s", pubCloudID)
-	}
-
-	m.Log.WithField("pubCloudID", pubCloudID).Debug("Successfully unset cloud.is_multicloud_provisioning flag")
-	return nil
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
@@ -994,39 +964,125 @@ func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error 
 	return nil
 }
 
-func (m *multiCloudProvisioner) manageClusterSecret(workDir string) error {
+func (m *multiCloudProvisioner) getSecretTemplate() string {
+	return filepath.Join(defaultCloudTemplateRoot, defaultSecretTemplate)
+}
 
+func (m *multiCloudProvisioner) getPublicCloudProviders() (providers map[string]string, err error) {
 	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to to get public Cloud ID")
+	}
+
+	ctx := context.Background()
+	cloudObj, err := cloud.GetCloud(ctx, m.cluster.APIServer, pubCloudID)
+	if err != nil {
+		return nil, err
+	}
+
+	providers = make(map[string]string)
+	for _, prov := range cloudObj.CloudProviders {
+		cloudProvObj, err := m.cluster.APIServer.GetCloudProvider(
+			ctx,
+			&services.GetCloudProviderRequest{
+				ID: prov.GetUUID(),
+			},
+		)
+		providers[cloudProvObj.CloudProvider.GetType()] = cloudProvObj.CloudProvider.GetUUID()
+		if err != nil {
+			return providers, err
+		}
+	}
+
+	return providers, nil
+}
+
+func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error) {
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to to get public Cloud ID")
+	}
+
+	ctx := context.Background()
+	cloudObj, err := cloud.GetCloud(ctx, m.cluster.APIServer, pubCloudID)
+	if err != nil {
+		return nil, err
+	}
+
+	cloudUserObj, err := m.cluster.APIServer.GetCloudUser(
+		ctx,
+		&services.GetCloudUserRequest{
+			ID: cloudObj.CloudUserRefs[0].UUID,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	credentialObj, err := m.cluster.APIServer.GetCredential(
+		ctx,
+		&services.GetCredentialRequest{
+			ID: cloudUserObj.CloudUser.CredentialRefs[0].UUID,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	keypairObj, err := m.cluster.APIServer.GetKeypair(
+		ctx,
+		&services.GetKeypairRequest{
+			ID: credentialObj.Credential.KeypairRefs[0].UUID,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return keypairObj.Keypair, nil
+}
+
+func (m *multiCloudProvisioner) createClusterSecretFile() error {
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return errors.Wrap(err, "failed to to get public Cloud ID")
+	}
+
+	pubCloudProviders, err := m.getPublicCloudProviders()
+	if err != nil {
+		return errors.Wrap(err, "failed to to get public Cloud providers")
+	}
+
+	pubCloudKeyPair, err := m.getPublicCloudKeyPair()
+	if err != nil {
+		return errors.Wrap(err, "failed to to get public Cloud keypair")
+	}
+
+	sfc := cloud.SecretFileConfig{}
+	err = sfc.Update(pubCloudID, pubCloudProviders, pubCloudKeyPair)
+	if err != nil {
+		return errors.Wrap(err, "failed to to update secret file config")
+	}
+	content, err := template.Apply(
+		m.getSecretTemplate(),
+		pongo2.Context{
+			"secret": sfc,
+		},
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to to create secret file")
+	}
+
+	err = fileutil.WriteToFile(m.getClusterSecretFile(m.workDir), content, defaultFilePermRWOnly)
 	if err != nil {
 		return err
 	}
 
-	secretFile := cloud.GetSecretFile(pubCloudID)
-
-	return m.createClusterSecretFile(secretFile, workDir)
-}
-
-func (m *multiCloudProvisioner) createClusterSecretFile(secretFile string,
-	workDir string) error {
-
-	if _, err := os.Stat(secretFile); err == nil {
-		secretFileContent, err := ioutil.ReadFile(secretFile)
-		if err != nil {
-			return err
-		}
-		err = fileutil.WriteToFile(m.getClusterSecretFile(workDir), secretFileContent, defaultFilePermRWOnly)
-		if err != nil {
-			return err
-		}
-		authRegcontent, err := m.getAuthRegistryContent(m.clusterData.ClusterInfo)
-		if err != nil {
-			return err
-		}
-		return fileutil.AppendToFile(m.getClusterSecretFile(workDir), authRegcontent, defaultFilePermRWOnly)
+	authRegcontent, err := m.getAuthRegistryContent(m.clusterData.ClusterInfo)
+	if err != nil {
+		return err
 	}
-
-	return errors.New("secret file is not created for public cloud")
-
+	return fileutil.AppendToFile(m.getClusterSecretFile(m.workDir), authRegcontent, defaultFilePermRWOnly)
 }
 
 func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailCluster) ([]byte, error) {

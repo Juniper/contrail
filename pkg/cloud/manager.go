@@ -359,8 +359,11 @@ func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		err = s.updateFileConfig(d)
+		kp, err := s.getKeypair(d)
+		if err != nil {
+			return nil, err
+		}
+		err = s.sfc.Update(c.config.CloudID, d.getProviders(), kp)
 		if err != nil {
 			return nil, err
 		}
@@ -387,6 +390,18 @@ func (c *Cloud) delete() error {
 	}
 
 	if data.isCloudPublic() {
+		var secret *secret
+		secret, err = c.initializeSecret(data)
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+		err = secret.createSecretFile()
+		if err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
 		if tfStateOutputExists(c.config.CloudID) {
 			err = manageTerraform(c, deleteAction)
 			if err != nil {
@@ -526,21 +541,17 @@ func (c *Cloud) removeVulnerableFiles(data *Data) error {
 		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
 	}
 
-	filesToRemove := []string{
+	return osutil.ForceRemoveFiles([]string{
 		GetTerraformAWSPlanFile(c.config.CloudID),
 		GetTerraformAzurePlanFile(c.config.CloudID),
 		GetTerraformGCPPlanFile(c.config.CloudID),
+		GetSecretFile(c.config.CloudID),
 		kfd.GetAWSAccessPath(data.awsProviderUUID()),
 		kfd.GetAWSSecretPath(data.awsProviderUUID()),
 		kfd.GetAzureProfilePath(),
 		kfd.GetAzureAccessTokenPath(),
-		kfd.GetGoogleAccountPath()}
-
-	// Provisioning multicloud need secret file so cloud cannot delete this.
-	// Deploy package needs to remove this file.
-	if !data.info.IsMulticloudProvisioning {
-		filesToRemove = append(filesToRemove, GetSecretFile(c.config.CloudID))
-	}
-
-	return osutil.ForceRemoveFiles(filesToRemove, c.log)
+		kfd.GetGoogleAccountPath(),
+	},
+		c.log,
+	)
 }
