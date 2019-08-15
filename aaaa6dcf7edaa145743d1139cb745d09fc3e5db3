@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8c16b300_189c2a8b",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 541,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T23:44:29Z",
+      "side": 0,
+      "message": "Please remove is_multicloud_provisioning property from schemas/contrail/fabric/cloud.yml as well.",
+      "revId": "aaaa6dcf7edaa145743d1139cb745d09fc3e5db3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

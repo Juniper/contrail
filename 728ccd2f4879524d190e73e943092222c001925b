@@ -1,0 +1,107 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "27878b4d_9c062780",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1261,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T23:44:29Z",
+      "side": 1,
+      "message": "\"providers()\" or \"providersToUUIDs()\"",
+      "range": {
+        "startLine": 1261,
+        "startChar": 15,
+        "endLine": 1261,
+        "endChar": 27
+      },
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bd523705_2b91a15f",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1284,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T23:44:29Z",
+      "side": 1,
+      "message": "Please substitute those 3 with with 1 generalized function:\n\n    providerUUID(providerType string) string { ... }",
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b4e20acd_5e4bceba",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T23:44:29Z",
+      "side": 1,
+      "message": "c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusDeleteFailed}, defaultCloudResource)\n\nPlease note the statusDeleteFailed part. Please fix below as well.",
+      "range": {
+        "startLine": 396,
+        "startChar": 3,
+        "endLine": 397,
+        "endChar": 63
+      },
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ebc08368_c0d8f94a",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T23:44:29Z",
+      "side": 1,
+      "message": "Nitpick: I\u0027d rather have SecretFileConfig definition below secret definition.",
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fcf25e8f_7de05aee",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T23:44:29Z",
+      "side": 1,
+      "message": "dd",
+      "range": {
+        "startLine": 299,
+        "startChar": 1,
+        "endLine": 299,
+        "endChar": 20
+      },
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    }
+  ]
+}
