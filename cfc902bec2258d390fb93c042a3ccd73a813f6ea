@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b2262e67_579e764c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 307,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T00:21:15Z",
+      "side": 1,
+      "message": "Please log error and remove errcheck.\n\tdefer func() {\n\t\tif err :\u003d m.removeVulnerableFiles(); err !\u003d nil {\n\t\t\tm.Log.WithError(err).Error(\"Failed to remove vulnerable files\")\n\t\t}\n\t}()",
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d15b4ce8_85293df8",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-15T00:21:15Z",
+      "side": 1,
+      "message": "I don\u0027t see it could be 0.  errstrings is initialized with \"failed to base64-decode\" error.\nBelow as well.",
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
