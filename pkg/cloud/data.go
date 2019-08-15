@@ -1214,15 +1214,6 @@ func (d *Data) isCloudCreated() bool {
 	return true
 }
 
-func (d *Data) isCloudUpdateRequest() bool {
-
-	status := d.info.ProvisioningState
-	if d.cloud.config.Action == updateAction && (status == statusNoState) {
-		return true
-	}
-	return false
-}
-
 func (d *Data) isCloudPrivate() bool {
 
 	for _, provider := range d.info.CloudProviders {

@@ -100,8 +100,7 @@ func (t *topology) compareTopoFile() (bool, error) {
 	return bytes.Equal(oldTopoFile, newTopoFile), nil
 }
 
-func (t *topology) isUpdated(resource string) (bool, error) {
-
+func (t *topology) isUpToDate(resource string) (bool, error) {
 	status := map[string]interface{}{}
 	if _, err := os.Stat(GetTopoFile(t.cloud.config.CloudID)); err == nil {
 		ok, err := t.compareTopoFile()
