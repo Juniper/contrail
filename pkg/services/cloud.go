@@ -153,20 +153,26 @@ func decodeAndStoreCloudKey(keyType, keyPath, encodedSecret string, existingKeyP
 	if err != nil {
 		errstrings := []string{fmt.Sprintf("failed to base64-decode %s: %v", keyType, err)}
 		errstrings = append(errstrings, cleanupCloudKeys(existingKeyPaths)...)
-		return fmt.Errorf(strings.Join(errstrings, "\n"))
+		if len(errstrings) != 0 {
+			return fmt.Errorf(strings.Join(errstrings, "\n"))
+		}
 	}
 
 	err = os.MkdirAll(path.Dir(keyPath), 0755)
 	if err != nil {
 		errstrings := []string{fmt.Sprintf("failed to make dir for %s: %v", keyType, err)}
 		errstrings = append(errstrings, cleanupCloudKeys(existingKeyPaths)...)
-		return fmt.Errorf(strings.Join(errstrings, "\n"))
+		if len(errstrings) != 0 {
+			return fmt.Errorf(strings.Join(errstrings, "\n"))
+		}
 	}
 
 	if err = ioutil.WriteFile(keyPath, decodedSecret, 0644); err != nil {
 		errstrings := []string{fmt.Sprintf("failed to store %s: %v", keyType, err)}
 		errstrings = append(errstrings, cleanupCloudKeys(existingKeyPaths)...)
-		return fmt.Errorf(strings.Join(errstrings, "\n"))
+		if len(errstrings) != 0 {
+			return fmt.Errorf(strings.Join(errstrings, "\n"))
+		}
 	}
 
 	return nil
