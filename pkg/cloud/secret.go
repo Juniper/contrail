@@ -26,16 +26,17 @@ const (
 	sshPubKeyPerm = 0644
 )
 
-type secretFileConfig struct {
-	awsAccessKey string
-	awsSecretKey string
-	providerType string
-	keypair      *models.Keypair
+// SecretFileConfig holds the secret keys of the cloud
+type SecretFileConfig struct {
+	AWSAccessKey string
+	AWSSecretKey string
+	ProviderType string
+	Keypair      *models.Keypair
 }
 
 type secret struct {
 	cloud  *Cloud
-	sfc    *secretFileConfig
+	sfc    *SecretFileConfig
 	log    *logrus.Entry
 	action string
 	ctx    context.Context
@@ -94,34 +95,32 @@ func getKeyPairObject(ctx context.Context, uuid string,
 
 }
 
-func (s *secret) updateFileConfig(d *Data) error {
-	kp, err := s.getKeypair(d)
-	if err != nil {
-		return err
-	}
-	s.sfc.keypair = kp
+// Update fills the secret file config
+func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string, kp *models.Keypair) error {
+	sfc.Keypair = kp
 
 	kfd, err := services.NewKeyFileDefaults()
 	if err != nil {
 		return errors.Wrap(err, "could not get file defaults")
 	}
 
-	if d.hasProviderAWS() {
-		awsCreds, err := loadAWSCredentials(
-			d.cloud.config.CloudID,
-			kfd.GetAWSAccessPath(d.awsProviderUUID()),
-			kfd.GetAWSSecretPath(d.awsProviderUUID()),
-		)
-		if err != nil {
-			return err
+	for providerType, providerUUID := range providers {
+		if providerType == aws {
+			awsCreds, err := loadAWSCredentials(
+				cloudID,
+				kfd.GetAWSAccessPath(providerUUID),
+				kfd.GetAWSSecretPath(providerUUID),
+			)
+			if err != nil {
+				return err
+			}
+			sfc.AWSAccessKey = awsCreds.AccessKey
+			sfc.AWSSecretKey = awsCreds.SecretKey
 		}
-		s.sfc.awsAccessKey = awsCreds.AccessKey
-		s.sfc.awsSecretKey = awsCreds.SecretKey
+		if providerType == gcp {
+			sfc.ProviderType = providerType
+		}
 	}
-	if d.hasProviderGCP() {
-		s.sfc.providerType = gcp
-	}
-
 	return nil
 }
 
@@ -148,9 +147,9 @@ func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCred
 func newSecret(c *Cloud) (*secret, error) {
 	return &secret{
 		cloud:  c,
-		log:    logutil.NewFileLogger("topology", c.config.LogFile),
+		log:    logutil.NewFileLogger("secret", c.config.LogFile),
 		action: c.config.Action,
-		sfc:    &secretFileConfig{},
+		sfc:    &SecretFileConfig{},
 		ctx:    c.ctx,
 	}, nil
 }
