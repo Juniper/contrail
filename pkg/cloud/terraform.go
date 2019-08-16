@@ -55,7 +55,7 @@ func manageTerraform(c *Cloud, action string) error {
 		return err
 	}
 
-	if c.config.Action == deleteAction {
+	if action == deleteAction {
 		err = tf.destroy()
 		if err != nil {
 			return err
