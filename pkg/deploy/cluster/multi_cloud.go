@@ -13,6 +13,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/flosch/pongo2"
+	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -21,11 +26,8 @@ import (
 	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/flosch/pongo2"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -35,6 +37,7 @@ const (
 	defaultOpenstackConfigTemplate = "openstack_config.tmpl"
 	defaultAuthRegistryTemplate    = "authorized_registries.tmpl"
 
+	defaultMCDir              = "/usr/share/contrail/"
 	mcWorkDir                 = "multi-cloud"
 	mcAnsibleRepo             = "contrail-multi-cloud"
 	defaultSSHKeyRepo         = "keypair"
@@ -46,6 +49,10 @@ const (
 	defaultSecretFile         = "secret.yml"
 	defaultSecretTemplate     = "secret.tmpl"
 	defaultSSHAgentFile       = "ssh-agent-config.yml"
+
+	defaultHomeDir              = "/root"
+	defaultAzureProfileFile     = ".azure/azureProfile.json"
+	defaultAzureAccessTokenFile = ".azure/accessTokens.json"
 
 	defaultContrailUser       = "admin"
 	defaultContrailPassword   = "c0ntrail123"
@@ -583,7 +590,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 
 	case deleteCloud:
 
-		//best effort cleaning up
+		// best effort cleaning up
 		// nolint: errcheck
 		_ = m.playMCContrailCleanup(args)
 		// nolint: errcheck
@@ -615,7 +622,7 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 		return err
 	}
 
-	//tor file
+	// tor file
 	if err := m.createTORCommonFile(m.getTORCommonFile(workDir)); err != nil {
 		return err
 	}
@@ -641,7 +648,10 @@ func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 
 func (m *multiCloudProvisioner) filesToRemove() []string {
 	return []string{
+		m.getMCInventoryFile(filepath.Join(defaultMCDir, mcAnsibleRepo)),
 		m.getClusterSecretFile(m.workDir),
+		m.getAzureProfileFile(getHomeDir()),
+		m.getAzureAccessTokensFile(getHomeDir()),
 	}
 }
 
@@ -752,7 +762,7 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
 			return err
 		}
 	} else {
-		process, err := isSSHAgentProcessRunning(sshAgentPath) //nolint: govet
+		process, err := isSSHAgentProcessRunning(sshAgentPath) // nolint: govet
 		if err != nil {
 			_, err = m.runSSHAgent(workDir, sshAgentPath)
 			if err != nil {
@@ -1313,6 +1323,14 @@ func (m *multiCloudProvisioner) getClusterSecretFile(workDir string) string {
 	return filepath.Join(workDir, defaultSecretFile)
 }
 
+func (m *multiCloudProvisioner) getAzureProfileFile(workDir string) string {
+	return filepath.Join(workDir, defaultAzureProfileFile)
+}
+
+func (m *multiCloudProvisioner) getAzureAccessTokensFile(workDir string) string {
+	return filepath.Join(workDir, defaultAzureAccessTokenFile)
+}
+
 func (m *multiCloudProvisioner) getSSHAgentFile(workDir string) string {
 	return filepath.Join(workDir, defaultSSHAgentFile)
 }
@@ -1512,4 +1530,12 @@ func waitForCloudStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
 			cloudResp.Cloud.ProvisioningState, cloudUUID)
 	}, retry.WithLog(log.Logger),
 		retry.WithInterval(statusRetryInterval))
+}
+
+func getHomeDir() (dir string) {
+	dir, err := homedir.Dir()
+	if err != nil {
+		dir = defaultHomeDir
+	}
+	return dir
 }
