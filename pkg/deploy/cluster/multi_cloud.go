@@ -583,7 +583,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 
 	case deleteCloud:
 
-		//best effort cleaning up
+		// best effort cleaning up
 		// nolint: errcheck
 		_ = m.playMCContrailCleanup(args)
 		// nolint: errcheck
@@ -615,7 +615,7 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 		return err
 	}
 
-	//tor file
+	// tor file
 	if err := m.createTORCommonFile(m.getTORCommonFile(workDir)); err != nil {
 		return err
 	}
@@ -640,9 +640,17 @@ func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 }
 
 func (m *multiCloudProvisioner) filesToRemove() []string {
-	return []string{
+	paths := []string{
+		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
 		m.getClusterSecretFile(m.workDir),
 	}
+	kfd, err := services.NewKeyFileDefaults()
+	if err != nil {
+		m.Log.Errorf("Error occurred during creating KeyFileDefaults: %v", err)
+		return paths
+	}
+	paths = append(paths, kfd.GetAzureProfilePath(), kfd.GetAzureAccessTokenPath())
+	return paths
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
@@ -752,7 +760,7 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
 			return err
 		}
 	} else {
-		process, err := isSSHAgentProcessRunning(sshAgentPath) //nolint: govet
+		process, err := isSSHAgentProcessRunning(sshAgentPath) // nolint: govet
 		if err != nil {
 			_, err = m.runSSHAgent(workDir, sshAgentPath)
 			if err != nil {
