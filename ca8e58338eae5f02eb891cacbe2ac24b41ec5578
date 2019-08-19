@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "69a41574_2cb460d8",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1326,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-19T13:37:44Z",
+      "side": 1,
+      "message": "Why don\u0027t we use functions of services.KeyDefaults https://github.com/Juniper/contrail/blob/R1908/pkg/services/cloud.go#L56?",
+      "revId": "ca8e58338eae5f02eb891cacbe2ac24b41ec5578",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
