@@ -55,17 +55,17 @@ func manageTerraform(c *Cloud, action string) error {
 		return err
 	}
 
+	err = tf.createInputFile()
+	if err != nil {
+		return err
+	}
+
 	if action == deleteAction {
 		err = tf.destroy()
 		if err != nil {
 			return err
 		}
 		return nil
-	}
-
-	err = tf.createInputFile()
-	if err != nil {
-		return err
 	}
 
 	err = tf.initalize()
