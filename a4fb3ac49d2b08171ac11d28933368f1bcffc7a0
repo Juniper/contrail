@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "53b4e2b5_03042f14",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-19T15:13:15Z",
+      "side": 1,
+      "message": "https://github.com/Juniper/contrail/blob/master/REVIEW.md#organizing-imports",
+      "revId": "a4fb3ac49d2b08171ac11d28933368f1bcffc7a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00892aef_33c8ef5c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-19T15:13:15Z",
+      "side": 1,
+      "message": "dead code",
+      "revId": "a4fb3ac49d2b08171ac11d28933368f1bcffc7a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d7a7b621_b308a943",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1331,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-19T15:13:15Z",
+      "side": 1,
+      "message": "Dead code",
+      "revId": "a4fb3ac49d2b08171ac11d28933368f1bcffc7a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af032aa9_2ab1171c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1335,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-08-19T15:13:15Z",
+      "side": 1,
+      "message": "Dead code",
+      "revId": "a4fb3ac49d2b08171ac11d28933368f1bcffc7a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
