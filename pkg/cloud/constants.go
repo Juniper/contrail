@@ -1,5 +1,6 @@
 package cloud
 
+// Cloud related constants
 const (
 	defaultCloudResource     = "cloud"
 	defaultCloudResourcePath = "/" + defaultCloudResource
@@ -35,7 +36,7 @@ const (
 	deleteAction      = "delete"
 	deleteCloudAction = "DELETE_CLOUD"
 
-	aws    = "aws"
+	AWS    = "aws"
 	azure  = "azure"
 	gcp    = "gcp"
 	onPrem = "private"
