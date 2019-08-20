@@ -302,11 +302,17 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 			m.Log.WithError(err).Error("Failed to remove vulnerable files post delete")
 		}
 	}()
-	err := m.createClusterSecretFile()
+	err := m.createFiles(m.workDir)
 	if err != nil {
 		return err
 	}
+
 	err = m.manageSSHAgent(m.workDir, updateAction)
+	if err != nil {
+		return err
+	}
+
+	err = m.runGenerateInventory(m.workDir, updateCloud)
 	if err != nil {
 		return err
 	}
