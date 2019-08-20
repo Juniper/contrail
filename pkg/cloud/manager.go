@@ -541,17 +541,25 @@ func (c *Cloud) removeVulnerableFiles(data *Data) error {
 		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
 	}
 
-	return osutil.ForceRemoveFiles([]string{
+	f := []string{
 		GetTerraformAWSPlanFile(c.config.CloudID),
 		GetTerraformAzurePlanFile(c.config.CloudID),
 		GetTerraformGCPPlanFile(c.config.CloudID),
 		GetSecretFile(c.config.CloudID),
-		kfd.GetAWSAccessPath(data.awsProviderUUID()),
-		kfd.GetAWSSecretPath(data.awsProviderUUID()),
 		kfd.GetAzureProfilePath(),
 		kfd.GetAzureAccessTokenPath(),
 		kfd.GetGoogleAccountPath(),
-	},
-		c.log,
-	)
+	}
+
+	// Deploy worker to provision multicloud needs AWS secret files. Cloud worker must not delete them.
+	// Deploy worker needs to remove those files.
+	if !data.info.IsMulticloudProvisioning {
+		f = append(
+			f,
+			kfd.GetAWSAccessPath(data.awsProviderUUID()),
+			kfd.GetAWSSecretPath(data.awsProviderUUID()),
+		)
+	}
+
+	return osutil.ForceRemoveFiles(f, c.log)
 }

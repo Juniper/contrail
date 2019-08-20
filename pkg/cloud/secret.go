@@ -105,7 +105,7 @@ func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string,
 	}
 
 	for providerType, providerUUID := range providers {
-		if providerType == aws {
+		if providerType == AWS {
 			awsCreds, err := loadAWSCredentials(
 				cloudID,
 				kfd.GetAWSAccessPath(providerUUID),

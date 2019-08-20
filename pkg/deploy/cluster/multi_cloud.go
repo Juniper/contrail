@@ -117,6 +117,14 @@ func (m *multiCloudProvisioner) Deploy() error {
 		)
 	}
 
+	if err := m.unsetMulticloudProvisioningFlag(); err != nil {
+		return errors.Errorf(
+			"failed to unset cloud.is_multicloud_provisioning flag: %s; deploy error (if any): %s",
+			err,
+			deployErr,
+		)
+	}
+
 	return deployErr
 }
 
@@ -626,7 +634,7 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 	pubCloudID, _, err := m.getPubPvtCloudID()
 	if err != nil {
-		removeErr := osutil.ForceRemoveFiles(m.filesToRemove(), m.Log)
+		removeErr := osutil.ForceRemoveFiles(m.filesToRemove(pubCloudID), m.Log)
 		return errors.Errorf(
 			"cannot remove secret.yaml file: cannot get public cloud ID: %s "+
 				"- please remove secret.yaml from cloud directory; "+
@@ -636,21 +644,55 @@ func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 		)
 	}
 
-	return osutil.ForceRemoveFiles(append(m.filesToRemove(), cloud.GetSecretFile(pubCloudID)), m.Log)
+	return osutil.ForceRemoveFiles(append(m.filesToRemove(pubCloudID), cloud.GetSecretFile(pubCloudID)), m.Log)
 }
 
-func (m *multiCloudProvisioner) filesToRemove() []string {
-	paths := []string{
+func (m *multiCloudProvisioner) filesToRemove(cloudUUID string) []string {
+	f := []string{
 		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
 		m.getClusterSecretFile(m.workDir),
 	}
+
 	kfd, err := services.NewKeyFileDefaults()
 	if err != nil {
-		m.Log.Errorf("Error occurred during creating KeyFileDefaults: %v", err)
-		return paths
+		m.Log.WithError(err).Error("Error occurred during creating KeyFileDefaults")
+		return f
 	}
-	paths = append(paths, kfd.GetAzureProfilePath(), kfd.GetAzureAccessTokenPath())
-	return paths
+
+	u := m.clusterData.AWSProviderUUID(cloudUUID)
+
+	return append(
+		f,
+		kfd.GetAWSAccessPath(u),
+		kfd.GetAWSSecretPath(u),
+		kfd.GetAzureProfilePath(),
+		kfd.GetAzureAccessTokenPath(),
+	)
+}
+
+// unsetMulticloudProvisioningFlag unsets cloud.is_multicloud_provisioning flag.
+// See pkg/cloud.Cloud.removeVulnerableFiles() comment regarding cloud.is_multicloud_provisioning flag purpose.
+func (m *multiCloudProvisioner) unsetMulticloudProvisioningFlag() error {
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return errors.Wrap(err, "failed to to get public Cloud ID")
+	}
+
+	_, err = m.cluster.APIServer.UpdateCloud(
+		context.Background(),
+		&services.UpdateCloudRequest{
+			Cloud: &models.Cloud{
+				UUID:                     pubCloudID,
+				IsMulticloudProvisioning: false,
+			},
+		},
+	)
+	if err != nil {
+		return errors.Wrapf(err, "failed to update Cloud with UUID: %s", pubCloudID)
+	}
+
+	m.Log.WithField("public-cloud-id", pubCloudID).Debug("Successfully unset cloud.is_multicloud_provisioning flag")
+	return nil
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
@@ -1438,7 +1480,6 @@ func getSkipTagArgs(tagsToBeSkipped []string) []string {
 }
 
 func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
-
 	var publicCloudID, onPremCloudID string
 	for _, cloudRef := range m.clusterData.CloudInfo {
 		for _, p := range cloudRef.CloudProviders {
@@ -1456,11 +1497,9 @@ func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
 		return "", "", errors.New("public or OnPrem cloud is not added to cluster")
 	}
 	return publicCloudID, onPremCloudID, nil
-
 }
 
 func isSSHAgentProcessRunning(sshAgentPath string) (*os.Process, error) {
-
 	sshAgentConf, err := readSSHAgentConfig(sshAgentPath)
 	if err != nil {
 		return nil, err
