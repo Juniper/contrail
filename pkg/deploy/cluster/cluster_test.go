@@ -1237,7 +1237,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
+	assert.NoError(t, err, "failed to manage(create) deployer")
 	err = deployer.Deploy()
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
@@ -1254,7 +1254,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(create) cluster")
+	assert.NoError(t, err, "failed to update cluster")
 
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during create")
