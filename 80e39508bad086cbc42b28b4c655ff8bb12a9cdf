@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "d962c4d9_45946f54",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 560,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-20T23:34:58Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "17d5cb63_c7ce4a8a",
+      "revId": "80e39508bad086cbc42b28b4c655ff8bb12a9cdf",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5b7ac6fc_5f36dd5b",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 1
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "8d05e314_3624028d",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 662,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-20T23:34:58Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "98b5d12c_2bac989c",
+      "revId": "80e39508bad086cbc42b28b4c655ff8bb12a9cdf",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0c9a5253_9ef43cff",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 1
@@ -104,6 +140,24 @@
       "revId": "80e39508bad086cbc42b28b4c655ff8bb12a9cdf",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "55912240_027c4238",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 669,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-20T23:34:58Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d8f81f97_57911290",
+      "revId": "80e39508bad086cbc42b28b4c655ff8bb12a9cdf",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
