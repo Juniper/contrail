@@ -2,6 +2,103 @@
   "comments": [
     {
       "key": {
+        "uuid": "c55ccbe5_b4f48d3e",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 480,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:50:38Z",
+      "side": 1,
+      "message": "I think this function should not return error, but perform assertions instead.",
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c71955b8_8f26c982",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 481,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:50:38Z",
+      "side": 1,
+      "message": "kfd",
+      "range": {
+        "startLine": 481,
+        "startChar": 1,
+        "endLine": 481,
+        "endChar": 12
+      },
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec62f946_18908286",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:50:38Z",
+      "side": 1,
+      "message": "Is it getting cloud data intentionally before c.manage()? If yes, please add comment explaining that.",
+      "range": {
+        "startLine": 142,
+        "startChar": 1,
+        "endLine": 145,
+        "endChar": 2
+      },
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2aa8a410_fa8a9131",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:50:38Z",
+      "side": 1,
+      "message": "Move function below its usage.",
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c3d4cc8b_d1e188e1",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 1401,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:50:38Z",
+      "side": 1,
+      "message": "Perform assertions wiithin function and do not return error. Rename to checkSecretFilesDeleted()",
+      "revId": "cfc902bec2258d390fb93c042a3ccd73a813f6ea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b2262e67_579e764c",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 3
