@@ -72,6 +72,7 @@ const (
 	testTemplate                 = "./../../cloud/test_data/test_cmd.tmpl"
 
 	openstack = "openstack"
+	setupRoutesPlayRetry = 3
 
 	addCloud    = "ADD_CLOUD"
 	updateCloud = "UPDATE_CLOUD"
@@ -233,7 +234,15 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	if err = m.multiCloudCLIRunAll(); err != nil {
+	err = m.runGenerateInventory(m.workDir, addCloud)
+	if err != nil {
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
+	err = m.mcPlayBook()
+	if err != nil {
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
@@ -243,32 +252,6 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 	}
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
-}
-
-func (m *multiCloudProvisioner) multiCloudCLIRunAll() error {
-	topology := m.getClusterTopoFile(m.workDir)
-	secret := m.getClusterSecretFile(m.workDir)
-	// TODO: Remove this after refactoring test framework.
-	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
-		return m.mockCLI("deployer all run --topology " + topology + " --secret " + secret + " --retry 10")
-	}
-	return m.ansibleClient.PlayViaDeployer("all", "run", "--topology", topology, "--secret", secret, "--retry", "10")
-}
-
-func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
-	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
-		"command": cliCommand,
-	})
-	if err != nil {
-		return err
-	}
-
-	return fileutil.AppendToFile(
-		filepath.Join(m.contrailAnsibleDeployer.ansibleClient.GetWorkingDirectory(), "executed_ansible_playbook.yml"),
-		content,
-		// TODO: use const
-		0600,
-	)
 }
 
 func (m *multiCloudProvisioner) updateMCCluster() error {
@@ -296,8 +279,15 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	// TODO: Ensure playMCSetupControllerGWRoutes ordering isn't important
-	if err = m.multiCloudCLIRunAll(); err != nil {
+	err = m.runGenerateInventory(m.workDir, updateCloud)
+	if err != nil {
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
+	err = m.mcPlayBook()
+	if err != nil {
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
@@ -322,9 +312,8 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 		return err
 	}
 
-	if err = m.multiCloudCLICleanup(); err != nil {
-		return err
-	}
+	// nolint: errcheck
+	_ = m.mcPlayBook()
 
 	// TODO: Check this action.
 	if m.action != deleteAction {
@@ -338,15 +327,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
-}
-
-func (m *multiCloudProvisioner) multiCloudCLICleanup() error {
-	invPath := m.getMCInventoryFile(m.workDir)
-	// TODO: Remove this after refactoring test framework.
-	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
-		return m.mockCLI(fmt.Sprintf("deployer all clean --inventory %v --retry %v", invPath, 5))
-	}
-	return m.ansibleClient.PlayViaDeployer("all", "clean", "--inventory", invPath, "--retry", "5")
 }
 
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
@@ -455,6 +435,154 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string, cloudAction
 	}
 
 	m.Log.Infof("Successfully generated inventory file")
+
+	return nil
+}
+
+// nolint: gocyclo
+func (m *multiCloudProvisioner) mcPlayBook() error {
+	args := []string{"-i", m.getMCInventoryFile(m.workDir)}
+	if m.cluster.config.AnsibleSudoPass != "" {
+		sudoArg := "-e ansible_sudo_pass=" + m.cluster.config.AnsibleSudoPass
+		args = append(args, sudoArg)
+	}
+
+	switch m.clusterData.ClusterInfo.ProvisioningAction {
+	case addCloud:
+		if err := m.playDeployMCGW(args); err != nil {
+			return err
+		}
+		if err := m.playMCInstancesConfig(args); err != nil {
+			return err
+		}
+
+		torExists, err := m.checkIfTORExists()
+		if err != nil {
+			return err
+		}
+		if torExists {
+			if err := m.playTORConfig(args); err != nil {
+				return err
+			}
+		}
+
+		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
+			orchestratorKubernetes))
+		if err := m.playMCK8SProvision(k8sArgs); err != nil {
+			return err
+		}
+
+		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
+		skipRoles := []string{"vrouter"}
+		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+			return err
+		}
+
+		skipRoles = []string{"config_database", "config,control", "webui",
+			"analytics", "analytics_database", "k8s"}
+		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+			return err
+		}
+
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+			m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
+			if err := m.playMCSetupControllerGWRoutes(args); err != nil {
+				if i == setupRoutesPlayRetry-1 {
+					return err
+				}
+				continue
+			} else {
+				break
+			}
+		}
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+			m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
+			if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
+				if i == setupRoutesPlayRetry-1 {
+					return err
+				}
+				continue
+			} else {
+				break
+			}
+		}
+
+		return m.playMCFixComputeDNS(args)
+
+	case updateCloud:
+
+		if err := m.playDeployMCGW(args); err != nil {
+			return err
+		}
+
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+			m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
+			if err := m.playMCSetupControllerGWRoutes(args); err != nil {
+				if i == setupRoutesPlayRetry-1 {
+					return err
+				}
+				continue
+			} else {
+				break
+			}
+		}
+
+		if err := m.playMCInstancesConfig(args); err != nil {
+			return err
+		}
+
+		torExists, err := m.checkIfTORExists()
+		if err != nil {
+			return err
+		}
+		if torExists {
+			if err := m.playTORConfig(args); err != nil {
+				return err
+			}
+		}
+
+		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
+			orchestratorKubernetes))
+		if err := m.playMCK8SProvision(k8sArgs); err != nil {
+			return err
+		}
+
+		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
+		skipRoles := []string{"vrouter"}
+		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+			return err
+		}
+
+		skipRoles = []string{"config_database", "config,control", "webui",
+			"analytics", "analytics_database", "k8s"}
+		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+			return err
+		}
+
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+			m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
+			if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
+				if i == setupRoutesPlayRetry-1 {
+					return err
+				}
+				continue
+			} else {
+				break
+			}
+		}
+
+		return m.playMCFixComputeDNS(args)
+
+	case deleteCloud:
+
+		//best effort cleaning up
+		// nolint: errcheck
+		_ = m.playMCContrailCleanup(args)
+		// nolint: errcheck
+		_ = m.playMCGatewayCleanup(args)
+
+		return nil
+	}
 
 	return nil
 }
