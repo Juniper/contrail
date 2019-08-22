@@ -1166,7 +1166,7 @@ func (d *Data) isCloudPublic() bool {
 
 func (d *Data) hasProviderAWS() bool {
 	for _, prov := range d.providers {
-		if prov.info.Type == aws {
+		if prov.info.Type == AWS {
 			return true
 		}
 	}
@@ -1194,7 +1194,7 @@ func (d *Data) hasProviderGCP() bool {
 func (d *Data) getProviders() (providers map[string]string) {
 	providers = make(map[string]string)
 	if d.hasProviderAWS() {
-		providers[aws] = d.awsProviderUUID()
+		providers[AWS] = d.awsProviderUUID()
 	}
 	if d.hasProviderGCP() {
 		providers[gcp] = d.gcpProviderUUID()
@@ -1207,7 +1207,7 @@ func (d *Data) getProviders() (providers map[string]string) {
 
 func (d *Data) awsProviderUUID() string {
 	for _, p := range d.providers {
-		if p.info.Type == aws {
+		if p.info.Type == AWS {
 			return p.info.UUID
 		}
 	}

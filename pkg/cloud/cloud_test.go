@@ -84,7 +84,7 @@ func TestAWSCloud(t *testing.T) {
 		expectedAWSSecret,
 		expectedAWSCmdForCreateUpdate,
 		pongo2.Context{
-			"CLOUD_TYPE": aws,
+			"CLOUD_TYPE": AWS,
 		},
 	)
 }
@@ -155,7 +155,7 @@ func runCloudTest(
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
-	if context["CLOUD_TYPE"] == aws {
+	if context["CLOUD_TYPE"] == AWS {
 		createAWSAccessKey(t, awsAccessKeyFile)
 		createAWSSecretKey(t, awsSecretKeyFile)
 		defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
@@ -211,7 +211,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
-		if context["CLOUD_TYPE"] == aws {
+		if context["CLOUD_TYPE"] == AWS {
 			createAWSAccessKey(t, awsAccessKeyFile)
 			createAWSSecretKey(t, awsSecretKeyFile)
 		}
@@ -251,7 +251,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
-		if context["CLOUD_TYPE"] == aws {
+		if context["CLOUD_TYPE"] == AWS {
 			createAWSAccessKey(t, awsAccessKeyFile)
 			createAWSSecretKey(t, awsSecretKeyFile)
 		}
@@ -285,7 +285,7 @@ func runCloudTest(
 	cloud, err = NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct for delete action")
 
-	if context["CLOUD_TYPE"] == aws {
+	if context["CLOUD_TYPE"] == AWS {
 		createAWSAccessKey(t, awsAccessKeyFile)
 		createAWSSecretKey(t, awsSecretKeyFile)
 	}
@@ -306,7 +306,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
-		if context["CLOUD_TYPE"] == aws {
+		if context["CLOUD_TYPE"] == AWS {
 			createAWSAccessKey(t, awsAccessKeyFile)
 			createAWSSecretKey(t, awsSecretKeyFile)
 		}
@@ -327,7 +327,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
-		if context["CLOUD_TYPE"] == aws {
+		if context["CLOUD_TYPE"] == AWS {
 			createAWSAccessKey(t, awsAccessKeyFile)
 			createAWSSecretKey(t, awsSecretKeyFile)
 		}
