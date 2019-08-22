@@ -56,9 +56,12 @@ const (
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
-	expectedMCClusterTopology = "./test_data/expected_mc_cluster_topology.yml"
-	expectedContrailCommon    = "./test_data/expected_mc_contrail_common.yml"
-	expectedGatewayCommon     = "./test_data/expected_mc_gateway_common.yml"
+	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
+	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
+	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
+	expectedTORCommon           = "./test_data/expected_mc_tor_common.yml"
+	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
+	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
 )
 
 var server *integration.APIServer
@@ -202,6 +205,14 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, executedPlaybooksPath())
 }
 
+func compareGeneratedTORCommon(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedTORCommon())
+}
+
+func verifyCommandsExecuted(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, executedMCCommandPath())
+}
+
 func generatedInstancesPath() string {
 	return workRoot + "/" + clusterID + "/instances.yml"
 }
@@ -220,6 +231,10 @@ func generatedSecretPath() string {
 
 func generatedTopologyPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
+}
+
+func generatedTORCommon() string {
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTORCommonFile
 }
 
 func generatedContrailCommonPath() string {
@@ -1250,6 +1265,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
+		"TOR common file created during cluster create is not as expected")
+	assert.True(t, verifyCommandsExecuted(t, expectedMCCreateCmdExecuted),
+		"commands executed during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
 		"Expected list of playbooks are not executed during create")
 
@@ -1319,6 +1338,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster update is not as expected")
+	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
+		"TOR common file created during cluster create is not as expected")
+	assert.True(t, verifyCommandsExecuted(t, expectedMCUpdateCmdExecuted),
+		"commands executed during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
 		"Expected list of playbooks are not executed during update")
 
