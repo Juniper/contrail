@@ -11,7 +11,7 @@ Agent service does the following:
 
 Cluster service does the following:
 
-- Creates the input file for the provisioning tool (ansible/helm).
+- Creates the input file for the provisioning tool (ansible-multicloud/helm).
 - Triggers the ansible playbook or helm chart
 - Updates the provisioning status/provisioning logs in the contrail_cluster object.
 
