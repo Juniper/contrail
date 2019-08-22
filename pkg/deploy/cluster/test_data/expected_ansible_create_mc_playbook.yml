@@ -1,1 +1,20 @@
-deployer all run --topology /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/topology.yml --secret /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/secret.yml --retry 10
+ansible-multicloud/gateway/playbooks/deploy_and_run_all.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml
+ansible-multicloud/contrail/playbooks/configure.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml --limit all:!gateways
+ansible-multicloud/contrail/playbooks/configure.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml --limit all:!compute_nodes
+ansible-multicloud/tor/playbooks/deploy_and_run_all.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml
+ansible-multicloud/contrail/playbooks/orchestrator.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml -e orchestrator=kubernetes
+ansible-multicloud/contrail/playbooks/deploy.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml --limit all:!tors --skip-tags vrouter
+ansible-multicloud/contrail/playbooks/deploy.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml --limit all:!tors --skip-tags config_database,config,control,webui,analytics,analytics_database,k8s
+ansible-multicloud/contrail/playbooks/add_tunnel_routes.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml --skip-tags remotegw
+ansible-multicloud/contrail/playbooks/add_tunnel_routes.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml --skip-tags controllergw
+ansible-multicloud/contrail/playbooks/fix_compute_dns.yml:
+  args: -i /usr/share/contrail/contrail-multi-cloud/inventories/inventory.yml
