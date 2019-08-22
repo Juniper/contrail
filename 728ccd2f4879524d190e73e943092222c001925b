@@ -102,6 +102,46 @@
       "revId": "728ccd2f4879524d190e73e943092222c001925b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "78742aa9_af384373",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 966,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:05:54Z",
+      "side": 1,
+      "message": "Move added functions below their usages.",
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1403b19f_b956b5f9",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1010,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-08-22T18:05:54Z",
+      "side": 1,
+      "message": "This duplicates lines 971-980. DRY it.",
+      "range": {
+        "startLine": 1000,
+        "startChar": 1,
+        "endLine": 1010,
+        "endChar": 0
+      },
+      "revId": "728ccd2f4879524d190e73e943092222c001925b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
