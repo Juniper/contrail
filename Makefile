@@ -143,7 +143,7 @@ docker_prepare: ## Prepare common data to generate Docker files (use target `doc
 	cp -r sample $(BUILD_DIR)/docker/contrail_go/etc
 	$(foreach db_file, $(DB_FILES), cp tools/$(db_file) $(BUILD_DIR)/docker/contrail_go/etc;)
 	cp -r public $(BUILD_DIR)/docker/contrail_go/public
-	$(foreach src, $(SRC_DIRS), cp -r ../contrail/$(src) $(BUILD_DIR)/docker/contrail_go/src/contrail;)
+	$(foreach src, $(SRC_DIRS), cp -a ../contrail/$(src) $(BUILD_DIR)/docker/contrail_go/src/contrail;)
 	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/deploy/cluster/templates/* $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cloud/configs/onprem_cloud_topology.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cloud/configs/public_cloud_topology.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
@@ -160,14 +160,14 @@ docker: apidoc docker_prepare docker_build ## Build contrail-go Docker image
 
 docker_build:
 	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)
-	sed -i \
-	   	-e '/FROM/,$$!d' \
-	   	-e 's/FROM $${BASE_IMAGE_REGISTRY}\/$${BASE_IMAGE_REPOSITORY}:$${BASE_IMAGE_TAG}/FROM ${BASE_IMAGE_REGISTRY}\/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}/' ${DOCKER_FILE}
+	sed -e '/FROM/,$$!d' \
+	   	-e 's/FROM $${BASE_IMAGE_REGISTRY}\/$${BASE_IMAGE_REPOSITORY}:$${BASE_IMAGE_TAG}/FROM ${BASE_IMAGE_REGISTRY}\/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}/' ${DOCKER_FILE} > ${DOCKER_FILE}.patched
 	docker build \
 		--build-arg BASE_IMAGE_REGISTRY=$(BASE_IMAGE_REGISTRY) \
 		--build-arg BASE_IMAGE_REPOSITORY=$(BASE_IMAGE_REPOSITORY) \
 		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
 		--build-arg GOPATH=$(GOPATH) \
+		--file ${DOCKER_FILE}.patched \
 		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
