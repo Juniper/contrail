@@ -90,6 +90,7 @@ schema:
       - "ADD_COMPUTE"
       - "DELETE_COMPUTE"
       - "ADD_CSN"
+      - "ADD_CVFM"
       - "UPGRADE"
       - "ADD_CLOUD"
       - "UPDATE_CLOUD"
