@@ -363,7 +363,7 @@ func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = s.sfc.Update(c.config.CloudID, d.getProviders(), kp)
+		err = s.sfc.Update(c.config.CloudID, d.getProviderNames(), kp)
 		if err != nil {
 			return nil, err
 		}
@@ -554,8 +554,8 @@ func (c *Cloud) removeVulnerableFiles(data *Data) error {
 	if !data.info.IsMulticloudProvisioning {
 		f = append(
 			f,
-			kfd.GetAWSAccessPath(data.awsProviderUUID()),
-			kfd.GetAWSSecretPath(data.awsProviderUUID()),
+			kfd.GetAWSAccessPath(),
+			kfd.GetAWSSecretPath(),
 			kfd.GetGoogleAccountPath(),
 		)
 	}

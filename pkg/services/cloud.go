@@ -70,13 +70,13 @@ func NewKeyFileDefaults() (defaults *KeyFileDefaults, err error) {
 }
 
 // GetAWSSecretPath determines the aws secret key path
-func (defaults *KeyFileDefaults) GetAWSSecretPath(cloudProviderUUID string) string {
-	return path.Join(defaults.KeyHomeDir, cloudProviderUUID, defaults.SecretKeyFileName)
+func (defaults *KeyFileDefaults) GetAWSSecretPath() string {
+	return path.Join(defaults.KeyHomeDir, defaults.SecretKeyFileName)
 }
 
 // GetAWSAccessPath determines the aws access key path
-func (defaults *KeyFileDefaults) GetAWSAccessPath(cloudProviderUUID string) string {
-	return path.Join(defaults.KeyHomeDir, cloudProviderUUID, defaults.AccessKeyFileName)
+func (defaults *KeyFileDefaults) GetAWSAccessPath() string {
+	return path.Join(defaults.KeyHomeDir, defaults.AccessKeyFileName)
 }
 
 // GetAzureAccessTokenPath determines the azure access token path
@@ -111,20 +111,16 @@ func (service *ContrailService) RESTUploadCloudKeys(c echo.Context) error {
 
 // UploadCloudKeys stores specified cloud secrets
 func (service *ContrailService) UploadCloudKeys(request *UploadCloudKeysBody, keyDefaults *KeyFileDefaults) error {
-	if request.CloudProviderUUID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "cloud provider is empty")
-	}
-
 	keyPaths := []string{}
 	// TODO: use anonymous struct instead of map
 	for keyType, secret := range map[string]map[string]string{
 		"aws-secret-key": {
 			"encoded": request.AWSSecretKey,
-			"path":    keyDefaults.GetAWSSecretPath(request.CloudProviderUUID),
+			"path":    keyDefaults.GetAWSSecretPath(),
 		},
 		"aws-access-key": {
 			"encoded": request.AWSAccessKey,
-			"path":    keyDefaults.GetAWSAccessPath(request.CloudProviderUUID),
+			"path":    keyDefaults.GetAWSAccessPath(),
 		},
 		"azure-access-token": {
 			"encoded": request.AzureAccessTokens,
