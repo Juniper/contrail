@@ -95,7 +95,7 @@ func getKeyPairObject(ctx context.Context, uuid string,
 }
 
 // Update fills the secret file config
-func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string, kp *models.Keypair) error {
+func (sfc *SecretFileConfig) Update(cloudID string, providers []string, kp *models.Keypair) error {
 	sfc.Keypair = kp
 
 	kfd, err := services.NewKeyFileDefaults()
@@ -103,12 +103,12 @@ func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string,
 		return errors.Wrap(err, "could not get file defaults")
 	}
 
-	for providerType, providerUUID := range providers {
-		if providerType == AWS {
+	for _, provider := range(providers) {
+		if provider == AWS {
 			awsCreds, err := loadAWSCredentials(
 				cloudID,
-				kfd.GetAWSAccessPath(providerUUID),
-				kfd.GetAWSSecretPath(providerUUID),
+				kfd.GetAWSAccessPath(),
+				kfd.GetAWSSecretPath(),
 			)
 			if err != nil {
 				return err
@@ -116,10 +116,11 @@ func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string,
 			sfc.AWSAccessKey = awsCreds.AccessKey
 			sfc.AWSSecretKey = awsCreds.SecretKey
 		}
-		if providerType == gcp {
-			sfc.ProviderType = providerType
+		if provider == gcp {
+			sfc.ProviderType = gcp
 		}
 	}
+
 	return nil
 }
 

@@ -1191,47 +1191,6 @@ func (d *Data) hasProviderGCP() bool {
 	return false
 }
 
-func (d *Data) getProviders() (providers map[string]string) {
-	providers = make(map[string]string)
-	if d.hasProviderAWS() {
-		providers[AWS] = d.awsProviderUUID()
-	}
-	if d.hasProviderGCP() {
-		providers[gcp] = d.gcpProviderUUID()
-	}
-	if d.hasProviderAzure() {
-		providers[azure] = d.azureProviderUUID()
-	}
-	return providers
-}
-
-func (d *Data) awsProviderUUID() string {
-	for _, p := range d.providers {
-		if p.info.Type == AWS {
-			return p.info.UUID
-		}
-	}
-	return ""
-}
-
-func (d *Data) gcpProviderUUID() string {
-	for _, p := range d.providers {
-		if p.info.Type == gcp {
-			return p.info.UUID
-		}
-	}
-	return ""
-}
-
-func (d *Data) azureProviderUUID() string {
-	for _, p := range d.providers {
-		if p.info.Type == azure {
-			return p.info.UUID
-		}
-	}
-	return ""
-}
-
 func (d *Data) getGatewayNodes() []*instanceData {
 	gwNodes := []*instanceData{}
 	for _, inst := range d.instances {
