@@ -168,16 +168,18 @@ test_data:
     cloud_refs:
       - uuid: pvt_cloud_uuid
       - uuid: public_cloud_uuid
-    {% if CONTROL_NODES %}
     contrail_configuration:
       key_value_pair:
+        - key: CONTRAIL_CONTAINER_TAG
+          value: "master.100"
+        {% if CONTROL_NODES %}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
         {% if CONTROLLER_NODES %}
         - key: CONTROLLER_NODES
           value: {{CONTROLLER_NODES}}
         {%endif%}
-    {%endif%}
+        {%endif%}
   contrail_config_nodes: &contrail_config_nodes
     uuid: contrail_config_nodes_uuid
     parent_type: contrail-cluster
