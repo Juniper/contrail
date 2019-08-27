@@ -49,8 +49,8 @@ const (
 	cloudID                          = "cloud_uuid"
 	defaultAdminUser                 = "admin"
 	defaultAdminPassword             = "contrail123"
-	awsAccessKeyFile                 = "/var/tmp/contrail/cloud_provider_uuid/aws_access.key"
-	awsSecretKeyFile                 = "/var/tmp/contrail/cloud_provider_uuid/aws_secret.key"
+	awsAccessKeyFile                 = "/var/tmp/contrail/aws_access.key"
+	awsSecretKeyFile                 = "/var/tmp/contrail/aws_secret.key"
 )
 
 func TestOnPremCloud(t *testing.T) {

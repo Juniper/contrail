@@ -1704,20 +1704,6 @@ func (d *Data) getCloudRefs() ([]*models.Cloud, error) {
 	return nil, nil
 }
 
-// AWSProviderUUID returns AWS provider UUID of given cloud.
-func (d *Data) AWSProviderUUID(cloudUUID string) string {
-	for _, c := range d.CloudInfo {
-		if c.UUID == cloudUUID {
-			for _, p := range c.CloudProviders {
-				if p.Type == cloud.AWS {
-					return p.UUID
-				}
-			}
-		}
-	}
-	return ""
-}
-
 func (x *XflowData) updateClusterDetails(ctx context.Context, uuid string, r *ResourceManager) error {
 	resp, err := r.APIServer.GetAppformixFlows(ctx, &services.GetAppformixFlowsRequest{ID: uuid})
 
