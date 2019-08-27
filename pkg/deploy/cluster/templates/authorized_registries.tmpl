@@ -3,4 +3,7 @@ authorized_registries:
   - registry: {{ cluster.ContainerRegistry }}
     username: {{ cluster.ContainerRegistryUsername }}
     password: {{ cluster.ContainerRegistryPassword }}
+    {%if contrail_container_tag%}
+    contrail_container_tag: {{ contrail_container_tag }}
+    {%endif%}
 {%endif%}
