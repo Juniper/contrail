@@ -1,11 +1,13 @@
 package cloud
 
+// Cloud related constants
 const (
 	defaultCloudResource     = "cloud"
 	defaultCloudResourcePath = "/" + defaultCloudResource
 
 	defaultWorkRoot                = "/var/tmp/cloud"
 	defaultTemplateRoot            = "./pkg/cloud/configs"
+	defaultGenTopoScript           = "transform/generate_topology.py"
 	defaultGenInventoryScript      = "transform/generate_inventories.py"
 	defaultAWSPlanTF               = "aws.tf.json"
 	defaultAzurePlanTF             = "azure.tf.json"
@@ -18,7 +20,6 @@ const (
 	defaultSecretTemplate          = "secret.tmpl"
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
-	defaultGCPCredentialFile       = "/var/tmp/contrail/google-account.json"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
@@ -32,9 +33,11 @@ const (
 
 	createAction      = "create"
 	updateAction      = "update"
+	deleteAction      = "delete"
 	deleteCloudAction = "DELETE_CLOUD"
 
-	aws    = "aws"
+	// AWS cloud kind
+	AWS    = "aws"
 	azure  = "azure"
 	gcp    = "gcp"
 	onPrem = "private"

@@ -49,11 +49,10 @@ func (s *secret) getSecretTemplate() string {
 func (s *secret) createSecretFile() error {
 	sf := GetSecretFile(s.cloud.config.CloudID)
 
-	templateContext := pongo2.Context{
-		"secret":            s.sfc,
-		"gcpCredentialFile": defaultGCPCredentialFile,
+	context := pongo2.Context{
+		"secret": s.sfc,
 	}
-	content, err := template.Apply(s.getSecretTemplate(), templateContext)
+	content, err := template.Apply(s.getSecretTemplate(), context)
 	if err != nil {
 		return err
 	}
@@ -105,7 +104,7 @@ func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string,
 	}
 
 	for providerType, providerUUID := range providers {
-		if providerType == aws {
+		if providerType == AWS {
 			awsCreds, err := loadAWSCredentials(
 				cloudID,
 				kfd.GetAWSAccessPath(providerUUID),
@@ -211,7 +210,7 @@ func getCloudSSHKeyPath(cloudID string, name string) string {
 	return filepath.Join(getCloudSSHKeyDir(cloudID), name)
 }
 
-// nolint: gocyclo
+//nolint: gocyclo
 func (s *secret) getCredKeyPairIfExists(d *Data,
 	cloudID string) (*models.Keypair, error) {
 
