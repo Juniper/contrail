@@ -95,7 +95,7 @@ func getKeyPairObject(ctx context.Context, uuid string,
 }
 
 // Update fills the secret file config
-func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string, kp *models.Keypair) error {
+func (sfc *SecretFileConfig) Update(cloudID string, providers []string, kp *models.Keypair) error {
 	sfc.Keypair = kp
 
 	kfd, err := services.NewKeyFileDefaults()
@@ -103,24 +103,40 @@ func (sfc *SecretFileConfig) Update(cloudID string, providers map[string]string,
 		return errors.Wrap(err, "could not get file defaults")
 	}
 
-	for providerType, providerUUID := range providers {
-		if providerType == AWS {
-			awsCreds, err := loadAWSCredentials(
-				cloudID,
-				kfd.GetAWSAccessPath(providerUUID),
-				kfd.GetAWSSecretPath(providerUUID),
-			)
-			if err != nil {
-				return err
-			}
-			sfc.AWSAccessKey = awsCreds.AccessKey
-			sfc.AWSSecretKey = awsCreds.SecretKey
+	awsCredentialsPresent := awsCredentialsExist(kfd)
+	if awsCredentialsPresent {
+		awsCreds, err := loadAWSCredentials(
+			cloudID,
+			kfd.GetAWSAccessPath(),
+			kfd.GetAWSSecretPath(),
+		)
+		if err != nil {
+			return err
 		}
-		if providerType == gcp {
-			sfc.ProviderType = providerType
+		sfc.AWSAccessKey = awsCreds.AccessKey
+		sfc.AWSSecretKey = awsCreds.SecretKey
+	}
+
+	for _, provider := range providers {
+		if provider == AWS && !awsCredentialsPresent {
+			return errors.New("AWS Credentials are not present. Please provide them")
+		}
+		if provider == gcp {
+			sfc.ProviderType = gcp
 		}
 	}
+
 	return nil
+}
+
+func awsCredentialsExist(kfd *services.KeyFileDefaults) bool {
+	if _, err := os.Stat(kfd.GetAWSAccessPath()); err != nil {
+		return false
+	}
+	if _, err := os.Stat(kfd.GetAWSSecretPath()); err != nil {
+		return false
+	}
+	return true
 }
 
 func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCredential, error) {

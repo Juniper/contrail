@@ -86,11 +86,11 @@ func TestUploadCloudKeys(t *testing.T) {
 			require.NoError(t, err)
 
 			for keyPath, content := range map[string]string{
-				defaults.GetAWSSecretPath(tt.cloudProviderUUID): tt.awsSecretKey,
-				defaults.GetAWSAccessPath(tt.cloudProviderUUID): tt.awsAccessKey,
-				defaults.GetAzureAccessTokenPath():              tt.azureAccessToken,
-				defaults.GetAzureProfilePath():                  tt.azureProfile,
-				defaults.GetGoogleAccountPath():                 tt.googleAccount,
+				defaults.GetAWSSecretPath():        tt.awsSecretKey,
+				defaults.GetAWSAccessPath():        tt.awsAccessKey,
+				defaults.GetAzureAccessTokenPath(): tt.azureAccessToken,
+				defaults.GetAzureProfilePath():     tt.azureProfile,
+				defaults.GetGoogleAccountPath():    tt.googleAccount,
 			} {
 				b, err := ioutil.ReadFile(keyPath)
 				assert.NoError(t, err)
