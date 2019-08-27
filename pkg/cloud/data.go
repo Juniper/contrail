@@ -201,6 +201,14 @@ func (i *torData) hasInfo() bool {
 	return i.info != nil
 }
 
+func (d *Data) getProviderNames() []string {
+	names := []string{}
+	for _, provider := range d.providers {
+		names = append(names, provider.info.Type)
+	}
+	return names
+}
+
 // nolint: gocyclo
 func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool) (*instanceData, error) {
 	inst := &instanceData{
@@ -1162,74 +1170,6 @@ func (d *Data) isCloudPublic() bool {
 		return true
 	}
 	return false
-}
-
-func (d *Data) hasProviderAWS() bool {
-	for _, prov := range d.providers {
-		if prov.info.Type == AWS {
-			return true
-		}
-	}
-	return false
-}
-
-func (d *Data) hasProviderAzure() bool {
-	for _, prov := range d.providers {
-		if prov.info.Type == azure {
-			return true
-		}
-	}
-	return false
-}
-
-func (d *Data) hasProviderGCP() bool {
-	for _, prov := range d.providers {
-		if prov.info.Type == gcp {
-			return true
-		}
-	}
-	return false
-}
-
-func (d *Data) getProviders() (providers map[string]string) {
-	providers = make(map[string]string)
-	if d.hasProviderAWS() {
-		providers[AWS] = d.awsProviderUUID()
-	}
-	if d.hasProviderGCP() {
-		providers[gcp] = d.gcpProviderUUID()
-	}
-	if d.hasProviderAzure() {
-		providers[azure] = d.azureProviderUUID()
-	}
-	return providers
-}
-
-func (d *Data) awsProviderUUID() string {
-	for _, p := range d.providers {
-		if p.info.Type == AWS {
-			return p.info.UUID
-		}
-	}
-	return ""
-}
-
-func (d *Data) gcpProviderUUID() string {
-	for _, p := range d.providers {
-		if p.info.Type == gcp {
-			return p.info.UUID
-		}
-	}
-	return ""
-}
-
-func (d *Data) azureProviderUUID() string {
-	for _, p := range d.providers {
-		if p.info.Type == azure {
-			return p.info.UUID
-		}
-	}
-	return ""
 }
 
 func (d *Data) getGatewayNodes() []*instanceData {
