@@ -35,3 +35,6 @@ unittests.log
 *.log
 
 .idea
+
+# Files patched during the build
+.patched
