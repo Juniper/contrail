@@ -11,10 +11,13 @@ import (
 )
 
 // ExecCmdAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete.
-func ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string) error {
+func ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
 	cmdline := exec.Command(cmd, args...)
 	if dir != "" {
 		cmdline.Dir = dir
+	}
+	if len(envVars) != 0 {
+		cmdline.Env = append(os.Environ(), envVars...)
 	}
 
 	return ExecAndWait(r, cmdline)

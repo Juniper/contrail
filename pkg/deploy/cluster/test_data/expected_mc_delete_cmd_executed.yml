@@ -1,0 +1,1 @@
+deployer all clean --inventory /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml --retry 5

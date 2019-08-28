@@ -242,15 +242,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, addCloud)
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		return err
-	}
-
-	err = m.mcPlayBook()
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err = m.multiCloudCLIProvisioning(); err != nil {
 		return err
 	}
 
@@ -287,21 +279,45 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, updateCloud)
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		return err
-	}
-
-	err = m.mcPlayBook()
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	// TODO: Ensure playMCSetupControllerGWRoutes ordering isn't important
+	if err = m.multiCloudCLIProvisioning(); err != nil {
 		return err
 	}
 
 	status[statusField] = statusUpdated
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
+}
+
+func (m *multiCloudProvisioner) multiCloudCLIProvisioning() error {
+	topology := m.getClusterTopoFile(m.workDir)
+	secret := m.getClusterSecretFile(m.workDir)
+	stateTF := m.getTFStateFile()
+	// TODO: Remove this after refactoring test framework.
+	cmd := "deployer"
+	args := []string{"all", "provision", "--topology", topology, "--secret", secret, "--tf_state", stateTF}
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
+	}
+	sshAuthSock := fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK"))
+	sshAgentPid := fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID"))
+	vars := []string{sshAuthSock, sshAgentPid}
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
+}
+
+func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
+	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
+		"command": cliCommand,
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.contrailAnsibleDeployer.ansibleClient.GetWorkingDirectory(), "executed_cmd.yml"),
+		content,
+		defaultFilePermRWOnly,
+	)
 }
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
@@ -320,13 +336,9 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, updateCloud)
-	if err != nil {
+	if err = m.multiCloudCLICleanup(); err != nil {
 		return err
 	}
-
-	// nolint: errcheck
-	_ = m.mcPlayBook()
 
 	if m.action != deleteAction {
 		err = m.removeCloudRefFromCluster()
@@ -339,6 +351,18 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
+}
+
+func (m *multiCloudProvisioner) multiCloudCLICleanup() error {
+	invPath := m.getMCInventoryFile(m.workDir)
+	// TODO: Remove this after refactoring test framework.
+	cmd := "deployer"
+	args := []string{"all", "clean", "--inventory", invPath, "--retry", "5"}
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
+	}
+	// TODO: Change inventory path after specifying work dir during provisioning.
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir())
 }
 
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
@@ -1010,7 +1034,7 @@ func (m *multiCloudProvisioner) getSecretTemplate() string {
 }
 
 func (m *multiCloudProvisioner) providers() ([]string, error) {
-	pubCloudID, _, err := m.getPubPvtCloudID()
+	pubCloudID, err := m.getPubCloudID()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to to get public Cloud ID")
 	}
@@ -1032,7 +1056,7 @@ func providerNames(providers []*models.CloudProvider) []string {
 }
 
 func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error) {
-	pubCloudID, _, err := m.getPubPvtCloudID()
+	pubCloudID, err := m.getPubCloudID()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to to get public Cloud ID")
 	}
@@ -1077,7 +1101,7 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 }
 
 func (m *multiCloudProvisioner) createClusterSecretFile() error {
-	pubCloudID, _, err := m.getPubPvtCloudID()
+	pubCloudID, err := m.getPubCloudID()
 	if err != nil {
 		return errors.Wrap(err, "failed to to get public Cloud ID")
 	}
@@ -1226,7 +1250,7 @@ func (m *multiCloudProvisioner) appendOpenStackConfigToInventory(destination str
 
 func (m *multiCloudProvisioner) checkIfTORExists() (bool, error) {
 
-	_, pvtCloudID, err := m.getPubPvtCloudID()
+	pvtCloudID, err := m.getPvtCloudID()
 	if err != nil {
 		return false, err
 	}
@@ -1466,25 +1490,38 @@ func getSkipTagArgs(tagsToBeSkipped []string) []string {
 }
 
 func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
+	pubCloudID, err := m.getPubCloudID()
+	if err != nil {
+		return "", "", err
+	}
+	pvtCloudID, err := m.getPvtCloudID()
+	if err != nil {
+		return "", "", err
+	}
 
-	var publicCloudID, onPremCloudID string
+	return pubCloudID, pvtCloudID, nil
+}
+
+func (m *multiCloudProvisioner) getPvtCloudID() (string, error) {
 	for _, cloudRef := range m.clusterData.CloudInfo {
 		for _, p := range cloudRef.CloudProviders {
 			if p.Type == onPrem {
-				onPremCloudID = cloudRef.UUID
-				continue
-			}
-			if p.Type == aws || p.Type == azure || p.Type == gcp {
-				publicCloudID = cloudRef.UUID
-				continue
+				return cloudRef.UUID, nil
 			}
 		}
 	}
-	if publicCloudID == "" || onPremCloudID == "" {
-		return "", "", errors.New("public or OnPrem cloud is not added to cluster")
-	}
-	return publicCloudID, onPremCloudID, nil
+	return "", errors.New("no private cloud in Cluster")
+}
 
+func (m *multiCloudProvisioner) getPubCloudID() (string, error) {
+	for _, cloudRef := range m.clusterData.CloudInfo {
+		for _, p := range cloudRef.CloudProviders {
+			if p.Type == aws || p.Type == azure || p.Type == gcp {
+				return cloudRef.UUID, nil
+			}
+		}
+	}
+	return "", errors.New("no public cloud in Cluster")
 }
 
 func isSSHAgentProcessRunning(sshAgentPath string) (*os.Process, error) {
