@@ -185,7 +185,7 @@ func (a *contrailAnsibleDeployer) fetchAnsibleDeployer() error {
 		return err
 	}
 	args = append([]string{"fetch"}, args...)
-	err = osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir)
+	err = osutil.ExecCmdAndWait(a.Reporter, "git", args, []string{}, repoDir)
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,7 @@ func (a *contrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
-	err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir)
+	err := osutil.ExecCmdAndWait(a.Reporter, "git", args, []string{}, repoDir)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func (a *contrailAnsibleDeployer) resetAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
-	err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir)
+	err := osutil.ExecCmdAndWait(a.Reporter, "git", args, []string{}, repoDir)
 	if err != nil {
 		return err
 	}
