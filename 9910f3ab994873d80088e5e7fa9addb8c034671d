@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7424b8fe_d840d61c",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-08-28T10:32:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f7867dbd_c273a294",
+      "revId": "9910f3ab994873d80088e5e7fa9addb8c034671d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a8811bd_66a81bc9",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
