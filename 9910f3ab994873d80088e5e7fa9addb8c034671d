@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f7867dbd_c273a294",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-08-28T09:30:02Z",
+      "side": 1,
+      "message": "Use golang naming convention:\n\n func (d *Data) providerNames() []string{",
+      "revId": "9910f3ab994873d80088e5e7fa9addb8c034671d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a8811bd_66a81bc9",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 1012,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-08-28T09:30:02Z",
+      "side": 1,
+      "message": "Use name like `providers` or `cloudProviders`",
+      "range": {
+        "startLine": 1012,
+        "startChar": 32,
+        "endLine": 1012,
+        "endChar": 44
+      },
+      "revId": "9910f3ab994873d80088e5e7fa9addb8c034671d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
