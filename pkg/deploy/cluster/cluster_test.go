@@ -59,9 +59,9 @@ const (
 	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
 	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
 	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
-	expectedTORCommon           = "./test_data/expected_mc_tor_common.yml"
 	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
 	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
+	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
 )
 
 var server *integration.APIServer
@@ -205,10 +205,6 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, executedPlaybooksPath())
 }
 
-func compareGeneratedTORCommon(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedTORCommon())
-}
-
 func verifyCommandsExecuted(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, executedMCCommandPath())
 }
@@ -233,10 +229,6 @@ func generatedTopologyPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
 }
 
-func generatedTORCommon() string {
-	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTORCommonFile
-}
-
 func generatedContrailCommonPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
 }
@@ -250,7 +242,7 @@ func executedPlaybooksPath() string {
 }
 
 func executedMCCommandPath() string {
-	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
+	return workRoot + "/" + clusterID + "/executed_cmd.yml"
 }
 
 func createDummyCloudSecretFile(t *testing.T) {
@@ -1265,12 +1257,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
-		"TOR common file created during cluster create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCCreateCmdExecuted),
-		"commands executed during cluster create is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
-		"Expected list of playbooks are not executed during create")
+		"commands executed during cluster create are not as expected")
 
 	// update cluster
 	config.Action = updateAction
@@ -1338,12 +1326,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster update is not as expected")
-	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
-		"TOR common file created during cluster create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCUpdateCmdExecuted),
-		"commands executed during cluster update is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
-		"Expected list of playbooks are not executed during update")
+		"commands executed during cluster update are not as expected")
 
 	// delete cloud secanrio
 	//cleanup all the files
@@ -1374,8 +1358,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to manage(delete) cloud")
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during delete")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_delete_mc_playbook.yml"),
-		"Expected list of delete playbooks are not executed")
+	assert.True(t, verifyCommandsExecuted(t, expectedMCDeleteCmdExecuted),
+		"commands executed during cluster delete are not as expected")
 	// make sure cluster is removed
 	assert.True(t, verifyMCDeleted(clusterDeployer.APIServer), "MC folder is not deleted during cluster delete")
 
