@@ -659,6 +659,8 @@ func (m *multiCloudProvisioner) filesToRemove() ([]string, error) {
 		kfd.GetAzureProfilePath(),
 		kfd.GetAzureAccessTokenPath(),
 		kfd.GetGoogleAccountPath(),
+		kfd.GetAWSAccessPath(),
+		kfd.GetAWSSecretPath(),
 	)
 	pubCloudID, _, err := m.getPubPvtCloudID()
 	if err != nil {
@@ -670,14 +672,6 @@ func (m *multiCloudProvisioner) filesToRemove() ([]string, error) {
 		)
 	}
 	f = append(f, cloud.GetSecretFile(pubCloudID))
-	u := m.clusterData.AWSProviderUUID(pubCloudID)
-	if u != "" {
-		f = append(
-			f,
-			kfd.GetAWSAccessPath(u),
-			kfd.GetAWSSecretPath(u),
-		)
-	}
 	return f, nil
 }
 
@@ -1015,33 +1009,26 @@ func (m *multiCloudProvisioner) getSecretTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultSecretTemplate)
 }
 
-func (m *multiCloudProvisioner) getPublicCloudProviders() (providers map[string]string, err error) {
+func (m *multiCloudProvisioner) providers() ([]string, error) {
 	pubCloudID, _, err := m.getPubPvtCloudID()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to to get public Cloud ID")
 	}
 
-	ctx := context.Background()
-	cloudObj, err := cloud.GetCloud(ctx, m.cluster.APIServer, pubCloudID)
+	cloudObj, err := cloud.GetCloud(context.Background(), m.cluster.APIServer, pubCloudID)
 	if err != nil {
 		return nil, err
 	}
 
-	providers = make(map[string]string)
-	for _, prov := range cloudObj.CloudProviders {
-		cloudProvObj, err := m.cluster.APIServer.GetCloudProvider(
-			ctx,
-			&services.GetCloudProviderRequest{
-				ID: prov.GetUUID(),
-			},
-		)
-		providers[cloudProvObj.CloudProvider.GetType()] = cloudProvObj.CloudProvider.GetUUID()
-		if err != nil {
-			return providers, err
-		}
-	}
+	return providerNames(cloudObj.GetCloudProviders()), nil
+}
 
-	return providers, nil
+func providerNames(providers []*models.CloudProvider) []string {
+	result := []string{}
+	for _, provider := range providers {
+		result = append(result, provider.Type)
+	}
+	return result
 }
 
 func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error) {
@@ -1095,7 +1082,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 		return errors.Wrap(err, "failed to to get public Cloud ID")
 	}
 
-	pubCloudProviders, err := m.getPublicCloudProviders()
+	pubCloudProviders, err := m.providers()
 	if err != nil {
 		return errors.Wrap(err, "failed to to get public Cloud providers")
 	}
