@@ -7,7 +7,6 @@ const (
 
 	defaultWorkRoot                = "/var/tmp/cloud"
 	defaultTemplateRoot            = "./pkg/cloud/configs"
-	defaultGenTopoScript           = "transform/generate_topology.py"
 	defaultGenInventoryScript      = "transform/generate_inventories.py"
 	defaultAWSPlanTF               = "aws.tf.json"
 	defaultAzurePlanTF             = "azure.tf.json"
@@ -33,7 +32,6 @@ const (
 
 	createAction      = "create"
 	updateAction      = "update"
-	deleteAction      = "delete"
 	deleteCloudAction = "DELETE_CLOUD"
 
 	// AWS cloud kind
