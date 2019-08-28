@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Getenv finds the value of the latest occurrence of the environment variable
-func Getenv(env []string, key string) (string, bool) {
+func getenv(env []string, key string) (string, bool) {
 	prefix := key + "="
 	for i := len(env) - 1; i >= 0; i-- {
 		kv := env[i]
@@ -19,12 +18,10 @@ func Getenv(env []string, key string) (string, bool) {
 			return kv[len(prefix):], true
 		}
 	}
-
 	return "", false
 }
 
-// Unset returns environment with the variable unset
-func Unset(env []string, key string) []string {
+func unset(env []string, key string) []string {
 	res := make([]string, 0, len(env))
 	prefix := key + "="
 	for i := 0; i < len(env); i++ {
@@ -43,7 +40,7 @@ func Which(cmdName string, env []string) (string, error) {
 		return cmdName, nil
 	}
 
-	pathVal, ok := Getenv(env, "PATH")
+	pathVal, ok := getenv(env, "PATH")
 
 	if !ok {
 		return "", errors.Errorf("no PATH in env")
@@ -71,11 +68,11 @@ func Which(cmdName string, env []string) (string, error) {
 
 // Venv sets up the environment for the command to run it in the python virtual environment
 // (akin to what `source venvdir/bin/activate` would do)
-func Venv(cmd *exec.Cmd, venvDir string) (*exec.Cmd, error) {
-	newEnv := Unset(cmd.Env, "PYTHONHOME")
+func venv(cmd *exec.Cmd, venvDir string) (*exec.Cmd, error) {
+	newEnv := unset(cmd.Env, "PYTHONHOME")
 	newEnv = append(newEnv, fmt.Sprintf("VIRTUAL_ENV=%s", venvDir))
 
-	cmdPath, okPath := Getenv(cmd.Env, "PATH")
+	cmdPath, okPath := getenv(cmd.Env, "PATH")
 	var newPath string
 	if okPath {
 		newPath = fmt.Sprintf("%s/bin:%s", venvDir, cmdPath)
@@ -115,5 +112,5 @@ func VenvCommand(venvDir, path string, args ...string) (*exec.Cmd, error) {
 		Env:  os.Environ(),
 	}
 
-	return Venv(cmd, venvDir)
+	return venv(cmd, venvDir)
 }
