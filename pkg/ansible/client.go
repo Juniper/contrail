@@ -95,6 +95,17 @@ func prepareCmd(repositoryPath string, ansibleArgs []string, virtualenvPath stri
 	return cmd, nil
 }
 
+// GetWorkingDirectory returns working directory.
+func (c *CLIClient) GetWorkingDirectory() string {
+	return c.workingDirectory
+}
+
+// IsTest returns true for testing instance.
+// TODO: move test logic to separate Mock type and use dependency injection using ansible.Player interface.
+func (c *CLIClient) IsTest() bool {
+	return c.isTestInstance
+}
+
 func (c *CLIClient) mockPlay(ansibleArgs []string) error {
 	playBookIndex := len(ansibleArgs) - 1
 	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", pongo2.Context{
@@ -110,4 +121,13 @@ func (c *CLIClient) mockPlay(ansibleArgs []string) error {
 		content,
 		filePermRWOnly,
 	)
+}
+
+// PlayViaDeployer runs Python CLI with passed arguments.
+func (c *CLIClient) PlayViaDeployer(args ...string) error {
+	result, err := exec.Command("deployer", args...).CombinedOutput()
+	if err != nil {
+		return errors.Wrap(err, string(result))
+	}
+	return nil
 }
