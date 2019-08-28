@@ -26,17 +26,15 @@ const (
 	deleteVPCTemplatePath            = "./test_data/test_vpc_delete.tmpl"
 	clusterUpdateFailedTemplatePath  = "./test_data/test_update_failed_cluster.tmpl"
 	clusterUpdatedTemplatePath       = "./test_data/test_updated_cluster.tmpl"
-	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
 	expectedAZTopologyCreate         = "./test_data/expected_azure_cloud_topology_create.yaml"
 	expectedAZTopologyUpdate         = "./test_data/expected_azure_cloud_topology_update.yaml"
 	expectedAZTopologyDeleteVPC      = "./test_data/expected_azure_cloud_delete_vpc.yaml"
 	expectedAZSecret                 = "./test_data/expected_azure_cloud_secret.yaml"
-	expectedAWSCmdForCreateUpdate    = "./test_data/expected_aws_cmd_for_create_update.yaml"
 	expectedAWSTopologyCreate        = "./test_data/expected_aws_cloud_topology_create.yaml"
 	expectedAWSTopologyUpdate        = "./test_data/expected_aws_cloud_topology_update.yaml"
 	expectedAWSTopologyDeleteVPC     = "./test_data/expected_aws_cloud_delete_vpc.yaml"
 	expectedAWSSecret                = "./test_data/expected_aws_cloud_secret.yaml"
-	expectedGCPCmdForCreateUpdate    = "./test_data/expected_gcp_cmd_for_create_update.yaml"
+	expectedCmdForCreateUpdate       = "./test_data/expected_cmd_for_create_update.yaml"
 	expectedGCPTopologyCreate        = "./test_data/expected_gcp_cloud_topology_create.yaml"
 	expectedGCPTopologyUpdate        = "./test_data/expected_gcp_cloud_topology_update.yaml"
 	expectedGCPTopologyDeleteVPC     = "./test_data/expected_gcp_cloud_delete_vpc.yaml"
@@ -70,7 +68,7 @@ func TestAzureCloud(t *testing.T) {
 		t,
 		[]string{expectedAZTopologyCreate, expectedAZTopologyUpdate, expectedAZTopologyDeleteVPC},
 		expectedAZSecret,
-		expectedAZCmdForCreateUpdate,
+		expectedCmdForCreateUpdate,
 		pongo2.Context{
 			"CLOUD_TYPE": azure,
 		},
@@ -82,7 +80,7 @@ func TestAWSCloud(t *testing.T) {
 		t,
 		[]string{expectedAWSTopologyCreate, expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC},
 		expectedAWSSecret,
-		expectedAWSCmdForCreateUpdate,
+		expectedCmdForCreateUpdate,
 		pongo2.Context{
 			"CLOUD_TYPE": AWS,
 		},
@@ -94,7 +92,7 @@ func TestGCPCloud(t *testing.T) {
 		t,
 		[]string{expectedGCPTopologyCreate, expectedGCPTopologyUpdate, expectedGCPTopologyDeleteVPC},
 		expectedGCPSecret,
-		expectedGCPCmdForCreateUpdate,
+		expectedCmdForCreateUpdate,
 		pongo2.Context{
 			"CLOUD_TYPE": gcp,
 		},
