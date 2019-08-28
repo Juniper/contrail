@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/fileutil"
+
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -241,7 +243,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		err = manageTerraform(c, c.config.Action)
+		err = updateTopology(c)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -319,7 +321,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		err = manageTerraform(c, c.config.Action)
+		err = updateTopology(c)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -403,8 +405,11 @@ func (c *Cloud) delete() error {
 			return err
 		}
 		if tfStateOutputExists(c.config.CloudID) {
-			err = manageTerraform(c, deleteAction)
-			if err != nil {
+			if err = fileutil.WriteToFile(GetTopoFile(c.config.CloudID), []byte{}, defaultRWOnlyPerm); err != nil {
+				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+				return err
+			}
+			if err = updateTopology(c); err != nil {
 				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 				return err
 			}
