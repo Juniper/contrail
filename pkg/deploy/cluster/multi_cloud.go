@@ -1122,6 +1122,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailCluster) ([]byte, error) {
 	context := pongo2.Context{
 		"cluster": cluster,
+		"tag":     cluster.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
 	}
 
 	content, err := template.Apply(m.getAuthRegistryTemplate(), context)

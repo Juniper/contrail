@@ -3,4 +3,7 @@ authorized_registries:
   - registry: {{ cluster.ContainerRegistry }}
     username: {{ cluster.ContainerRegistryUsername }}
     password: {{ cluster.ContainerRegistryPassword }}
+    {%if tag%}
+    tag: {{ tag }}
+    {%endif%}
 {%endif%}
