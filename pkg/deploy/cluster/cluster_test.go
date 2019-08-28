@@ -205,14 +205,6 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, executedPlaybooksPath())
 }
 
-func compareGeneratedTORCommon(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedTORCommon())
-}
-
-func verifyCommandsExecuted(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, executedMCCommandPath())
-}
-
 func generatedInstancesPath() string {
 	return workRoot + "/" + clusterID + "/instances.yml"
 }
@@ -1265,10 +1257,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
-		"TOR common file created during cluster create is not as expected")
-	assert.True(t, verifyCommandsExecuted(t, expectedMCCreateCmdExecuted),
-		"commands executed during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
 		"Expected list of playbooks are not executed during create")
 
@@ -1338,10 +1326,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster update is not as expected")
-	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
-		"TOR common file created during cluster create is not as expected")
-	assert.True(t, verifyCommandsExecuted(t, expectedMCUpdateCmdExecuted),
-		"commands executed during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
 		"Expected list of playbooks are not executed during update")
 

@@ -242,15 +242,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, addCloud)
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		return err
-	}
-
-	err = m.mcPlayBook()
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err = m.multiCloudCLIRunAll(); err != nil {
 		return err
 	}
 
@@ -287,21 +279,40 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, updateCloud)
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		return err
-	}
-
-	err = m.mcPlayBook()
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	// TODO: Ensure playMCSetupControllerGWRoutes ordering isn't important
+	if err = m.multiCloudCLIRunAll(); err != nil {
 		return err
 	}
 
 	status[statusField] = statusUpdated
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
+}
+
+func (m *multiCloudProvisioner) multiCloudCLIRunAll() error {
+	topology := m.getClusterTopoFile(m.workDir)
+	secret := m.getClusterSecretFile(m.workDir)
+	// TODO: Remove this after refactoring test framework.
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI("deployer all run --topology " + topology + " --secret " + secret + " --retry 10")
+	}
+	return m.ansibleClient.PlayViaDeployer("all", "run", "--topology", topology, "--secret", secret, "--retry", "10")
+}
+
+func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
+	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
+		"command": cliCommand,
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.contrailAnsibleDeployer.ansibleClient.GetWorkingDirectory(), "executed_ansible_playbook.yml"),
+		content,
+		// TODO: use const
+		0600,
+	)
 }
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
@@ -320,13 +331,9 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, updateCloud)
-	if err != nil {
+	if err = m.multiCloudCLICleanup(); err != nil {
 		return err
 	}
-
-	// nolint: errcheck
-	_ = m.mcPlayBook()
 
 	if m.action != deleteAction {
 		err = m.removeCloudRefFromCluster()
@@ -339,6 +346,15 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
+}
+
+func (m *multiCloudProvisioner) multiCloudCLICleanup() error {
+	invPath := m.getMCInventoryFile(m.workDir)
+	// TODO: Remove this after refactoring test framework.
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(fmt.Sprintf("deployer all clean --inventory %v --retry %v", invPath, 5))
+	}
+	return m.ansibleClient.PlayViaDeployer("all", "clean", "--inventory", invPath, "--retry", "5")
 }
 
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {

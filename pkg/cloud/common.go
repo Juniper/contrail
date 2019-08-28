@@ -43,6 +43,10 @@ func getGenerateTopologyCmd(mcDir string) string {
 	return filepath.Join(mcDir, defaultGenTopoScript)
 }
 
+func getGenerateTopologyCmd(mcDir string) string {
+	return filepath.Join(mcDir, defaultGenTopoScript)
+}
+
 // GetGenInventoryCmd get generate inventory command
 func GetGenInventoryCmd(mcDir string) string {
 	return filepath.Join(mcDir, defaultGenInventoryScript)
