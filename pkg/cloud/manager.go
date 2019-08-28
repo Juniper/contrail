@@ -241,7 +241,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		err = manageTerraform(c, c.config.Action)
+		err = updateTopology(c)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -319,7 +319,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		err = manageTerraform(c, c.config.Action)
+		err = updateTopology(c)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -402,12 +402,9 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		if tfStateOutputExists(c.config.CloudID) {
-			err = manageTerraform(c, deleteAction)
-			if err != nil {
-				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-				return err
-			}
+		if err = destroyTopology(c); err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
 		}
 	}
 
