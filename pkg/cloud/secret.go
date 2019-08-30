@@ -144,14 +144,20 @@ func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCred
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not retrieve AWS Access Key")
 	}
-	if len(accessKey) == 0 {
-		return nil, errors.New("AWS Access Key not specified")
-	}
 
 	secretKey, err := ioutil.ReadFile(secretPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not retrieve AWS Secret Key")
 	}
+
+	if len(accessKey) == 0 && len(secretKey) == 0 {
+		return &models.AWSCredential{AccessKey: "", SecretKey: "", nil
+	}
+
+	if len(accessKey) == 0 {
+		return nil, errors.New("AWS Access Key not specified")
+	}
+
 	if len(secretKey) == 0 {
 		return nil, errors.New("AWS Secret Key not specified")
 	}
