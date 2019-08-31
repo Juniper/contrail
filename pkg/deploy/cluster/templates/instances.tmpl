@@ -47,6 +47,14 @@ instances:
         SRIOV_PHYS_NET: {{ vrouter_node.SriovInfo.SriovPhysicalNet }}
         {%endif%}
         {%endif%}{%endfor %}{%endfor%}
+      {% for vcenter_fabric_manager_node in vcenter.VcenterFabricManagerNodes %}{% for node_ref in vcenter_fabric_manager_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_fabric_manager:
+        VCENTER_SERVER: {%if vcenter.Server %}{{vcenter.Server}}{%endif%}
+        VCENTER_USERNAME: {%if vcenter.Username %}{{vcenter.Username}}{%endif%}
+        VCENTER_PASSWORD: {%if vcenter.Password %}{{vcenter.Password}}{%endif%}
+        VCENTER_DATACENTER: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.Datacenter}}{%endif%}{%endfor%}
+        VCENTER_WSDL_PATH: {%if vcenter.WSDLPath %}{{vcenter.WSDLPath}}{%endif%}
+        VCENTER_AUTH_PROTOCOL: {%if vcenter.AuthProtocol %}{{vcenter.AuthProtocol}}{%endif%}
+      	{%endif%}{%endfor%}{%endfor%}
       {% for vcenter_plugin_node in vcenter.VCenterPluginNodes %}{% for node_ref in vcenter_plugin_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_plugin:{%endif%}{%endfor%}{%endfor%}
       {% for vcenter_manager_node in vcenter.VCenterManagerNodes %}{% for node_ref in vcenter_manager_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_manager:
         ESXI_USERNAME: {{ node.EsxiInfo.Username }}
