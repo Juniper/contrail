@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -103,11 +104,8 @@ func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
 
 func verifyClusterDeleted() bool {
 	// Make sure working dir is deleted
-	if _, err := os.Stat(workRoot + "/" + clusterID); err == nil {
-		// working dir not deleted
-		return false
-	}
-	return true
+	_, err := os.Stat(workRoot + "/" + clusterID)
+	return err != nil
 }
 
 func verifyMCDeleted(httpClient *client.HTTP) bool {
@@ -121,42 +119,29 @@ func verifyMCDeleted(httpClient *client.HTTP) bool {
 			ID: clusterID,
 		},
 	)
-	if err != nil {
-		return false
-	}
-
-	if clusterObjResp.ContrailCluster.CloudRefs == nil {
-		return true
-	}
-	return false
+	return err == nil && clusterObjResp.ContrailCluster.CloudRefs == nil
 }
 
 func unmarshalYaml(t *testing.T, yamlFile string) map[string]interface{} {
 	var yamlMap map[string]interface{}
-
 	yamlBytes, err := ioutil.ReadFile(yamlFile)
 	assert.NoError(t, err, "Error when reading yaml file %s", yamlFile)
 	err = yaml.Unmarshal(yamlBytes, &yamlMap)
 	assert.NoError(t, err, "Unable to unmarshal yaml file %s", yamlFile)
-
 	return yamlMap
 }
 
 func assertYamlFileContainsOther(
-	t *testing.T,
-	expectedContainedYamlFile, actualYamlFile string,
-	msgAndArgs ...interface{}) bool {
-
+	t *testing.T, expectedContainedYamlFile, actualYamlFile string, msgAndArgs ...interface{},
+) bool {
 	expectedMap := unmarshalYaml(t, expectedContainedYamlFile)
 	actualMap := unmarshalYaml(t, actualYamlFile)
-
-	ok := true
-
 	for k, v := range expectedMap {
-		ok = assert.Contains(t, actualMap, k, msgAndArgs...) && assert.Equal(t, v, actualMap[k], msgAndArgs...) && ok
+		if !(assert.Contains(t, actualMap, k, msgAndArgs...) && assert.Equal(t, v, actualMap[k], msgAndArgs...)) {
+			return false
+		}
 	}
-
-	return ok
+	return true
 }
 
 func assertYamlFilesAreEqual(t *testing.T, expectedYamlFile, actualYamlFile string, msgAndArgs ...interface{}) bool {
@@ -173,32 +158,18 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	return bytes.Equal(generatedData, expectedData)
 }
 
+func removeFile(t *testing.T, path string) {
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		assert.NoErrorf(t, err, "failed to delete %s, during update", path)
+	}
+}
+
 func assertGeneratedInstancesContainExpected(t *testing.T, expected string, msgAndArgs ...interface{}) {
 	assertYamlFileContainsOther(t, expected, generatedInstancesPath(), msgAndArgs...)
 }
 
 func assertGeneratedInstancesAreExpected(t *testing.T, expected string, msgAndArgs ...interface{}) {
 	assertYamlFilesAreEqual(t, expected, generatedInstancesPath(), msgAndArgs...)
-}
-
-func compareGeneratedInventory(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedInventoryPath())
-}
-
-func compareGeneratedTopology(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedTopologyPath())
-}
-
-func compareGeneratedContrailCommon(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedContrailCommonPath())
-}
-
-func compareGeneratedGatewayCommon(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedGatewayCommonPath())
-}
-
-func compareGeneratedVcentervars(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedVcenterVarsPath())
 }
 
 func verifyPlaybooks(t *testing.T, expected string) bool {
@@ -210,95 +181,99 @@ func verifyCommandsExecuted(t *testing.T, expected string) bool {
 }
 
 func generatedInstancesPath() string {
-	return workRoot + "/" + clusterID + "/instances.yml"
+	return filepath.Join(workRoot, clusterID, "instances.yml")
 }
 
 func generatedInventoryPath() string {
-	return workRoot + "/" + clusterID + "/inventory.yml"
+	return filepath.Join(workRoot, clusterID, "inventory.yml")
 }
 
 func generatedVcenterVarsPath() string {
-	return workRoot + "/" + clusterID + "/vcenter_vars.yml"
+	return filepath.Join(workRoot, clusterID, "vcenter_vars.yml")
 }
 
 func generatedSecretPath() string {
-	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
+	return filepath.Join(workRoot, clusterID, mcWorkDir, defaultSecretFile)
 }
 
 func generatedTopologyPath() string {
-	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
+	return filepath.Join(workRoot, clusterID, mcWorkDir, defaultTopologyFile)
 }
 
 func generatedContrailCommonPath() string {
-	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
+	return filepath.Join(workRoot, clusterID, mcWorkDir, defaultContrailCommonFile)
 }
 
 func generatedGatewayCommonPath() string {
-	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
+	return filepath.Join(workRoot, clusterID, mcWorkDir, defaultGatewayCommonFile)
 }
 
 func executedPlaybooksPath() string {
-	return workRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
+	return filepath.Join(workRoot, clusterID, "executed_ansible_playbook.yml")
 }
 
 func executedMCCommandPath() string {
-	return workRoot + "/" + clusterID + "/executed_cmd.yml"
+	return filepath.Join(workRoot, clusterID, "executed_cmd.yml")
 }
 
-func createDummyCloudSecretFile(t *testing.T) {
-	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
-	}
-	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
+func createDummyCloudSecretFile(t *testing.T) func() {
+	src := "./test_data/public_cloud_secret.yml"
+	dest := "/var/tmp/cloud/public_cloud_uuid/secret.yml"
+	err := copyFile(src, dest)
+	assert.NoErrorf(t, err, "Couldn't copy file %s to %s", src, dest)
+
+	return func() {
+		// nolint: errcheck
+		_ = os.Remove(dest)
 	}
 }
 
 func createDummyCloudFiles(t *testing.T) func() {
+	files := []struct {
+		src  string
+		dest string
+	}{{
+		// create public cloud topology.yaml
+		src:  "./test_data/public_cloud_topology.yml",
+		dest: "/var/tmp/cloud/public_cloud_uuid/topology.yml",
+	}, {
+		// create pvt cloud topology.yml
+		src:  "./test_data/pvt_cloud_topology.yml",
+		dest: "/var/tmp/cloud/pvt_cloud_uuid/topology.yml",
+	}}
 
-	// create public cloud topology.yaml
-	publicTopoData, err := fileutil.GetContent("file://./test_data/public_cloud_topology.yml")
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_topology.yml")
-	}
-	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/topology.yml", publicTopoData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/topology.yml")
-	}
-	// create pvt cloud topology.yml
-	pvtTopoData, err := fileutil.GetContent("./test_data/pvt_cloud_topology.yml")
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/pvt_cloud_topology.yml")
-	}
-	err = fileutil.WriteToFile("/var/tmp/cloud/pvt_cloud_uuid/topology.yml", pvtTopoData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
+	for _, f := range files {
+		err := copyFile(f.src, f.dest)
+		assert.NoErrorf(t, err, "Couldn't copy file %s to %s", f.src, f.dest)
 	}
 	// create public cloud secret.yml
-	createDummyCloudSecretFile(t)
+	cleanup := createDummyCloudSecretFile(t)
 
 	return func() {
 		// best effort method of deleting all the files
 		// nolint: errcheck
 		_ = os.Remove("/var/tmp/cloud/config/public_cloud_uuid/topology.yml")
 		// nolint: errcheck
-		_ = os.Remove("/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
-		// nolint: errcheck
 		_ = os.Remove("/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
+		cleanup()
 	}
 }
 
-func createDummyAppformixFiles(t *testing.T) func() {
+func copyFile(src, dest string) error {
+	content, err := fileutil.GetContent(src)
+	if err != nil {
+		return err
+	}
+	return fileutil.WriteToFile(dest, content, defaultFilePermRWOnly)
+}
 
+func createDummyAppformixFiles(t *testing.T) func() {
 	// create appformix config.yml file
 	configFile := workRoot + "/" + "appformix-ansible-deployer/appformix/config.yml"
 	configData := []byte("{\n\"appformix_version\": \"3.0.0\"\n}")
 	err := fileutil.WriteToFile(configFile, configData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", configFile)
-	}
+	assert.NoErrorf(t, err, "Unable to write file: %s", configFile)
+
 	return func() {
 		// best effort method of deleting all the files
 		// nolint: errcheck
@@ -306,74 +281,46 @@ func createDummyAppformixFiles(t *testing.T) func() {
 	}
 }
 
+func manageCluster(t *testing.T, c *Config) {
+	clusterDeployer, err := NewCluster(c)
+	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
+	deployer, err := clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoErrorf(t, err, "failed to manage(%s) cluster", c.Action)
+}
+
 // nolint: gocyclo
-func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
-	config *Config, action, expectedInstance, expectedInventory string,
-	expectedPlaybooks string, expectedEndpoints map[string]string) {
+func runClusterActionTest(
+	t *testing.T, ts *integration.TestScenario, config *Config, action, expectedInstance string,
+	expectedPlaybooks string, expectedEndpoints map[string]string,
+) {
 	// set action field in the contrail-cluster resource
-	var err error
-	var data interface{}
-	cluster := map[string]interface{}{"uuid": clusterID,
-		"provisioning_action": action,
-	}
+	cluster := map[string]interface{}{"uuid": clusterID, "provisioning_action": action}
 	config.Action = updateAction
 	switch action {
 	case upgradeProvisioningAction:
 		cluster["provisioning_state"] = "NOSTATE"
-		if expectedInventory != "" {
-			expectedPlaybooks = upgradeEncryptPlaybooks
-		}
-	case addComputeProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
-		err = os.Remove(generatedInstancesPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete instances.yml")
-		}
-		if expectedInventory != "" {
-			expectedPlaybooks = addComputeEncryptPlaybooks
-		}
-	case deleteComputeProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
-		err = os.Remove(generatedInstancesPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete instances.yml")
-		}
-	case addCSNProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
-		err = os.Remove(generatedInstancesPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete instances.yml")
-		}
 	case importProvisioningAction:
-		// cleanup instances.yml
-		err = os.Remove(generatedInstancesPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete instances.yml")
-		}
 		config.Action = createAction
 		cluster["provisioning_action"] = ""
+		fallthrough
+	case addComputeProvisioningAction, deleteComputeProvisioningAction, addCSNProvisioningAction:
+		// remove instances.yml to mock trigger cluster update
+		err := os.Remove(generatedInstancesPath())
+		assert.NoError(t, err, "failed to delete instances.yml")
 	}
-	data = map[string]interface{}{"contrail-cluster": cluster}
+
+	data := map[string]interface{}{"contrail-cluster": cluster}
 	for _, client := range ts.Clients {
 		var response map[string]interface{}
 		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
-		_, err = client.Update(context.Background(), url, &data, &response)
+		_, err := client.Update(context.Background(), url, &data, &response)
 		assert.NoErrorf(t, err, "failed to set %s action in contrail cluster", action)
 		break
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err := NewCluster(config)
-	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", config.Action)
-	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoErrorf(t, err, "failed to manage(%s) cluster", action)
+	removeFile(t, executedPlaybooksPath())
+	manageCluster(t, config)
 	if expectedInstance != "" {
 		assertGeneratedInstancesAreExpected(t, expectedInstance,
 			"Instance file created during cluster %s is not as expected", action)
@@ -385,15 +332,19 @@ func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
+	err := verifyEndpoints(t, ts, expectedEndpoints)
+	assert.NoError(t, err)
+}
+
+type clusterActionTestSpec struct {
+	action            string
+	expectedPlaybooks string
 }
 
 // nolint: gocyclo
-func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
-	pContext map[string]interface{}, expectedEndpoints map[string]string) {
+func runTest(t *testing.T, expectedInstance, expectedInventory string,
+	pContext map[string]interface{}, expectedEndpoints map[string]string, tsPath string,
+	expectedPlaybooksList []string, clusterActionSpecs []clusterActionTestSpec) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystoneTestUser(
@@ -404,7 +355,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
-	ts, err := integration.LoadTest(allInOneClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(tsPath, pContext)
 	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
@@ -423,272 +374,73 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err := NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(create) cluster")
+	removeFile(t, executedPlaybooksPath())
+	manageCluster(t, config)
 	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
 	if expectedInventory != "" {
-		assert.True(t, compareGeneratedInventory(t, expectedInventory),
+		assert.True(t, compareFiles(t, expectedInventory, generatedInventoryPath()),
 			"Inventory file created during cluster create is not as expected")
 		assert.True(t, verifyPlaybooks(t, createEncryptPlaybooks),
 			"Expected list of create playbooks are not executed")
 	} else {
-		assert.True(t, verifyPlaybooks(t, createPlaybooks),
+		assert.True(t, verifyPlaybooks(t, expectedPlaybooksList[0]),
 			"Expected list of create playbooks are not executed")
 	}
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
-
-	// update cluster
-	config.Action = updateAction
-	// remove instances.yml to trriger cluster update
-	err = os.Remove(generatedInstancesPath())
-	if err != nil {
-		assert.NoError(t, err, "failed to delete instances.yml")
-	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(update) cluster")
-	assertGeneratedInstancesAreExpected(t, expectedInstance,
-		"Instance file created during cluster update is not as expected")
-	if expectedInventory != "" {
-		assert.True(t, compareGeneratedInventory(t, expectedInventory),
-			"Inventory file created during cluster update is not as expected")
-		assert.True(t, verifyPlaybooks(t, updateEncryptPlaybooks),
-			"Expected list of update playbooks are not executed")
-	} else {
-		assert.True(t, verifyPlaybooks(t, updatePlaybooks),
-			"Expected list of update playbooks are not executed")
-	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
-
-	// UPGRADE test
-	runClusterActionTest(t, ts, config,
-		upgradeProvisioningAction, expectedInstance, expectedInventory,
-		upgradePlaybooks, expectedEndpoints)
-
-	// ADD_COMPUTE  test
-	runClusterActionTest(t, ts, config,
-		addComputeProvisioningAction, expectedInstance, expectedInventory,
-		addComputePlaybooks, expectedEndpoints)
-
-	// DELETE_COMPUTE  test
-	runClusterActionTest(t, ts, config,
-		deleteComputeProvisioningAction, expectedInstance, "",
-		deleteComputePlaybooks, expectedEndpoints)
-
-	// ADD_CSN  test
-	runClusterActionTest(t, ts, config,
-		addCSNProvisioningAction, expectedInstance, expectedInventory,
-		addCSNPlaybooks, expectedEndpoints)
-
-	// IMPORT test (expected to create endpoints without triggering playbooks)
-	runClusterActionTest(t, ts, config,
-		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
-
-	// delete cluster
-	config.Action = deleteAction
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(delete) cluster")
-	// make sure cluster is removed
-	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
-}
-
-func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
-	cluster, err := NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	deployer, err := cluster.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	return deployer
-}
-
-// nolint: gocyclo
-func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory string,
-	pContext map[string]interface{}, expectedEndpoints map[string]string) {
-	// mock keystone to let access server after cluster create
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
-	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
-	defer ksPrivate.Close()
-
-	// Create the cluster and related objects
-	ts, err := integration.LoadTest(allInOneClusterAppformixTemplatePath, pContext)
-	require.NoError(t, err, "failed to load cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	defer cleanup()
-
-	s, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
-
-	config := &Config{
-		APIServer:    s,
-		ClusterID:    clusterID,
-		Action:       createAction,
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
-	}
-	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err := NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(create) cluster")
-	assertGeneratedInstancesAreExpected(t, expectedInstance,
-		"Instance file created during cluster create is not as expected")
-	if expectedInventory != "" {
-		assert.True(t, compareGeneratedInventory(t, expectedInventory),
-			"Inventory file created during cluster create is not as expected")
-		assert.True(t, verifyPlaybooks(t, createEncryptPlaybooks),
-			"Expected list of create playbooks are not executed")
-	} else {
-		assert.True(t, verifyPlaybooks(t, createAppformixPlaybooks),
-			"Expected list of create playbooks are not executed")
-	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-	// make sure all endpoints are created
-	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
 
 	// update cluster
 	config.Action = updateAction
 	// remove instances.yml to trigger cluster update
-	err = os.Remove(generatedInstancesPath())
-	if err != nil {
-		assert.NoError(t, err, "failed to delete instances.yml")
-	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(update) cluster")
+	removeFile(t, generatedInstancesPath())
+	removeFile(t, executedPlaybooksPath())
+
+	manageCluster(t, config)
 	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster update is not as expected")
 	if expectedInventory != "" {
-		assert.True(t, compareGeneratedInventory(t, expectedInventory),
+		assert.True(t, compareFiles(t, expectedInventory, generatedInventoryPath()),
 			"Inventory file created during cluster update is not as expected")
 		assert.True(t, verifyPlaybooks(t, updateEncryptPlaybooks),
 			"Expected list of update playbooks are not executed")
 	} else {
-		assert.True(t, verifyPlaybooks(t, updateAppformixPlaybooks),
+		assert.True(t, verifyPlaybooks(t, expectedPlaybooksList[1]),
 			"Expected list of update playbooks are not executed")
 	}
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
+	assert.NoError(t, err)
+
+	for _, spec := range clusterActionSpecs {
+		runClusterActionTest(t, ts, config,
+			spec.action, expectedInstance,
+			spec.expectedPlaybooks, expectedEndpoints)
 	}
-
-	// UPGRADE test
-	runClusterActionTest(t, ts, config,
-		upgradeProvisioningAction, expectedInstance, expectedInventory,
-		upgradeAppformixPlaybooks, expectedEndpoints)
-
-	// ADD_COMPUTE  test
-	runClusterActionTest(t, ts, config,
-		addComputeProvisioningAction, expectedInstance, expectedInventory,
-		addAppformixComputePlaybooks, expectedEndpoints)
-
-	// DELETE_COMPUTE  test
-	runClusterActionTest(t, ts, config,
-		deleteComputeProvisioningAction, expectedInstance, "",
-		deleteAppformixComputePlaybooks, expectedEndpoints)
-
-	// ADD_CSN  test
-	runClusterActionTest(t, ts, config,
-		addCSNProvisioningAction, expectedInstance, expectedInventory,
-		addAppformixCSNPlaybooks, expectedEndpoints)
-
-	// IMPORT test (expected to create endpoints without triggering playbooks)
-	runClusterActionTest(t, ts, config,
-		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
 
 	// delete cluster
 	config.Action = deleteAction
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(delete) cluster")
+	removeFile(t, executedPlaybooksPath())
+	manageCluster(t, config)
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
+}
+
+func TestAllInOneCluster(t *testing.T) {
+	runAllInOneClusterTest(t, "kernel")
+}
+
+func TestAllInOneDpdkCluster(t *testing.T) {
+	runAllInOneClusterTest(t, "dpdk")
+}
+
+func TestAllInOneSriovCluster(t *testing.T) {
+	runAllInOneClusterTest(t, "sriov")
 }
 
 func runAllInOneClusterTest(t *testing.T, computeType string) {
@@ -717,7 +469,29 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		expectedInstances = "./test_data/expected_all_in_one_sriov_instances.yml"
 	}
 
-	runClusterTest(t, expectedInstances, "", pContext, expectedEndpoints)
+	runTest(t, expectedInstances, "", pContext, expectedEndpoints, allInOneClusterTemplatePath,
+		[]string{
+			createPlaybooks,
+			updatePlaybooks,
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradePlaybooks,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addComputePlaybooks,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteComputePlaybooks,
+		}, {
+			action:            addCSNProvisioningAction,
+			expectedPlaybooks: addCSNPlaybooks,
+		}, {
+			action: importProvisioningAction,
+		}})
+}
+
+func TestAllInOneAppformix(t *testing.T) {
+	runAllInOneAppformixTest(t, "kernel")
 }
 
 func runAllInOneAppformixTest(t *testing.T, computeType string) {
@@ -747,7 +521,25 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 	}
 	appformixFilesCleanup := createDummyAppformixFiles(t)
 	defer appformixFilesCleanup()
-	runAppformixClusterTest(t, expectedInstances, "", context, expectedEndpoints)
+	runTest(t, expectedInstances, "", context, expectedEndpoints, allInOneClusterAppformixTemplatePath,
+		[]string{
+			createAppformixPlaybooks,
+			updateAppformixPlaybooks,
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradeAppformixPlaybooks,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addAppformixComputePlaybooks,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteAppformixComputePlaybooks,
+		}, {
+			action:            addCSNProvisioningAction,
+			expectedPlaybooks: addAppformixCSNPlaybooks,
+		}, {
+			action: importProvisioningAction,
+		}})
 }
 
 func TestXflow(t *testing.T) {
@@ -792,18 +584,12 @@ func TestXflow(t *testing.T) {
 		"Instance file created during cluster create is not as expected")
 }
 
-func TestAllInOneCluster(t *testing.T) {
-	runAllInOneClusterTest(t, "kernel")
-}
-func TestAllInOneDpdkCluster(t *testing.T) {
-	runAllInOneClusterTest(t, "dpdk")
-}
-
-func TestAllInOneSriovCluster(t *testing.T) {
-	runAllInOneClusterTest(t, "sriov")
-}
-func TestAllInOneAppformix(t *testing.T) {
-	runAllInOneAppformixTest(t, "kernel")
+func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
+	cluster, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to create cluster")
+	deployer, err := cluster.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	return deployer
 }
 
 func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
@@ -823,8 +609,26 @@ func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 	}
-	runClusterTest(t, "./test_data/expected_all_in_one_instances.yml",
-		"./test_data/expected_all_in_one_inventory.yml", pContext, expectedEndpoints)
+	runTest(t, "./test_data/expected_all_in_one_instances.yml",
+		"./test_data/expected_all_in_one_inventory.yml", pContext, expectedEndpoints, allInOneClusterTemplatePath,
+		[]string{
+			createPlaybooks,
+			updatePlaybooks,
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradeEncryptPlaybooks,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addComputeEncryptPlaybooks,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteComputePlaybooks,
+		}, {
+			action:            addCSNProvisioningAction,
+			expectedPlaybooks: addCSNPlaybooks,
+		}, {
+			action: importProvisioningAction,
+		}})
 }
 
 func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
@@ -843,7 +647,26 @@ func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 	}
-	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "", pContext, expectedEndpoints)
+	runTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "",
+		pContext, expectedEndpoints, allInOneClusterTemplatePath,
+		[]string{
+			createPlaybooks,
+			updatePlaybooks,
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradePlaybooks,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addComputePlaybooks,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteComputePlaybooks,
+		}, {
+			action:            addCSNProvisioningAction,
+			expectedPlaybooks: addCSNPlaybooks,
+		}, {
+			action: importProvisioningAction,
+		}})
 }
 
 func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
@@ -870,7 +693,26 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		"keystone":  "https://127.0.0.1:5000",
 	}
 
-	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", "", pContext, expectedEndpoints)
+	runTest(t, "./test_data/expected_multi_interface_instances.yml", "",
+		pContext, expectedEndpoints, allInOneClusterTemplatePath,
+		[]string{
+			createPlaybooks,
+			updatePlaybooks,
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradePlaybooks,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addComputePlaybooks,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteComputePlaybooks,
+		}, {
+			action:            addCSNProvisioningAction,
+			expectedPlaybooks: addCSNPlaybooks,
+		}, {
+			action: importProvisioningAction,
+		}})
 }
 
 func TestCredAllInOneClusterTest(t *testing.T) {
@@ -896,11 +738,60 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 	}
 	expectedInstances := "./test_data/expected_creds_all_in_one_instances.yml"
 
-	runClusterTest(t, expectedInstances, "", pContext, expectedEndpoints)
+	runTest(t, expectedInstances, "", pContext, expectedEndpoints, allInOneClusterTemplatePath,
+		[]string{
+			createPlaybooks,
+			updatePlaybooks,
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradePlaybooks,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addComputePlaybooks,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteComputePlaybooks,
+		}, {
+			action:            addCSNProvisioningAction,
+			expectedPlaybooks: addCSNPlaybooks,
+		}, {
+			action: importProvisioningAction,
+		}})
 }
 
+func TestKubernetesCluster(t *testing.T) {
+	pContext := pongo2.Context{
+		"TYPE":          "kernel",
+		"MGMT_INT_IP":   "127.0.0.1",
+		"CONTROL_NODES": "",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+	}
+	runTest(t, "./test_data/expected_all_in_one_kubernetes_instances.yml", "",
+		pContext, expectedEndpoints, allInOneKubernetesClusterTemplatePath,
+		[]string{
+			"./test_data/expected_ansible_create_playbook_kubernetes.yml",
+			"./test_data/expected_ansible_update_playbook_kubernetes.yml",
+		}, []clusterActionTestSpec{{
+			action:            upgradeProvisioningAction,
+			expectedPlaybooks: upgradePlaybooksKubernetes,
+		}, {
+			action:            addComputeProvisioningAction,
+			expectedPlaybooks: addComputePlaybooksKubernetes,
+		}, {
+			action:            deleteComputeProvisioningAction,
+			expectedPlaybooks: deleteComputePlaybooksKubernetes,
+		}, {
+			action: importProvisioningAction,
+		}})
+}
+
+//vcenter
 // nolint: gocyclo
-func runKubernetesClusterTest(t *testing.T, expectedOutput string,
+func runvcenterClusterTest(t *testing.T, expectedInstance, expectedVcentervars string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
@@ -910,8 +801,9 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	ksPrivate := integration.MockServerWithKeystoneTestUser(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
+
 	// Create the cluster and related objects
-	ts, err := integration.LoadTest(allInOneKubernetesClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(allInOnevcenterClusterTemplatePath, pContext)
 	require.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
@@ -930,162 +822,11 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err := NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(create) cluster")
-	assertGeneratedInstancesAreExpected(t, expectedOutput,
+	removeFile(t, executedPlaybooksPath())
+	manageCluster(t, config)
+	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_kubernetes.yml"),
-		"Expected list of create playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-	// make sure all endpoints are created
-	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
-
-	// update cluster
-	config.Action = updateAction
-	// remove instances.yml to trriger cluster update
-	err = os.Remove(generatedInstancesPath())
-	if err != nil {
-		assert.NoError(t, err, "failed to delete instances.yml")
-	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(update) cluster")
-	assertGeneratedInstancesAreExpected(t, expectedOutput,
-		"Instance file created during cluster update is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_kubernetes.yml"),
-		"Expected list of update playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
-
-	// UPGRADE test
-	runClusterActionTest(t, ts, config,
-		upgradeProvisioningAction, expectedOutput, "",
-		upgradePlaybooksKubernetes, expectedEndpoints)
-
-	// ADD_COMPUTE  test
-	runClusterActionTest(t, ts, config,
-		addComputeProvisioningAction, expectedOutput, "",
-		addComputePlaybooksKubernetes, expectedEndpoints)
-
-	// DELETE_COMPUTE  test
-	runClusterActionTest(t, ts, config,
-		deleteComputeProvisioningAction, expectedOutput, "",
-		deleteComputePlaybooksKubernetes, expectedEndpoints)
-
-	// IMPORT test (expected to create endpoints withtout triggering playbooks)
-	runClusterActionTest(t, ts, config,
-		importProvisioningAction, expectedOutput, "", "", expectedEndpoints)
-
-	// delete cluster
-	config.Action = deleteAction
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(delete) cluster")
-	// make sure cluster is removed
-	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
-}
-func TestKubernetesCluster(t *testing.T) {
-	pContext := pongo2.Context{
-		"TYPE":          "kernel",
-		"MGMT_INT_IP":   "127.0.0.1",
-		"CONTROL_NODES": "",
-	}
-	expectedEndpoints := map[string]string{
-		"config":    "http://127.0.0.1:8082",
-		"nodejs":    "https://127.0.0.1:8143",
-		"telemetry": "http://127.0.0.1:8081",
-	}
-	runKubernetesClusterTest(t, "./test_data/expected_all_in_one_kubernetes_instances.yml", pContext, expectedEndpoints)
-}
-
-//vcenter
-// nolint: gocyclo
-func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars string,
-	pContext map[string]interface{}, expectedEndpoints map[string]string) {
-	// mock keystone to let access server after cluster create
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
-	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
-	defer ksPrivate.Close()
-	// Create the cluster and related objects
-	ts, err := integration.LoadTest(allInOnevcenterClusterTemplatePath, pContext)
-	require.NoError(t, err, "failed to load cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	defer cleanup()
-
-	s, err := integration.NewAdminHTTPClient(server.URL())
-	assert.NoError(t, err)
-
-	config := &Config{
-		APIServer:    s,
-		ClusterID:    clusterID,
-		Action:       "create",
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
-	}
-	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err := NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(create) cluster")
-	assertGeneratedInstancesAreExpected(t, expectedOutput,
-		"Instance file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedVcentervars(t, expectedVcentervars),
+	assert.True(t, compareFiles(t, expectedVcentervars, generatedVcenterVarsPath()),
 		"Vcenter_vars file created during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_vcenter.yml"),
 		"Expected list of create playbooks are not executed")
@@ -1093,31 +834,16 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
+	assert.NoError(t, err)
 
 	// update cluster
-	config.Action = "update"
-	// remove instances.yml to trriger cluster update
-	err = os.Remove(generatedInstancesPath())
-	if err != nil {
-		assert.NoError(t, err, "failed to delete instances.yml")
-	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(update) cluster")
-	assertGeneratedInstancesAreExpected(t, expectedOutput,
+	config.Action = updateAction
+	// remove instances.yml to trigger cluster update
+	removeFile(t, generatedInstancesPath())
+	removeFile(t, executedPlaybooksPath())
+
+	manageCluster(t, config)
+	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_vcenter.yml"),
 		"Expected list of update playbooks are not executed")
@@ -1125,34 +851,22 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, ts, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
+	assert.NoError(t, err)
 
 	// UPGRADE test
 	runClusterActionTest(t, ts, config,
-		"UPGRADE", expectedOutput, "",
+		upgradeProvisioningAction, expectedInstance,
 		upgradePlaybooksvcenter, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, ts, config,
-		"IMPORT", expectedOutput, "", "", expectedEndpoints)
+		importProvisioningAction, expectedInstance, "", expectedEndpoints)
 
 	// delete cluster
-	config.Action = "delete"
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterDeployer, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(delete) cluster")
+	config.Action = deleteAction
+	removeFile(t, executedPlaybooksPath())
+
+	manageCluster(t, config)
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
@@ -1211,20 +925,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	cloudFileCleanup := createDummyCloudFiles(t)
 	defer cloudFileCleanup()
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	if _, err = os.Stat(executedMCCommandPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedMCCommandPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	removeFile(t, executedMCCommandPath())
 
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
@@ -1251,11 +952,11 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during create")
 
-	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
+	assert.True(t, compareFiles(t, expectedMCClusterTopology, generatedTopologyPath()),
 		"Topolgy file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
+	assert.True(t, compareFiles(t, expectedContrailCommon, generatedContrailCommonPath()),
 		"Contrail common file created during cluster create is not as expected")
-	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
+	assert.True(t, compareFiles(t, expectedGatewayCommon, generatedGatewayCommonPath()),
 		"Gateway common file created during cluster create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCCreateCmdExecuted),
 		"commands executed during cluster create are not as expected")
@@ -1263,48 +964,11 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	// update cluster
 	config.Action = updateAction
 	//cleanup all the files
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	if _, err = os.Stat(executedMCCommandPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedMCCommandPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed mc command file")
-		}
-	}
-	if _, err = os.Stat(generatedTopologyPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(generatedTopologyPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete generated topology file")
-		}
-	}
-	if _, err = os.Stat(generatedSecretPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(generatedSecretPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete generated secret file")
-		}
-	}
-	if _, err = os.Stat(generatedContrailCommonPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(generatedContrailCommonPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete generated contrail common file")
-		}
-	}
-	if _, err = os.Stat(generatedGatewayCommonPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(generatedGatewayCommonPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete generated gateway common file")
-		}
-	}
+	removeFile(t, executedMCCommandPath())
+	removeFile(t, generatedTopologyPath())
+	removeFile(t, generatedSecretPath())
+	removeFile(t, generatedContrailCommonPath())
+	removeFile(t, generatedGatewayCommonPath())
 
 	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterUpdateTemplatePath, pContext)
@@ -1320,31 +984,18 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during update")
 
-	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
+	assert.True(t, compareFiles(t, expectedMCClusterTopology, generatedTopologyPath()),
 		"Topolgy file created during cluster update is not as expected")
-	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
+	assert.True(t, compareFiles(t, expectedContrailCommon, generatedContrailCommonPath()),
 		"Contrail common file created during cluster update is not as expected")
-	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
+	assert.True(t, compareFiles(t, expectedGatewayCommon, generatedGatewayCommonPath()),
 		"Gateway common file created during cluster update is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCUpdateCmdExecuted),
 		"commands executed during cluster update are not as expected")
 
 	// delete cloud secanrio
 	//cleanup all the files
-	if _, err = os.Stat(executedMCCommandPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedMCCommandPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed mc command file")
-		}
-	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	removeFile(t, executedMCCommandPath())
 
 	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
@@ -1373,7 +1024,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to manage(delete) cluster")
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete cloud secrets during delete")
-
 }
 
 func TestMCCluster(t *testing.T) {
@@ -1388,8 +1038,7 @@ func isCloudSecretFilesDeleted() error {
 		"/var/tmp/cloud/public_cloud_uuid/secret.yml",
 		generatedSecretPath(),
 	} {
-		_, err := os.Stat(secret)
-		if err != nil {
+		if _, err := os.Stat(secret); err != nil {
 			if !os.IsNotExist(err) {
 				errstrings = append(errstrings, fmt.Sprintf(
 					"Unable to verify the non existence of secret file: %s is not deleted: %v", secret, err))
@@ -1446,13 +1095,8 @@ func TestTripleoClusterImport(t *testing.T) {
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	removeFile(t, executedPlaybooksPath())
+
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
 	deployer, err := clusterDeployer.GetDeployer()
@@ -1476,7 +1120,5 @@ func TestTripleoClusterImport(t *testing.T) {
 			"keystone":  "https://overcloud.localdomain:5000",
 		},
 	)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
+	assert.NoError(t, err)
 }
