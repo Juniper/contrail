@@ -69,13 +69,11 @@ func (p *deployCluster) getWorkRoot() string {
 }
 
 func (p *deployCluster) getClusterHomeDir() string {
-	dir := filepath.Join(p.getWorkRoot(), p.clusterID)
-	return dir
+	return filepath.Join(p.getWorkRoot(), p.clusterID)
 }
 
 func (p *deployCluster) getWorkingDir() string {
-	dir := filepath.Join(p.getClusterHomeDir())
-	return dir
+	return filepath.Join(p.getClusterHomeDir())
 }
 
 func (p *deployCluster) createWorkingDir() error {

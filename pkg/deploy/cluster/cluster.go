@@ -97,11 +97,7 @@ func deployerType(cData *base.Data, action string) string {
 func isMCProvisioner(cData *base.Data) bool {
 	if hasCloudRefs(cData) && hasMCGWNodes(cData.ClusterInfo) {
 		switch cData.ClusterInfo.ProvisioningAction {
-		case addCloud:
-			return true
-		case updateCloud:
-			return true
-		case deleteCloud:
+		case addCloud, updateCloud, deleteCloud:
 			return true
 		}
 	}
