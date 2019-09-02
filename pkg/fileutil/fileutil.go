@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -127,26 +128,21 @@ func AppendToFile(path string, content []byte, perm os.FileMode) error {
 
 //CopyFile copies file.
 func CopyFile(src, dest string, overwrite bool) error {
-	var perm os.FileMode
-	dstInfo, err := os.Stat(dest)
+	srcInfo, err := os.Stat(src)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return errors.Wrap(err, "state of destination file cannot be resolved")
-		}
-		srcInfo, statErr := os.Stat(src)
-		if statErr != nil {
-			return errors.Wrap(statErr, "cannot resolve permissions of source file")
-		}
-		perm = srcInfo.Mode().Perm()
-	} else {
-		if !overwrite {
-			return errors.New("destination file already exists")
-		}
-		perm = dstInfo.Mode().Perm()
+		return errors.Wrap(err, "copying file failed, cannot read source file")
 	}
+	if !overwrite {
+		if _, err = os.Stat(dest); err == nil {
+			return errors.New("copying file failed, destination file already exists")
+		} else if !os.IsNotExist(err) {
+			return errors.Wrap(err, "copying file failed, destination file already exists")
+		}
+	}
+
 	content, err := ioutil.ReadFile(src)
 	if err != nil {
-		return errors.Wrap(err, "couldn't read source file")
+		return errors.Wrap(err, "copying file failed, cannot read source file")
 	}
-	return WriteToFile(dest, content, perm)
+	return WriteToFile(dest, content, srcInfo.Mode())
 }
