@@ -1,7 +1,10 @@
 package template
 
 import (
+	"os"
 	"regexp"
+
+	"github.com/Juniper/contrail/pkg/fileutil"
 
 	"github.com/flosch/pongo2"
 )
@@ -20,4 +23,12 @@ func Apply(templateSrc string, context map[string]interface{}) ([]byte, error) {
 	regex, _ := regexp.Compile("\n[ \r\n\t]*\n") // nolint: errcheck
 	outputString := regex.ReplaceAllString(string(output), "\n")
 	return []byte(outputString), nil
+}
+
+func ApplyToFile(templateSrc, destFile string, ctx map[string]interface{}, perm os.FileMode) error {
+	content, err := Apply(templateSrc, ctx)
+	if err != nil {
+		return err
+	}
+	return fileutil.WriteToFile(destFile, content, perm)
 }
