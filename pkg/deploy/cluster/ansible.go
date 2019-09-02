@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/ansible"
-	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/flosch/pongo2"
@@ -79,15 +78,12 @@ func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 		header, err := tr.Next()
 
 		switch {
-
 		// if no more files are found return
 		case err == io.EOF:
 			return nil
-
 		// return any other error
 		case err != nil:
 			return err
-
 			// if the header is nil, just skip it (not sure how this happens)
 		case header == nil:
 			continue
@@ -102,7 +98,6 @@ func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 
 		// check the file type
 		switch header.Typeflag {
-
 		// if its a dir and it doesn't exist create it
 		case tar.TypeDir:
 			if _, err := os.Stat(target); err != nil {
@@ -110,19 +105,16 @@ func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 					return err
 				}
 			}
-
 		// if it's a file create it
 		case tar.TypeReg:
 			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				return err
 			}
-
 			// copy over contents
 			if _, err := io.Copy(f, tr); err != nil {
 				return err
 			}
-
 			// manually close here after each file operation; defering would cause each file close
 			// to wait until all operations have completed.
 			er := f.Close()
@@ -163,8 +155,7 @@ func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir st
 
 func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
 	if a.cluster.config.Test {
-		return filepath.Join(a.cluster.config.WorkRoot, "/",
-			defaultAppformixAnsibleRepo, defaultAppformixDir)
+		return filepath.Join(a.cluster.config.WorkRoot, "/", defaultAppformixAnsibleRepo, defaultAppformixDir)
 	}
 	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultAppformixDir)
 }
@@ -186,8 +177,7 @@ func (a *contrailAnsibleDeployer) fetchAnsibleDeployer() error {
 		return err
 	}
 	args = append([]string{"fetch"}, args...)
-	err = osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir)
-	if err != nil {
+	if err = osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("git fetch completed")
@@ -199,8 +189,7 @@ func (a *contrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
-	err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir)
-	if err != nil {
+	if err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("Cherry-pick completed")
@@ -212,8 +201,7 @@ func (a *contrailAnsibleDeployer) resetAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
-	err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir)
-	if err != nil {
+	if err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("Git reset completed")
@@ -234,8 +222,7 @@ func (a *contrailAnsibleDeployer) compareInventory() (identical bool, err error)
 	}()
 
 	a.Log.Debugf("Creating temporary inventory %s", tmpFileName)
-	err = a.createInstancesFile(tmpFileName)
-	if err != nil {
+	if err = a.createInstancesFile(tmpFileName); err != nil {
 		return false, err
 	}
 
@@ -247,7 +234,6 @@ func (a *contrailAnsibleDeployer) compareInventory() (identical bool, err error)
 	if err != nil {
 		return false, err
 	}
-
 	return bytes.Equal(oldInventory, newInventory), nil
 }
 
@@ -271,58 +257,57 @@ func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables 
 	openstackVars := openstackVariables{}
 	cluster := a.clusterData.GetOpenstackClusterInfo()
 	// Enable haproxy when multiple openstack control nodes present in cluster
-	if (cluster != nil) && (len(cluster.OpenstackControlNodes) > 1) {
+	if cluster != nil && len(cluster.OpenstackControlNodes) > 1 {
 		openstackVars.enableHaproxy = enable
 		return &openstackVars
 	}
 	// get CONTROL_NODES from contrail configuration
-	openstackControlNodes := []string{}
+	var openstackControlNodes []string
 	if c := a.clusterData.ClusterInfo.GetContrailConfiguration(); c != nil {
-		for _, keyValuePair := range c.GetKeyValuePair() {
-			if keyValuePair.Key == "OPENSTACK_NODES" {
-				openstackControlNodes = strings.Split(keyValuePair.Value, ",")
-				break
-			}
+		if v := c.GetValue("OPENSTACK_NODES"); v != "" {
+			openstackControlNodes = strings.Split(v, ",")
 		}
 	}
+
+	// do not enable haproxy on single openstack control node and
+	//single interface setups
+	if len(openstackControlNodes) == 0 {
+		openstackVars.enableHaproxy = disable
+		return &openstackVars
+	}
+
 	// get openstack control node ip when single node is present
-	if len(openstackControlNodes) != 0 {
-		openstackManagementIP := ""
-		for _, node := range a.clusterData.NodesInfo {
-			if node.UUID == cluster.OpenstackControlNodes[0].NodeRefs[0].UUID {
-				openstackManagementIP = node.IPAddress
-				break
-			}
+	openstackManagementIP := ""
+	for _, node := range a.clusterData.NodesInfo {
+		if node.UUID == cluster.OpenstackControlNodes[0].NodeRefs[0].UUID {
+			openstackManagementIP = node.IPAddress
+			break
 		}
-		openstackIP := net.ParseIP(openstackManagementIP)
-		if openstackIP == nil {
+	}
+	openstackIP := net.ParseIP(openstackManagementIP)
+	if openstackIP == nil {
+		openstackVars.enableHaproxy = disable
+		return &openstackVars
+	}
+	for _, openstackControlNode := range openstackControlNodes {
+		// user error
+		// do not enable haproxy if openstack ip is specified
+		// as openstack control nodes(OPENSTACK_NODES) as well
+		openstackControlNodeIP := net.ParseIP(openstackControlNode)
+		if bytes.Equal(openstackIP, openstackControlNodeIP) {
 			openstackVars.enableHaproxy = disable
 			return &openstackVars
 		}
-		for _, openstackControlNode := range openstackControlNodes {
-			// user error
-			// do not enable haproxy if openstack ip is specified
-			// as openstack control nodes(OPENSTACK_NODES) as well
-			openstackControlNodeIP := net.ParseIP(openstackControlNode)
-			if bytes.Equal(openstackIP, openstackControlNodeIP) {
-				openstackVars.enableHaproxy = disable
-				return &openstackVars
-			}
-		}
-		// enable haproxy if openstack ip is different from
-		// openstack control nodes(OPENSTACK_NODES)
-		openstackVars.enableHaproxy = enable
-		return &openstackVars
 	}
-	// do not enable haproxy on single openstack control node and
-	//single interface setups
-	openstackVars.enableHaproxy = disable
+	// enable haproxy if openstack ip is different from
+	// openstack control nodes(OPENSTACK_NODES)
+	openstackVars.enableHaproxy = enable
 	return &openstackVars
 }
 
 func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error {
 	a.Log.Info("Creating instance.yml input file for ansible deployer")
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"cluster":            a.clusterData.ClusterInfo,
 		"openstackCluster":   a.clusterData.GetOpenstackClusterInfo(),
 		"k8sCluster":         a.clusterData.GetK8sClusterInfo(),
@@ -337,13 +322,7 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 		"defaultSSHPassword": a.clusterData.DefaultSSHPassword,
 		"defaultSSHKey":      a.clusterData.DefaultSSHKey,
 	}
-	content, err := template.Apply(a.getInstanceTemplate(), context)
-	if err != nil {
-		return err
-	}
-
-	err = fileutil.WriteToFile(destination, content, defaultFilePermRWOnly)
-	if err != nil {
+	if err := template.ApplyToFile(a.getInstanceTemplate(), destination, pContext, defaultFilePermRWOnly); err != nil {
 		return err
 	}
 	a.Log.Info("Created instance.yml input file for ansible deployer")
@@ -352,16 +331,11 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 
 func (a *contrailAnsibleDeployer) createDatapathEncryptionInventory(destination string) error {
 	a.Log.Info("Creating inventory.yml input file for datapath encryption ansible deployer")
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"cluster": a.clusterData.ClusterInfo,
 		"nodes":   a.clusterData.GetAllNodesInfo(),
 	}
-	content, err := template.Apply(a.getInventoryTemplate(), context)
-	if err != nil {
-		return err
-	}
-	err = fileutil.WriteToFile(destination, content, defaultFilePermRWOnly)
-	if err != nil {
+	if err := template.ApplyToFile(a.getInventoryTemplate(), destination, pContext, defaultFilePermRWOnly); err != nil {
 		return err
 	}
 	a.Log.Info("Created inventory.yml input file for datapath encryption ansible deployer")
@@ -370,17 +344,13 @@ func (a *contrailAnsibleDeployer) createDatapathEncryptionInventory(destination 
 
 func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) error {
 	a.Log.Info("Creating vcenter_vars.yml input file for vcenter ansible deployer")
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"cluster": a.clusterData.ClusterInfo,
 		"vcenter": a.clusterData.GetVCenterClusterInfo(),
 		"nodes":   a.clusterData.GetAllNodesInfo(),
 	}
-	content, err := template.Apply(a.getVcenterTemplate(), context)
-	if err != nil {
-		return err
-	}
-	err = fileutil.WriteToFile(destination, content, defaultFilePermRWOnly)
-	if err != nil {
+
+	if err := template.ApplyToFile(a.getVcenterTemplate(), destination, pContext, defaultFilePermRWOnly); err != nil {
 		return err
 	}
 	a.Log.Info("Created vcenter_vars.yml input file for vcenter ansible deployer")
@@ -462,8 +432,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		}
 
 		var config AppformixConfig
-		ioerr = yaml.UnmarshalStrict(data, &config)
-		if ioerr != nil {
+		if err := yaml.UnmarshalStrict(data, &config); err != nil {
 			return ioerr
 		}
 
@@ -474,8 +443,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
 		srcFile := "appformix-" + AppformixVersion + ".tar.gz"
-		err := a.untar(defaultAppformixImageDir+srcFile, defaultAppformixImageDir)
-		if err != nil {
+		if err := a.untar(defaultAppformixImageDir+srcFile, defaultAppformixImageDir); err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
 		return a.ansibleClient.Play(repoDir, ansibleArgs, a.appformixVenvDir())
@@ -486,7 +454,6 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
 		venvDir := a.xflowVenvDir()
-
 		xflowDir := a.getXflowDeployerDir()
 		if _, err := os.Stat(xflowDir); os.IsNotExist(err) {
 			return err
@@ -626,43 +593,36 @@ func (a *contrailAnsibleDeployer) createCluster() error {
 	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 
 	status[statusField] = statusCreateFailed
-	err := a.createWorkingDir()
-	if err != nil {
+	if err := a.createWorkingDir(); err != nil {
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	if !a.cluster.config.Test {
 		if a.cluster.config.AnsibleFetchURL != "" {
-			err = a.fetchAnsibleDeployer()
-			if err != nil {
+			if err := a.fetchAnsibleDeployer(); err != nil {
 				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleCherryPickRevision != "" {
-			err = a.cherryPickAnsibleDeployer()
-			if err != nil {
+			if err := a.cherryPickAnsibleDeployer(); err != nil {
 				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleRevision != "" {
-			err = a.resetAnsibleDeployer()
-			if err != nil {
+			if err := a.resetAnsibleDeployer(); err != nil {
 				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 	}
-	err = a.createInventory()
-	if err != nil {
+	if err := a.createInventory(); err != nil {
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
-
-	err = a.playBook()
-	if err != nil {
+	if err := a.playBook(); err != nil {
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
@@ -698,13 +658,11 @@ func (a *contrailAnsibleDeployer) updateCluster() error {
 	status[statusField] = statusUpdateProgress
 	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 
-	err := a.createInventory()
-	if err != nil {
+	if err := a.createInventory(); err != nil {
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
-	err = a.playBook()
-	if err != nil {
+	if err := a.playBook(); err != nil {
 		status[statusField] = statusUpdateFailed
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -716,8 +674,7 @@ func (a *contrailAnsibleDeployer) updateCluster() error {
 }
 
 func (a *contrailAnsibleDeployer) deleteCluster() error {
-	a.Log.Infof("Starting %s of contrail cluster: %s",
-		a.action, a.cluster.config.ClusterID)
+	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.cluster.config.ClusterID)
 	return a.deleteWorkingDir()
 }
 
@@ -728,8 +685,7 @@ func (a *contrailAnsibleDeployer) handleCreate() error {
 		}
 		return a.updateEndpoints()
 	}
-	err := a.createCluster()
-	if err != nil {
+	if err := a.createCluster(); err != nil {
 		return err
 	}
 	return a.createEndpoints()
@@ -743,16 +699,14 @@ func (a *contrailAnsibleDeployer) handleUpdate() error {
 	if updated {
 		return nil
 	}
-	err = a.updateCluster()
-	if err != nil {
+	if err = a.updateCluster(); err != nil {
 		return err
 	}
 	return a.updateEndpoints()
 }
 
 func (a *contrailAnsibleDeployer) handleDelete() error {
-	err := a.deleteCluster()
-	if err != nil {
+	if err := a.deleteCluster(); err != nil {
 		return err
 	}
 	return a.deleteEndpoints()
