@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a6565d45_4f07775f",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-02T11:17:33Z",
+      "side": 1,
+      "message": "This should be parametrized, not hard coded.",
+      "range": {
+        "startLine": 298,
+        "startChar": 89,
+        "endLine": 298,
+        "endChar": 99
+      },
+      "revId": "2237bd388af4fd8e973ff7a8b3ea37a6f39e3ffe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e360fb38_43562bf6",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-02T11:17:33Z",
+      "side": 1,
+      "message": "Arguments passed to mock CLI and executed args aren\u0027t the same.",
+      "range": {
+        "startLine": 297,
+        "startChar": 1,
+        "endLine": 300,
+        "endChar": 104
+      },
+      "revId": "2237bd388af4fd8e973ff7a8b3ea37a6f39e3ffe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4345821_0e5095d0",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-02T11:17:33Z",
+      "side": 1,
+      "message": "ditto 298\nAlso, if this value is hardcoded in both places, why is it different?",
+      "range": {
+        "startLine": 362,
+        "startChar": 58,
+        "endLine": 362,
+        "endChar": 72
+      },
+      "revId": "2237bd388af4fd8e973ff7a8b3ea37a6f39e3ffe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
