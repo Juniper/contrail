@@ -870,7 +870,7 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 	expectedEndpoints := map[string]string{
 		"config":    "https://10.1.1.100:8082",
 		"nodejs":    "https://10.1.1.100:8143",
-		"telemetry": "http://10.1.1.100:8081",
+		"telemetry": "https://10.1.1.100:8081",
 		"baremetal": "https://127.0.0.1:6385",
 		"swift":     "https://127.0.0.1:8080",
 		"glance":    "https://127.0.0.1:9292",
