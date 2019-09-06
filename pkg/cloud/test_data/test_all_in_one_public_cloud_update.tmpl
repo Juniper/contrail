@@ -66,7 +66,7 @@ test_data:
     hostname: cloud_node_gw_vpc2
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
-      operating_system: redhat
+      operating_system: rhel75
       instance_type: F16sv2
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
@@ -93,7 +93,7 @@ test_data:
     hostname: cloud_node_comp_vpc2
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
-      operating_system: redhat
+      operating_system: rhel75
       instance_type: F16sv2
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
