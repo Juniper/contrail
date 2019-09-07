@@ -1,0 +1,56 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntpserver: 10.1.1.100
+    domainsuffix: local
+instances:
+  all_in_one_node:
+    ip: 127.0.0.1
+    provider: bms
+    roles:
+      config:
+      config_database:
+      control:
+      webui:
+      analytics:
+      analytics_database:
+      analytics_alarm:
+      analytics_snmp:
+      vrouter:
+      openstack_control:
+      openstack_network:
+      openstack_storage:
+      openstack_monitoring:
+      openstack_compute:
+  esxi_node:
+    ip: 127.0.0.1
+    provider: bms
+    esxi_host: 10.84.16.11
+    roles:
+      vcenter_fabric_manager:
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  CLOUD_ORCHESTRATOR: openstack
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  ENCAP_PRIORITY: VXLAN,MPLSoUDP,MPLSoGRE
+  OPENSTACK_VERSION: queens
+  AUTH_MODE: keystone
+  KEYSTONE_AUTH_HOST: 127.0.0.1
+  KEYSTONE_AUTH_URL_VERSION: /v3
+  CONTRAIL_CONTAINER_TAG: "master.100"
+  VCENTER_SERVER: 10.84.16.51
+  VCENTER_USERNAME: administrator
+  VCENTER_PASSWORD: Contrail123
+  VCENTER_DATACENTER: qa-dc
+  VCENTER_WSDL_PATH: wsdl
+  VCENTER_AUTH_PROTOCOL: https
+kolla_config:
+  kolla_globals:
+    enable_haproxy: no
+  kolla_passwords:
+    keystone_admin_password: contrail123

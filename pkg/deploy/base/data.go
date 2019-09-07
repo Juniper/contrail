@@ -949,6 +949,31 @@ func (d *Data) interfaceToContrailMCGWNode(contrailMCGWNodes interface{}, r *Res
 	return nil
 }
 
+func (d *Data) interfaceToVcenterFabricManagerNode(
+	contrailVcenterFabricManagerNodes interface{},
+	r *ResourceManager,
+) error {
+	n, ok := contrailVcenterFabricManagerNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailVCFabricManagerNode := range n {
+		contrailVCFabricManagerNodeInfo := models.InterfaceToContrailVcenterFabricManagerNode(contrailVCFabricManagerNode)
+		// Read contrailVcenterFabricManager role node to get the node refs information
+		contrailVCFabricManagerNodeData, err := r.getResource(
+			defaultContrailVCFabricManagerNodeResPath, contrailVCFabricManagerNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		contrailVCFabricManagerNodeInfo = models.InterfaceToContrailVcenterFabricManagerNode(
+			contrailVCFabricManagerNodeData)
+		d.ClusterInfo.ContrailVcenterFabricManagerNodes = append(
+			d.ClusterInfo.ContrailVcenterFabricManagerNodes, contrailVCFabricManagerNodeInfo)
+	}
+	return nil
+}
+
 func (d *Data) interfaceToContrailZTPTFTPNode(contrailZTPTFTPNodes interface{}, r *ResourceManager) error {
 	n, ok := contrailZTPTFTPNodes.([]interface{})
 	if !ok {
@@ -1260,6 +1285,13 @@ func (d *Data) updateNodeDetails(r *ResourceManager) error {
 			}
 		}
 	}
+	for _, node := range d.ClusterInfo.ContrailVcenterFabricManagerNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := r.getNode(nodeRef.UUID, m, d); err != nil {
+				return err
+			}
+		}
+	}
 	for _, node := range d.ClusterInfo.ContrailVrouterNodes {
 		for _, nodeRef := range node.NodeRefs {
 			if err := r.getNode(nodeRef.UUID, m, d); err != nil {
@@ -1348,6 +1380,12 @@ func (d *Data) updateClusterDetails(clusterID string, r *ResourceManager) error 
 	// Expand analytics snmp node back ref
 	if analyticsSNMPNodes, ok := rData["contrail_analytics_snmp_nodes"]; ok {
 		if err = d.interfaceToContrailAnalyticsSNMPNode(analyticsSNMPNodes, r); err != nil {
+			return err
+		}
+	}
+	// Expand vcenter fabric manager role node back ref
+	if vcFabricManagerNodes, ok := rData["contrail_vcenter_fabric_manager_nodes"]; ok {
+		if err = d.interfaceToVcenterFabricManagerNode(vcFabricManagerNodes, r); err != nil {
 			return err
 		}
 	}
