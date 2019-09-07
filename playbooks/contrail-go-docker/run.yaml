@@ -20,10 +20,6 @@
         owner: "{{ ansible_env.USER }}"
         state: directory
 
-    - name: Set base container tag
-      set_fact:
-        base_image_tag: "{{ 'rhel-' if ansible_os_family == 'Redhat' else '' }}{{ packaging.docker_version }}"
-
     - name: Run build steps in loop
       include: build-step.yaml
       loop_control:
@@ -43,7 +39,7 @@
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
         - name: Generate Docker files
-          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG={{ base_image_tag }} SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
+          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG='{{distro}}{{ packaging.docker_version }}'  SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:
