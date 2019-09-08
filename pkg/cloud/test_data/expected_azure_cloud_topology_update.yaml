@@ -23,7 +23,7 @@
                 - compute_node
               provision: false
               username: redhat
-              os: redhat
+              os: rhel75
               instance_type: F16sv2
               subnets: cloud_private_subnet_vpc2
             - name: cloud_node_gw_vpc2
@@ -31,7 +31,7 @@
                 - gateway
               provision: true
               username: redhat
-              os: redhat
+              os: rhel75
               instance_type: F16sv2
               subnets: cloud_private_subnet_vpc2
     - name: WestUS
@@ -54,7 +54,7 @@
                 - compute_node
               provision: true
               username: redhat
-              os: redhat
+              os: rhel75
               instance_type: F16sv2
               subnets: cloud_private_subnet
             - name: cloud_node_gw
@@ -62,6 +62,6 @@
                 - gateway
               provision: true
               username: redhat
-              os: redhat
+              os: rhel75
               instance_type: F16sv2
               subnets: cloud_private_subnet

@@ -17,7 +17,6 @@ import (
 const (
 	gatewayRole = "gateway"
 	computeRole = "compute"
-	redhat      = "redhat"
 )
 
 type dataInterface interface {
@@ -313,18 +312,15 @@ func hasCloudRole(roles []string, nodeRole string) bool {
 
 func (i *instanceData) updateInstanceUsername(providerType string) error {
 	switch i.info.CloudInfo.OperatingSystem {
-	case "ubuntu16":
-		i.username = "ubuntu"
 	case "ubuntu18":
 		i.username = "ubuntu"
 	case "centos7":
 		i.username = "centos"
-	case redhat:
-		i.username = redhat
 	case "rhel75":
-		i.username = "ec2-user"
-		if providerType == gcp {
-			i.username = redhat
+		if providerType == AWS {
+			i.username = "ec2-user"
+		} else {
+			i.username = "redhat"
 		}
 	default:
 		return fmt.Errorf("instance %s operating system %s is not valid",
