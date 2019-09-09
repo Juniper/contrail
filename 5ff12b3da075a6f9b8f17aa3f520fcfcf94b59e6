@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "e97435f9_32624d52",
+        "filename": "pkg/deploy/base/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 974,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-09-09T12:37:13Z",
+      "side": 1,
+      "message": "OK. I will implement it as you say.",
+      "parentUuid": "af3a54d1_db2ba6bf",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c297695e_7e6649f1",
         "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-09-09T04:43:40Z",
       "side": 1,
       "message": "Frontend will not send, vcenter refs in Contrail clutter for vcenter fabric manager use case. It will send vcenter refs in contrail_vcenter_fabric_manager_node resource. UT should test this use case.",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "79064bcf_edc52682",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-09-09T12:37:13Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "c297695e_7e6649f1",
       "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "156977d0_0777ee5a",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-09-09T12:37:13Z",
+      "side": 1,
+      "message": "I needed to create an ESXi node so that I could determine the DataCenter.   It\u0027s not available anywhere else.  See instances.yml.  The only alternative I know of is to have the Datacenter supplied with the credentials.  Maybe we should update the schema to include it?",
+      "parentUuid": "79c02802_4e7da672",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "da543459_f974af26",
         "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
         "patchSetId": 1
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "d66276d0_687167b0",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-09-09T12:37:13Z",
+      "side": 1,
+      "message": "Same as above, was necessary AFAICT to determine the Datacenter.",
+      "parentUuid": "da543459_f974af26",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d12b5759_91ce20cd",
         "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
         "patchSetId": 1
@@ -81,6 +153,24 @@
       "writtenOn": "2019-09-09T04:43:40Z",
       "side": 1,
       "message": "This should be all_in_one_node_uuid",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6f046ef4_e19030ec",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-09-09T12:37:13Z",
+      "side": 1,
+      "message": "Lets discuss the issue previously mentioned to determine the best coarse of action.",
+      "parentUuid": "d12b5759_91ce20cd",
       "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
