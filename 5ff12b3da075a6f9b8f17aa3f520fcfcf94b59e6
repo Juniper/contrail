@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "af3a54d1_db2ba6bf",
+        "filename": "pkg/deploy/base/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 974,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-09T04:43:40Z",
+      "side": 1,
+      "message": "We also need to update d.vcenterData here, vcenter data should be inferred from the references of contrail_vcenter_fabric_mamager_node",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c297695e_7e6649f1",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-09T04:43:40Z",
+      "side": 1,
+      "message": "Frontend will not send, vcenter refs in Contrail clutter for vcenter fabric manager use case. It will send vcenter refs in contrail_vcenter_fabric_manager_node resource. UT should test this use case.",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "79c02802_4e7da672",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-09T04:43:40Z",
+      "side": 1,
+      "message": "We no need to create esxi_node in this usecase. Just creation of vcenter resource and referencing it from the contrail_vcenter_fabric_manager_node is enough",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da543459_f974af26",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-09T04:43:40Z",
+      "side": 1,
+      "message": "We no need to create vcenter_computes in this usecase. Just creation of vcenter resource and referencing it from the contrail_vcenter_fabric_manager_node is enough",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d12b5759_91ce20cd",
+        "filename": "pkg/deploy/cluster/test_data/test_all_in_one_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-09T04:43:40Z",
+      "side": 1,
+      "message": "This should be all_in_one_node_uuid",
+      "revId": "5ff12b3da075a6f9b8f17aa3f520fcfcf94b59e6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
