@@ -28,7 +28,6 @@ const (
 	xflow                = "xflow"
 	defaultAdminUser     = "admin"
 	defaultAdminPassword = "contrail123"
-	tripleoProvisioner   = "tripleo"
 )
 
 var portMap = map[string]string{
@@ -258,8 +257,7 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 					endpointProtocol = secureProtocol
 				}
 			case analytics:
-				if e.ClusterData.isSSLEnabled() &&
-					e.ClusterData.ClusterInfo.ProvisionerType == tripleoProvisioner {
+				if e.ClusterData.isSSLEnabled() {
 					endpointProtocol = secureProtocol
 				}
 			}
