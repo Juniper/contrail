@@ -16,7 +16,7 @@ prefix: /
 schema:
   properties:
     vcenter_name:
-      description: vCenter server ip address to connect to vCenter server
+      description: vCenter server name
       nullable: false
       permission:
       - create
@@ -39,6 +39,18 @@ schema:
       view:
       - create
       - detail
+    datacenter:
+      description: vCenter server datacenter name
+      nullable: true
+      permission:
+        - create
+        - update
+      sql: ""
+      title: vCenter Datacenter
+      type: string
+      view:
+        - create
+        - detail
     username:
       description: vCenter server username
       nullable: false
