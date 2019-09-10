@@ -813,6 +813,29 @@ func TestAllInOneSriovCluster(t *testing.T) {
 func TestAllInOneAppformix(t *testing.T) {
 	runAllInOneAppformixTest(t, "kernel")
 }
+func TestAllInOneVfabricManager(t *testing.T) {
+	pContext := pongo2.Context{
+		"TYPE":            "kernel",
+		"MGMT_INT_IP":     "127.0.0.1",
+		"CONTROL_NODES":   "",
+		"OPENSTACK_NODES": "",
+		"VFABRIC_MANAGER": true,
+	}
+	expectedEndpoints := map[string]string{
+		"config":                "http://127.0.0.1:8082",
+		"nodejs":                "https://127.0.0.1:8143",
+		"telemetry":             "http://127.0.0.1:8081",
+		"baremetal":             "http://127.0.0.1:6385",
+		"swift":                 "http://127.0.0.1:8080",
+		"glance":                "http://127.0.0.1:9292",
+		"compute":               "http://127.0.0.1:8774",
+		"keystone":              "http://127.0.0.1:5000",
+		"endpoint_user_created": "http://127.0.0.1:8082",
+	}
+	expectedInstances := "./test_data/expected_all_in_one_vfabric_manager_instances.yml"
+
+	runClusterTest(t, expectedInstances, "", pContext, expectedEndpoints)
+}
 
 func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 	pContext := pongo2.Context{
