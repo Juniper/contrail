@@ -6,7 +6,6 @@ provider_config:
     ssh_user: root
     ssh_pwd: c0ntrail123
     ntpserver: 10.1.1.100
-    domainsuffix: local
 instances:
   third_ha_node:
     ip: 127.0.0.3

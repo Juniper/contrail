@@ -8,7 +8,6 @@ provider_config:
     ssh_user: root
     ssh_pwd: c0ntrail123
     ntpserver: 10.1.1.100
-    domainsuffix: local
 instances:
   all_in_one_node:
     ip: 10.1.1.1
