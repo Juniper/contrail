@@ -39,6 +39,18 @@ schema:
       view:
       - create
       - detail
+    datacenter:
+      description: vCenter server datacenter name
+      nullable: true
+      permission:
+        - create
+        - update
+      sql: ""
+      title: vCenter Datacenter
+      type: string
+      view:
+        - create
+        - detail
     username:
       description: vCenter server username
       nullable: false

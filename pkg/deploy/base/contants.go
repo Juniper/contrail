@@ -39,6 +39,8 @@ const (
 	defaultContrailMCGWNodeResPath              = "/" + defaultContrailMCGWNodeRes
 	defaultContrailServiceNodeRes               = "contrail-service-node"
 	defaultContrailServiceNodeResPath           = "/" + defaultContrailServiceNodeRes
+	defaultContrailVCFabricManagerNodeRes       = "contrail-vcenter-fabric-manager-node"
+	defaultContrailVCFabricManagerNodeResPath   = "/" + defaultContrailVCFabricManagerNodeRes
 	defaultContrailZTPDHCPNodeRes               = "contrail-ztp-dhcp-node"
 	defaultContrailZTPDHCPNodeResPath           = "/" + defaultContrailZTPDHCPNodeRes
 	defaultContrailZTPTFTPNodeRes               = "contrail-ztp-tftp-node"
