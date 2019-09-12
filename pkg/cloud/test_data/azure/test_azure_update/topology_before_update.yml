@@ -2,7 +2,6 @@
 - provider: azure
   organization: unit_test
   project: test2
-  prebuild: nightly
   regions:
     - name: WestUS
       resource_group: unit_test
@@ -24,7 +23,7 @@
                 - compute_node
               provision: true
               username: redhat
-              os: rhel7
+              os: rhel75
               instance_type: F16sv2
               subnets: cloud_private_subnet
             - name: cloud_node_gw
@@ -32,6 +31,6 @@
                 - gateway
               provision: true
               username: redhat
-              os: rhel7
+              os: rhel75
               instance_type: F16sv2
               subnets: cloud_private_subnet
