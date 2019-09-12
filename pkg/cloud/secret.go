@@ -52,11 +52,17 @@ func (s *secret) createSecretFile() error {
 	context := pongo2.Context{
 		"secret": s.sfc,
 	}
+	fmt.Println("providerko")
+	fmt.Println(s.sfc.ProviderType)
+	fmt.Println("sekrecik plik")
+	fmt.Println(s.getSecretTemplate())
 	content, err := template.Apply(s.getSecretTemplate(), context)
 	if err != nil {
 		return err
 	}
 
+	fmt.Println("kontencik")
+	fmt.Println(string(content))
 	err = fileutil.WriteToFile(sf, content, defaultRWOnlyPerm)
 	if err != nil {
 		return err
