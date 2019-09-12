@@ -373,7 +373,6 @@ func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
 }
 
 func (c *Cloud) delete() error {
-	// get cloud data
 	data, err := c.getCloudData(true)
 	if err != nil {
 		return err
@@ -397,8 +396,7 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		err = secret.createSecretFile()
-		if err != nil {
+		if err = secret.createSecretFile(); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
