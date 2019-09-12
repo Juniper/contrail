@@ -1,0 +1,28 @@
+name: Test update onprem request
+description: test creating request for OnPrem topology
+
+test_data:
+  cloud: &cloud
+    provisioning_state: NOSTATE
+    uuid: cloud_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: update cloud
+  request:
+    path: /cloud/cloud_uuid
+    method: PUT
+    expected:
+    - 200
+    data:
+      cloud: *cloud
+  expect:
+    cloud: *cloud
