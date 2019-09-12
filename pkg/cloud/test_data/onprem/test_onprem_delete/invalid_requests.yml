@@ -5,10 +5,16 @@ test_data:
     uuid: test_cluster_uuid
     provisioning_state: UPDATED
     provisioning_action: DELETE_CLOUD
-    cloud_refs: []
+
   cloud: &cloud
+    provisioning_action: DELETE_CLOUD
     provisioning_state: NOSTATE
-    uuid: cloud_uuid
+    name: cloud
+    uuid: cloud_uuid_onprem
+    organization: unit_test
+    cloud_user_refs:
+      - uuid: cloud_user_uuid
+
 clients:
   default:
     id: alice
@@ -17,17 +23,8 @@ clients:
     scope:
       project:
         name: admin
+
 workflow:
-- name: update cloud
-  request:
-    path: /cloud/cloud_uuid
-    method: PUT
-    expected:
-    - 200
-    data:
-      cloud: *cloud
-  expect:
-    cloud: *cloud
 - name: update provisioning_state and provisioning_action of contrail-cluster
   request:
     path: /contrail-cluster/test_cluster_uuid
@@ -35,9 +32,19 @@ workflow:
     expected:
     - 200
     data:
-      contrail-cluster: *all_in_one_cluster
+      contrail-cluster:
+        <<: *all_in_one_cluster
   expect:
     contrail-cluster:
-      uuid: test_cluster_uuid
-      provisioning_state: UPDATED
-      provisioning_action: DELETE_CLOUD
+      <<: *all_in_one_cluster
+
+- name: delete cloud
+  request:
+    path: /cloud/cloud_uuid_onprem
+    method: PUT
+    expected:
+    - 200
+    data:
+      cloud: *cloud
+  expect:
+    cloud: *cloud
