@@ -373,7 +373,6 @@ func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
 }
 
 func (c *Cloud) delete() error {
-	// get cloud data
 	data, err := c.getCloudData(true)
 	if err != nil {
 		return err
