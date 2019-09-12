@@ -1,34 +1,23 @@
 
-- provider: google
+- provider: azure
   organization: unit_test
   project: test2
-  prebuild: nightly
-  tags:
-    owner: juniper
-    project: contrail_multicloud
-    build_id: latest
+  prebuild: test-update-image-id
   regions:
-    - name: default-cloud-region
-      vpc:
+    - name: EastUS
+      resource_group: unit_test
+      vnet:
         - name: virtual_cloud_vpc2
           cidr_block: 172.16.10.0/16
           subnets:
             - name: cloud_private_subnet_vpc2
               cidr_block: 172.16.10.0/24
-          firewalls_external:
-            - name: default-wan-tcp
-              allow:
-                protocol: tcp
-                ports:
-                  - 22
-                  - 443
-          firewalls_internal:
-            - name: cloud_security_group_rule_vpc2
-              allow:
-                protocol: tcp
-              direction: INGRESS
-              source_ranges:
-                - 0.0.0.0/0
+              security_group: cloud_security_group_vpc2
+          security_groups:
+            - name: cloud_security_group_vpc2
+              rules:
+                - name: cloud_security_group_rule_vpc2
+                  direction: inbound
           instances:
             - name: cloud_node_comp_vpc2
               roles:
@@ -36,7 +25,7 @@
               provision: false
               username: redhat
               os: rhel7
-              instance_type: n1-standard-1
+              instance_type: F16sv2
               subnets: cloud_private_subnet_vpc2
             - name: cloud_node_gw_vpc2
               roles:
@@ -44,32 +33,22 @@
               provision: true
               username: redhat
               os: rhel7
-              instance_type: n1-standard-1
+              instance_type: F16sv2
               subnets: cloud_private_subnet_vpc2
-    - name: us-west1
-      vpc:
+    - name: WestUS
+      resource_group: unit_test
+      vnet:
         - name: virtual_cloud
           cidr_block: 192.168.10.0/16
           subnets:
             - name: cloud_private_subnet
               cidr_block: 192.168.10.0/24
-          firewalls_external:
-            - name: default-wan-tcp
-              allow:
-                protocol: tcp
-                ports:
-                  - 22
-                  - 443
-          firewalls_internal:
-            - name: cloud_security_group_rule
-              allow:
-                protocol: all
-                ports:
-                  - 6654
-                  - 8888
-              direction: INGRESS
-              source_ranges:
-                - 10.0.10.0/24
+              security_group: cloud_security_group
+          security_groups:
+            - name: cloud_security_group
+              rules:
+                - name: cloud_security_group_rule
+                  direction: inbound
           instances:
             - name: cloud_node_compute
               roles:
@@ -77,7 +56,7 @@
               provision: true
               username: redhat
               os: rhel7
-              instance_type: n1-standard-1
+              instance_type: F16sv2
               subnets: cloud_private_subnet
             - name: cloud_node_gw
               roles:
@@ -85,5 +64,5 @@
               provision: true
               username: redhat
               os: rhel7
-              instance_type: n1-standard-1
+              instance_type: F16sv2
               subnets: cloud_private_subnet
