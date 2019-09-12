@@ -16,8 +16,18 @@ func Apply(templateSrc string, context map[string]interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO: Do not compile regex inside a function.
 	// strip empty lines in output content
-	regex, _ := regexp.Compile("\n[ \r\n\t]*\n") // nolint: errcheck
-	outputString := regex.ReplaceAllString(string(output), "\n")
+	emptyLinesregex, err := regexp.Compile("\n[ \r\n\t]*\n")
+	if err != nil {
+		return nil, err
+	}
+	outputString := emptyLinesregex.ReplaceAllString(string(output), "\n")
+	// remove trailing spaces and tabs
+	trailingRegex, err := regexp.Compile("([^ \t\r\n]) +(\n)+")
+	if err != nil {
+		return nil, err
+	}
+	outputString = trailingRegex.ReplaceAllString(outputString, "$1\n")
 	return []byte(outputString), nil
 }
