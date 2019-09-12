@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -122,4 +123,26 @@ func AppendToFile(path string, content []byte, perm os.FileMode) error {
 	}
 	_, err = f.Write(content)
 	return err
+}
+
+//CopyFile copies file.
+func CopyFile(src, dest string, overwrite bool) error {
+	var perm os.FileMode
+	srcInfo, err := os.Stat(dest)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		perm = os.ModePerm
+	} else {
+		if !overwrite {
+			return errors.New("copying file failed, destination file already exists")
+		}
+		perm = srcInfo.Mode()
+	}
+	content, err := ioutil.ReadFile(src)
+	if err != nil {
+		return errors.Wrap(err, "copying file failed, couldn't read source file")
+	}
+	return WriteToFile(dest, content, perm)
 }
