@@ -2,9 +2,12 @@ package apisrv_test
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,6 +19,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/websocket"
 )
 
 const (
@@ -473,4 +477,54 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 		break
 	}
 	server.ForceProxyUpdate()
+}
+
+func TestWebsocketEndpoint(t *testing.T) {
+	clusterName := t.Name() + "_clusterC"
+
+	srv := echoWebsocketServer()
+	defer srv.Close()
+	cleanup := createWebsocketEndpoint(t, srv, clusterName)
+	defer cleanup()
+
+	wsURLBase := strings.ReplaceAll(server.URL(), "https://", "wss://")
+	url := wsURLBase + "/proxy/" + clusterName + "_uuid/websocket"
+
+	config, err := websocket.NewConfig(url, "http://localhost/")
+	assert.NoError(t, err, "failed to create websocket config from proxy URL")
+	config.TlsConfig = &tls.Config{InsecureSkipVerify: true} // TODO Take this from the scenario's clients
+	ws, err := websocket.DialConfig(config)
+	assert.NoError(t, err, "failed to connect to a websocket endpoint through the proxy")
+	defer ws.Close()
+
+	// TODO Exchange some messages over the socket.
+}
+
+func echoWebsocketServer() *httptest.Server {
+	server := integration.NewWellKnownServer("", websocket.Handler(func(ws *websocket.Conn) {
+		io.Copy(ws, ws)
+	}))
+	server.Start()
+	return server
+}
+
+func createWebsocketEndpoint(t *testing.T, target *httptest.Server, clusterName string) (cleanup func()) {
+	clusterCUser := clusterName + "_admin"
+	ts, err := integration.LoadTest(
+		testEndpointFile,
+		pongo2.Context{
+			"cluster_name":    clusterName,
+			"endpoint_name":   clusterName + "_websocket",
+			"endpoint_prefix": "websocket",
+			"private_url":     target.URL,
+			"public_url":      target.URL, // TODO Make a "public" server as well?
+			"manage_parent":   true,
+			"admin_user":      clusterCUser,
+		})
+	require.NoError(t, err, "failed to load endpoint create test data")
+	cleanup = integration.RunDirtyTestScenario(t, ts, server)
+
+	server.ForceProxyUpdate()
+
+	return cleanup
 }
