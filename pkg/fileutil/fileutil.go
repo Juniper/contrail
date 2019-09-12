@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -122,4 +123,30 @@ func AppendToFile(path string, content []byte, perm os.FileMode) error {
 	}
 	_, err = f.Write(content)
 	return err
+}
+
+//CopyFile copies file.
+func CopyFile(src, dest string, overwrite bool) error {
+	var perm os.FileMode
+	dstInfo, err := os.Stat(dest)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return errors.Wrap(err, "state of destination file cannot be resolved")
+		}
+		srcInfo, statErr := os.Stat(src)
+		if statErr != nil {
+			return errors.Wrap(statErr, "cannot resolve permissions of source file")
+		}
+		perm = srcInfo.Mode().Perm()
+	} else {
+		if !overwrite {
+			return errors.New("destination file already exists")
+		}
+		perm = dstInfo.Mode().Perm()
+	}
+	content, err := ioutil.ReadFile(src)
+	if err != nil {
+		return errors.Wrap(err, "couldn't read source file")
+	}
+	return WriteToFile(dest, content, perm)
 }

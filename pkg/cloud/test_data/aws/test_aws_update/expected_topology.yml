@@ -2,7 +2,7 @@
 - provider: aws
   organization: unit_test
   project: test2
-  prebuild: nightly
+  prebuild: test-update-image-id
   regions:
     - name: us-east-1
       vpc:
