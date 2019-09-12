@@ -34,27 +34,26 @@ func updateInstanceIP(ctx context.Context,
 		return err
 	}
 
-	if gwRoleExists(instance) {
-		portObj, inErr := createPort(ctx, "private", privateIP,
-			instance.info, instance.client)
-		if inErr != nil {
-			return inErr
-		}
-
-		inErr = addPortToNode(ctx, portObj, instance.info, instance.client)
-		if err != nil {
-			return inErr
-		}
-
-		publicIP, inErr := getIPFromTFState(tfState,
-			fmt.Sprintf("%s.public_ip", instance.info.Hostname))
-		if inErr != nil {
-			return inErr
-		}
-		return addIPToNode(ctx, publicIP, instance.info, instance.client)
+	if !gwRoleExists(instance) {
+		return addIPToNode(ctx, privateIP, instance.info, instance.client)
 	}
 
-	return addIPToNode(ctx, privateIP, instance.info, instance.client)
+	portObj, err := createPort(ctx, "private", privateIP,
+		instance.info, instance.client)
+	if err != nil {
+		return err
+	}
+
+	if err = addPortToNode(ctx, portObj, instance.info, instance.client); err != nil {
+		return err
+	}
+
+	publicIP, err := getIPFromTFState(tfState,
+		fmt.Sprintf("%s.public_ip", instance.info.Hostname))
+	if err != nil {
+		return err
+	}
+	return addIPToNode(ctx, publicIP, instance.info, instance.client)
 }
 
 func gwRoleExists(instance *instanceData) bool {
@@ -99,7 +98,7 @@ func createPort(ctx context.Context, portName string, ip string,
 	if err != nil {
 		return nil, err
 	}
-	return portResp.GetPort(), err
+	return portResp.GetPort(), nil
 }
 
 func addPortToNode(ctx context.Context, port *models.Port,
@@ -120,8 +119,5 @@ func addIPToNode(ctx context.Context, ip string,
 	request.Node.IPAddress = ip
 
 	_, err := client.UpdateNode(ctx, request)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
