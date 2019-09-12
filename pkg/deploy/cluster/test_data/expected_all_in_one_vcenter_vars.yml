@@ -11,7 +11,7 @@ vcenter_servers:
       dv_switch:
         dv_switch_name: qa_dvs
       dv_port_group:
-        dv_portgroup_name: qa_pg 
+        dv_portgroup_name: qa_pg
         number_of_ports: 1800
 esxihosts:
   - name: 10.84.16.11
