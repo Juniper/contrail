@@ -17,7 +17,10 @@ func Apply(templateSrc string, context map[string]interface{}) ([]byte, error) {
 		return nil, err
 	}
 	// strip empty lines in output content
-	regex, _ := regexp.Compile("\n[ \r\n\t]*\n") // nolint: errcheck
-	outputString := regex.ReplaceAllString(string(output), "\n")
+	emptyLinesregex, _ := regexp.Compile("\n[ \r\n\t]*\n") // nolint: errcheck
+	outputString := emptyLinesregex.ReplaceAllString(string(output), "\n")
+	// remove trailing spaces and tabs
+	trailingRegex, _ := regexp.Compile("([^ \t\r\n])[ \t]") // nolint: errcheck
+	outputString = trailingRegex.ReplaceAllString(string(outputString), "")
 	return []byte(outputString), nil
 }
