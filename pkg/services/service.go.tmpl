@@ -317,9 +317,11 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 		return errutil.ToHTTPError(err)
 	}
 
-	for _, r := range response.{{ schema.JSONSchema.GoName }}s {
-		if err = applyHref(r, c.Request()); err != nil {
-			logrus.WithError(err).Error("Failed to apply href - ignoring")
+	if !ls.ExcludeHrefs {
+		for _, r := range response.{{ schema.JSONSchema.GoName }}s {
+			if err = applyHref(r, c.Request()); err != nil {
+				logrus.WithError(err).Error("Failed to apply href - ignoring")
+			}
 		}
 	}
 

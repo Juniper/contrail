@@ -9,6 +9,16 @@ resources:
     perms2:
       owner: TestCLI
     uuid: project-cli-test-uuid
+- kind: project
+  data:
+    fq_name:
+    - default-domain
+    - project-cli-test-2
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+      owner: TestCLI
+    uuid: bf4d34df-3807-4573-929a-415224af0fc0
 - kind: virtual_network
   data:
     flood_unknown_unicast: true
@@ -52,3 +62,14 @@ resources:
     virtual_network_refs:
     - uuid: 0ce792b6-9d8f-11e9-a76a-5b775b6d8012
     - uuid: efb6aa60-9d8e-11e9-b056-13df9df3688a
+- kind: virtual_network
+  data:
+    fq_name:
+    - default-domain
+    - project-cli-test-2
+    - vn-green
+    parent_type: project
+    parent_uuid: bf4d34df-3807-4573-929a-415224af0fc0
+    perms2:
+      owner: TestCLI
+    uuid: 84a182ea-9c0a-4f8e-b570-6183b4697c40

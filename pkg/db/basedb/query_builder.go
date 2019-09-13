@@ -206,6 +206,18 @@ func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filte
 	return filterQuery.String()
 }
 
+func (qb *QueryBuilder) buildParentFQNameFilter(ctx *queryContext, columnJSON string, filterValues []string) []string {
+	lines := make([]string, 0, len(filterValues)+1)
+
+	for ind, value := range filterValues {
+		ctx.values = append(ctx.values, value)
+		lines = append(lines, fmt.Sprintf("%s ->> %d = %s", columnJSON, ind, qb.Placeholder(len(ctx.values))))
+	}
+	lines = append(lines, fmt.Sprintf("json_array_length(%s) = %d", columnJSON, len(filterValues)+1))
+
+	return lines
+}
+
 func (qb *QueryBuilder) join(fromTable, fromProperty, toTable string) string {
 	return "left join " + qb.Quote(fromTable) + " on " +
 		qb.Quote(toTable, "uuid") + " = " + qb.Quote(fromTable, fromProperty)
@@ -224,9 +236,9 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		filters = baseservices.AppendFilter(filters, "parent_type", spec.ParentType)
 	}
 	if spec.ParentFQName != nil {
-		// TODO: implement parent_fq_name filter
-		// TODO: reenable test "list virtual networks with parent_fq_name_str"
-		// (pkg/apisrv/test_data/test_virtual_network.go)
+		column := qb.Quote(qb.TableAlias, "fq_name")
+		wheres := qb.buildParentFQNameFilter(ctx, column, spec.ParentFQName)
+		ctx.where = append(ctx.where, wheres...)
 	}
 	for _, filter := range filters {
 		if !qb.isValidField(filter.Key) {

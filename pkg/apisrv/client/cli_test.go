@@ -16,7 +16,9 @@ import (
 )
 
 const (
+	domainName               = "default-domain"
 	projectName              = "project-cli-test"
+	secondProjectName        = "project-cli-test-2"
 	projectUUID              = "project-cli-test-uuid"
 	resourcesPath            = "testdata/resources.yml"
 	vmiSchemaID              = "virtual_machine_interface"
@@ -138,7 +140,6 @@ func testShow(cli *client.CLI) func(t *testing.T) {
 func testList(cli *client.CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
-			skip     bool // TODO(Daniel): fix implementation and remove skipping possibility
 			name     string
 			lp       *client.ListParameters
 			expected interface{}
@@ -197,7 +198,6 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				skip: true, // TODO(Daniel): fix implementation and remove
 				name: "with parent UUID and exclude hrefs",
 				lp: &client.ListParameters{
 					ParentUUIDs:  projectUUID,
@@ -209,9 +209,8 @@ func testList(cli *client.CLI) func(t *testing.T) {
 						data, ok := r[client.DataKey].(map[interface{}]interface{})
 						assert.True(t, ok)
 
-						href, ok := data["href"]
-						assert.False(t, ok, "There should be no Href in data, but there is")
-						assert.Equal(t, "", href, "There should be no Href in data, but there is")
+						_, ok = data["href"]
+						assert.False(t, ok, "There should be no Href field in data, but there is")
 					}
 				},
 			},
@@ -224,12 +223,25 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				skip: true, // TODO(Daniel): fix implementation and remove
 				name: "with parent FQ Name",
 				lp: &client.ListParameters{
-					ParentFQName: strings.Join([]string{integration.DefaultDomainUUID, projectName}, ":"),
+					ParentFQName: strings.Join([]string{domainName, projectName}, ":"),
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
+			},
+			{
+				name: "with parent's parent FQ Name",
+				lp: &client.ListParameters{
+					ParentFQName: strings.Join([]string{domainName}, ":"),
+				},
+				expected: resources(),
+			},
+			{
+				name: "with different parent FQ Name",
+				lp: &client.ListParameters{
+					ParentFQName: strings.Join([]string{domainName, secondProjectName}, ":"),
+				},
+				expected: resources(vnGreen(t)),
 			},
 			{
 				name: "with parent UUID",
@@ -270,11 +282,6 @@ func testList(cli *client.CLI) func(t *testing.T) {
 		}
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				// TODO(Daniel): fix implementation and remove skipping possibility
-				if tt.skip {
-					t.Skip("Broken implementation")
-				}
-
 				createTestResources(t, cli)
 
 				r, err := cli.ListResources(vnSchemaID, tt.lp)
@@ -400,6 +407,10 @@ func vnRedFiltered(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnRedFilteredYAML())
 }
 
+func vnGreen(t *testing.T) map[interface{}]interface{} {
+	return unmarshalResource(t, vnGreenYAML())
+}
+
 func vnBlueYAML() string {
 	return `
 kind: virtual_network
@@ -455,7 +466,27 @@ data:
   uuid: 0ce792b6-9d8f-11e9-a76a-5b775b6d8012`
 }
 
+func vnGreenYAML() string {
+	return `
+kind: virtual_network
+data:
+  fq_name:
+  - default-domain
+  - project-cli-test-2
+  - vn-green
+  parent_type: project
+  parent_uuid: bf4d34df-3807-4573-929a-415224af0fc0
+  perms2:
+    owner: TestCLI
+  uuid: 84a182ea-9c0a-4f8e-b570-6183b4697c40`
+}
+
 func resources(resources ...interface{}) map[interface{}]interface{} {
+	if len(resources) == 0 {
+		return map[interface{}]interface{}{
+			client.ResourcesKey: nil,
+		}
+	}
 	return map[interface{}]interface{}{
 		client.ResourcesKey: append([]interface{}{}, resources...),
 	}
