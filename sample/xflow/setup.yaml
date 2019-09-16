@@ -45,7 +45,6 @@ test_data:
     uuid: *appformixFlowsUUID
     openstack_cluster_refs:
     - uuid: *openstackClusterUUID
-    docker_images_tar: /opt/xflow/xflow-1.4.0.tar.gz
     xflow_license: /opt/xflow/xflow_license.sig
     keepalived_shared_ip: 10.84.5.20
     clickhouse:

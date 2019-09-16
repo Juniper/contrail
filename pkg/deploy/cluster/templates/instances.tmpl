@@ -181,7 +181,6 @@ appformix_configuration:
 {% if xflowCluster %}
 {% with x=xflowCluster.ClusterInfo %}
 xflow_configuration:
-  docker_images_tar: {{ x.DockerImagesTar }}
   {% if x.XflowLicense %}xflow_license: {{ x.XflowLicense }}{% endif %}
   {% if x.KeepalivedSharedIP %}keepalived_shared_ip: {{ x.KeepalivedSharedIP }}{% endif %}
   {% if x.Clickhouse.RetentionPeriodSecs %}clickhouse_retention_period_secs: {{ x.Clickhouse.RetentionPeriodSecs }}{% endif %}

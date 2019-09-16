@@ -16,10 +16,6 @@ references:
     presence: optional
 schema:
   properties:
-    docker_images_tar:
-      type: string
-      presence: required
-      nullable: false
     xflow_license:
       type: string
       presence: optional
