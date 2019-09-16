@@ -34,6 +34,17 @@ schema:
       view:
       - create
       - detail
+    prebuild:
+      description: VersionID of prebuild image
+      nullable: true
+      permission:
+      - create
+      - update
+      sql: ""
+      type: string
+      view:
+        - create
+        - detail
   type: object
 singular: cloud
 title: Cloud
