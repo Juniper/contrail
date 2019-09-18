@@ -9,6 +9,6 @@ provider_config:
     ntpserver: 10.1.1.100
     manage_etc_hosts: false
 contrail_configuration:
-  CONTRAIL_VERSION: ocata-5.0-x
+  CONTRAIL_VERSION: "ocata-5.0-x"
   ENCAP_PRIORITY: MPLSoGRE,MPLSoUDP,VXLAN
   CLOUD_ORCHESTRATOR: kubernetes

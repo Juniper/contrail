@@ -22,9 +22,10 @@ instances:
       k8s_node:
       kubemanager:
 contrail_configuration:
-  CONTRAIL_VERSION: ocata-5.0-x
+  CONTRAIL_VERSION: "ocata-5.0-x"
   CLOUD_ORCHESTRATOR: kubernetes
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254
   ENCAP_PRIORITY: MPLSoGRE,MPLSoUDP,VXLAN
+  CONTRAIL_CONTAINER_TAG: "master.100"
   KUBERNETES_PUBLIC_FIP_POOL: {'project': 'default', 'domain': 'default-domain', 'name': '__fip_pool_public__', 'network': '__public__'}
