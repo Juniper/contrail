@@ -28,10 +28,14 @@ const (
 
 // SecretFileConfig holds the secret keys of the cloud
 type SecretFileConfig struct {
-	AWSAccessKey string
-	AWSSecretKey string
-	ProviderType string
-	Keypair      *models.Keypair
+	AWSAccessKey        string
+	AWSSecretKey        string
+	AzureSubscriptionID string
+	AzureClientID       string
+	AzureClientSecret   string
+	AzureTenantID       string
+	ProviderType        string
+	Keypair             *models.Keypair
 }
 
 type secret struct {
@@ -95,18 +99,14 @@ func getKeyPairObject(ctx context.Context, uuid string,
 }
 
 // Update fills the secret file config
-func (sfc *SecretFileConfig) Update(cloudID string, providers []string, kp *models.Keypair) error {
+func (sfc *SecretFileConfig) Update(providers []string, kp *models.Keypair) error {
 	sfc.Keypair = kp
 
-	kfd, err := services.NewKeyFileDefaults()
-	if err != nil {
-		return errors.Wrap(err, "could not get file defaults")
-	}
+	kfd := services.NewKeyFileDefaults()
 
 	awsCredentialsPresent := awsCredentialsExist(kfd)
 	if awsCredentialsPresent {
 		awsCreds, err := loadAWSCredentials(
-			cloudID,
 			kfd.GetAWSAccessPath(),
 			kfd.GetAWSSecretPath(),
 		)
@@ -117,9 +117,13 @@ func (sfc *SecretFileConfig) Update(cloudID string, providers []string, kp *mode
 		sfc.AWSSecretKey = awsCreds.SecretKey
 	}
 
+	if err := sfc.updateAzureCredentials(kfd); err != nil {
+		return err
+	}
+
 	for _, provider := range providers {
 		if provider == AWS && !awsCredentialsPresent {
-			return errors.New("AWS Credentials are not present. Please provide them")
+			return errors.New("aws credentials are not present, please provide them")
 		}
 		if provider == gcp {
 			sfc.ProviderType = gcp
@@ -139,15 +143,15 @@ func awsCredentialsExist(kfd *services.KeyFileDefaults) bool {
 	return true
 }
 
-func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCredential, error) {
+func loadAWSCredentials(accessPath, secretPath string) (*models.AWSCredential, error) {
 	accessKey, err := ioutil.ReadFile(accessPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not retrieve AWS Access Key")
+		return nil, errors.Wrap(err, "could not retrieve AWS Access Key")
 	}
 
 	secretKey, err := ioutil.ReadFile(secretPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not retrieve AWS Secret Key")
+		return nil, errors.Wrap(err, "could not retrieve AWS Secret Key")
 	}
 
 	if len(accessKey) == 0 && len(secretKey) == 0 {
@@ -163,6 +167,65 @@ func loadAWSCredentials(cloudID, accessPath, secretPath string) (*models.AWSCred
 	}
 
 	return &models.AWSCredential{AccessKey: string(accessKey), SecretKey: string(secretKey)}, nil
+}
+
+func (sfc *SecretFileConfig) updateAzureCredentials(kfd *services.KeyFileDefaults) error {
+	if azureCredentialsExist(kfd) {
+		azSfc, err := loadAzureCredentials(kfd)
+		if err != nil {
+			return err
+		}
+		sfc.AzureSubscriptionID = azSfc.AzureSubscriptionID
+		sfc.AzureClientID = azSfc.AzureClientID
+		sfc.AzureClientSecret = azSfc.AzureClientSecret
+		sfc.AzureTenantID = azSfc.AzureTenantID
+	}
+	return nil
+}
+
+func azureCredentialsExist(kfd *services.KeyFileDefaults) bool {
+	for _, p := range []string{
+		kfd.GetAzureSubscriptionIDPath(),
+		kfd.GetAzureClientIDPath(),
+		kfd.GetAzureClientIDPath(),
+		kfd.GetAzureTenantIDPath(),
+	} {
+		if _, err := os.Stat(p); err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+func loadAzureCredentials(kfd *services.KeyFileDefaults) (*SecretFileConfig, error) {
+	subscriptionID, err := ioutil.ReadFile(kfd.GetAzureSubscriptionIDPath())
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve Azure Subscription ID")
+	}
+	clientID, err := ioutil.ReadFile(kfd.GetAzureClientIDPath())
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve Azure Client ID")
+	}
+	clientSecret, err := ioutil.ReadFile(kfd.GetAzureClientSecretPath())
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve Azure Client Secret")
+	}
+	tenantID, err := ioutil.ReadFile(kfd.GetAzureTenantIDPath())
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not retrieve Azure Tenant ID")
+	}
+
+	if len(subscriptionID)*len(clientID)*len(clientSecret)*len(tenantID) == 0 &&
+		len(subscriptionID)+len(clientID)+len(clientSecret)+len(tenantID) != 0 {
+		return nil, errors.New("one of Azure credentials was not specified")
+	}
+
+	return &SecretFileConfig{
+		AzureSubscriptionID: string(subscriptionID),
+		AzureClientID:       string(clientID),
+		AzureClientSecret:   string(clientSecret),
+		AzureTenantID:       string(tenantID),
+	}, nil
 }
 
 func newSecret(c *Cloud) (*secret, error) {
