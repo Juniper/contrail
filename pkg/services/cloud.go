@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/user"
 	"path"
 	"strings"
 
@@ -15,14 +14,15 @@ import (
 
 //API Path definitions.
 const (
-	UploadCloudKeysPath = "upload-cloud-keys"
-	keyHomeDir          = "/var/tmp/contrail"
-	secretKeyFileName   = "aws_secret.key"
-	accessKeyFileName   = "aws_access.key"
-	accessTokenFileName = "accessTokens.json"
-	profileFileName     = "azureProfile.json"
-	accountFileName     = "google-account.json"
-	azureDir            = ".azure"
+	UploadCloudKeysPath    = "upload-cloud-keys"
+	keyHomeDir             = "/var/tmp/contrail"
+	secretKeyFileName      = "aws_secret.key"
+	accessKeyFileName      = "aws_access.key"
+	accountFileName        = "google-account.json"
+	subscriptionIDFileName = "subscription_id"
+	clientIDFileName       = "client_id"
+	clientSecretFileName   = "client_secret"
+	tenantIDFileName       = "tenant_id"
 )
 
 // UploadCloudKeysBody defines data format for /upload-cloud-keys endpoint.
@@ -33,40 +33,42 @@ type UploadCloudKeysBody struct {
 	AWSSecretKey string `json:"aws_secret_key"`
 	// AWSAccessKey is the access key to created on API Server host.
 	AWSAccessKey string `json:"aws_access_key"`
-	// AzureAccessTokenJson is the token file to created on API Server host.
-	AzureAccessTokens string `json:"azure_access_tokens_json"`
-	// AzureProfileJson is the profile file to created on API Server host.
-	AzureProfile string `json:"azure_profile_json"`
+	// AzureSubscriptionID is the aubscription id to created on API Server host.
+	AzureSubscriptionID string `json:"azure_subscription_id"`
+	// AzureClientID is the client id to created on API Server host.
+	AzureClientID string `json:"azure_client_id"`
+	// AzureClientSecret is the client secret to created on API Server host.
+	AzureClientSecret string `json:"azure_client_secret"`
+	// AzureTenantID is the tenant id to created on API Server host.
+	AzureTenantID string `json:"azure_tenant_id"`
 	// GoogleAccountJson is the account file to created on API Server host.
 	GoogleAccount string `json:"google_account_json"`
 }
 
 // KeyFileDefaults defines data format for various cloud secret file
 type KeyFileDefaults struct {
-	UserHomeDir         string
-	KeyHomeDir          string
-	SecretKeyFileName   string
-	AccessKeyFileName   string
-	AccessTokenFileName string
-	ProfileFileName     string
-	AccountFileName     string
+	KeyHomeDir             string
+	SecretKeyFileName      string
+	AccessKeyFileName      string
+	SubscriptionIDFileName string
+	ClientIDFileName       string
+	ClientSecretFileName   string
+	TenantIDFileName       string
+	AccountFileName        string
 }
 
 // NewKeyFileDefaults returns defaults for various cloud secret files.
-func NewKeyFileDefaults() (defaults *KeyFileDefaults, err error) {
-	userHomeDir, err := getHomeDir()
-	if err != nil {
-		return nil, err
-	}
+func NewKeyFileDefaults() (defaults *KeyFileDefaults) {
 	return &KeyFileDefaults{
-		userHomeDir,
 		keyHomeDir,
 		secretKeyFileName,
 		accessKeyFileName,
-		accessTokenFileName,
-		profileFileName,
+		subscriptionIDFileName,
+		clientIDFileName,
+		clientSecretFileName,
+		tenantIDFileName,
 		accountFileName,
-	}, nil
+	}
 }
 
 // GetAWSSecretPath determines the aws secret key path
@@ -79,14 +81,24 @@ func (defaults *KeyFileDefaults) GetAWSAccessPath() string {
 	return path.Join(defaults.KeyHomeDir, defaults.AccessKeyFileName)
 }
 
-// GetAzureAccessTokenPath determines the azure access token path
-func (defaults *KeyFileDefaults) GetAzureAccessTokenPath() string {
-	return path.Join(defaults.UserHomeDir, azureDir, defaults.AccessTokenFileName)
+// GetAzureSubscriptionIDPath determines the azure subscription id path
+func (defaults *KeyFileDefaults) GetAzureSubscriptionIDPath() string {
+	return path.Join(defaults.KeyHomeDir, defaults.SubscriptionIDFileName)
 }
 
-// GetAzureProfilePath determines the azure profile path
-func (defaults *KeyFileDefaults) GetAzureProfilePath() string {
-	return path.Join(defaults.UserHomeDir, azureDir, defaults.ProfileFileName)
+// GetAzureClientIDPath determines the azure client id path
+func (defaults *KeyFileDefaults) GetAzureClientIDPath() string {
+	return path.Join(defaults.KeyHomeDir, defaults.ClientIDFileName)
+}
+
+// GetAzureClientSecretPath determines the azure client secret path
+func (defaults *KeyFileDefaults) GetAzureClientSecretPath() string {
+	return path.Join(defaults.KeyHomeDir, defaults.ClientSecretFileName)
+}
+
+// GetAzureTenantIDPath determines the azure tenant id path
+func (defaults *KeyFileDefaults) GetAzureTenantIDPath() string {
+	return path.Join(defaults.KeyHomeDir, defaults.TenantIDFileName)
 }
 
 // GetGoogleAccountPath determines the google account path
@@ -101,45 +113,50 @@ func (service *ContrailService) RESTUploadCloudKeys(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Sprintf("invalid JSON format: %v", err))
 	}
-	defaults, err := NewKeyFileDefaults()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError,
-			fmt.Sprintf("not able to fetch home dir: %v", err))
-	}
-	return service.UploadCloudKeys(request, defaults)
+	return service.UploadCloudKeys(request, NewKeyFileDefaults())
 }
 
 // UploadCloudKeys stores specified cloud secrets
 func (service *ContrailService) UploadCloudKeys(request *UploadCloudKeysBody, keyDefaults *KeyFileDefaults) error {
 	keyPaths := []string{}
-	// TODO: use anonymous struct instead of map
-	for keyType, secret := range map[string]map[string]string{
-		"aws-secret-key": {
-			"encoded": request.AWSSecretKey,
-			"path":    keyDefaults.GetAWSSecretPath(),
-		},
-		"aws-access-key": {
-			"encoded": request.AWSAccessKey,
-			"path":    keyDefaults.GetAWSAccessPath(),
-		},
-		"azure-access-token": {
-			"encoded": request.AzureAccessTokens,
-			"path":    keyDefaults.GetAzureAccessTokenPath(),
-		},
-		"azure-profile": {
-			"encoded": request.AzureProfile,
-			"path":    keyDefaults.GetAzureProfilePath(),
-		},
-		"google-account": {
-			"encoded": request.GoogleAccount,
-			"path":    keyDefaults.GetGoogleAccountPath(),
-		},
-	} {
-		if err := decodeAndStoreCloudKey(keyType, secret["path"], secret["encoded"], keyPaths); err != nil {
+	for _, secret := range []struct {
+		keyType string
+		encoded string
+		path    string
+	}{{
+		keyType: "aws-secret-key",
+		encoded: request.AWSSecretKey,
+		path:    keyDefaults.GetAWSSecretPath(),
+	}, {
+		keyType: "aws-access-key",
+		encoded: request.AWSAccessKey,
+		path:    keyDefaults.GetAWSAccessPath(),
+	}, {
+		keyType: "azure-subscription-id",
+		encoded: request.AzureSubscriptionID,
+		path:    keyDefaults.GetAzureSubscriptionIDPath(),
+	}, {
+		keyType: "azure-client-id",
+		encoded: request.AzureClientID,
+		path:    keyDefaults.GetAzureClientIDPath(),
+	}, {
+		keyType: "azure-client-secret",
+		encoded: request.AzureClientSecret,
+		path:    keyDefaults.GetAzureClientSecretPath(),
+	}, {
+		keyType: "azure-tenant-id",
+		encoded: request.AzureTenantID,
+		path:    keyDefaults.GetAzureTenantIDPath(),
+	}, {
+		keyType: "google-account",
+		encoded: request.GoogleAccount,
+		path:    keyDefaults.GetGoogleAccountPath(),
+	}} {
+		if err := decodeAndStoreCloudKey(secret.keyType, secret.path, secret.encoded, keyPaths); err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError,
 				fmt.Sprintf("failed to store secret key: %v", err))
 		}
-		keyPaths = append(keyPaths, secret["path"])
+		keyPaths = append(keyPaths, secret.path)
 	}
 	return nil
 }
@@ -182,12 +199,4 @@ func cleanupCloudKeys(keyPaths []string) (errstrings []string) {
 		}
 	}
 	return errstrings
-}
-
-func getHomeDir() (homeDir string, err error) {
-	user, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	return user.HomeDir, nil
 }

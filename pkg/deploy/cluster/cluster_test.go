@@ -253,17 +253,6 @@ func executedMCCommandPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
 }
 
-func createDummyCloudSecretFile(t *testing.T) {
-	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
-	}
-	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
-	if err != nil {
-		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
-	}
-}
-
 func createDummyCloudFiles(t *testing.T) func() {
 
 	// create public cloud topology.yaml
@@ -284,15 +273,11 @@ func createDummyCloudFiles(t *testing.T) func() {
 	if err != nil {
 		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
 	}
-	// create public cloud secret.yml
-	createDummyCloudSecretFile(t)
 
 	return func() {
 		// best effort method of deleting all the files
 		// nolint: errcheck
 		_ = os.Remove("/var/tmp/cloud/config/public_cloud_uuid/topology.yml")
-		// nolint: errcheck
-		_ = os.Remove("/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
 		// nolint: errcheck
 		_ = os.Remove("/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
 	}
@@ -1272,8 +1257,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	require.NoError(t, err, "failed to load mc pvt cloud update test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
 
-	// now get cluster data again
-	createDummyCloudSecretFile(t)
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
@@ -1341,7 +1324,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		}
 	}
 
-	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterUpdateTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
@@ -1385,7 +1367,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		}
 	}
 
-	createDummyCloudSecretFile(t)
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)

@@ -159,8 +159,10 @@ func runCloudTest(
 		createAWSAccessKey(t, awsAccessKeyFile)
 		createAWSSecretKey(t, awsSecretKeyFile)
 		defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
+	} else if context["CLOUD_TYPE"] == azure {
+		createAzureCredentials(t)
+		defer removeAzureCredentials(t)
 	}
-
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
 
@@ -214,6 +216,8 @@ func runCloudTest(
 		if context["CLOUD_TYPE"] == AWS {
 			createAWSAccessKey(t, awsAccessKeyFile)
 			createAWSSecretKey(t, awsSecretKeyFile)
+		} else if context["CLOUD_TYPE"] == azure {
+			createAzureCredentials(t)
 		}
 		err = cloud.Manage()
 		assert.NoError(t, err, "failed to manage cloud, while updating onprem cloud")
@@ -254,6 +258,8 @@ func runCloudTest(
 		if context["CLOUD_TYPE"] == AWS {
 			createAWSAccessKey(t, awsAccessKeyFile)
 			createAWSSecretKey(t, awsSecretKeyFile)
+		} else if context["CLOUD_TYPE"] == azure {
+			createAzureCredentials(t)
 		}
 		err = cloud.Manage()
 		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
@@ -288,6 +294,8 @@ func runCloudTest(
 	if context["CLOUD_TYPE"] == AWS {
 		createAWSAccessKey(t, awsAccessKeyFile)
 		createAWSSecretKey(t, awsSecretKeyFile)
+	} else if context["CLOUD_TYPE"] == azure {
+		createAzureCredentials(t)
 	}
 	err = cloud.Manage()
 	ok := isCloudSecretFilesDeleted()
@@ -396,6 +404,41 @@ func createAWSSecretKey(t *testing.T, path string) {
 	assert.NoErrorf(t, err, "Unable to write file: %s", path)
 }
 
+func createAzureCredentials(t *testing.T) {
+	kfd := services.NewKeyFileDefaults()
+
+	data := []byte("subscription_id")
+	err := fileutil.WriteToFile(kfd.GetAzureSubscriptionIDPath(), data, defaultRWOnlyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", kfd.GetAzureSubscriptionIDPath())
+
+	data = []byte("client_id")
+	err = fileutil.WriteToFile(kfd.GetAzureClientIDPath(), data, defaultRWOnlyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", kfd.GetAzureClientIDPath())
+
+	data = []byte("client_secret")
+	err = fileutil.WriteToFile(kfd.GetAzureClientSecretPath(), data, defaultRWOnlyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", kfd.GetAzureClientSecretPath())
+
+	data = []byte("tenant_id")
+	err = fileutil.WriteToFile(kfd.GetAzureTenantIDPath(), data, defaultRWOnlyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", kfd.GetAzureTenantIDPath())
+}
+
+func removeAzureCredentials(t *testing.T) {
+	kfd := services.NewKeyFileDefaults()
+	for _, f := range []string{
+		kfd.GetAzureSubscriptionIDPath(),
+		kfd.GetAzureClientIDPath(),
+		kfd.GetAzureClientSecretPath(),
+		kfd.GetAzureTenantIDPath(),
+	} {
+		// nolint: errcheck
+		_ = os.Remove(f)
+		_, err := ioutil.ReadFile(f)
+		assert.True(t, os.IsNotExist(err), "File %s was not removed!", f)
+	}
+}
+
 func createDummySSHKeyFiles(t *testing.T) func() {
 	// create ssh pub key
 	pubKeyData, err := fileutil.GetContent("file://" + expectedPubKey)
@@ -478,19 +521,18 @@ func verifyCloudDeleted(ctx context.Context, httpClient *client.HTTP) bool {
 }
 
 func isCloudSecretFilesDeleted() error {
-	keyDefaults, err := services.NewKeyFileDefaults()
-	if err != nil {
-		return err
-	}
+	keyDefaults := services.NewKeyFileDefaults()
 	errstrings := []string{}
 	for _, secret := range []string{
 		GetTerraformAWSPlanFile(cloudID),
 		GetTerraformAzurePlanFile(cloudID),
 		GetTerraformGCPPlanFile(cloudID),
-		awsAccessKeyFile,
-		awsSecretKeyFile,
-		keyDefaults.GetAzureAccessTokenPath(),
-		keyDefaults.GetAzureProfilePath(),
+		keyDefaults.GetAWSAccessPath(),
+		keyDefaults.GetAWSSecretPath(),
+		keyDefaults.GetAzureSubscriptionIDPath(),
+		keyDefaults.GetAzureClientIDPath(),
+		keyDefaults.GetAzureClientSecretPath(),
+		keyDefaults.GetAzureTenantIDPath(),
 		keyDefaults.GetGoogleAccountPath(),
 	} {
 		_, err := os.Stat(secret)

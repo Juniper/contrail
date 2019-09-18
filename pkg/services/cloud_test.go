@@ -18,23 +18,27 @@ func TestUploadCloudKeys(t *testing.T) {
 	outputDirectory := "/tmp/test_upload_cloud_keys"
 
 	for _, tt := range []struct {
-		name              string
-		cloudProviderUUID string
-		awsAccessKey      string
-		awsSecretKey      string
-		azureAccessToken  string
-		azureProfile      string
-		googleAccount     string
-		statusCode        int
+		name                string
+		cloudProviderUUID   string
+		awsAccessKey        string
+		awsSecretKey        string
+		azureSubscriptionID string
+		azureClientID       string
+		azureClientSecret   string
+		azureTenantID       string
+		googleAccount       string
+		statusCode          int
 	}{
 		{
-			name:              "upload aws/azure/gcp keys",
-			cloudProviderUUID: uuid.NewV4().String(),
-			awsAccessKey:      "test access key",
-			awsSecretKey:      "test secret key",
-			azureAccessToken:  "{\"test\": \"access token\"}",
-			azureProfile:      "{\"test\": \"profile\"}",
-			googleAccount:     "{\"test\": \"account\"}",
+			name:                "upload aws/azure/gcp keys",
+			cloudProviderUUID:   uuid.NewV4().String(),
+			awsAccessKey:        "test access key",
+			awsSecretKey:        "test secret key",
+			azureSubscriptionID: "test subscription id",
+			azureClientID:       "test client id",
+			azureClientSecret:   "test client secret",
+			azureTenantID:       "test tenant id",
+			googleAccount:       "{\"test\": \"account\"}",
 		},
 		{
 			name:              "upload aws keys",
@@ -48,10 +52,12 @@ func TestUploadCloudKeys(t *testing.T) {
 			googleAccount:     "{\"test\": \"account\"}",
 		},
 		{
-			name:              "upload azure keys",
-			cloudProviderUUID: uuid.NewV4().String(),
-			azureAccessToken:  "{\"test\": \"access token\"}",
-			azureProfile:      "{\"test\": \"profile\"}",
+			name:                "upload azure keys",
+			cloudProviderUUID:   uuid.NewV4().String(),
+			azureSubscriptionID: "test subscription id",
+			azureClientID:       "test client id",
+			azureClientSecret:   "test client secret",
+			azureTenantID:       "test tenant id",
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -67,18 +73,18 @@ func TestUploadCloudKeys(t *testing.T) {
 				}
 			}()
 
-			defaults, err := services.NewKeyFileDefaults()
-			require.NoError(t, err)
-			defaults.UserHomeDir = outputDirectory
+			defaults := services.NewKeyFileDefaults()
 			defaults.KeyHomeDir = outputDirectory
 
 			request := &services.UploadCloudKeysBody{
-				CloudProviderUUID: tt.cloudProviderUUID,
-				AWSAccessKey:      base64.StdEncoding.EncodeToString([]byte(tt.awsAccessKey)),
-				AWSSecretKey:      base64.StdEncoding.EncodeToString([]byte(tt.awsSecretKey)),
-				AzureAccessTokens: base64.StdEncoding.EncodeToString([]byte(tt.azureAccessToken)),
-				AzureProfile:      base64.StdEncoding.EncodeToString([]byte(tt.azureProfile)),
-				GoogleAccount:     base64.StdEncoding.EncodeToString([]byte(tt.googleAccount)),
+				CloudProviderUUID:   tt.cloudProviderUUID,
+				AWSAccessKey:        base64.StdEncoding.EncodeToString([]byte(tt.awsAccessKey)),
+				AWSSecretKey:        base64.StdEncoding.EncodeToString([]byte(tt.awsSecretKey)),
+				AzureSubscriptionID: base64.StdEncoding.EncodeToString([]byte(tt.azureSubscriptionID)),
+				AzureClientID:       base64.StdEncoding.EncodeToString([]byte(tt.azureClientID)),
+				AzureClientSecret:   base64.StdEncoding.EncodeToString([]byte(tt.azureClientSecret)),
+				AzureTenantID:       base64.StdEncoding.EncodeToString([]byte(tt.azureTenantID)),
+				GoogleAccount:       base64.StdEncoding.EncodeToString([]byte(tt.googleAccount)),
 			}
 
 			cs := services.ContrailService{}
@@ -86,11 +92,13 @@ func TestUploadCloudKeys(t *testing.T) {
 			require.NoError(t, err)
 
 			for keyPath, content := range map[string]string{
-				defaults.GetAWSSecretPath():        tt.awsSecretKey,
-				defaults.GetAWSAccessPath():        tt.awsAccessKey,
-				defaults.GetAzureAccessTokenPath(): tt.azureAccessToken,
-				defaults.GetAzureProfilePath():     tt.azureProfile,
-				defaults.GetGoogleAccountPath():    tt.googleAccount,
+				defaults.GetAWSSecretPath():           tt.awsSecretKey,
+				defaults.GetAWSAccessPath():           tt.awsAccessKey,
+				defaults.GetAzureSubscriptionIDPath(): tt.azureSubscriptionID,
+				defaults.GetAzureClientIDPath():       tt.azureClientID,
+				defaults.GetAzureClientSecretPath():   tt.azureClientSecret,
+				defaults.GetAzureTenantIDPath():       tt.azureTenantID,
+				defaults.GetGoogleAccountPath():       tt.googleAccount,
 			} {
 				b, err := ioutil.ReadFile(keyPath)
 				assert.NoError(t, err)
