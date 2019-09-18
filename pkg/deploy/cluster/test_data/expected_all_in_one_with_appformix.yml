@@ -34,7 +34,7 @@ instances:
       appformix_network_agents:
           connection: ssh
 contrail_configuration:
-  CONTRAIL_VERSION: ocata-5.0-x
+  CONTRAIL_VERSION: "ocata-5.0-x"
   CLOUD_ORCHESTRATOR: openstack
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254

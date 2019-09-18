@@ -13,11 +13,11 @@ provider_config:
 
 contrail_configuration:
   {% if cluster.ContrailVersion %}
-  CONTRAIL_VERSION: {{ cluster.ContrailVersion }}
+  CONTRAIL_VERSION: "{{ cluster.ContrailVersion }}"
   {% else %}
   {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
   {% if "CONTRAIL_CONTAINER_TAG" in key_value.Key %}
-  CONTRAIL_VERSION: {{ key_value.Value }}
+  CONTRAIL_VERSION: "{{ key_value.Value }}"
   {% endif %}
   {% endfor %}
   {% endif %}

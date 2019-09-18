@@ -41,6 +41,8 @@ test_data:
       - uuid: test_kubernetes_cluster_uuid
     contrail_configuration:
       key_value_pair:
+        - key: CONTRAIL_CONTAINER_TAG
+          value: "master.100"
     {% if CONTROL_NODES %}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}

@@ -93,7 +93,7 @@ instances:
     {%endfor%}
 
 contrail_configuration:
-  CONTRAIL_VERSION: {%if cluster.ContrailVersion %}{{ cluster.ContrailVersion }}{%else%}latest{%endif%}
+  CONTRAIL_VERSION: {%if cluster.ContrailVersion %}"{{ cluster.ContrailVersion }}"{%else%}latest{%endif%}
   CLOUD_ORCHESTRATOR: {%if cluster.Orchestrator %}{{ cluster.Orchestrator }}{%else%}openstack{%endif%}
   RABBITMQ_NODE_PORT: {%if cluster.RabbitMQPort %}{{ cluster.RabbitMQPort }}{%else%}5673{%endif%}
   {%if cluster.DefaultGateway != "" %}VROUTER_GATEWAY: {{ cluster.DefaultGateway }}{%endif%}
@@ -163,7 +163,10 @@ appformix_configuration:
   {% if key_value.Key && key_value.Value%}
   {% if key_value.Key == "KUBERNETES_PUBLIC_FIP_POOL" or key_value.Key == "KUBERNETES_CLUSTER_NETWORK" or key_value.Key == "KUBERNETES_CLUSTER_PROJECT"%}
   {{key_value.Key}}: {% autoescape off %}{{key_value.Value}}{% endautoescape %}
-  {%else%}{{key_value.Key}}: {{key_value.Value}}
+  {% elif key_value.Key == "CONTRAIL_CONTAINER_TAG" %}
+  {{key_value.Key}}: "{{key_value.Value}}"
+  {%else%}
+  {{key_value.Key}}: {{key_value.Value}}
   {%endif%}
   {%endif%}
   {%endfor%}
