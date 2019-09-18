@@ -645,19 +645,14 @@ func (m *multiCloudProvisioner) filesToRemove() ([]string, error) {
 		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
 		m.getClusterSecretFile(m.workDir),
 	}
-	kfd, err := services.NewKeyFileDefaults()
-	if err != nil {
-		return f, errors.Wrap(
-			err,
-			"failed to create KeyFileDefaults - "+
-				"Secret file, Azure profile, Azure access token, Google account, AWS access, AWS secret "+
-				"will not be deleted",
-		)
-	}
+	kfd := services.NewKeyFileDefaults()
+
 	f = append(
 		f,
-		kfd.GetAzureProfilePath(),
-		kfd.GetAzureAccessTokenPath(),
+		kfd.GetAzureSubscriptionIDPath(),
+		kfd.GetAzureClientIDPath(),
+		kfd.GetAzureClientSecretPath(),
+		kfd.GetAzureTenantIDPath(),
 		kfd.GetGoogleAccountPath(),
 		kfd.GetAWSAccessPath(),
 		kfd.GetAWSSecretPath(),
@@ -667,8 +662,7 @@ func (m *multiCloudProvisioner) filesToRemove() ([]string, error) {
 		return f, errors.Wrap(
 			err,
 			"failed to retrieve public cloud UUID - "+
-				"Secret file, AWS access, AWS secret "+
-				"will not be deleted",
+				"Secret file will not be deleted",
 		)
 	}
 	f = append(f, cloud.GetSecretFile(pubCloudID))
@@ -1077,11 +1071,6 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 }
 
 func (m *multiCloudProvisioner) createClusterSecretFile() error {
-	pubCloudID, _, err := m.getPubPvtCloudID()
-	if err != nil {
-		return errors.Wrap(err, "failed to to get public Cloud ID")
-	}
-
 	pubCloudProviders, err := m.providers()
 	if err != nil {
 		return errors.Wrap(err, "failed to to get public Cloud providers")
@@ -1093,7 +1082,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 	}
 
 	sfc := cloud.SecretFileConfig{}
-	err = sfc.Update(pubCloudID, pubCloudProviders, pubCloudKeyPair)
+	err = sfc.Update(pubCloudProviders, pubCloudKeyPair)
 	if err != nil {
 		return errors.Wrap(err, "failed to to update secret file config")
 	}

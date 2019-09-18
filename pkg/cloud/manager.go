@@ -363,7 +363,7 @@ func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = s.sfc.Update(c.config.CloudID, d.providerNames(), kp)
+		err = s.sfc.Update(d.providerNames(), kp)
 		if err != nil {
 			return nil, err
 		}
@@ -536,18 +536,17 @@ func (c *Cloud) removeVulnerableFiles(data *Data) error {
 		return nil
 	}
 
-	kfd, err := services.NewKeyFileDefaults()
-	if err != nil {
-		return errors.Wrap(err, "Cannot remove files due to an error with host's user.")
-	}
+	kfd := services.NewKeyFileDefaults()
 
 	f := []string{
 		GetTerraformAWSPlanFile(c.config.CloudID),
 		GetTerraformAzurePlanFile(c.config.CloudID),
 		GetTerraformGCPPlanFile(c.config.CloudID),
 		GetSecretFile(c.config.CloudID),
-		kfd.GetAzureProfilePath(),
-		kfd.GetAzureAccessTokenPath(),
+		kfd.GetAzureSubscriptionIDPath(),
+		kfd.GetAzureClientIDPath(),
+		kfd.GetAzureClientSecretPath(),
+		kfd.GetAzureTenantIDPath(),
 	}
 	// Deploy worker to provision multicloud needs AWS secret files. Cloud worker must not delete them.
 	// Deploy worker needs to remove those files.
