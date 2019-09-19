@@ -1,0 +1,147 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "50851a25_12e301ed",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "It\u0027s a path so maybe something like `expectedCommandsFile`?",
+      "range": {
+        "startLine": 27,
+        "startChar": 1,
+        "endLine": 27,
+        "endChar": 17
+      },
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "33e51b53_5ead48b8",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 594,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "Use path.Join()",
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ae7ddd53_5a181d87",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 599,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "Doesn\u0027t it exist on host?",
+      "range": {
+        "startLine": 599,
+        "startChar": 43,
+        "endLine": 599,
+        "endChar": 55
+      },
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4de7a142_59aba802",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 602,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "What in case httpClient returns error other than 404?",
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac481f90_b0a0bc09",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 646,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "What in case there is other kind of error?",
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "92f3cc65_db69fe80",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 650,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "Maybe something like: expectedSSHPrivKeyPath(...) ?",
+      "range": {
+        "startLine": 650,
+        "startChar": 5,
+        "endLine": 650,
+        "endChar": 37
+      },
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f883015_735edba6",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 654,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-19T15:30:25Z",
+      "side": 1,
+      "message": "ditto 650",
+      "range": {
+        "startLine": 654,
+        "startChar": 5,
+        "endLine": 654,
+        "endChar": 36
+      },
+      "revId": "1d5a622fb35fe5495b3f8588d69458fdb9ff7004",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
