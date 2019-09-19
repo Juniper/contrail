@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "31717736_5e361dca",
+        "filename": "pkg/deploy/cluster/templates/contrail_common.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 550
+      },
+      "writtenOn": "2019-09-19T04:12:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "25274486_6285eb8b",
+      "revId": "007d7cf063b5162df2e79a728246f452f7ba83b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "91075e18_3667599d",
         "filename": "pkg/deploy/cluster/templates/contrail_common.tmpl",
         "patchSetId": 2
@@ -69,6 +87,24 @@
       "revId": "007d7cf063b5162df2e79a728246f452f7ba83b8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fab35baf_772abb3b",
+        "filename": "pkg/deploy/cluster/templates/contrail_common.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 550
+      },
+      "writtenOn": "2019-09-19T04:12:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a732760a_1975b2fc",
+      "revId": "007d7cf063b5162df2e79a728246f452f7ba83b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -107,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "ebc6bb92_54f9f651",
+        "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_kubernetes_instances.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 550
+      },
+      "writtenOn": "2019-09-19T04:12:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b22a8186_aaf5fd24",
+      "revId": "007d7cf063b5162df2e79a728246f452f7ba83b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8cee9de3_2159b2f0",
         "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_kubernetes_instances.yml",
         "patchSetId": 2
@@ -139,6 +193,24 @@
       "revId": "007d7cf063b5162df2e79a728246f452f7ba83b8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29f6b302_83e5483d",
+        "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_kubernetes_instances.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 550
+      },
+      "writtenOn": "2019-09-19T04:12:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5e146091_9c122dcb",
+      "revId": "007d7cf063b5162df2e79a728246f452f7ba83b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
