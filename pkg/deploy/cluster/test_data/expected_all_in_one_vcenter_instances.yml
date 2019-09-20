@@ -28,7 +28,7 @@ instances:
         ESXI_USERNAME: root
         ESXI_PASSWORD: c0ntrail123
 contrail_configuration:
-  CONTRAIL_VERSION: ocata-5.0-x
+  CONTRAIL_VERSION: "ocata-5.0-x"
   CLOUD_ORCHESTRATOR: vcenter
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254
