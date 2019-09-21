@@ -34,6 +34,7 @@ const (
 	addComputeProvisioningAction    = "ADD_COMPUTE"
 	deleteComputeProvisioningAction = "DELETE_COMPUTE"
 	addCSNProvisioningAction        = "ADD_CSN"
+	addCVFMProvisioningAction       = "ADD_CVFM"
 
 	enable  = "yes"
 	disable = "no"
@@ -522,7 +523,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 	}
 
 	switch a.clusterData.ClusterInfo.ProvisioningAction {
-	case provisionProvisioningAction, "":
+	case provisionProvisioningAction, "", addCVFMProvisioningAction:
 		if err := a.playInstancesProvision(args); err != nil {
 			return err
 		}

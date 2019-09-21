@@ -360,6 +360,12 @@ func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 		}
 		config.Action = createAction
 		cluster["provisioning_action"] = ""
+	case addCVFMProvisioningAction:
+		// remove instances.yml to mock trriger cluster update
+		err = os.Remove(generatedInstancesPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete instances.yml")
+		}
 	}
 	data = map[string]interface{}{"contrail-cluster": cluster}
 	for _, client := range ts.Clients {
@@ -525,6 +531,13 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, ts, config,
 		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
+
+	// ADD_CVFM test
+	if pContext["VFABRIC_MANAGER"] == true {
+		runClusterActionTest(t, ts, config,
+			addCVFMProvisioningAction, expectedInstance, expectedInventory,
+			updatePlaybooks, expectedEndpoints)
+	}
 
 	// delete cluster
 	config.Action = deleteAction
