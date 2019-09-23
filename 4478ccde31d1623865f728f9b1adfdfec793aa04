@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1989725a_6bdc7c26",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 215,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-09-23T14:28:27Z",
+      "side": 1,
+      "message": "This part is redundant if we check at first that files exist.",
+      "range": {
+        "startLine": 214,
+        "startChar": 75,
+        "endLine": 215,
+        "endChar": 72
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
