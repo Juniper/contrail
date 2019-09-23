@@ -22,6 +22,30 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac993679_2d1988b4",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 215,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T14:38:42Z",
+      "side": 1,
+      "message": "What in case it\u0027s empty? In UI this fields are mandatory but what in case user would upload empty file? Then one of the required credentials won\u0027t be passed.",
+      "parentUuid": "1989725a_6bdc7c26",
+      "range": {
+        "startLine": 214,
+        "startChar": 75,
+        "endLine": 215,
+        "endChar": 72
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
