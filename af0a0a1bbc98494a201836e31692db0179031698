@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "056cc829_1d796929",
+        "filename": "pkg/cloud/test_data/test_all_in_one_public_cloud.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-09-23T09:14:31Z",
+      "side": 1,
+      "message": "Could we change this into \"test-nightly\"? Our previous default value was \"nightly\" so imho we should change the value to ensure that this is actually working - not using the old default value.",
+      "range": {
+        "startLine": 59,
+        "startChar": 4,
+        "endLine": 59,
+        "endChar": 21
+      },
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
