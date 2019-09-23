@@ -46,6 +46,23 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c1ee687_b9bc188a",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-23T15:41:57Z",
+      "side": 1,
+      "message": "This needs change the UI, should be change this? It is good not to change the user experience.\nUploading the file is easier for the user, instead of typing in the values for these fields.\n\nWhy don\u0027t we accept the access token json and prfile json files and retrieve, necessary fields from it by un-marshaling the json files?",
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
