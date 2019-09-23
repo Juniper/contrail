@@ -63,6 +63,24 @@
       "revId": "af0a0a1bbc98494a201836e31692db0179031698",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3270ca8d_de30223c",
+        "filename": "schemas/contrail/fabric/cloud.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T16:00:33Z",
+      "side": 1,
+      "message": "This change is applied to AWS and Azure in the scope of R1911 release.\nPrebuild tag can be different for each provider, but after discussion in team we\u0027ve decided to set single value per public cloud.",
+      "parentUuid": "cbd9b321_c22bfb5f",
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
