@@ -1,0 +1,244 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2c07e71d_b0ab8cc8",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "maybe emptyTestDirectory()",
+      "range": {
+        "startLine": 216,
+        "startChar": 5,
+        "endLine": 216,
+        "endChar": 25
+      },
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54771132_84ff570a",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "Why assume the files are credential files?",
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a9a99da9_22bc5207",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "separate declaration of variable is unnecessary",
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "73e1a3e4_bd6c1a5a",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "\"creating\" ?",
+      "range": {
+        "startLine": 302,
+        "startChar": 63,
+        "endLine": 302,
+        "endChar": 71
+      },
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "67479db8_02a64346",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "In testPublicCloudUpdate() there is check verifying nodes type, in this test there isn\u0027t any. What\u0027s the cause of that?",
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6696cd0_dd544c7a",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 321,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "ditto 302",
+      "range": {
+        "startLine": 321,
+        "startChar": 63,
+        "endLine": 321,
+        "endChar": 71
+      },
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "241f2363_7156e4be",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 475,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "ditto 302",
+      "range": {
+        "startLine": 475,
+        "startChar": 63,
+        "endLine": 475,
+        "endChar": 71
+      },
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b5b9f866_2646f355",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 534,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "ditto 302",
+      "range": {
+        "startLine": 534,
+        "startChar": 64,
+        "endLine": 534,
+        "endChar": 72
+      },
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a6b2244_b8224e74",
+        "filename": "pkg/cloud/test_data/onprem/test_onprem_create/expected_topology.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "Please remove trailing whitespaces",
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26c3de76_82fa60d9",
+        "filename": "pkg/cloud/test_data/onprem/test_onprem_update/expected_topology.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "Please remove trailing whitespaces",
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d1c857d_a2e327f9",
+        "filename": "pkg/cloud/test_data/onprem/test_onprem_update/topology_before_update.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "Please remove trailing whitespaces",
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cf07ec7e_54586612",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T10:34:28Z",
+      "side": 1,
+      "message": "Change this to one line check",
+      "range": {
+        "startLine": 47,
+        "startChar": 1,
+        "endLine": 50,
+        "endChar": 2
+      },
+      "revId": "dc2c99230e174f380e12f6da8ef92e440d8e9cd0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
