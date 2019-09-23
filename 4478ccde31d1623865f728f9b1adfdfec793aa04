@@ -63,6 +63,24 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af8fb732_82f1244f",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T15:54:20Z",
+      "side": 1,
+      "message": "Access token and profile jsons are not supported by packer so we have to provide these new fields.\n\nThis change was consulted with the UI. The user will have to provide either file containing all credentials or type four fields in form - the same way credentials work in AWS case.",
+      "parentUuid": "2c1ee687_b9bc188a",
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
