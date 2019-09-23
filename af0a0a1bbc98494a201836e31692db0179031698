@@ -46,6 +46,23 @@
       "revId": "af0a0a1bbc98494a201836e31692db0179031698",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cbd9b321_c22bfb5f",
+        "filename": "schemas/contrail/fabric/cloud.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-23T15:32:51Z",
+      "side": 1,
+      "message": "In future can this field be applicable to AWS, Azure as well? if yes, can it be different version for AWS vs Azure Vs GCP? if yes can we move this property to cloud_provider object?",
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
