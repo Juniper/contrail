@@ -22,6 +22,30 @@
       "revId": "af0a0a1bbc98494a201836e31692db0179031698",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "224c47d4_562e74fe",
+        "filename": "pkg/cloud/test_data/test_all_in_one_public_cloud.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-23T14:08:13Z",
+      "side": 1,
+      "message": "It was default value only for GCP. For AWS and Azure this field didn\u0027t exist so passing prebuild field to them is testing the change.",
+      "parentUuid": "056cc829_1d796929",
+      "range": {
+        "startLine": 59,
+        "startChar": 4,
+        "endLine": 59,
+        "endChar": 21
+      },
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
