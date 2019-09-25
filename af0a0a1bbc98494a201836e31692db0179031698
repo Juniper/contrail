@@ -49,6 +49,29 @@
     },
     {
       "key": {
+        "uuid": "e6dc6fcf_fe3fc4e2",
+        "filename": "pkg/cloud/test_data/test_all_in_one_public_cloud.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T12:10:30Z",
+      "side": 1,
+      "message": "IMO it should be named prebuild_image_id, because \"prebuild\" is to vague.",
+      "range": {
+        "startLine": 59,
+        "startChar": 4,
+        "endLine": 59,
+        "endChar": 12
+      },
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cbd9b321_c22bfb5f",
         "filename": "schemas/contrail/fabric/cloud.yml",
         "patchSetId": 1
