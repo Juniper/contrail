@@ -128,6 +128,24 @@
       "revId": "af0a0a1bbc98494a201836e31692db0179031698",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2acc92f7_87058819",
+        "filename": "schemas/contrail/fabric/cloud.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-25T14:04:30Z",
+      "side": 1,
+      "message": "If they can have different tag for each provider, it is better to add this property to cloud_provider object.\n\nMay I know the reason behind the decision to add the property to cloud object.\n\nThe problem I see is in future moving property from one object to another will cause upgrade issues.",
+      "parentUuid": "3270ca8d_de30223c",
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
