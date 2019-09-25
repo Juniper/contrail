@@ -282,6 +282,24 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "78af6bbf_9dbf2bb6",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-09-25T14:16:39Z",
+      "side": 1,
+      "message": "Discussion with UI is fine, we also need to consult with PLM, because user experience change will be a concern for PLM",
+      "parentUuid": "af8fb732_82f1244f",
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
