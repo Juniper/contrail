@@ -42,6 +42,30 @@
     },
     {
       "key": {
+        "uuid": "8c35a81a_418e150d",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4e6c575c_ba88c359",
+      "range": {
+        "startLine": 158,
+        "startChar": 12,
+        "endLine": 158,
+        "endChar": 24
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dcce7d6f_f33a0016",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 1
@@ -62,6 +86,30 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "499348f2_99a91b68",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "This issue is resolved in https://review.opencontrail.org/c/Juniper/contrail/+/53849",
+      "parentUuid": "dcce7d6f_f33a0016",
+      "range": {
+        "startLine": 158,
+        "startChar": 1,
+        "endLine": 165,
+        "endChar": 2
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
@@ -88,6 +136,30 @@
     },
     {
       "key": {
+        "uuid": "7ecceeea_7cced61a",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "64e696a4_86cd5992",
+      "range": {
+        "startLine": 410,
+        "startChar": 1,
+        "endLine": 410,
+        "endChar": 5
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "415429da_0cbe6e90",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -108,6 +180,30 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c257448d_c35a096c",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "415429da_0cbe6e90",
+      "range": {
+        "startLine": 120,
+        "startChar": 1,
+        "endLine": 120,
+        "endChar": 24
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
@@ -134,6 +230,30 @@
     },
     {
       "key": {
+        "uuid": "cb661e32_71c854b9",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "73c33886_0922d6e4",
+      "range": {
+        "startLine": 120,
+        "startChar": 1,
+        "endLine": 130,
+        "endChar": 2
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "67ca06ae_77850f3a",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -157,6 +277,30 @@
     },
     {
       "key": {
+        "uuid": "5e8caddd_b165760a",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "67ca06ae_77850f3a",
+      "range": {
+        "startLine": 181,
+        "startChar": 1,
+        "endLine": 192,
+        "endChar": 2
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1a2d523d_fbc3614a",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -177,6 +321,30 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e366da35_74d7a162",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1a2d523d_fbc3614a",
+      "range": {
+        "startLine": 199,
+        "startChar": 32,
+        "endLine": 199,
+        "endChar": 37
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
@@ -297,6 +465,30 @@
       "side": 1,
       "message": "Discussion with UI is fine, we also need to consult with PLM, because user experience change will be a concern for PLM",
       "parentUuid": "af8fb732_82f1244f",
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b2b51bd0_dc45add2",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-25T15:31:05Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "21eaf0cb_0606f3d8",
+      "range": {
+        "startLine": 36,
+        "startChar": 31,
+        "endLine": 36,
+        "endChar": 43
+      },
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
