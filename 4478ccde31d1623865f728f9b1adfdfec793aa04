@@ -2,6 +2,184 @@
   "comments": [
     {
       "key": {
+        "uuid": "361affd1_8d172a4b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Please add short description summarizing changed behaviour.",
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e6c575c_ba88c359",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "It is time to extract that constant.",
+      "range": {
+        "startLine": 158,
+        "startChar": 12,
+        "endLine": 158,
+        "endChar": 24
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dcce7d6f_f33a0016",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Please extract function and use where possible:\n\n  createCredentialFiles(cloudType string) { ... }\n \n`defer removeCredentials` can be invoked separately.",
+      "range": {
+        "startLine": 158,
+        "startChar": 1,
+        "endLine": 165,
+        "endChar": 2
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "64e696a4_86cd5992",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Redundant variable. Below too.",
+      "range": {
+        "startLine": 410,
+        "startChar": 1,
+        "endLine": 410,
+        "endChar": 5
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "415429da_0cbe6e90",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 120,
+        "startChar": 1,
+        "endLine": 120,
+        "endChar": 24
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "73c33886_0922d6e4",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Extract function",
+      "range": {
+        "startLine": 120,
+        "startChar": 1,
+        "endLine": 130,
+        "endChar": 2
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "67ca06ae_77850f3a",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Move it to loop iterating over paths.",
+      "range": {
+        "startLine": 181,
+        "startChar": 1,
+        "endLine": 192,
+        "endChar": 2
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a2d523d_fbc3614a",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Errors should start with lower case.",
+      "range": {
+        "startLine": 199,
+        "startChar": 32,
+        "endLine": 199,
+        "endChar": 37
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1989725a_6bdc7c26",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -81,6 +259,29 @@
       "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "21eaf0cb_0606f3d8",
+        "filename": "pkg/services/cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T13:38:10Z",
+      "side": 1,
+      "message": "Typo",
+      "range": {
+        "startLine": 36,
+        "startChar": 31,
+        "endLine": 36,
+        "endChar": 43
+      },
+      "revId": "4478ccde31d1623865f728f9b1adfdfec793aa04",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
