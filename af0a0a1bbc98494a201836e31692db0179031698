@@ -96,6 +96,30 @@
     },
     {
       "key": {
+        "uuid": "e050a575_89ebfcff",
+        "filename": "pkg/cloud/test_data/test_all_in_one_public_cloud.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T14:53:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a7fa9a88_2af24c07",
+      "range": {
+        "startLine": 59,
+        "startChar": 4,
+        "endLine": 59,
+        "endChar": 12
+      },
+      "revId": "af0a0a1bbc98494a201836e31692db0179031698",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cbd9b321_c22bfb5f",
         "filename": "schemas/contrail/fabric/cloud.yml",
         "patchSetId": 1
