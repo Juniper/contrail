@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "67915e7f_88ac5a15",
+        "filename": "pkg/cloud/configs/public_cloud_topology.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-09-25T14:48:23Z",
+      "side": 1,
+      "message": "Is schema of topology file defined externally (e.g. in terraform)?",
+      "range": {
+        "startLine": 12,
+        "startChar": 2,
+        "endLine": 12,
+        "endChar": 10
+      },
+      "revId": "da94917f5fc1f8792d689d6dfc10b074199d98a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
