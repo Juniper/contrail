@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d3b97612_f8b3fdd2",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-26T16:04:49Z",
+      "side": 1,
+      "message": "Why the list of cleanup functions is returned here instead of a single function which will iterate over cleanups?",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "30bfb80c_2a4f3d2b",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 589,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-26T16:04:49Z",
+      "side": 1,
+      "message": "Why this error is not checked?",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a0827541_1f6a7fe4",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-26T16:04:49Z",
+      "side": 1,
+      "message": "In case of err \u003d\u003d nil this assertion will fail and cause printing of incorrect message.",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6e546d73_3a400c17",
+        "filename": "pkg/fileutil/template/template.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-09-26T16:04:49Z",
+      "side": 1,
+      "message": "What if the empty line is on the beginning of file?",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
