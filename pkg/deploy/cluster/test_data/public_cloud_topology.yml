@@ -1,6 +1,7 @@
 - provider: azure
   organization: dev
   project: test2
+  prebuild: nightly
   regions:
     - name: WestUS
       resource_group: blah
