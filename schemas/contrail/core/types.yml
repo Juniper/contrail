@@ -686,7 +686,7 @@ definitions:
         - ubuntu18
         - centos7
         - redhat
-        - rhel75
+        - rhel7
         type: string
       roles:
         description: Roles of the cloud instance
