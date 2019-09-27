@@ -112,6 +112,27 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Filtering virtual networks through ParentFQName",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"fq_name",
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				ParentFQName: []string{"domain", "project"},
+			},
+			expected: expectedResult{
+				query: "select \"virtual_network_t\".\"fq_name\" from virtual_network as virtual_network_t " +
+					"where \"virtual_network_t\".\"fq_name\" ->> 0 = $1 and \"virtual_network_t\".\"fq_name\" ->> 1 = $2 " +
+					"and json_array_length(\"virtual_network_t\".\"fq_name\") = 3 order by \"virtual_network_t\".\"uuid\"",
+				values: []interface{}{
+					"domain",
+					"project",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
