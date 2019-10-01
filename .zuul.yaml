@@ -72,3 +72,4 @@
           command: postgres -c wal_level=logical
         - image: gcr.io/etcd-development/etcd:v3.3.2
           name: contrail_etcd
+
