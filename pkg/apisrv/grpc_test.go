@@ -22,7 +22,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/twinj/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
@@ -30,6 +29,7 @@ import (
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	pkgkeystone "github.com/Juniper/contrail/pkg/keystone"
 	protocodec "github.com/gogo/protobuf/codec"
+	uuid "github.com/satori/go.uuid"
 )
 
 /////////////////////////

@@ -8,15 +8,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
+	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -51,7 +51,7 @@ var assertFunctions = map[string]assertFunction{
 	},
 	"uuid": func(path string, _, actual interface{}) error {
 		if val, ok := actual.(string); ok {
-			if _, err := uuid.Parse(val); err != nil {
+			if _, err := uuid.FromString(val); err != nil {
 				return errors.Errorf("expected uuid but got %s on path %s (error: %s)", actual, path, err)
 			}
 			return nil

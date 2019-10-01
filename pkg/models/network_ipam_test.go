@@ -6,7 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/twinj/uuid"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type testNetworkIpamParams struct {

@@ -2,7 +2,8 @@ package models
 
 import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/twinj/uuid"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // DefaultSecurityGroupName is the Name of a project's default SecurityGroup.

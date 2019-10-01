@@ -7,17 +7,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gogo/protobuf/types"
-	"github.com/labstack/echo"
-	"github.com/pkg/errors"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/gogo/protobuf/types"
+	"github.com/labstack/echo"
+	"github.com/pkg/errors"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 //API Path definitions.
@@ -350,11 +350,11 @@ func validateChownRequest(r *ChownRequest) error {
 			"bad request: both uuid and owner should be specified: %s, %s", r.GetUUID(), r.GetOwner())
 	}
 
-	if _, err := uuid.Parse(r.GetUUID()); err != nil {
+	if _, err := uuid.FromString(r.GetUUID()); err != nil {
 		return errutil.ErrorBadRequestf(
 			"bad request: invalid uuid format (not UUID): %s", r.GetUUID())
 	}
-	if _, err := uuid.Parse(r.GetOwner()); err != nil {
+	if _, err := uuid.FromString(r.GetOwner()); err != nil {
 		return errutil.ErrorBadRequestf(
 			"bad request: invalid owner format (not UUID): %s", r.GetOwner())
 	}

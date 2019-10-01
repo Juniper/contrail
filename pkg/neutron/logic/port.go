@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -702,7 +702,7 @@ func (port *Port) ensureVMInstanceExists(
 }
 
 func parseUUID(rawUUID string) string {
-	uuid, err := uuid.Parse(rawUUID)
+	uuid, err := uuid.FromString(rawUUID)
 	if err != nil {
 		return ""
 	}

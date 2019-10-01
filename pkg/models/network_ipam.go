@@ -5,10 +5,10 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/pkg/errors"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/pkg/errors"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // IPAM subnet methods.
@@ -119,7 +119,7 @@ func (m *AllocationPoolType) Contains(ip net.IP) (bool, error) {
 // Validate validates ipam subnet configuration.
 func (m *IpamSubnetType) Validate() error {
 	if m.SubnetUUID != "" {
-		if _, err := uuid.Parse(m.SubnetUUID); err != nil {
+		if _, err := uuid.FromString(m.SubnetUUID); err != nil {
 			return errutil.ErrorBadRequestf("invalid subnet uuid: %v", err)
 		}
 	}

@@ -985,14 +985,6 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:c27b9d796a0011b90661dc71cb6627d844372327c9e1f306d0713ed679139ebf"
-  name = "github.com/twinj/uuid"
-  packages = ["."]
-  pruneopts = ""
-  revision = "835a10bbd6bce40820349a68b1368a62c3c5617c"
-  version = "v1.0.0"
-
-[[projects]]
   digest = "1:3f86e5e877dde45a8c767ba92f1526b41d1daa756f07e217db3177d23c54bbc5"
   name = "github.com/ulikunitz/xz"
   packages = [
@@ -1294,7 +1286,6 @@
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",
-    "github.com/twinj/uuid",
     "github.com/volatiletech/sqlboiler/strmangle",
     "github.com/yudai/gotty/backend/localcommand",
     "github.com/yudai/gotty/server",

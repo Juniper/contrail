@@ -1,9 +1,9 @@
 package models
 
 import (
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/errutil"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // CheckNetworkPolicyRules validates policy rules from policy entries for Network Policy.

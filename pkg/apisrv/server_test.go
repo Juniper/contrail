@@ -11,7 +11,8 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/twinj/uuid"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 /////////////////////////

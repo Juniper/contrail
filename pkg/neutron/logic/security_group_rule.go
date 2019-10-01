@@ -7,15 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
