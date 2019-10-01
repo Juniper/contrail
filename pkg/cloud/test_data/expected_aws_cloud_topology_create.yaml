@@ -26,7 +26,7 @@
                 - compute_node
               provision: true
               username: ec2-user
-              os: rhel75
+              os: rhel7
               instance_type: t2.xlarge
               subnets: cloud_private_subnet
               availability_zone: a
@@ -37,7 +37,7 @@
                 - gateway
               provision: true
               username: ec2-user
-              os: rhel75
+              os: rhel7
               instance_type: t2.xlarge
               subnets: cloud_private_subnet
               availability_zone: a

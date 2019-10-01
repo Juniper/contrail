@@ -316,7 +316,7 @@ func (i *instanceData) updateInstanceUsername(providerType string) error {
 		i.username = "ubuntu"
 	case "centos7":
 		i.username = "centos"
-	case "rhel75":
+	case "rhel7":
 		if providerType == AWS {
 			i.username = "ec2-user"
 		} else {

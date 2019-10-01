@@ -66,13 +66,13 @@ test_data:
     hostname: cloud_node_gw_vpc2
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
-      operating_system: rhel75
+      operating_system: rhel7
       instance_type: F16sv2
       {% elif "aws" in CLOUD_TYPE %}
-      operating_system: rhel75
+      operating_system: rhel7
       instance_type: t2.xlarge
       {% elif "gcp" in CLOUD_TYPE %}
-      operating_system: rhel75
+      operating_system: rhel7
       instance_type: n1-standard-1
       {% endif %}
       roles:
@@ -93,13 +93,13 @@ test_data:
     hostname: cloud_node_comp_vpc2
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
-      operating_system: rhel75
+      operating_system: rhel7
       instance_type: F16sv2
       {% elif "aws" in CLOUD_TYPE %}
-      operating_system: rhel75
+      operating_system: rhel7
       instance_type: t2.xlarge
       {% elif "gcp" in CLOUD_TYPE %}
-      operating_system: rhel75
+      operating_system: rhel7
       instance_type: n1-standard-1
       {% endif %}
       roles:
