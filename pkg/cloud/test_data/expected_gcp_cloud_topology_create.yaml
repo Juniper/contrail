@@ -42,6 +42,7 @@
               instance_type: n1-standard-1
               subnets: cloud_private_subnet
             - name: cloud_node_gw
+              count: 2
               roles:
                 - gateway
               provision: true

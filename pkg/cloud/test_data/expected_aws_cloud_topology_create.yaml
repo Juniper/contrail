@@ -33,6 +33,7 @@
               security_groups:
                 - cloud_security_group_rule
             - name: cloud_node_gw
+              count: 2
               roles:
                 - gateway
               provision: true

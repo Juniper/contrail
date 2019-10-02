@@ -179,6 +179,7 @@ test_data:
       operating_system: rhel7
       instance_type: n1-standard-1
       {% endif %}
+      count: 2
       roles:
         - gateway
     {% if "private" in CLOUD_TYPE %}

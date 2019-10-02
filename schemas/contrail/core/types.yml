@@ -679,6 +679,9 @@ definitions:
       instance_type:
         description: size of instance
         type: string
+      count:
+        description: Amount of copies of instance
+        type: integer
       operating_system:
         description: Name of operating system, ex - centos7 or ubuntu16
         enum:
@@ -699,6 +702,16 @@ definitions:
           - k8s_node
           - vrouter
           - none
+          type: string
+        type: array
+      public_ip_addresses:
+        description: Public IP addresses of the instances
+        items:
+          type: string
+        type: array
+      priv_ip_addresses:
+        description: Private IP addresses of the instances
+        items:
           type: string
         type: array
       volume_size:

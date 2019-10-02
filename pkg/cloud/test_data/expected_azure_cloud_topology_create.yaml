@@ -28,6 +28,7 @@
               instance_type: F16sv2
               subnets: cloud_private_subnet
             - name: cloud_node_gw
+              count: 2
               roles:
                 - gateway
               provision: true

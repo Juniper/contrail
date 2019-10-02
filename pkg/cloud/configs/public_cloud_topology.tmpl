@@ -105,6 +105,9 @@
           instances:
           {% for instance in vcloud.instances %}
             - name: {{ instance.info.Hostname }}
+              {% if instance.info.CloudInfo.Count >= 1 %}
+              count: {{ instance.info.CloudInfo.Count }}
+              {% endif %}
               roles:
               {% if instance.roles %}{% set roles = instance.roles %}{% else %}{% set roles = instance.info.CloudInfo.Roles %}{% endif %}
               {% for role in roles %}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
+
 	tf "github.com/hashicorp/terraform/terraform"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -25,36 +27,32 @@ func updateIPDetails(ctx context.Context, cloudID string, data *Data) error {
 	return nil
 }
 
-func updateInstanceIP(ctx context.Context,
-	instance *instanceData, tfState *tf.State) error {
-
-	privateIP, err := getIPFromTFState(tfState,
-		fmt.Sprintf("%s.private_ip", instance.info.Hostname))
-	if err != nil {
-		return err
-	}
-
+func updateInstanceIP(ctx context.Context, instance *instanceData, tfState *tf.State) error {
 	if gwRoleExists(instance) {
-		portObj, inErr := createPort(ctx, "private", privateIP,
-			instance.info, instance.client)
-		if inErr != nil {
-			return inErr
+		publicIPs := []string{}
+		for i := int64(1); i <= instance.info.CloudInfo.Count; i++ {
+			publicIP, err := getIPFromTFState(tfState, fmt.Sprintf("%s%v.public_ip", instance.info.Hostname, i))
+			if err != nil {
+				return err
+			}
+			publicIPs = append(publicIPs, publicIP)
 		}
 
-		inErr = addPortToNode(ctx, portObj, instance.info, instance.client)
-		if err != nil {
-			return inErr
+		if err := setIPAddresses(ctx, publicIPs, "public", instance.info, instance.client); err != nil {
+			return err
 		}
-
-		publicIP, inErr := getIPFromTFState(tfState,
-			fmt.Sprintf("%s.public_ip", instance.info.Hostname))
-		if inErr != nil {
-			return inErr
-		}
-		return addIPToNode(ctx, publicIP, instance.info, instance.client)
 	}
 
-	return addIPToNode(ctx, privateIP, instance.info, instance.client)
+	privateIPs := []string{}
+	for i := int64(1); i <= instance.info.CloudInfo.Count; i++ {
+		privateIP, err := getIPFromTFState(tfState, fmt.Sprintf("%s%v.private_ip", instance.info.Hostname, i))
+		if err != nil {
+			return err
+		}
+		privateIPs = append(privateIPs, privateIP)
+	}
+
+	return setIPAddresses(ctx, privateIPs, "private", instance.info, instance.client)
 }
 
 func gwRoleExists(instance *instanceData) bool {
@@ -66,62 +64,17 @@ func gwRoleExists(instance *instanceData) bool {
 	return false
 }
 
-func createPort(ctx context.Context, portName string, ip string,
-	instance *models.Node, client *client.HTTP) (*models.Port, error) {
-
-	if len(instance.Ports) != 0 {
-		for _, p := range instance.Ports {
-			if p.Name == portName && p.IPAddress != ip {
-				request := new(services.UpdatePortRequest)
-				request.Port = p
-				request.Port.IPAddress = ip
-				portResp, err := client.UpdatePort(ctx, request)
-				if err != nil {
-					return nil, err
-				}
-				return portResp.GetPort(), err
-			} else if p.Name == portName && p.IPAddress == ip {
-				return p, nil
-			}
-		}
+func setIPAddresses(ctx context.Context, ips []string, ipType string, instance *models.Node, cli *client.HTTP) error {
+	request := &services.UpdateNodeRequest{Node: instance}
+	switch ipType {
+	case "public":
+		request.Node.CloudInfo.PublicIPAddresses = ips
+	case "private":
+		request.Node.CloudInfo.PrivIPAddresses = ips
+	default:
+		return errors.Errorf("unknown type of ip address: %v", ipType)
 	}
 
-	port := new(models.Port)
-	port.Name = portName
-	port.ParentType = "node"
-	port.ParentUUID = instance.UUID
-	port.IPAddress = ip
-
-	request := new(services.CreatePortRequest)
-	request.Port = port
-
-	portResp, err := client.CreatePort(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return portResp.GetPort(), err
-}
-
-func addPortToNode(ctx context.Context, port *models.Port,
-	instance *models.Node, client *client.HTTP) error {
-
-	request := new(services.UpdateNodeRequest)
-	request.Node = instance
-	request.Node.AddPort(port)
-	_, err := client.UpdateNode(ctx, request)
+	_, err := cli.UpdateNode(ctx, request)
 	return err
-}
-
-func addIPToNode(ctx context.Context, ip string,
-	instance *models.Node, client *client.HTTP) error {
-
-	request := new(services.UpdateNodeRequest)
-	request.Node = instance
-	request.Node.IPAddress = ip
-
-	_, err := client.UpdateNode(ctx, request)
-	if err != nil {
-		return err
-	}
-	return nil
 }
