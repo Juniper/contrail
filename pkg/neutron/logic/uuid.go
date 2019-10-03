@@ -4,7 +4,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/twinj/uuid"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // VncUUIDToNeutronID translates contrail vnc uuids into neutron id
@@ -29,7 +30,7 @@ func neutronIDToVncUUID(id string) (string, error) {
 		return "", nil
 	}
 
-	u, err := uuid.Parse(id)
+	u, err := uuid.FromString(id)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to translate neutron id: %v to contrail uuid", id)
 	}

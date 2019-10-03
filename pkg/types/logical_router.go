@@ -4,15 +4,15 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/gogo/protobuf/types"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/gogo/protobuf/types"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // CreateLogicalRouter creates a logical router and if vxlan routing is enabled

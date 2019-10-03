@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/twinj/uuid"
-
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+	"github.com/stretchr/testify/assert"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 func TestAddressManagerAllocations(t *testing.T) {
@@ -589,6 +589,6 @@ func validateSubnetUUID(t *testing.T, ipamSubnet *models.IpamSubnetType, subnetU
 		assert.Equal(t, ipamSubnet.SubnetUUID, subnetUUID)
 		return
 	}
-	_, err := uuid.Parse(subnetUUID)
+	_, err := uuid.FromString(subnetUUID)
 	assert.NoError(t, err)
 }
