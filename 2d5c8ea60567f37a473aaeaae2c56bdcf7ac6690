@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "937bab55_2ac5c4c1",
+        "filename": "pkg/ansible/client.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9a4d8cb2_94441be3",
+      "range": {
+        "startLine": 99,
+        "startChar": 20,
+        "endLine": 99,
+        "endChar": 39
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "79799414_3529363c",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 22
@@ -36,6 +60,30 @@
       "writtenOn": "2019-10-03T10:48:31Z",
       "side": 1,
       "message": "It there is no tfStateOutput we do nothing and return no error. Does it mean that we are sure that there is no topology in that case?",
+      "range": {
+        "startLine": 17,
+        "startChar": 2,
+        "endLine": 17,
+        "endChar": 11
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9f30901_2e7dd8dc",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "This function is moved from delete function in terraform. If the file did not exist it was not considered as error and the job was continued. Verification if this is valid solution will be in the next refactor.",
+      "parentUuid": "79799414_3529363c",
       "range": {
         "startLine": 17,
         "startChar": 2,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "5b201cbb_ed94e24b",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "db6574b5_e4f7e28e",
+      "range": {
+        "startLine": 281,
+        "startChar": 32,
+        "endLine": 281,
+        "endChar": 59
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ad75d537_c1a00350",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 22
@@ -82,6 +154,30 @@
       "writtenOn": "2019-10-03T10:48:31Z",
       "side": 1,
       "message": "Redundant variable. Next 2 too.",
+      "range": {
+        "startLine": 282,
+        "startChar": 1,
+        "endLine": 282,
+        "endChar": 9
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bb6165dc_d2be8d93",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ad75d537_c1a00350",
       "range": {
         "startLine": 282,
         "startChar": 1,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "f6c2a908_85fde389",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "I will extract this value for this package. Deployer command is also used once in cloud package but I will leave it as it is until cloud package and multicloud section from cluster package will be merged.",
+      "parentUuid": "84438c1a_cd9da90a",
+      "range": {
+        "startLine": 286,
+        "startChar": 8,
+        "endLine": 286,
+        "endChar": 18
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "71abd4ee_ab51e39f",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 22
@@ -128,6 +248,30 @@
       "writtenOn": "2019-10-03T10:48:31Z",
       "side": 1,
       "message": "Redundant variable. Next 2 too.",
+      "range": {
+        "startLine": 291,
+        "startChar": 1,
+        "endLine": 291,
+        "endChar": 12
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e3765b16_4fe97147",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "71abd4ee_ab51e39f",
       "range": {
         "startLine": 291,
         "startChar": 1,
@@ -163,6 +307,30 @@
     },
     {
       "key": {
+        "uuid": "d1ff8fca_76565bdf",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 345,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "54b316fc_f4264478",
+      "range": {
+        "startLine": 345,
+        "startChar": 32,
+        "endLine": 345,
+        "endChar": 52
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d6284ac5_f3f16778",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 22
@@ -186,6 +354,30 @@
     },
     {
       "key": {
+        "uuid": "fb218ca2_b409ca94",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d6284ac5_f3f16778",
+      "range": {
+        "startLine": 346,
+        "startChar": 1,
+        "endLine": 346,
+        "endChar": 9
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5362cc18_8b1d12a0",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 22
@@ -197,6 +389,30 @@
       "writtenOn": "2019-10-03T10:48:31Z",
       "side": 1,
       "message": "Idiomatic (AFAIK) name would be publicAndPrivateCloudIDs(), etc.\nBut I am not insisting on renaming it now.\n\nHowever, new ones below could be named better.",
+      "range": {
+        "startLine": 1186,
+        "startChar": 32,
+        "endLine": 1186,
+        "endChar": 48
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7c7b59f2_a1048d0a",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 1186,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-03T14:00:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5362cc18_8b1d12a0",
       "range": {
         "startLine": 1186,
         "startChar": 32,
