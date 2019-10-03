@@ -1,0 +1,211 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a4d8cb2_94441be3",
+        "filename": "pkg/ansible/client.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "sed \u0027s/Get//g\u0027",
+      "range": {
+        "startLine": 99,
+        "startChar": 20,
+        "endLine": 99,
+        "endChar": 39
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "79799414_3529363c",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "It there is no tfStateOutput we do nothing and return no error. Does it mean that we are sure that there is no topology in that case?",
+      "range": {
+        "startLine": 17,
+        "startChar": 2,
+        "endLine": 17,
+        "endChar": 11
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "db6574b5_e4f7e28e",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "How about \"Provision()\"?",
+      "range": {
+        "startLine": 281,
+        "startChar": 32,
+        "endLine": 281,
+        "endChar": 59
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ad75d537_c1a00350",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "Redundant variable. Next 2 too.",
+      "range": {
+        "startLine": 282,
+        "startChar": 1,
+        "endLine": 282,
+        "endChar": 9
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "84438c1a_cd9da90a",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "Please extact constant and use everywhere",
+      "range": {
+        "startLine": 286,
+        "startChar": 8,
+        "endLine": 286,
+        "endChar": 18
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "71abd4ee_ab51e39f",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "Redundant variable. Next 2 too.",
+      "range": {
+        "startLine": 291,
+        "startChar": 1,
+        "endLine": 291,
+        "endChar": 12
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54b316fc_f4264478",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 345,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "How about cleanupTopology() / cleanupProvisioning()?",
+      "range": {
+        "startLine": 345,
+        "startChar": 32,
+        "endLine": 345,
+        "endChar": 52
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d6284ac5_f3f16778",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "Redundant variables",
+      "range": {
+        "startLine": 346,
+        "startChar": 1,
+        "endLine": 346,
+        "endChar": 9
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5362cc18_8b1d12a0",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 1186,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T10:48:31Z",
+      "side": 1,
+      "message": "Idiomatic (AFAIK) name would be publicAndPrivateCloudIDs(), etc.\nBut I am not insisting on renaming it now.\n\nHowever, new ones below could be named better.",
+      "range": {
+        "startLine": 1186,
+        "startChar": 32,
+        "endLine": 1186,
+        "endChar": 48
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
