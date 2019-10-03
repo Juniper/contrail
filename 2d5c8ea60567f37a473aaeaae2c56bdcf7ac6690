@@ -96,6 +96,30 @@
     },
     {
       "key": {
+        "uuid": "4c81a0b3_37aa7f1c",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-03T15:50:53Z",
+      "side": 1,
+      "message": "Ok, I suggest at least adding log.Debug/log.Info in the future",
+      "parentUuid": "f9f30901_2e7dd8dc",
+      "range": {
+        "startLine": 17,
+        "startChar": 2,
+        "endLine": 17,
+        "endChar": 11
+      },
+      "revId": "2d5c8ea60567f37a473aaeaae2c56bdcf7ac6690",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "db6574b5_e4f7e28e",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 22
