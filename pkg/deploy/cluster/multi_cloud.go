@@ -104,7 +104,7 @@ type PubKeyConfig struct {
 	AwsSecretKey string              `yaml:"aws_secret_key"`
 	AuthReg      []map[string]string `yaml:"authorized_registries"`
 }
-
+dummy line to break compilation
 // Deploy performs Multicloud provisioning.
 func (m *multiCloudProvisioner) Deploy() error {
 	deployErr := m.deploy()
