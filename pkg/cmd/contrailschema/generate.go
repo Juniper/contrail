@@ -16,6 +16,7 @@ type templateOption struct {
 	TemplateConfPath  string
 	SchemaOutputPath  string
 	OpenAPIOutputPath string
+	SkipMissingRefs   bool
 }
 
 var option = templateOption{}
@@ -26,11 +27,12 @@ func init() {
 	generateCmd.Flags().StringVarP(&option.TemplateConfPath, "templates", "t", "", "Template Configuration")
 	generateCmd.Flags().StringVarP(&option.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
 	generateCmd.Flags().StringVarP(&option.OpenAPIOutputPath, "openapi-output", "", "", "OpenAPI Output path")
+	generateCmd.Flags().BoolVarP(&option.SkipMissingRefs, "skip-missing-refs", "", false, "If this flag is enabled contrailschema skips the references that are missing instead of failing")
 }
 
 func generateCode() {
 	logrus.Info("Generating source code from schema")
-	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","), "overrides")
+	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","), "overrides", option.SkipMissingRefs)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
