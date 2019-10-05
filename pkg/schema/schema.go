@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 //Version is version for schema format.
@@ -97,6 +97,8 @@ type API struct {
 	Definitions []*Schema              `yaml:"-" json:"-"`
 	Types       map[string]*JSONSchema `yaml:"-" json:"-"`
 	Timestamp   time.Time
+
+	SkipMissingRefs bool `yaml:"-" json:"-"`
 }
 
 //ColumnConfig is for database configuration.
@@ -750,8 +752,9 @@ func (s *JSONSchema) applyOverridenTypes() {
 
 		if (present || property.Type == "boolean") &&
 			(property.Presence == "required" || property.Presence == "true") {
-			logrus.Warnf("property '%s' should be optional as it may have zero-value. Update schema.", key)
-			logrus.Warnf("JSONSCHEMA: %v", property)
+			logrus.WithField("schema", property).Warnf(
+				"Property '%s' should be optional as it may have zero-value. Update schema.", key,
+			)
 			property.Presence = "optional"
 		}
 	}
@@ -792,14 +795,21 @@ func (api *API) resolveAllRelation() error {
 		if s.Type == AbstractType {
 			continue
 		}
+		refs := make(map[string]*Reference)
 		for linkTo, reference := range s.References {
 			reference.Table = ReferenceTableName(RefPrefix, s.Table, linkTo)
 			referenceSchema, err := api.resolveReference(s, reference, linkTo)
 			if err != nil {
-				return err
+				if !api.SkipMissingRefs {
+					return err
+				}
+				logrus.Warnf(`Error while resolving reference "%s": %v`, linkTo, err)
+				continue
 			}
+			refs[linkTo] = reference
 			referenceSchema.BackReferences[s.ID] = &BackReference{LinkTo: s, Description: reference.Description}
 		}
+		s.References = refs
 		_, ok := s.Parents[configRoot]
 		if ok {
 			s.IsConfigRootInParents = true
@@ -1119,11 +1129,12 @@ func (api *API) loadOverrides(dir string) (*Schema, error) {
 }
 
 // MakeAPI load directory and generate API definitions.
-func MakeAPI(dirs []string, overrideSubdir string) (*API, error) {
+func MakeAPI(dirs []string, overrideSubdir string, skipMissingRefs bool) (*API, error) {
 	api := &API{
-		Schemas:     []*Schema{},
-		Definitions: []*Schema{},
-		Types:       map[string]*JSONSchema{},
+		Schemas:         []*Schema{},
+		Definitions:     []*Schema{},
+		Types:           map[string]*JSONSchema{},
+		SkipMissingRefs: skipMissingRefs,
 	}
 	logrus.Printf("Making API from schema dirs: %v", dirs)
 	for _, dir := range dirs {
@@ -1134,7 +1145,7 @@ func MakeAPI(dirs []string, overrideSubdir string) (*API, error) {
 			var err error
 			overrides, err = api.loadOverrides(overridePath)
 			if err != nil {
-				return api, err
+				logrus.Warnf("No overrides dir found: %v", err)
 			}
 		}
 		err := filepath.Walk(dir, func(p string, f os.FileInfo, e error) error {
