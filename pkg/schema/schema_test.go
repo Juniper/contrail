@@ -8,7 +8,7 @@ import (
 )
 
 func TestSchema(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema"}, "")
+	api, err := MakeAPI([]string{"test_data/schema"}, "", false)
 	assert.Nil(t, err, "API reading failed")
 	assert.Equal(t, 4, len(api.Types))
 	assert.Equal(t, 4, len(api.Schemas))
@@ -31,7 +31,7 @@ func TestSchema(t *testing.T) {
 }
 
 func TestSchemaEnums(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema_enums"}, "overrides")
+	api, err := MakeAPI([]string{"test_data/schema_enums"}, "overrides", false)
 	assert.Nil(t, err, "API reading failed")
 	project := api.SchemaByID("project")
 	assert.NotNil(t, project, "Project can't be <nil>")
@@ -51,7 +51,7 @@ func TestSchemaEnums(t *testing.T) {
 }
 
 func TestReferencesExtendBase(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema_extend"}, "")
+	api, err := MakeAPI([]string{"test_data/schema_extend"}, "", false)
 	require.Nil(t, err, "API reading failed")
 	assert.Equal(t, 5, len(api.Schemas))
 
@@ -69,7 +69,7 @@ func TestReferencesExtendBase(t *testing.T) {
 }
 
 func TestJSONTag(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema_extend"}, "")
+	api, err := MakeAPI([]string{"test_data/schema_extend"}, "", false)
 	require.Nil(t, err, "API reading failed")
 	assert.Equal(t, 5, len(api.Schemas))
 

@@ -311,6 +311,7 @@ message PropCollectionChange {
 		int32 PositionInt = 3;
 		string PositionString = 4;
 	};
+{% if types | length > 0 %}
 	oneof Value {
  {% set index = 5 %}{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
 	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
@@ -318,4 +319,5 @@ message PropCollectionChange {
 	{% set index = index + 1 %}
 	{% endif %}{% endfor %}
 	};
+{% endif %}
 }
