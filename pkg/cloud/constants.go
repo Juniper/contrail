@@ -19,6 +19,7 @@ const (
 	defaultSecretTemplate          = "secret.tmpl"
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
+	defaultAuthRegistryTemplate    = "authorized_registries.tmpl"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"

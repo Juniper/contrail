@@ -32,7 +32,6 @@ const (
 	defaultContrailCommonTemplate = "contrail_common.tmpl"
 	defaultGatewayCommonTemplate  = "gateway_common.tmpl"
 	defaultTORCommonTemplate      = "tor_common.tmpl"
-	defaultAuthRegistryTemplate   = "authorized_registries.tmpl"
 
 	mcWorkDir                 = "multi-cloud"
 	mcAnsibleRepo             = "contrail-multi-cloud"
@@ -916,29 +915,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 		return errors.Wrap(err, "failed to to create secret file")
 	}
 
-	err = fileutil.WriteToFile(m.getClusterSecretFile(m.workDir), content, defaultFilePermRWOnly)
-	if err != nil {
-		return err
-	}
-
-	authRegcontent, err := m.getAuthRegistryContent(m.clusterData.ClusterInfo)
-	if err != nil {
-		return err
-	}
-	return fileutil.AppendToFile(m.getClusterSecretFile(m.workDir), authRegcontent, defaultFilePermRWOnly)
-}
-
-func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailCluster) ([]byte, error) {
-	context := pongo2.Context{
-		"cluster": cluster,
-		"tag":     cluster.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
-	}
-
-	content, err := template.Apply(m.getAuthRegistryTemplate(), context)
-	if err != nil {
-		return nil, err
-	}
-	return content, nil
+	return fileutil.WriteToFile(m.getClusterSecretFile(m.workDir), content, defaultFilePermRWOnly)
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
@@ -1090,10 +1067,6 @@ func getTagOfPvtCloud(ctx context.Context,
 
 func (m *multiCloudProvisioner) getContrailCommonTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultContrailCommonTemplate)
-}
-
-func (m *multiCloudProvisioner) getAuthRegistryTemplate() string {
-	return filepath.Join(m.getTemplateRoot(), defaultAuthRegistryTemplate)
 }
 
 func (m *multiCloudProvisioner) getGatewayCommonTemplate() string {

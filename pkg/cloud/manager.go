@@ -235,7 +235,7 @@ func (c *Cloud) create() error {
 	}
 
 	if !data.isCloudPrivate() {
-		err = secret.createSecretFile()
+		err = secret.createSecretFile(data.info.GetParentClusterUUID())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -312,7 +312,7 @@ func (c *Cloud) update() error {
 	//TODO(madhukar) handle if key-pair changes or aws-key
 
 	if !data.isCloudPrivate() {
-		err = secret.createSecretFile()
+		err = secret.createSecretFile(data.info.GetParentClusterUUID())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -397,7 +397,7 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		err = secret.createSecretFile()
+		err = secret.createSecretFile(data.info.GetParentClusterUUID())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err

@@ -22,6 +22,17 @@ schema:
       - update
       type: boolean
       default: false
+    parent_cluster_uuid:
+      description: UUID of the contrail_cluster which contains authenticate registries
+      nullable: true
+      permission:
+      - create
+      - update
+      sql: ""
+      type: string
+      view:
+        - create
+        - detail
     organization:
       description: Name of the organization
       nullable: false
