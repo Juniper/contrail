@@ -108,11 +108,9 @@ func initTestCluster(
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterUser := clusterName + "_admin"
 
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterUser, clusterUser)
+	ksPrivate := integration.NewKeystoneServerFake(t, keystoneAuthURL, clusterUser, clusterUser)
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterUser, clusterUser)
+	ksPublic := integration.NewKeystoneServerFake(t, keystoneAuthURL, clusterUser, clusterUser)
 
 	vncServer, vncReqStore, done := createMockVNCServer(t, expectedCount)
 

@@ -128,7 +128,8 @@ func (k *Keystone) obtainUnscopedToken(
 
 // ObtainToken gets authentication token.
 func (k *Keystone) ObtainToken(
-	ctx context.Context, id, password string, scope *keystone.Scope) (*http.Response, error) {
+	ctx context.Context, id, password string, scope *keystone.Scope,
+) (*http.Response, error) {
 	if k.URL == "" {
 		return nil, nil
 	}

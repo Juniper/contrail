@@ -24,8 +24,9 @@ import (
 // Proxy service related constants.
 const (
 	DefaultDynamicProxyPath = "proxy"
-	ProxySyncInterval       = 2 * time.Second
-	XClusterIDKey           = "X-Cluster-ID"
+	//ProxySyncInterval       = 2 * time.Second
+	ProxySyncInterval = 100 * time.Millisecond // TODO revert change
+	XClusterIDKey     = "X-Cluster-ID"
 
 	limit         = 100
 	pathSeparator = "/"
