@@ -162,11 +162,17 @@ func runCloudTest(
 		createAzureCredentials(t)
 		defer removeAzureCredentials(t)
 	}
-	err = cloud.Manage()
+	// We call manage() instead of Manage() to skip removing credential files.
+	// There are a few calls to Manage() in the rest of the test so it will be
+	// checked anyway. Proper testing method of this will be added in the awaiting
+	// cloud refactor change.
+	err = cloud.manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
 
-	err = isCloudSecretFilesDeleted()
-	require.NoError(t, err, "failed to delete cloud secrets during create")
+	if context[cloudTypeKey] != onPrem {
+		assert.True(t, compareGeneratedSecret(t, expectedSecret),
+			"secret file created during cloud create is not as expected")
+	}
 
 	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud create is not as expected")
@@ -378,6 +384,10 @@ func compareGeneratedTopology(t *testing.T, expectedTopologies []string) bool {
 	return false
 }
 
+func compareGeneratedSecret(t *testing.T, expectedSecretFile string) bool {
+	return compareFiles(t, expectedSecretFile, generatedSecretPath())
+}
+
 func verifyCommandsExecuted(t *testing.T, expectedCmdFile string) bool {
 	return compareFiles(t, expectedCmdFile, executedCommandsPath())
 }
@@ -488,6 +498,10 @@ func verifyNodeType(ctx context.Context, httpClient *client.HTTP, testScenario *
 
 func generatedTopoPath() string {
 	return defaultWorkRoot + "/" + cloudID + "/topology.yml"
+}
+
+func generatedSecretPath() string {
+	return defaultWorkRoot + "/" + cloudID + "/secret.yml"
 }
 
 func executedCommandsPath() string {
