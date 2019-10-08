@@ -55,7 +55,7 @@ no_auth: true
 insecure: true
 
 keystone:
-  local: true # Enable local keystone v3. This is only for testing now.
+  local: true
   assignment:
     type: static
     data:

@@ -22,12 +22,10 @@ func TestRemoteAuthenticate(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterXName := "clusterX"
 	clusterXUser := clusterXName + "_admin"
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterXUser, clusterXUser)
+	ksPrivate := integration.NewKeystoneServerFake(t, keystoneAuthURL, clusterXUser, clusterXUser)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterXUser, clusterXUser)
+	ksPublic := integration.NewKeystoneServerFake(t, keystoneAuthURL, clusterXUser, clusterXUser)
 	defer ksPublic.Close()
 
 	pContext := pongo2.Context{

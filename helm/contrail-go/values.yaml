@@ -94,7 +94,7 @@ config:
             - http://localhost:8082
         notify_etcd: true
     #keystone:
-    #    local: true # Enable local keystone v3. This is only for testing now.
+    #    local: true
     #    assignment:
     #        type: static
     #        file: sample/keystone.yml

@@ -16,13 +16,16 @@ type UnScopedAuthRequest struct {
 
 //SetCredential uses given user in the auth request
 func (u UnScopedAuthRequest) SetCredential(user, password string) {
-	u.Auth.Identity.Password.User.Name = user
-	u.Auth.Identity.Password.User.Password = password
+	u.GetIdentity().Password.User.Name = user
+	u.GetIdentity().Password.User.Password = password
 }
 
 //GetIdentity is to get the identify details from the token reques
 func (u UnScopedAuthRequest) GetIdentity() *Identity {
-	return u.Auth.Identity
+	if u.Auth != nil {
+		return u.Auth.Identity
+	}
+	return nil
 }
 
 //GetScope is to get the scope details from the token reques
@@ -48,12 +51,18 @@ func (s ScopedAuthRequest) SetCredential(user, password string) {
 
 //GetIdentity is to get the identify details from the token reques
 func (s ScopedAuthRequest) GetIdentity() *Identity {
-	return s.Auth.Identity
+	if s.Auth != nil {
+		return s.Auth.Identity
+	}
+	return nil
 }
 
 //GetScope is to get the scope details from the token reques
 func (s ScopedAuthRequest) GetScope() *Scope {
-	return s.Auth.Scope
+	if s.Auth != nil {
+		return s.Auth.Scope
+	}
+	return nil
 }
 
 //ScopedAuth is used to request an authentication.
