@@ -50,7 +50,11 @@ func (s *secret) getSecretTemplate() string {
 	return filepath.Join(s.cloud.getTemplateRoot(), defaultSecretTemplate)
 }
 
-func (s *secret) createSecretFile() error {
+func (s *secret) getAuthRegistryTemplate() string {
+	return filepath.Join(s.cloud.getTemplateRoot(), defaultAuthRegistryTemplate)
+}
+
+func (s *secret) createSecretFile(clusterUUID string) error {
 	sf := GetSecretFile(s.cloud.config.CloudID)
 
 	context := pongo2.Context{
@@ -66,8 +70,38 @@ func (s *secret) createSecretFile() error {
 		return err
 	}
 
+	authRegcontent, err := s.getAuthRegistryContent(clusterUUID)
+	if err != nil {
+		return err
+	}
+	if err := fileutil.AppendToFile(sf, authRegcontent, defaultRWOnlyPerm); err != nil {
+		return err
+	}
+
 	s.log.Infof("Created secret file for cloud with uuid: %s ", s.cloud.config.CloudID)
 	return nil
+}
+
+func (s *secret) getAuthRegistryContent(clusterUUID string) ([]byte, error) {
+	clusterResp, err := s.cloud.APIServer.GetContrailCluster(s.ctx, &services.GetContrailClusterRequest{
+		ID: clusterUUID,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "Cannot resolve Authentication Registries")
+	}
+
+	cluster := clusterResp.ContrailCluster
+
+	context := pongo2.Context{
+		"cluster": cluster,
+		"tag":     cluster.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
+	}
+
+	content, err := template.Apply(s.getAuthRegistryTemplate(), context)
+	if err != nil {
+		return nil, err
+	}
+	return content, nil
 }
 
 func getCredObject(ctx context.Context, client *client.HTTP,
