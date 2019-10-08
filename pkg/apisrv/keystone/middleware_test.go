@@ -22,11 +22,11 @@ func TestRemoteAuthenticate(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterXName := "clusterX"
 	clusterXUser := clusterXName + "_admin"
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"", keystoneAuthURL, clusterXUser, clusterXUser)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"", keystoneAuthURL, clusterXUser, clusterXUser)
 	defer ksPublic.Close()
 

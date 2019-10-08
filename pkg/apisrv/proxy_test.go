@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/auth"
@@ -21,7 +23,6 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/websocket"
@@ -433,25 +434,26 @@ func withUUIDSuffix(s string) string {
 ////////////////////
 
 func TestKeystoneEndpoint(t *testing.T) {
-	keystoneAuthURL := viper.GetString("keystone.authurl")
+	// arrange
+	keystoneAuthURL := server.URL() + keystone.AuthEndpointSuffix
+	clusterName := contrailClusterName(t, "")
+	user := clusterName + "_admin"
 
-	clusterCName := t.Name() + "_clusterC"
-	clusterCUser := clusterCName + "_admin"
-	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterCUser, clusterCUser)
+	ksPrivate := integration.ServeKeystoneMock("", keystoneAuthURL, user, user)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterCUser, clusterCUser)
+	ksPublic := integration.ServeKeystoneMock("", keystoneAuthURL, user, user)
 	defer ksPublic.Close()
 
 	ts, err := integration.LoadTest(
 		testEndpointFile,
 		pongo2.Context{
-			"cluster_name":  clusterCName,
-			"endpoint_name": clusterCName + "_keystone",
+			"cluster_name":  clusterName,
+			"endpoint_name": clusterName + "_keystone",
 			"private_url":   ksPrivate.URL,
 			"public_url":    ksPublic.URL,
 			"manage_parent": true,
-			"admin_user":    clusterCUser,
+			"admin_user":    user,
 		})
 	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
@@ -459,25 +461,27 @@ func TestKeystoneEndpoint(t *testing.T) {
 
 	server.ForceProxyUpdate()
 
+	// act/assert
 	// Login to new remote keystone
 	ctx := context.Background()
 	for _, client := range ts.Clients {
 		_, err = client.Login(ctx)
 		assert.NoError(t, err, "client failed to login remote keystone")
 	}
+
 	// verify auth (remote keystone)
 	err = verifyKeystoneEndpoint(ctx, ts, false)
-	assert.NoError(t, err,
-		"failed to validate token with remote keystone")
+	assert.NoError(t, err, "failed to validate token with remote keystone")
 
 	// Delete endpoint test
 	for _, client := range ts.Clients {
 		var response map[string]interface{}
-		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterCName)
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
 		_, err = client.Delete(ctx, url, &response)
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
+
 	server.ForceProxyUpdate()
 
 	// Login to new local keystone
@@ -485,19 +489,19 @@ func TestKeystoneEndpoint(t *testing.T) {
 		_, err = client.Login(ctx)
 		assert.NoError(t, err, "client failed to login local keystone")
 	}
+
 	// verify auth (local keystone)
 	err = verifyKeystoneEndpoint(ctx, ts, false)
-	assert.NoError(t, err,
-		"failed to validate token with local keystone after endpoint delete")
+	assert.NoError(t, err, "failed to validate token with local keystone after endpoint delete")
 
 	// Recreate endpoint
 	ts, err = integration.LoadTest(
 		testEndpointFile,
 		pongo2.Context{
-			"cluster_name":  clusterCName,
-			"endpoint_name": clusterCName + "_keystone",
+			"cluster_name":  clusterName,
+			"endpoint_name": clusterName + "_keystone",
 			"public_url":    ksPublic.URL,
-			"admin_user":    clusterCName,
+			"admin_user":    clusterName,
 		})
 	require.NoError(t, err, "failed to load endpoint create test data")
 	cleanup = integration.RunDirtyTestScenario(t, ts, server)
@@ -510,15 +514,15 @@ func TestKeystoneEndpoint(t *testing.T) {
 		_, err = client.Login(ctx)
 		assert.NoError(t, err, "client failed to login remote keystone")
 	}
+
 	// verify auth (remote keystone)
 	err = verifyKeystoneEndpoint(ctx, ts, true)
-	assert.NoError(t, err,
-		"failed to validate token with remote keystone after endpoint re-create")
+	assert.NoError(t, err, "failed to validate token with remote keystone after endpoint re-create")
 
 	// Cleanup endpoint test
 	for _, client := range ts.Clients {
 		var response map[string]interface{}
-		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterCName)
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
 		_, err = client.Delete(ctx, url, &response)
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
@@ -542,15 +546,15 @@ func verifyKeystoneEndpoint(ctx context.Context, testScenario *integration.TestS
 }
 
 func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
-	ctx := context.Background()
-	keystoneAuthURL := viper.GetString("keystone.authurl")
+	// arrange
+	keystoneAuthURL := server.URL() + keystone.AuthEndpointSuffix
 	clusterCName := t.Name() + "_clusterC"
 	clusterCUser := clusterCName + "_admin"
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, clusterCUser, clusterCUser)
+
+	ksPrivate := integration.ServeKeystoneMock("", keystoneAuthURL, clusterCUser, clusterCUser)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"", keystoneAuthURL, clusterCUser, clusterCUser)
 	defer ksPublic.Close()
 
@@ -572,14 +576,14 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	server.ForceProxyUpdate()
 
 	// Create one more cluster's keystone endpoint
-	keystoneAuthURL = viper.GetString("keystone.authurl")
+	keystoneAuthURL = server.URL() + keystone.AuthEndpointSuffix
 	clusterDName := t.Name() + "_clusterD"
 	clusterDUser := clusterDName + "_admin"
-	ksPrivateClusterD := integration.MockServerWithKeystoneTestUser(
+	ksPrivateClusterD := integration.ServeKeystoneMock(
 		"", keystoneAuthURL, clusterDUser, clusterDUser)
 	defer ksPrivateClusterD.Close()
 
-	ksPublicClusterD := integration.MockServerWithKeystoneTestUser(
+	ksPublicClusterD := integration.ServeKeystoneMock(
 		"", keystoneAuthURL, clusterDUser, clusterDUser)
 	defer ksPublicClusterD.Close()
 
@@ -600,6 +604,8 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 
 	server.ForceProxyUpdate()
 
+	// act/assert
+
 	// Login to new remote keystone(success)
 	// when multiple cluster endpoints are present
 	// auth middleware should find the keystone endpoint
@@ -607,6 +613,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	clientTS, err := integration.LoadTest(testEndpointFile, pContext)
 	require.NoError(t, err, "failed to load endpoint create test data")
 
+	ctx := context.Background()
 	clients := integration.PrepareClients(ctx, t, clientTS, server)
 
 	for _, client := range clients {
@@ -639,6 +646,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete clusterD's keystone endpoint")
 		break
 	}
+
 	server.ForceProxyUpdate()
 
 	// Delete the clusterC's keystone endpoint
@@ -650,6 +658,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete clusterC's keystone endpoint")
 		break
 	}
+
 	server.ForceProxyUpdate()
 }
 
@@ -658,6 +667,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 ////////////////////////////////////
 
 func TestDynamicProxyServiceWebSocketsSupport(t *testing.T) {
+	// arrange
 	clusterName := t.Name() + "_cluster"
 	endpointPrefix := "websocket-server"
 
@@ -673,6 +683,8 @@ func TestDynamicProxyServiceWebSocketsSupport(t *testing.T) {
 	config, err := websocket.NewConfig(url, "http://localhost/")
 	assert.NoError(t, err, "failed to create websocket config from proxy URL")
 	config.TlsConfig = &tls.Config{InsecureSkipVerify: true}
+
+	// act/assert
 	ws, err := websocket.DialConfig(config)
 	assert.NoError(t, err, "failed to connect to a websocket endpoint through the proxy")
 	defer func() {

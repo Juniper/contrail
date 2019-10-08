@@ -37,10 +37,10 @@ const (
 func TestClusterTokenMethod(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterName := t.Name() + "_clusterA"
-	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPrivate := integration.ServeKeystoneMock("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPublic := integration.ServeKeystoneMock("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPublic.Close()
 	pContext := pongo2.Context{
 		"cluster_name":  clusterName,
@@ -131,10 +131,10 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 func TestClusterLogin(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterName := t.Name() + "_clusterB"
-	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPrivate := integration.ServeKeystoneMock("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPublic := integration.ServeKeystoneMock("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPublic.Close()
 	pContext := pongo2.Context{
 		"cluster_name":  clusterName,
@@ -252,10 +252,10 @@ func TestMultiClusterAuth(t *testing.T) {
 		if cluster.orchestrator == openstack {
 			// mock keystone for cluster with openstack orchestrator
 			keystoneAuthURL := viper.GetString("keystone.authurl")
-			ksPublic := integration.MockServerWithKeystoneTestUser(
+			ksPublic := integration.ServeKeystoneMock(
 				"127.0.0.1:35357", keystoneAuthURL, defaultUser, defaultPassword)
 			defer ksPublic.Close()
-			ksPrivate := integration.MockServerWithKeystoneTestUser(
+			ksPrivate := integration.ServeKeystoneMock(
 				"127.0.0.1:5000", keystoneAuthURL, defaultUser, defaultPassword)
 			defer ksPrivate.Close()
 		}

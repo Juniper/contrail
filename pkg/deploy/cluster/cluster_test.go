@@ -376,10 +376,10 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
@@ -537,10 +537,10 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
@@ -960,10 +960,10 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
@@ -1100,10 +1100,10 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
@@ -1238,10 +1238,10 @@ func TestWindowsCompute(t *testing.T) {
 func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
@@ -1459,10 +1459,10 @@ func isCloudSecretFilesDeleted() error {
 func TestTripleoClusterImport(t *testing.T) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
+	ksPublic := integration.ServeKeystoneMock(
 		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
+	ksPrivate := integration.ServeKeystoneMock(
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
