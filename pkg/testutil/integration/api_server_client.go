@@ -78,7 +78,7 @@ func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
 		ID:       AdminUserID,
 		Password: AdminUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + apisrvkeystone.AuthEndpointSuffix,
+		AuthURL:  apiServerURL + apisrvkeystone.AuthPathPrefix,
 		Scope: keystone.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
@@ -95,7 +95,7 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		ID:       BobUserID,
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + apisrvkeystone.AuthEndpointSuffix,
+		AuthURL:  apiServerURL + apisrvkeystone.AuthPathPrefix,
 		Scope: keystone.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,

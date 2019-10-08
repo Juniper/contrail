@@ -7,9 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -26,14 +24,12 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/flosch/pongo2"
-	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -377,7 +373,7 @@ func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server 
 			ID:       c.ID,
 			Password: c.Password,
 			Endpoint: server.URL(),
-			AuthURL:  server.URL() + keystone.AuthEndpointSuffix,
+			AuthURL:  server.URL() + keystone.AuthPathPrefix,
 			Scope:    c.Scope,
 			Insecure: c.Insecure,
 		})
@@ -577,80 +573,4 @@ func trackResponse(respDataIf interface{}, clientID string, tracked []trackedRes
 		}
 	}
 	return tracked
-}
-
-func newWellKnownListener(serve string) net.Listener {
-	if serve != "" {
-		l, err := net.Listen("tcp", serve)
-		if err != nil {
-			panic(fmt.Sprintf("httptest: failed to listen on %v: %v", serve, err))
-		}
-		return l
-	}
-	l, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		if l, err = net.Listen("tcp6", "[::1]:0"); err != nil {
-			panic(fmt.Sprintf("httptest: failed to listen on a port: %v", err))
-		}
-	}
-	return l
-}
-
-// NewWellKnownServer returns a new server with given port
-func NewWellKnownServer(serve string, handler http.Handler) *httptest.Server {
-	return &httptest.Server{
-		Listener: newWellKnownListener(serve),
-		Config:   &http.Server{Handler: handler},
-	}
-}
-
-// addKeystoneUser adds Keystone user in mock keystone.
-func addKeystoneUser(k *keystone.Keystone, testUser, testPassword string) {
-	assignment := k.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
-	assignment.Users = map[string]*kscommon.User{}
-	assignment.Users[testUser] = &kscommon.User{
-		Domain:   assignment.Domains[DefaultDomainID],
-		ID:       testUser,
-		Name:     testUser,
-		Password: testPassword,
-		Roles: []*kscommon.Role{
-			{
-				ID:      "admin",
-				Name:    "Admin",
-				Project: assignment.Projects["admin"],
-			},
-		},
-	}
-}
-
-// MockServerWithKeystone mocks keystone server
-func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
-	return MockServerWithKeystoneTestUser(serve, keystoneAuthURL, "", "")
-}
-
-// MockServerWithKeystoneTestUser mocks keystone server with test users
-func MockServerWithKeystoneTestUser(serve, keystoneAuthURL, testUser, testPassword string) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-	keystoneClient := keystone.NewClient(keystoneAuthURL, true)
-	k, err := keystone.Init(e, nil, keystoneClient)
-	if err != nil {
-		return nil
-	}
-	if len(testUser) > 0 {
-		addKeystoneUser(k, testUser, testPassword)
-	}
-
-	// Routes
-	e.POST("/v3/auth/tokens", k.CreateTokenAPI)
-	e.GET("/v3/auth/tokens", k.ValidateTokenAPI)
-
-	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	e.GET("/v3/auth/projects", k.ListProjectsAPI)
-
-	e.GET("/v3/projects", k.ListProjectsAPI)
-	e.GET("/v3/project/:id", k.GetProjectAPI)
-	mockServer := NewWellKnownServer(serve, e)
-	mockServer.Start()
-	return mockServer
 }

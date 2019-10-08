@@ -21,7 +21,7 @@ import (
 
 // Keystone constants.
 const (
-	AuthEndpointSuffix = "/keystone/v3" // TODO(Daniel) use this constant where possible
+	AuthPathPrefix = "/keystone/v3"
 
 	configService   = "config"
 	xClusterIDKey   = "X-Cluster-ID"
@@ -408,11 +408,9 @@ func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Projec
 
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
-	keystoneEndpoint := getKeystoneEndpoint(
-		c.Request().Header.Get(xClusterIDKey),
-		keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	ke := getKeystoneEndpoint(c.Request().Header.Get(xClusterIDKey), keystone.Endpoints)
+	if ke != nil {
+		keystone.Client.SetAuthURL(ke.URL)
 		return keystone.Client.ValidateToken(c)
 	}
 
