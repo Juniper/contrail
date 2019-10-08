@@ -419,9 +419,16 @@ func (s *Server) registerStaticProxyEndpoints() error {
 	return nil
 }
 
-func (s *Server) serveDynamicProxy(endpointStore *endpoint.Store) {
-	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService, viper.GetString("server.dynamic_proxy_path"))
-	s.Proxy.Serve()
+func (s *Server) serveDynamicProxy(es *endpoint.Store) {
+	dpp := viper.GetString("server.dynamic_proxy_path")
+	if dpp == "" {
+		dpp = DefaultDynamicProxyPath
+	}
+
+	s.Echo.Group(dpp, dynamicProxyMiddleware(es, dpp))
+
+	s.Proxy = newProxyService(es, s.DBService, dpp)
+	s.Proxy.StartEndpointsSync()
 }
 
 func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
@@ -512,6 +519,6 @@ func (s *Server) Close() error {
 	if s.VNCReplicator != nil {
 		s.VNCReplicator.Stop()
 	}
-	s.Proxy.Stop()
+	s.Proxy.StopEndpointsSync()
 	return s.DBService.Close()
 }

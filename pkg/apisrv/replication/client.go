@@ -127,6 +127,7 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 	// config endpoints are created before keystone
 	// endpoints
 	if err := retry.Do(func() (retry bool, err error) {
+		// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 		endpointKey := strings.Join(
 			[]string{"/proxy", clusterID, keystoneService, scope}, "/")
 		keystoneTargets := h.endpointStore.Read(endpointKey)
@@ -285,6 +286,7 @@ type vncAPI struct {
 
 // Replicate propagates given event to VNC API.
 func (v *vncAPI) Replicate(action, sourceURL string, data interface{}, response interface{}) {
+	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	targetURL := strings.Join([]string{"/proxy", v.clusterID, configService, sourceURL}, "/")
 	v.log.WithFields(logrus.Fields{
 		"data":      data,
@@ -385,6 +387,7 @@ func (v *vncAPI) deletePhysicaInterfaceToPortRefs(portURL, portID string) {
 		).Error("Failed to read port from VNC API")
 	}
 	// Delete physical-interface to this port ref
+	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	refUpdateURL := strings.Join([]string{
 		"/proxy", v.clusterID, configService, services.RefUpdatePath}, "/")
 	for _, physicalInterface := range response.Port.PhysicalInterfaceBackRefs {

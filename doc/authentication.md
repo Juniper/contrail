@@ -14,7 +14,7 @@ keystone:
 ```yaml
 # Keystone configuration
 keystone:
-    local: true # Enable local keystone v3. This is only for testing now.
+    local: true
     assignment:
         type: static
         file: ./test_data/keystone.yml
