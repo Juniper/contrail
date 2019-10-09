@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d33f9687_1d26f00f",
+        "filename": "pkg/apisrv/proxy/reverse_proxy.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-09T19:37:37Z",
+      "side": 1,
+      "message": "I\u0027ve noticed that users of this package (both production and test) have to call url.Parse. I think it would be nice to create a constructor that accepts a list of strings instead of URL structs, because passing url string is usually more convenient (see functions and methods in stdlib\u0027s http package e.g. http.Get).",
+      "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "07670b5b_b0f04d26",
+        "filename": "pkg/testutil/integration/api_server_client.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-09T19:37:37Z",
+      "side": 1,
+      "message": "Because soon we will begin moving the soruces to ASF, I would recommend not adding more pkg/models dependencies in testutil. Please inline those methods in its usage or create a separate helper somewhere else.",
+      "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
