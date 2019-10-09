@@ -19,6 +19,23 @@
     },
     {
       "key": {
+        "uuid": "5e69f912_4440c3b3",
+        "filename": "pkg/apisrv/proxy/reverse_proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-09T19:39:37Z",
+      "side": 1,
+      "message": "I don\u0027t like how assertion function call is hidden inside test resource initialization. How about inlining the backendServer funtion?",
+      "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "07670b5b_b0f04d26",
         "filename": "pkg/testutil/integration/api_server_client.go",
         "patchSetId": 13
