@@ -31,15 +31,15 @@ const (
 	statusUpdateProgress = "UPDATE_IN_PROGRESS"
 	statusUpdateFailed   = "UPDATE_FAILED"
 
-	createAction      = "create"
-	updateAction      = "update"
+	CreateAction      = "create"
+	UpdateAction      = "update"
 	deleteCloudAction = "DELETE_CLOUD"
 
 	// AWS cloud kind
 	AWS    = "aws"
-	azure  = "azure"
-	gcp    = "gcp"
-	onPrem = "private"
+	Azure  = "azure"
+	GCP    = "gcp"
+	OnPrem = "private"
 
 	defaultRWOnlyPerm = 0600
 	defaultSSHKeyRepo = "keypair"

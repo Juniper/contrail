@@ -1145,7 +1145,7 @@ func (d *Data) update(isDelRequest bool) error {
 
 func (d *Data) isCloudCreated() bool {
 	status := d.info.ProvisioningState
-	if d.cloud.config.Action == createAction && (status == statusNoState || status == "") {
+	if d.cloud.config.Action == CreateAction && (status == statusNoState || status == "") {
 		return false
 	}
 	d.cloud.log.Infof("Cloud %s already provisioned, STATE: %s", d.info.UUID, status)
@@ -1154,7 +1154,7 @@ func (d *Data) isCloudCreated() bool {
 
 func (d *Data) isCloudPrivate() bool {
 	for _, provider := range d.info.CloudProviders {
-		if provider.Type == onPrem {
+		if provider.Type == OnPrem {
 			return true
 		}
 	}

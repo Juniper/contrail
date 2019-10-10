@@ -159,8 +159,8 @@ func (sfc *SecretFileConfig) Update(providers []string, kp *models.Keypair) erro
 		if provider == AWS && !awsCredentialsPresent {
 			return errors.New("aws credentials are not present, please provide them")
 		}
-		if provider == gcp {
-			sfc.ProviderType = gcp
+		if provider == GCP {
+			sfc.ProviderType = GCP
 		}
 	}
 

@@ -83,6 +83,10 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 
 // NewCloud returns a new Cloud instance
 func NewCloud(c *Config) (*Cloud, error) {
+	if err := SetCloudLogFilepath(c.LogFile); err != nil {
+		return nil, err
+	}
+
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -171,11 +175,11 @@ func (c *Cloud) manage() error {
 	}
 
 	switch c.config.Action {
-	case createAction:
+	case CreateAction:
 		if err = c.create(); err != nil {
 			return errors.Wrapf(err, "failed to create cloud with CloudID %v", c.config.CloudID)
 		}
-	case updateAction:
+	case UpdateAction:
 		if err = c.update(); err != nil {
 			return errors.Wrapf(err, "failed to update cloud with CloudID %v", c.config.CloudID)
 		}
@@ -194,7 +198,7 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 		return false, err
 	}
 
-	if c.config.Action == updateAction &&
+	if c.config.Action == UpdateAction &&
 		cloudObj.ProvisioningAction == deleteCloudAction &&
 		cloudObj.ProvisioningState == statusNoState {
 		return true, nil

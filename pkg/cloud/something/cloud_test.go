@@ -1,4 +1,4 @@
-package cloud
+package something
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -59,7 +60,7 @@ func TestOnPremCloud(t *testing.T) {
 		expectedOnPremSecret,
 		expectedOnPremCmdForCreateUpdate,
 		pongo2.Context{
-			"CLOUD_TYPE": onPrem,
+			"CLOUD_TYPE": cloud.OnPrem,
 		},
 	)
 }
@@ -71,7 +72,7 @@ func TestAzureCloud(t *testing.T) {
 		expectedAZSecret,
 		expectedCmdForCreateUpdate,
 		pongo2.Context{
-			"CLOUD_TYPE": azure,
+			"CLOUD_TYPE": cloud.Azure,
 		},
 	)
 }
@@ -83,7 +84,7 @@ func TestAWSCloud(t *testing.T) {
 		expectedAWSSecret,
 		expectedCmdForCreateUpdate,
 		pongo2.Context{
-			"CLOUD_TYPE": AWS,
+			"CLOUD_TYPE": cloud.AWS,
 		},
 	)
 }
@@ -95,7 +96,7 @@ func TestGCPCloud(t *testing.T) {
 		expectedGCPSecret,
 		expectedCmdForCreateUpdate,
 		pongo2.Context{
-			"CLOUD_TYPE": gcp,
+			"CLOUD_TYPE": cloud.GCP,
 		},
 	)
 }
@@ -125,7 +126,7 @@ func runCloudTest(
 	defer cleanup()
 
 	// creating cloud config
-	config := &Config{
+	config := &cloud.Config{
 		ID:           "alice",
 		Password:     "alice_password",
 		ProjectID:    "admin",
@@ -133,10 +134,11 @@ func runCloudTest(
 		Endpoint:     server.URL(),
 		InSecure:     true,
 		CloudID:      cloudID,
-		Action:       createAction,
+		Action:       cloud.CreateAction,
 		LogLevel:     "info",
 		TemplateRoot: "configs/",
 		Test:         true,
+		LogFile:      "./test_log_path.log",
 	}
 
 	// delete previously created
@@ -151,14 +153,16 @@ func runCloudTest(
 	sshKeycleanup := createDummySSHKeyFiles(t)
 	defer sshKeycleanup()
 
-	cloud, err := NewCloud(config)
+	cloudObj, err := cloud.NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
-	if context[cloudTypeKey] == AWS {
+	compareMultiCloudLogPathFiles(t, "./test_data/expected_multicloud_log_file.yml")
+
+	if context[cloudTypeKey] == cloud.AWS {
 		createAWSAccessKey(t, awsAccessKeyFile)
 		createAWSSecretKey(t, awsSecretKeyFile)
 		defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
-	} else if context[cloudTypeKey] == azure {
+	} else if context[cloudTypeKey] == cloud.Azure {
 		createAzureCredentials(t)
 		defer removeAzureCredentials(t)
 	}
@@ -166,9 +170,9 @@ func runCloudTest(
 	// There are a few calls to Manage() in the rest of the test so it will be
 	// checked anyway. Proper testing method of this will be added in the awaiting
 	// cloud refactor change.
-	err = cloud.manage()
+	err = cloudObj.manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
-	if context[cloudTypeKey] != onPrem {
+	if context[cloudTypeKey] != cloud.OnPrem {
 		assert.True(t, compareGeneratedSecret(t, expectedSecret),
 			"secret file created during cloud create is not as expected")
 	}
@@ -176,9 +180,9 @@ func runCloudTest(
 	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud create is not as expected")
 
-	if context["CLOUD_TYPE"] != onPrem {
+	if context["CLOUD_TYPE"] != cloud.OnPrem {
 
-		assert.True(t, verifyNodeType(cloud.ctx, cloud.APIServer, ts),
+		assert.True(t, verifyNodeType(cloudObj.ctx, cloud.APIServer, ts),
 			"public cloud nodes are not updated as type private")
 
 		assert.True(t, verifyCommandsExecuted(t, expectedCmdFile),
@@ -275,7 +279,7 @@ func runCloudTest(
 			"topology file created during cloud delete vpc is not as expected")
 
 	} else {
-		config.Action = updateAction
+		config.Action = UpdateAction
 	}
 
 	// delete cloud
@@ -351,8 +355,13 @@ func runCloudTest(
 	assert.NoError(t, err, "failed to manage cloud, while deleting cloud")
 
 	// make sure cloud is removed
-	assert.True(t, verifyCloudDeleted(cloud.ctx, cloud.APIServer),
+	assert.True(t, verifyCloudDeleted(cloudObj.ctx, cloud.APIServer),
 		"Cloud dir/Cloud object is not deleted during cloud delete")
+}
+
+func compareMultiCloudLogPathFiles(t *testing.T, expectedFile string) {
+	assert.True(t, compareFiles(t, expectedFile, MultiCloudLogPathsFile),
+		"Generated MultiCloud log pathfiles do not match")
 }
 
 func removeAWSCredentials(t *testing.T, awsAccessKey, awsSecretKey string) {
@@ -371,6 +380,10 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	assert.NoErrorf(t, err, "unable to read generated: %s", generatedFile)
 	expectedData, err := ioutil.ReadFile(expectedFile)
 	assert.NoErrorf(t, err, "unable to read expected: %s", expectedFile)
+	fmt.Println("Generated")
+	fmt.Println(string(generatedData))
+	fmt.Println("Expected")
+	fmt.Println(string(expectedData))
 	return bytes.Equal(generatedData, expectedData)
 }
 

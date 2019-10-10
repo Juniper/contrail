@@ -1,0 +1,2 @@
+cloud_path: /var/tmp/contrail/test_cloud.log
+cluster_path: /var/tmp/contrail/test_cluster.log
