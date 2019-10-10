@@ -13,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/apisrv/replication"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
@@ -482,6 +483,7 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 	s.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
 	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
 	s.Echo.POST(services.UploadCloudKeysPath, cs.RESTUploadCloudKeys)
+	s.Echo.POST(cloud.MultiCloudLogUploadPath, cloud.RESTUploadMultiCloudLogs)
 }
 
 type recorderTask struct {

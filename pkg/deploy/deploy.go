@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/pkg/errors"
@@ -80,6 +81,10 @@ func NewDeployManager(configPath string) (*Deploy, error) {
 	var c Config
 	err = yaml.UnmarshalStrict(data, &c)
 	if err != nil {
+		return nil, err
+	}
+
+	if err = cloud.SetClusterLogFilepath(c.LogFile); err != nil {
 		return nil, err
 	}
 
