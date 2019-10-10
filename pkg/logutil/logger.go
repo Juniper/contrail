@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	shellwords "github.com/mattn/go-shellwords"
@@ -145,5 +144,5 @@ func (l *StreamServer) Close() {
 // If given error is constructed with pkg/errors library, stack trace is printed.
 // See: https://godoc.org/github.com/pkg/errors#hdr-Formatted_printing_of_errors
 func FatalWithStackTrace(err error) {
-	log.Fatalf("%+v", err)
+	logrus.Fatalf("%+v", err)
 }

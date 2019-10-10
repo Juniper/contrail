@@ -58,12 +58,12 @@ CONTRAIL_APIDOC_PATH=public/doc/index.html
 generate_go:
 	# Generate for contrail resources.
 	@mkdir -p public/
-	go run cmd/contrailschema/main.go generate \
-		--schemas schemas/contrail --templates tools/templates/contrail/template_config.yaml \
+	go run cmd/contrailschema/main.go generate --no-regenerate \
+		--schemas schemas/contrail --addons schemas/addons --templates tools/templates/contrail/template_config.yaml \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
-	go run  cmd/contrailschema/main.go generate \
+	go run  cmd/contrailschema/main.go generate --no-regenerate \
 		--schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
