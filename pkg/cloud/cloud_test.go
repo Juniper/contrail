@@ -137,6 +137,7 @@ func runCloudTest(
 		LogLevel:     "info",
 		TemplateRoot: "configs/",
 		Test:         true,
+		LogFile: "./test_log_path.log",
 	}
 
 	// delete previously created
@@ -353,6 +354,10 @@ func runCloudTest(
 	// make sure cloud is removed
 	assert.True(t, verifyCloudDeleted(cloud.ctx, cloud.APIServer),
 		"Cloud dir/Cloud object is not deleted during cloud delete")
+}
+
+func compateMultiCloudLogPathFiles(t *testing.T) {
+
 }
 
 func removeAWSCredentials(t *testing.T, awsAccessKey, awsSecretKey string) {
