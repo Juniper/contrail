@@ -78,6 +78,10 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
+	if err = SetCloudLogFilepath(c.LogFile); err != nil {
+		return nil, err
+	}
+
 	return NewCloud(&c)
 }
 

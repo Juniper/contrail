@@ -1,0 +1,29 @@
+name: MultiCloud lo
+description:  basic logical router test
+test_data:
+
+  admin_project: &admin_project_lr
+    uuid: admin_lr_project_uuid
+    name: admin_lr_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    vxlan_routing: true
+    quota: {}
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /multicloud-logs-upload
+    method: POST
+    expected:
+    - 200
+  expect: []
