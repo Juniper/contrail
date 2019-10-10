@@ -8,7 +8,7 @@ import (
 )
 
 func TestOpenAPI(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema"}, "", false)
+	api, err := MakeAPI([]string{"test_data/simple/schema"}, nil, false)
 	assert.Nil(t, err, "API reading failed")
 	fmt.Println(api)
 	_, err = api.ToOpenAPI()
