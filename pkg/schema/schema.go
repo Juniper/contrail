@@ -2,11 +2,11 @@ package schema
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -95,6 +95,7 @@ var sqlBindMap = map[string]string{
 type API struct {
 	Schemas     []*Schema              `yaml:"schemas" json:"schemas,omitempty"`
 	Definitions []*Schema              `yaml:"-" json:"-"`
+	Overrides   []*Schema              `yaml:"-" json:"-"`
 	Types       map[string]*JSONSchema `yaml:"-" json:"-"`
 	Timestamp   time.Time
 
@@ -281,11 +282,21 @@ func (s *JSONSchema) getRefType() string {
 //
 // Note that non pointer receiver is used to copy the object.
 func (s JSONSchema) Copy() *JSONSchema {
-	properties := map[string]*JSONSchema{}
-	for name, property := range s.Properties {
-		properties[name] = property.Copy()
+	if s.Properties != nil {
+		properties := map[string]*JSONSchema{}
+		for name, property := range s.Properties {
+			properties[name] = property.Copy()
+		}
+		s.Properties = properties
 	}
-	s.Properties = properties
+
+	op := make([]*JSONSchema, 0, len(s.OrderedProperties))
+	for _, p := range s.OrderedProperties {
+		if prop := s.Properties[p.ID]; prop != nil {
+			op = append(op, prop)
+		}
+	}
+	s.OrderedProperties = op
 
 	if s.Items != nil {
 		s.Items = s.Items.Copy()
@@ -293,7 +304,7 @@ func (s JSONSchema) Copy() *JSONSchema {
 	return &s
 }
 
-//Update merges two JSONSchema
+// Update merges two JSONSchema
 // nolint: gocyclo
 func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s2 == nil {
@@ -324,21 +335,29 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 		s.Presence = s2.Presence
 	}
 
-	if s.Properties == nil {
+	if s.Properties == nil && s2.Properties != nil {
 		s.Properties = map[string]*JSONSchema{}
 	}
 	for name, property := range s2.Properties {
-		if _, ok := s.Properties[name]; !ok {
-			s.Properties[name] = property.Copy()
-		}
+		s.Properties[name] = property.Copy()
 	}
 	s.Required = append(s2.Required, s.Required...)
+
 	var props []*JSONSchema
+	set := map[string]bool{}
 	for _, p := range s2.OrderedProperties {
-		props = append(props, s.Properties[p.ID])
+		id := p.ID
+		if !set[id] {
+			props = append(props, s.Properties[id])
+			set[id] = true
+		}
 	}
 	for _, p := range s.OrderedProperties {
-		props = append(props, s.Properties[p.ID])
+		id := p.ID
+		if !set[id] {
+			props = append(props, s.Properties[p.ID])
+			set[id] = true
+		}
 	}
 	s.OrderedProperties = props
 	if s.Type == "" {
@@ -548,11 +567,11 @@ func (api *API) readDefinitionFromDefinitions(schemaFile, typeName string) (*JSO
 		for _, d := range api.Definitions {
 			logrus.Info(d.FileName)
 		}
-		return nil, fmt.Errorf("can't find file '%s' (with type %s)", schemaFile, typeName)
+		return nil, errors.Errorf("can't find file '%s' (with type %s)", schemaFile, typeName)
 	}
 	definition, ok := definitions.Definitions[typeName]
 	if !ok {
-		return nil, fmt.Errorf("%s isn't defined in %s", typeName, schemaFile)
+		return nil, errors.Errorf("%s isn't defined in %s, please verify the definition is loaded", typeName, schemaFile)
 	}
 	return definition, nil
 }
@@ -560,7 +579,7 @@ func (api *API) readDefinitionFromDefinitions(schemaFile, typeName string) (*JSO
 func (api *API) readDefinitionFromSchemas(typeName string) (*JSONSchema, error) {
 	schema := api.SchemaByID(typeName)
 	if schema == nil {
-		return nil, fmt.Errorf("can find schema with id: %v", typeName)
+		return nil, errors.Errorf("can find schema with id: %v", typeName)
 	}
 	return schema.JSONSchema, nil
 }
@@ -572,7 +591,7 @@ func (api *API) readDefinition(schemaFile, section, typeName string) (*JSONSchem
 	case schemasInFile:
 		return api.readDefinitionFromSchemas(typeName)
 	}
-	return nil, fmt.Errorf("section '%v' not handled for reading definitions", section)
+	return nil, errors.Errorf("section '%v' not handled for reading definitions", section)
 }
 
 func (api *API) loadType(schemaFile, section, typeName string) (*JSONSchema, error) {
@@ -741,7 +760,6 @@ var overriddenTypes = map[string]struct{}{
 	"types.json#/definitions/MacAddressesType": {},
 }
 
-// JSONSchema creates JSONSchema using mapSlice data.
 func (s *JSONSchema) applyOverridenTypes() {
 	if s == nil {
 		return
@@ -801,9 +819,9 @@ func (api *API) resolveAllRelation() error {
 			referenceSchema, err := api.resolveReference(s, reference, linkTo)
 			if err != nil {
 				if !api.SkipMissingRefs {
-					return err
+					return errors.Wrap(err, "error resolving reference")
 				}
-				logrus.Warnf(`Error while resolving reference "%s": %v`, linkTo, err)
+				logrus.Warnf("Skipping reference '%s' (--skip-missing-refs), error: %v", linkTo, err)
 				continue
 			}
 			refs[linkTo] = reference
@@ -823,7 +841,7 @@ func (api *API) resolveAllRelation() error {
 			parent.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
 			parentSchema, err := api.resolveReference(s, parent, linkTo)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error resolving parent reference")
 			}
 			parentSchema.Children[s.ID] = &BackReference{LinkTo: s, Description: parent.Description}
 		}
@@ -839,7 +857,7 @@ func (s *Schema) HasParents() bool {
 func (api *API) resolveReference(from *Schema, to *Reference, toID string) (*Schema, error) {
 	linkToSchema := api.SchemaByID(toID)
 	if linkToSchema == nil {
-		return nil, fmt.Errorf("missing linked schema '%s' for reference '%v' in schema %v [%v]",
+		return nil, errors.Errorf("missing linked schema '%s' for reference '%v' in schema %v [%v]",
 			toID, toID, from.ID, from.FileName)
 	}
 	if err := api.resolveRelation(linkToSchema, to); err != nil {
@@ -909,14 +927,19 @@ func (api *API) resolveExtend() error {
 	for _, s := range api.Schemas {
 		for _, baseSchemaID := range s.Extends {
 			baseSchema := api.SchemaByID(baseSchemaID)
-			if baseSchema == nil {
-				continue
-			}
-			s.JSONSchema.Update(baseSchema.JSONSchema)
-			s.extendReferences(baseSchema)
+			s.Extend(baseSchema)
 		}
 	}
 	return nil
+}
+
+func (s *Schema) Extend(by *Schema) {
+	if s == nil || by == nil {
+		return
+	}
+	s.JSONSchema.Update(by.JSONSchema)
+	s.extendReferences(by)
+	s.extendParents(by)
 }
 
 func (s *Schema) extendReferences(by *Schema) {
@@ -926,6 +949,16 @@ func (s *Schema) extendReferences(by *Schema) {
 	for k, v := range by.References {
 		c := *v
 		s.References[k] = &c
+	}
+}
+
+func (s *Schema) extendParents(by *Schema) {
+	if s.Parents == nil {
+		s.Parents = map[string]*Reference{}
+	}
+	for k, v := range by.Parents {
+		c := *v
+		s.Parents[k] = &c
 	}
 }
 
@@ -996,57 +1029,110 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	return nil
 }
 
-func (api *API) loadSchemaFromPath(path string) (*Schema, error) {
+// MakeAPI load directory and generate API definitions.
+func MakeAPI(paths, addons []string, skipMissingRefs bool) (*API, error) {
+	api := &API{
+		Schemas:         []*Schema{},
+		Definitions:     []*Schema{},
+		Types:           map[string]*JSONSchema{},
+		SkipMissingRefs: skipMissingRefs,
+	}
+	logrus.Printf("Making API from schema paths: %v", paths)
+	for _, path := range paths {
+
+		if err := filepath.Walk(path, api.walkSchemaFile); err != nil {
+			return nil, errors.Wrap(err, "error walking schema directory")
+		}
+
+	}
+	for _, addon := range addons {
+		overrides, err := api.readOverrides(addon)
+		if err != nil {
+			return nil, err
+		}
+		api.Overrides = append(api.Overrides, overrides...)
+	}
+
+	err := api.process()
+	return api, err
+}
+
+func (api *API) readOverrides(dir string) ([]*Schema, error) {
+	var result []*Schema
+	if err := walkOverFilesIfDirExists(dir, func(path string, f os.FileInfo) error {
+		logrus.Infof("Reading addons from %v file", path)
+		schema, err := api.loadSchemaFromPath(path)
+		if err != nil {
+			return err
+		}
+		result = append(result, &schema)
+		return nil
+	}); err != nil {
+		return nil, errors.Wrap(err, "error walking overrides directory")
+	}
+	return result, nil
+}
+
+func walkOverFilesIfDirExists(dir string, do func(path string, f os.FileInfo) error) error {
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if f == nil || f.IsDir() || err != nil {
+			return err
+		}
+		return do(path, f)
+	})
+	if os.IsNotExist(err) || isNotDir(err) {
+		return nil // Silence not-exist and not a dir errors
+	}
+	return err
+}
+
+func isNotDir(err error) bool {
+	p, ok := err.(*os.PathError)
+	return ok && p != nil && p.Err == syscall.ENOTDIR
+}
+
+func (api *API) loadSchemaFromPath(path string) (Schema, error) {
+	schema, modtime, err := readSchemaFromPath(path)
+	if err != nil {
+		return Schema{}, err
+	}
+	if modtime.After(api.Timestamp) {
+		api.Timestamp = modtime
+	}
+
+	return schema, nil
+}
+
+func readSchemaFromPath(path string) (Schema, time.Time, error) {
 	var schema Schema
 	err := fileutil.LoadFile(path, &schema)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to load file %s", path)
+		return Schema{}, time.Time{}, errors.Wrapf(err, "failed to load file %s", path)
 	}
 	info, err := os.Stat(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to stat file %s", path)
-	}
-	if info.ModTime().After(api.Timestamp) {
-		api.Timestamp = info.ModTime()
+		return Schema{}, time.Time{}, errors.Wrapf(err, "failed to stat file %s", path)
 	}
 	logrus.Debugf("Loading schema from %v - %v", path, schema.ID)
-	return &schema, nil
+	return schema, info.ModTime(), nil
 }
 
-func (api *API) readOverrides(dir string) (*Schema, error) {
-	s := &Schema{}
-	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-		if (f != nil && f.IsDir()) || err != nil {
-			if os.IsNotExist(err) {
-				return nil // Silence not-exist as if overrides dir not exist it is not an error
-			}
-			return err
-		}
-		// This is as a Warning because overrides fixes schema problems that should be fixed in upstream schema definition
-		logrus.Warnf("Reading overrides from %v file", path)
-		schema, err := api.loadSchemaFromPath(path)
-		if err == nil && len(schema.Definitions) > 0 {
-			if s.Definitions == nil {
-				s.Definitions = map[string]*JSONSchema{}
-			}
-			for key, def := range schema.Definitions {
-				s.Definitions[key] = def
-			}
-		}
+func (api *API) walkSchemaFile(path string, f os.FileInfo, err error) error {
+	if f == nil || f.IsDir() || err != nil {
 		return err
-	})
-	return s, err
+	}
+	schema, err := api.loadSchemaFromPath(path)
+	if err != nil {
+		return err
+	}
+
+	r := strings.NewReplacer(".yml", ".json", ".yaml", ".json")
+	schema.FileName = r.Replace(filepath.Base(path))
+	return api.processSchema(&schema)
 }
 
-func processSchema(schema, overrides *Schema, api *API) error {
+func (api *API) processSchema(schema *Schema) error {
 	schema.JSONSchema.applyOverridenTypes()
-	for key := range schema.Definitions {
-		overDef, ok := overrides.Definitions[key]
-		if ok {
-			schema.Definitions[key] = overDef
-		}
-		schema.Definitions[key].applyOverridenTypes()
-	}
 	schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
 	if schema.Table == "" {
 		schema.Table = strings.ToLower(schema.ID)
@@ -1064,97 +1150,46 @@ func processSchema(schema, overrides *Schema, api *API) error {
 	return nil
 }
 
-func walkSchemaFile(overridePath string, overrides *Schema, api *API, path string, f os.FileInfo, err error) error {
-	// Don't walk over override schema files
-	if path == overridePath && f.IsDir() {
-		return filepath.SkipDir
-	}
-	if f == nil || f.IsDir() || err != nil {
-		return err
-	}
-	schema, err := api.loadSchemaFromPath(path)
-	if err != nil {
-		return err
-	}
-	if schema == nil {
-		return nil
-	}
-	r := strings.NewReplacer(".yml", ".json", ".yaml", ".json")
-	schema.FileName = r.Replace(filepath.Base(path))
-	return processSchema(schema, overrides, api)
-}
-
 func (api *API) process() error {
-	err := api.resolveAllRef()
-	if err != nil {
+	if err := api.resolveOverrides(); err != nil {
 		return err
 	}
-	err = api.resolveExtend()
-	if err != nil {
+	if err := api.resolveAllRef(); err != nil {
 		return err
 	}
-	err = api.resolveAllGoName()
-	if err != nil {
+	if err := api.resolveExtend(); err != nil {
 		return err
 	}
-	err = api.resolveAllSQL()
-	if err != nil {
+	if err := api.resolveAllGoName(); err != nil {
 		return err
 	}
-	err = api.resolveAllRelation()
-	if err != nil {
+	if err := api.resolveAllSQL(); err != nil {
 		return err
 	}
-	err = api.resolveIndex()
-	if err != nil {
+	if err := api.resolveAllRelation(); err != nil {
 		return err
 	}
-	err = api.resolveCollectionTypes()
-	if err != nil {
+	if err := api.resolveIndex(); err != nil {
 		return err
 	}
-	err = api.resolveAllJSONTag()
+	if err := api.resolveCollectionTypes(); err != nil {
+		return err
+	}
+	err := api.resolveAllJSONTag()
 	return err
 }
 
-func (api *API) loadOverrides(dir string) (*Schema, error) {
-	overrides, err := api.readOverrides(dir)
-	if overrides == nil {
-		overrides = &Schema{}
-	}
-	if err != nil {
-		return overrides, err
-	}
-	return overrides, nil
-}
-
-// MakeAPI load directory and generate API definitions.
-func MakeAPI(dirs []string, overrideSubdir string, skipMissingRefs bool) (*API, error) {
-	api := &API{
-		Schemas:         []*Schema{},
-		Definitions:     []*Schema{},
-		Types:           map[string]*JSONSchema{},
-		SkipMissingRefs: skipMissingRefs,
-	}
-	logrus.Printf("Making API from schema dirs: %v", dirs)
-	for _, dir := range dirs {
-		overrides := &Schema{}
-		overridePath := ""
-		if overrideSubdir != "" {
-			overridePath = dir + string(os.PathSeparator) + overrideSubdir
-			var err error
-			overrides, err = api.loadOverrides(overridePath)
-			if err != nil {
-				logrus.Warnf("No overrides dir found: %v", err)
+func (api *API) resolveOverrides() error {
+	for _, s := range api.Overrides {
+		for key, def := range s.Definitions {
+			for _, defSchema := range api.Definitions {
+				defSchema.Definitions[key] = def
 			}
 		}
-		err := filepath.Walk(dir, func(p string, f os.FileInfo, e error) error {
-			return walkSchemaFile(overridePath, overrides, api, p, f, e)
-		})
-		if err != nil {
-			return nil, err
+		if s.ID != "" {
+			toChange := api.SchemaByID(s.ID)
+			toChange.Extend(s)
 		}
 	}
-	err := api.process()
-	return api, err
+	return nil
 }
