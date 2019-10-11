@@ -1,7 +1,13 @@
 - project:
     name: Juniper/contrail
-    templates:
-      - build-container-go
+    check:
+      jobs:
+        - contrail-go-docker
+        - contrail-go-docker-rhel7
+    gate:
+      queue: contrail-vnc
+      jobs:
+        - noop
 
 - job:
     name: contrail-go-docker
