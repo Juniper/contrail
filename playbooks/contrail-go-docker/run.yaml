@@ -38,8 +38,8 @@
           command: make build
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
-        - name: Generate Docker files
-          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG='{{distro}}{{ packaging.docker_version }}'  SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
+        - name: Generate docker images (assumes contrail-base:rhel-branch-latest has been already built by a nightly job)
+          command: make BASE_IMAGE_TAG={{distro}}{{ zuul.branch }}-latest SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:
