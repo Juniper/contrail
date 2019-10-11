@@ -161,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "473d1bcd_b9142d3c",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-11T11:51:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0baccb1f_f9c279b3",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6e546d73_3a400c17",
         "filename": "pkg/fileutil/template/template.go",
         "patchSetId": 10
