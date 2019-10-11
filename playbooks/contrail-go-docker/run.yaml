@@ -6,7 +6,7 @@
     - install-pip-virtualenv
     - install-docker-daemon
     - role: add-insecure-registry
-      new_registry: "{{ contrail_docker_registry }}"
+      new_registry: "{{ docker_registry.fqdn }}:5010"
   vars_files:
     - build-vars.yaml
   tasks:
@@ -22,6 +22,9 @@
 
     - name: Run build steps in loop
       include: build-step.yaml
+      vars:
+        docker_dotted_tag: "{{ distro }}{{ zuul.branch | regex_replace('^R', '') }}.latest"   # use 1234 instead of R1234
+        docker_tag: "{{  docker_dotted_tag | regex_replace('(5\\.0|5\\.1|1910|190[0-9])\\.', '\\1-') }}"   # there was a change between 1910-latest and 1911.latest
       loop_control:
         label: "{{ item.name }}"
       with_items:
@@ -38,8 +41,10 @@
           command: make build
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
-        - name: Generate Docker files
-          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG='{{distro}}{{ packaging.docker_version }}'  SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
+        - name: Generate docker images (depends on the nightly job to have already pushed contrail-base:branch-latest image)
+          # After branching, make sure to push and tag a contrail-base:1234.latest image (a nightly build does it), otherwise this step will fail.
+          # Workaround is to manually change this step to tag ':master.latest'
+          command: make BASE_IMAGE_REGISTRY='{{ docker_registry.fqdn }}:5010' BASE_IMAGE_TAG='{{ docker_tag }}' SOURCEDIR='{{ sourcedir }}' ANSIBLE_DEPLOYER_BRANCH='{{ zuul.branch }}' CONTRAIL_API_CLIENT_BRANCH='{{ zuul.branch }}' docker
 
     - name: Fix files ownerships
       file:
