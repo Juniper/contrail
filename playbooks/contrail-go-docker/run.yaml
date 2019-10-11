@@ -38,8 +38,10 @@
           command: make build
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
-        - name: Generate Docker files
-          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG='{{distro}}{{ packaging.docker_version }}'  SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
+        - name: Generate docker images (the parent image contrail-base is taken from the nightly job)
+          # Why does this always use contrail-base:rhel-master-latest or contrail-base:master-latest:
+          # just after branching, we want CI to keep working for the `mynewbranch` even if a nightly job haven't yet produced image contrail-base:mynewbranch
+          command: make BASE_IMAGE_TAG={{distro}}master-latest SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:
