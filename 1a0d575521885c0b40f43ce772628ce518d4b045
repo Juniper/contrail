@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5b95c109_1442a79b",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-11T09:46:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d3b97612_f8b3fdd2",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "30bfb80c_2a4f3d2b",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 10
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "e0d0c2b4_e55b2bb0",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 589,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-11T09:46:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "30bfb80c_2a4f3d2b",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a0827541_1f6a7fe4",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 10
@@ -47,6 +83,24 @@
       "writtenOn": "2019-09-26T16:04:49Z",
       "side": 1,
       "message": "In case of err \u003d\u003d nil this assertion will fail and cause printing of incorrect message.",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "58193e88_2708f618",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-10-11T09:46:27Z",
+      "side": 1,
+      "message": "But it will previously inform that file is not deleted and always the first error message matters.",
+      "parentUuid": "a0827541_1f6a7fe4",
       "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
