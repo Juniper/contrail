@@ -46,6 +46,30 @@
       "revId": "cb9c48148b8c3efad37088d4c9c08e755bb2f606",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d5ee2ba_677cb41b",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 320,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-10-11T12:42:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a6d18a47_1dba57d1",
+      "range": {
+        "startLine": 314,
+        "startChar": 1,
+        "endLine": 320,
+        "endChar": 22
+      },
+      "revId": "cb9c48148b8c3efad37088d4c9c08e755bb2f606",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
