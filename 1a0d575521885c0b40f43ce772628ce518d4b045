@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "6f46fc40_bef238a0",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-10-11T11:06:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5b95c109_1442a79b",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "30bfb80c_2a4f3d2b",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 10
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "b2a24e7a_6fdebeb1",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 589,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-10-11T11:06:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e0d0c2b4_e55b2bb0",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a0827541_1f6a7fe4",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 10
@@ -101,6 +137,24 @@
       "side": 1,
       "message": "But it will previously inform that file is not deleted and always the first error message matters.",
       "parentUuid": "a0827541_1f6a7fe4",
+      "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0baccb1f_f9c279b3",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-10-11T11:06:55Z",
+      "side": 1,
+      "message": "IMO it\u0027s still confusing to give the user two contradictive errors one next to another.",
+      "parentUuid": "58193e88_2708f618",
       "revId": "1a0d575521885c0b40f43ce772628ce518d4b045",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

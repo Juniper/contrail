@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "82919d28_03463b01",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 320,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-10-11T11:06:55Z",
+      "side": 1,
+      "message": "Append cleanup function to the beginning of the slice.\nThen instead of:\nfor id :\u003d range cleanupFunctions {\n    cleanupFunctions[len(cleanupFunctions)-id-1]()\n}\n\nUse:\nfor _, fun :\u003d range cleanupFunctions {\n    fun()\n}",
+      "range": {
+        "startLine": 314,
+        "startChar": 1,
+        "endLine": 320,
+        "endChar": 22
+      },
+      "revId": "cb9c48148b8c3efad37088d4c9c08e755bb2f606",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
