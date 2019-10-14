@@ -276,7 +276,6 @@ resources:
     - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
     appformix_cluster_refs:
     - uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
-    xflow_license: /opt/software/xflow/xflow_license.sig
     keepalived_shared_ip: 10.84.5.23
     clickhouse:
       retention_period_secs: 7200

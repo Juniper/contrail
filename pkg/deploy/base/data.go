@@ -1768,8 +1768,8 @@ func (x *XflowData) updateClusterDetails(ctx context.Context, uuid string, r *Re
 
 	x.ClusterInfo = resp.AppformixFlows
 
-	for _, appformixFlowsNode := range x.ClusterInfo.AppformixFlowsNodes {
-		err = x.updateAppformixFlowsNode(ctx, appformixFlowsNode.UUID, r)
+	for i, appformixFlowsNode := range x.ClusterInfo.AppformixFlowsNodes {
+		err = x.updateAppformixFlowsNode(ctx, i, appformixFlowsNode.UUID, r)
 		if err != nil {
 			return err
 		}
@@ -1778,12 +1778,15 @@ func (x *XflowData) updateClusterDetails(ctx context.Context, uuid string, r *Re
 	return nil
 }
 
-func (x *XflowData) updateAppformixFlowsNode(ctx context.Context, uuid string, r *ResourceManager) error {
+func (x *XflowData) updateAppformixFlowsNode(ctx context.Context, i int, uuid string, r *ResourceManager) error {
 	resp, err := r.APIServer.GetAppformixFlowsNode(ctx, &services.GetAppformixFlowsNodeRequest{ID: uuid})
 
 	if err != nil {
 		return err
 	}
+
+	// update the x.ClusterInfo with detailed flow nodes
+	x.ClusterInfo.AppformixFlowsNodes[i] = resp.AppformixFlowsNode
 
 	for _, nodeRef := range resp.AppformixFlowsNode.NodeRefs {
 		err = x.updateNodeInfo(ctx, nodeRef.UUID, r)
