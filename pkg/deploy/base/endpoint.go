@@ -217,13 +217,11 @@ func (e *EndpointData) getAppformixEndpointNodes() (endpointNodes map[string][]s
 }
 
 func getXflowEndpointAddress(xflowData *XflowData) (string, error) {
+	if xflowData.ClusterInfo.TelemetryInBandManagementVip != "" {
+		return xflowData.ClusterInfo.TelemetryInBandManagementVip, nil
+	}
 	if xflowData.ClusterInfo.KeepalivedSharedIP != "" {
 		return xflowData.ClusterInfo.KeepalivedSharedIP, nil
-	}
-	if len(xflowData.NodesInfo) == 1 {
-		for _, nodeInfo := range xflowData.NodesInfo {
-			return nodeInfo.IPAddress, nil
-		}
 	}
 	return "", errors.New("failed to find xflow node IP Address")
 }

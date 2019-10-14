@@ -16,9 +16,6 @@ references:
     presence: optional
 schema:
   properties:
-    xflow_license:
-      type: string
-      presence: optional
     keepalived_shared_ip:
       type: string
       presence: optional
@@ -27,6 +24,15 @@ schema:
       presence: optional
     appformix_flows_configuration:
       $ref: "types.json#/definitions/KeyValuePairs"
+      presence: optional
+    telemetry_in_band_cidr:
+      type: string
+      presence: optional
+    telemetry_in_band_management_vip:
+      type: string
+      presence: optional
+    telemetry_in_band_vlan_id:
+      type: string
       presence: optional
   type: object
 type: object
