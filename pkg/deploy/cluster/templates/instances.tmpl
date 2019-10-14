@@ -88,8 +88,12 @@ instances:
           {%if appformix_network_agents_node.AnsibleConnection %} connection: {{ appformix_network_agents_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {%endif%}
-      {% if node.UUID in xflowCluster.NodesInfo %}appformix_flows:
-      {% endif %}
+{% for xflow_node in xflowCluster.ClusterInfo.AppformixFlowsNodes %}{% for node_ref in xflow_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}
+      appformix_flows:
+{%if xflow_node.TelemetryInBandInterfaceName != "" %}
+        telemetry_in_band_interface_name: {{ xflow_node.TelemetryInBandInterfaceName }}
+{%endif%}
+{%endif%}{%endfor%}{%endfor%}
     {%endfor%}
 
 contrail_configuration:
@@ -184,10 +188,12 @@ appformix_configuration:
 {% if xflowCluster %}
 {% with x=xflowCluster.ClusterInfo %}
 xflow_configuration:
-  {% if x.XflowLicense %}xflow_license: {{ x.XflowLicense }}{% endif %}
-  {% if x.KeepalivedSharedIP %}keepalived_shared_ip: {{ x.KeepalivedSharedIP }}{% endif %}
   {% if x.Clickhouse.RetentionPeriodSecs %}clickhouse_retention_period_secs: {{ x.Clickhouse.RetentionPeriodSecs }}{% endif %}
   {% if x.Clickhouse.RetentionSizeBytes %}clickhouse_retention_size_bytes: {{ x.Clickhouse.RetentionSizeBytes }}{% endif %}
+  {% if x.KeepalivedSharedIP %}loadbalancer_collector_vip: {{ x.KeepalivedSharedIP }}{% endif %}
+  {% if x.TelemetryInBandCidr %}telemetry_in_band_cidr: {{ x.TelemetryInBandCidr }}{% endif %}
+  {% if x.TelemetryInBandManagementVip %}loadbalancer_management_vip: {{ x.TelemetryInBandManagementVip }}{% endif %}
+  {% if x.TelemetryInBandVlanID %}telemetry_in_band_vlan_id: {{ x.TelemetryInBandVlanID }}{% endif %}
   {% for kv in x.AppformixFlowsConfiguration.KeyValuePair %}
   {{ kv.Key }}: {% autoescape off %}{{ kv.Value }}{% endautoescape %}
   {% endfor %}
