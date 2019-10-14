@@ -16,7 +16,7 @@
             - name: cloud_private_subnet
               cidr_block: 192.168.10.0/24
           firewalls_external:
-            - name: default-wan-tcp
+            - name: default-wan-tcp-virtual_cloud_uuid
               allow:
                 protocol: tcp
                 ports:
