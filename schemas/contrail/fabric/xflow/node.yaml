@@ -16,3 +16,6 @@ references:
     description: Appformix flows Node
 schema:
   properties:
+    telemetry_in_band_interface_name:
+      type: string
+      presence: optional
