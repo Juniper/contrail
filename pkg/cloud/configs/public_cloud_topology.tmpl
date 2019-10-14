@@ -47,7 +47,7 @@
           {% endif %}
           {% if gcp in cloudType %}
           firewalls_external:
-            - name: default-wan-tcp
+            - name: default-wan-tcp-{{ vcloud.info.UUID }}
               allow:
                 protocol: tcp
                 ports:
