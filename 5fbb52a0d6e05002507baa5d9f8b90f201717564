@@ -2,6 +2,92 @@
   "comments": [
     {
       "key": {
+        "uuid": "a280eaeb_6ec7ea84",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-15T17:43:46Z",
+      "side": 1,
+      "message": "IMO this part of sentence is redundant",
+      "range": {
+        "startLine": 32,
+        "startChar": 3,
+        "endLine": 32,
+        "endChar": 41
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4144ba7_a1d671de",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 809,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-15T17:43:46Z",
+      "side": 1,
+      "message": "Why is it needed? I guess code worked fine without those assignments.",
+      "range": {
+        "startLine": 809,
+        "startChar": 3,
+        "endLine": 809,
+        "endChar": 27
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6527774_def36e54",
+        "filename": "pkg/schema/schema_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-15T17:43:46Z",
+      "side": 1,
+      "message": "Please be more verbose, e.g. \"TestMakeAPIGivenInvalidRef\"",
+      "range": {
+        "startLine": 33,
+        "startChar": 5,
+        "endLine": 33,
+        "endChar": 19
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c9f109cf_955b9814",
+        "filename": "pkg/schema/schema_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-15T17:43:46Z",
+      "side": 1,
+      "message": "Whitespace",
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "418fc5e0_dfb44022",
         "filename": "pkg/schema/test_data/invalid_ref/base.yml",
         "patchSetId": 5
