@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "095456a1_9e1fc373",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:00:01Z",
+      "side": 1,
+      "message": "This was previously default behavior. It is one of turbo optimizations that was meant to make `make generate` faster. Because the files were not regenerated, the `go fmt` took no time.\n\nUnfortunately it was working good only in `make generate` case. When I tried calling contrailschema tool with different schema paths, the tool did not regenerate the files because it thought that nothing has changed.\n\nIMO this behavior is harmful because the user has no idea why the files are not regenerated. Also it is narrowly tailored for the GoAPI\u0027s `make generate` case.\n\nBecause of all that, I thought we can keep this as an optional parameter. See Makefile for usage.",
+      "parentUuid": "e1b3fd84_614e15ca",
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d2edafb3_900a0b96",
         "filename": "pkg/schema/schema.go",
         "patchSetId": 2
@@ -148,6 +166,30 @@
       "side": 1,
       "message": "Maybe that was part of the test ;)\nI can fix the problems related to files that I change, but I would prefer to leave the files that were just moved out of scope of this change.",
       "parentUuid": "0d64502a_303e6f1f",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f76e8550_2a0d2824",
+        "filename": "pkg/schema/test_data/schema_enums/schema/base.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:00:01Z",
+      "side": 1,
+      "message": "1. I agree it should be fixed\n2. It\u0027s not mandatory, IMO all files that don\u0027t have header shouldn\u0027t use triple dash, because otherwise we keep them \"just in case\".\n3. Which files have yaml extension? All test_data files have yml extension, files in schema have yaml extension. I agree that it should be unified, but such change deserves an another CR at least.",
+      "parentUuid": "83d327de_9fca51b3",
       "range": {
         "startLine": 1,
         "startChar": 0,
