@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6bba8caf_41c46cf0",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 257
+      },
+      "writtenOn": "2019-10-15T22:25:49Z",
+      "side": 1,
+      "message": "Will this be populated if xflowData.ClusterInfo.TelemetryInBandManagementVip is populated?\nIf not, why not use KeepalivedSharedIP instead of introducing a new field?\nNot clear.",
+      "range": {
+        "startLine": 223,
+        "startChar": 26,
+        "endLine": 223,
+        "endChar": 44
+      },
+      "revId": "6fa4d52339b68fe6ed6873d5dc33023546ef59aa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a64d36c0_076c96cf",
+        "filename": "pkg/deploy/cluster/templates/instances.tmpl",
+        "patchSetId": 3
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 257
+      },
+      "writtenOn": "2019-10-15T22:25:49Z",
+      "side": 1,
+      "message": "If x.TelemetryInBandManagementVip is not set, then the loadbalancer_management_ip will not be set?\nShouldn\u0027t it always be set?",
+      "range": {
+        "startLine": 192,
+        "startChar": 42,
+        "endLine": 192,
+        "endChar": 68
+      },
+      "revId": "6fa4d52339b68fe6ed6873d5dc33023546ef59aa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
