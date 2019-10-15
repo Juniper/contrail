@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d2edafb3_900a0b96",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 564,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T11:37:02Z",
+      "side": 1,
+      "message": "This function is used only once in line 1109. Please merge body of this function with place where it is used or at least move it closer to line 1109.",
+      "range": {
+        "startLine": 560,
+        "startChar": 0,
+        "endLine": 564,
+        "endChar": 1
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2339ebda_a4c412e8",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1068,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T11:37:02Z",
+      "side": 1,
+      "message": "Unused function.",
+      "range": {
+        "startLine": 1063,
+        "startChar": 0,
+        "endLine": 1068,
+        "endChar": 1
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d64502a_303e6f1f",
+        "filename": "pkg/schema/test_data/schema_enums/schema/base.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T11:37:02Z",
+      "side": 1,
+      "message": "YAML files are inconsistent.\n\n1. several files have unnecessary indentation\n2. few of them don\u0027t start with triple dash\n3. one file has .yaml extension and rest of them .yml",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
