@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "418fc5e0_dfb44022",
+        "filename": "pkg/schema/test_data/invalid_ref/base.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T10:34:30Z",
+      "side": 1,
+      "message": "NIT: unnecessary two spaces on the beginning of every line.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "943dff72_e37cac2d",
+        "filename": "pkg/schema/test_data/invalid_ref/project-schema.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T10:34:30Z",
+      "side": 1,
+      "message": "NIT: unnecessary two spaces on the beginning of every line.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "954b9029_00e83107",
+        "filename": "pkg/schema/test_data/invalid_ref/types.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T10:34:30Z",
+      "side": 1,
+      "message": "NIT: unnecessary two spaces on the beginning of every line.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dc407e2e_07340439",
+        "filename": "pkg/schema/test_data/invalid_ref/virtual-network-schema.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-15T10:34:30Z",
+      "side": 1,
+      "message": "NIT: unnecessary two spaces on the beginning of every line.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
