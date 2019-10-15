@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "205d33b2_90de04aa",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1b09f2d0_7d8eea6c",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f350c883_b551a86f",
         "filename": "pkg/deploy/cluster/test_data/expected_xflow_instances.yaml",
         "patchSetId": 1
@@ -33,6 +51,24 @@
       "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8a56f283_d8c7856d",
+        "filename": "pkg/deploy/cluster/test_data/expected_xflow_instances.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f350c883_b551a86f",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "f8e22d21_40739ca5",
+        "filename": "pkg/deploy/cluster/test_data/test_xflow_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70cdf1b2_c3473074",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6a6b8399_4d69ee69",
         "filename": "sample/xflow/setup.yaml",
         "patchSetId": 1
@@ -67,6 +121,24 @@
       "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a1f30e7a_b5fae121",
+        "filename": "sample/xflow/setup.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6a6b8399_4d69ee69",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "4e52d4c9_ad1af9b9",
+        "filename": "sample/xflow/xflow-payload-deploy.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6400a513_b1cfb17b",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "86bc0029_7183dfa0",
         "filename": "schemas/contrail/fabric/xflow/flows.yaml",
         "patchSetId": 1
@@ -104,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "3bae48fc_1224cb02",
+        "filename": "schemas/contrail/fabric/xflow/flows.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "86bc0029_7183dfa0",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0f48048e_a40e38cc",
         "filename": "schemas/contrail/fabric/xflow/node.yaml",
         "patchSetId": 1
@@ -115,6 +223,24 @@
       "writtenOn": "2019-10-15T01:10:18Z",
       "side": 1,
       "message": "in-band case, this is mandatory. we need to make sure UI does that validation.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23cc2016_2f8c5f70",
+        "filename": "schemas/contrail/fabric/xflow/node.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 764
+      },
+      "writtenOn": "2019-10-15T02:42:54Z",
+      "side": 1,
+      "message": "It is mandatory but only when it\u0027s inband. For out-of-band it\u0027s not required, that\u0027s why we need to keep it `optional` here.",
+      "parentUuid": "0f48048e_a40e38cc",
       "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
