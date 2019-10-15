@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1b09f2d0_7d8eea6c",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "Can you change if TelemetryInBandManagementIP is available, then take from there else take from keepalived.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f350c883_b551a86f",
+        "filename": "pkg/deploy/cluster/test_data/expected_xflow_instances.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "We should not have inband_provision in instances.yml, this will be part of inventory file which xflow deployer generates",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70cdf1b2_c3473074",
+        "filename": "pkg/deploy/cluster/test_data/test_xflow_cluster.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "This is not required. In-band case, we have variable telemetry_in_band_cidr, if not available then it is out-of0-band.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a6b8399_4d69ee69",
+        "filename": "sample/xflow/setup.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "Same as earlier file comment.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6400a513_b1cfb17b",
+        "filename": "sample/xflow/xflow-payload-deploy.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "Not required.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86bc0029_7183dfa0",
+        "filename": "schemas/contrail/fabric/xflow/flows.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "Not required.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f48048e_a40e38cc",
+        "filename": "schemas/contrail/fabric/xflow/node.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T01:10:18Z",
+      "side": 1,
+      "message": "in-band case, this is mandatory. we need to make sure UI does that validation.",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
