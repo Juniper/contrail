@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "ce3fe64e_a23dd901",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 564,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T17:47:02Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d2edafb3_900a0b96",
+      "range": {
+        "startLine": 560,
+        "startChar": 0,
+        "endLine": 564,
+        "endChar": 1
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2339ebda_a4c412e8",
         "filename": "pkg/schema/schema.go",
         "patchSetId": 2
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "5817802d_e6ea735b",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1068,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T17:47:02Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2339ebda_a4c412e8",
+      "range": {
+        "startLine": 1063,
+        "startChar": 0,
+        "endLine": 1068,
+        "endChar": 1
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0d64502a_303e6f1f",
         "filename": "pkg/schema/test_data/schema_enums/schema/base.yml",
         "patchSetId": 2
@@ -59,6 +107,30 @@
       "writtenOn": "2019-10-15T11:37:02Z",
       "side": 1,
       "message": "YAML files are inconsistent.\n\n1. several files have unnecessary indentation\n2. few of them don\u0027t start with triple dash\n3. one file has .yaml extension and rest of them .yml",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "83d327de_9fca51b3",
+        "filename": "pkg/schema/test_data/schema_enums/schema/base.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T17:47:02Z",
+      "side": 1,
+      "message": "Maybe that was part of the test ;)\nI can fix the problems related to files that I change, but I would prefer to leave the files that were just moved out of scope of this change.",
+      "parentUuid": "0d64502a_303e6f1f",
       "range": {
         "startLine": 1,
         "startChar": 0,
