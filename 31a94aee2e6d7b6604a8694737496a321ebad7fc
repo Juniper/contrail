@@ -244,6 +244,24 @@
       "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffc7cd9c_d4d8f3dd",
+        "filename": "schemas/contrail/fabric/xflow/node.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-15T18:53:51Z",
+      "side": 1,
+      "message": "yeah correct and that is why UI should have this validation for in-band",
+      "parentUuid": "23cc2016_2f8c5f70",
+      "revId": "31a94aee2e6d7b6604a8694737496a321ebad7fc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
