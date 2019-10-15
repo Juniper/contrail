@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "dbc36366_812312be",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "14cf6b7d_90725454",
+      "range": {
+        "startLine": 32,
+        "startChar": 3,
+        "endLine": 32,
+        "endChar": 41
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b4144ba7_a1d671de",
         "filename": "pkg/schema/schema.go",
         "patchSetId": 5
@@ -143,6 +167,30 @@
     },
     {
       "key": {
+        "uuid": "0b9f3707_a02b7991",
+        "filename": "pkg/schema/schema_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1541f0fc_50700a77",
+      "range": {
+        "startLine": 33,
+        "startChar": 5,
+        "endLine": 33,
+        "endChar": 19
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c9f109cf_955b9814",
         "filename": "pkg/schema/schema_test.go",
         "patchSetId": 5
@@ -172,6 +220,24 @@
       "side": 1,
       "message": "Ack",
       "parentUuid": "c9f109cf_955b9814",
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7f1abadd_b46ba38a",
+        "filename": "pkg/schema/schema_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1667424f_2a5b6b2e",
       "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -213,6 +279,30 @@
       "side": 1,
       "message": "Ack",
       "parentUuid": "418fc5e0_dfb44022",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a08da506_cfb9ffe1",
+        "filename": "pkg/schema/test_data/invalid_ref/base.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4daca28a_ce3b7272",
       "range": {
         "startLine": 1,
         "startChar": 0,
@@ -272,6 +362,30 @@
     },
     {
       "key": {
+        "uuid": "c5153667_1ed6a51f",
+        "filename": "pkg/schema/test_data/invalid_ref/project-schema.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d7a30b4b_3a52b4c7",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "954b9029_00e83107",
         "filename": "pkg/schema/test_data/invalid_ref/types.yml",
         "patchSetId": 5
@@ -319,6 +433,30 @@
     },
     {
       "key": {
+        "uuid": "e80c5834_60d26ffd",
+        "filename": "pkg/schema/test_data/invalid_ref/types.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "55aaac07_c025af6f",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dc407e2e_07340439",
         "filename": "pkg/schema/test_data/invalid_ref/virtual-network-schema.yml",
         "patchSetId": 5
@@ -354,6 +492,30 @@
       "side": 1,
       "message": "Ack",
       "parentUuid": "dc407e2e_07340439",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "5fbb52a0d6e05002507baa5d9f8b90f201717564",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "14d4ae3b_e0e6de58",
+        "filename": "pkg/schema/test_data/invalid_ref/virtual-network-schema.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-15T19:07:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c3255823_1eb88ada",
       "range": {
         "startLine": 1,
         "startChar": 0,
