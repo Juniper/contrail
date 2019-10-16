@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
-	"github.com/Juniper/contrail/pkg/apisrv/proxy"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/labstack/echo"
@@ -88,8 +88,7 @@ func dynamicProxyMiddleware(
 }
 
 func proxyPrefix(urlPath string, scope string) string {
-	prefixes := make([]string, 4)
-	copy(prefixes, strings.Split(urlPath, pathSeparator)[:4])
+	prefixes := strings.Split(urlPath, pathSeparator)[:4]
 	return strings.Join(append(prefixes, scope), pathSeparator)
 }
 

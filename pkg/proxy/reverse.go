@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strings"
+	"path"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -55,24 +55,12 @@ func director(firstTargetURL *url.URL) func(r *http.Request) {
 	return func(r *http.Request) {
 		r.URL.Scheme = firstTargetURL.Scheme
 		r.URL.Host = firstTargetURL.Host // request host might be reassigned in ReverseProxy.Transport.DialContext.
-		r.URL.Path = singleJoiningSlash(firstTargetURL.Path, r.URL.Path)
+		r.URL.Path = path.Join("/", firstTargetURL.Path, r.URL.Path)
 		r.URL.RawQuery = mergeQueries(r.URL.RawQuery, firstTargetURL.RawQuery)
 		r.Header = withNoDefaultUserAgent(r.Header)
 
 		logrus.WithField("url", r.URL).Debug("Reverse proxy: proxying request")
 	}
-}
-
-func singleJoiningSlash(a, b string) string {
-	aSlash := strings.HasSuffix(a, "/")
-	bSlash := strings.HasPrefix(b, "/")
-	switch {
-	case aSlash && bSlash:
-		return a + b[1:]
-	case !aSlash && !bSlash:
-		return a + "/" + b
-	}
-	return a + b
 }
 
 func mergeQueries(requestQuery, targetQuery string) string {
