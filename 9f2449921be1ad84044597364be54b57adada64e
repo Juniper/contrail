@@ -16,6 +16,24 @@
       "revId": "9f2449921be1ad84044597364be54b57adada64e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6e06309c_893ff6fe",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 641,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-10-16T19:41:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "111a1625_33ba4f3e",
+      "revId": "9f2449921be1ad84044597364be54b57adada64e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
