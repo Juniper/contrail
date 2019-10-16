@@ -7,20 +7,19 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 )
 
+// Endpoint related constants.
 const (
-	// Public scope of the endpoint url
-	Public = "public"
-	// Private scope of the endpoint url
-	Private = "private"
+	PublicURLScope  = "public"
+	PrivateURLScope = "private"
 )
 
-// TargetStore is used to store service specific endpoint targets in-memory
+// TargetStore is used to store service specific endpoint targets in-memory.
 type TargetStore struct {
 	Data       *sync.Map
 	nextTarget string
 }
 
-// NewTargetStore is used to make an in-memory endpoint target store.
+// NewTargetStore returns new TargetStore.
 func NewTargetStore() *TargetStore {
 	return &TargetStore{
 		Data:       new(sync.Map),
@@ -28,25 +27,57 @@ func NewTargetStore() *TargetStore {
 	}
 }
 
-//Read endpoint target from memory
+// Read endpoint target from memory.
 func (t *TargetStore) Read(id string) *models.Endpoint {
-	ep, ok := t.Data.Load(id)
+	rawE, ok := t.Data.Load(id)
 	if !ok {
 		return nil
 	}
-	endpoint, ok := ep.(*models.Endpoint)
+	e, ok := rawE.(*models.Endpoint)
 	if !ok {
 		return nil
 	}
-	return endpoint
+	return e
 }
 
-//Write endpoint target in-memory
+// ReadAll reads all endpoint targets from target store using given scope.
+// Order of returned targets is not deterministic.
+func (t *TargetStore) ReadAll(scope string) (targets []*Endpoint) {
+	if scope != PublicURLScope && scope != PrivateURLScope {
+		return nil
+	}
+
+	t.Data.Range(func(id, endpoint interface{}) bool {
+		e, ok := endpoint.(*models.Endpoint)
+		if !ok {
+			return true
+		}
+
+		targets = append(targets, newTargetEndpoint(e, scope))
+		return true
+	})
+	return targets
+}
+
+func newTargetEndpoint(e *models.Endpoint, scope string) *Endpoint {
+	switch scope {
+	case PublicURLScope:
+		return NewEndpoint(e.PublicURL, e.Username, e.Password)
+	case PrivateURLScope:
+		if e.PrivateURL != "" {
+			return NewEndpoint(e.PrivateURL, e.Username, e.Password)
+		}
+		return NewEndpoint(e.PublicURL, e.Username, e.Password)
+	}
+	return nil
+}
+
+// Write writes endpoint target in-memory.
 func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 	t.Data.Store(id, endpoint)
 }
 
-//Next endpoint target from memory is read(roundrobin)
+// Next reads next endpoint target from memory in round robin fashion.
 func (t *TargetStore) Next(scope string) (endpointData *Endpoint) {
 	t.Data.Range(func(id, endpoint interface{}) bool {
 		ids := id.(string) // nolint: errcheck
@@ -59,14 +90,14 @@ func (t *TargetStore) Next(scope string) (endpointData *Endpoint) {
 			return false
 		}
 		switch scope {
-		case Public:
+		case PublicURLScope:
 			if ids == t.nextTarget {
 				e := endpoint.(*models.Endpoint) // nolint: errcheck
 				endpointData = NewEndpoint(e.PublicURL, e.Username, e.Password)
 				// let Range iterate till nextServer is identified
 				return true
 			}
-		case Private:
+		case PrivateURLScope:
 			if ids == t.nextTarget {
 				e := endpoint.(*models.Endpoint) // nolint: errcheck
 				endpointData = NewEndpoint(e.PrivateURL, e.Username, e.Password)
@@ -84,7 +115,7 @@ func (t *TargetStore) Next(scope string) (endpointData *Endpoint) {
 	return endpointData
 }
 
-//Remove endpoint target from memory
+// Remove removes endpoint target from memory.
 func (t *TargetStore) Remove(endpointKey string) {
 	if endpointKey == t.nextTarget {
 		// Reset the next target before deleting the endpoint
@@ -93,7 +124,7 @@ func (t *TargetStore) Remove(endpointKey string) {
 	t.Data.Delete(endpointKey)
 }
 
-//Count endpoint target from memory
+// Count returns number of endpoint targets in memory.
 func (t *TargetStore) Count() int {
 	count := 0
 	t.Data.Range(func(id, endpoint interface{}) bool {
@@ -103,59 +134,59 @@ func (t *TargetStore) Count() int {
 	return count
 }
 
-// Store is used to store cluster specific endpoints in-memory
+// Store is used to store cluster specific endpoint targets store in-memory.
 type Store struct {
 	Data *sync.Map
 }
 
-// NewStore is used to make an in-memory endpoint store.
+// NewStore returns new Store.
 func NewStore() *Store {
 	return &Store{
 		Data: new(sync.Map),
 	}
 }
 
-//Read endpoint targets store from memory
+// Read reads endpoint targets store from memory.
 func (e *Store) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
 	if !ok {
 		return nil
 	}
-	endpointStore, _ := p.(*TargetStore) // nolint: errcheck
-	return endpointStore
 
+	ts, _ := p.(*TargetStore) // nolint: errcheck
+	return ts
 }
 
-//Write endpoint targets store in-memory
+// Write writes endpoint targets store in-memory.
 func (e *Store) Write(endpointKey string, endpointStore *TargetStore) {
 	e.Data.Store(endpointKey, endpointStore)
 }
 
-//Remove endpoint target store from memory
+// Remove removes endpoint target store from memory.
 func (e *Store) Remove(prefix string) {
 	e.Data.Delete(prefix)
 }
 
-//GetEndpoint by prefix
+// GetEndpoint returns endpoint.
 func (e *Store) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
 	if clusterID == "" {
 		return nil
 	}
-	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, Private}, "/"))
+	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
 	if targets == nil {
 		return nil
 	}
-	return targets.Next(Private)
+	return targets.Next(PrivateURLScope)
 }
 
-// Endpoint represents an endpoint url with its credentials
+// Endpoint represents an endpoint url with its credentials.
 type Endpoint struct {
 	URL      string
 	Username string
 	Password string
 }
 
-// NewEndpoint returns endoint struct with credential
+// NewEndpoint returns new Endpoint.
 func NewEndpoint(url, user, password string) *Endpoint {
 	return &Endpoint{
 		URL:      url,

@@ -82,7 +82,11 @@ const (
 {% for schema in schemas %}
 
 {% if schema.TypeName %}
-const Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"
+const (
+	Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"
+	{{ schema.JSONSchema.GoName }}SingularPathPrefix = "{{ schema.Prefix }}{{ schema.Path }}"
+	{{ schema.JSONSchema.GoName }}PluralPath = "{{ schema.Prefix }}{{ schema.PluralPath }}"
+)
 
 // Kind returns kind of an resource.
 func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
