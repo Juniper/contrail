@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c357b670_e3d802eb",
+        "filename": "pkg/apisrv/proxy/reverse_proxy.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T16:33:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d33f9687_1d26f00f",
+      "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5e69f912_4440c3b3",
         "filename": "pkg/apisrv/proxy/reverse_proxy_test.go",
         "patchSetId": 13
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "fa6de55a_8ad72def",
+        "filename": "pkg/apisrv/proxy/reverse_proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T16:33:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5e69f912_4440c3b3",
+      "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "07670b5b_b0f04d26",
         "filename": "pkg/testutil/integration/api_server_client.go",
         "patchSetId": 13
@@ -47,6 +83,24 @@
       "writtenOn": "2019-10-09T19:37:37Z",
       "side": 1,
       "message": "Because soon we will begin moving the soruces to ASF, I would recommend not adding more pkg/models dependencies in testutil. Please inline those methods in its usage or create a separate helper somewhere else.",
+      "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f23813ba_72a83840",
+        "filename": "pkg/testutil/integration/api_server_client.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T16:33:51Z",
+      "side": 1,
+      "message": "HTTPAPIClient embeds client.HTTP which is partially generated and depends on pkg/models so this is heavily dependent on models. Those methods don\u0027t change much.\n\nMaybe this code could stay in client testutil package (not moved to ASF)?",
+      "parentUuid": "07670b5b_b0f04d26",
       "revId": "c015ba5ba5f44db2ae61e2d43220ba35dfc35cc9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
