@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "16a912b0_ec7c8f7a",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T15:35:30Z",
+      "side": 1,
+      "message": "Contrailschema uses flags for all configuration options. Please use flags for log level too. It makes that option visible in help message.\nHandling env variables could be additional.",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cf323761_cd3b88d4",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T15:35:30Z",
+      "side": 1,
+      "message": "Is debug level too verbose to be default log level?",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02bfa64b_26713f11",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T15:35:30Z",
+      "side": 1,
+      "message": "Is stack trace really too verbose? I think developers don\u0027t mind having extra information.",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c48d822a_f959a89f",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T15:35:30Z",
+      "side": 1,
+      "message": "Original array of OrderedProperties is modified here, instead of a copy. Please create and assign new slice before loop. See ValidCopy(): https://play.golang.org/p/9zyrF_siL83",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57ac1ccf_b24577ea",
+        "filename": "pkg/schema/schema_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T15:35:30Z",
+      "side": 1,
+      "message": "Move those helpers to the bottom",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    }
+  ]
+}
