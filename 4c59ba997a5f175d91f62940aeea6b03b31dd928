@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "807c94c6_e8534157",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-16T09:33:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "095456a1_9e1fc373",
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d2edafb3_900a0b96",
         "filename": "pkg/schema/schema.go",
         "patchSetId": 2
