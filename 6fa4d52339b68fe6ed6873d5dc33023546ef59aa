@@ -45,6 +45,23 @@
       "revId": "6fa4d52339b68fe6ed6873d5dc33023546ef59aa",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef7f5259_b0f96061",
+        "filename": "schemas/contrail/fabric/xflow/flows.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-16T02:25:01Z",
+      "side": 1,
+      "message": "Please change this to integer",
+      "revId": "6fa4d52339b68fe6ed6873d5dc33023546ef59aa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
