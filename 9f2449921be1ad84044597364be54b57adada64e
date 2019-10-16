@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "111a1625_33ba4f3e",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 641,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-10-16T18:24:52Z",
+      "side": 1,
+      "message": "Lets remove this commented code. \n\nwe are not going to cleanup the resources, We will let user decide to cleanup or modify existing resources and then re-trigger provisioning",
+      "revId": "9f2449921be1ad84044597364be54b57adada64e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
