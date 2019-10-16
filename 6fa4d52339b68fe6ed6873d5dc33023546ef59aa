@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "0c2164e8_8b8ea944",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-16T02:28:18Z",
+      "side": 1,
+      "message": "from ui, yeah both can be populated in in-band case.",
+      "parentUuid": "6bba8caf_41c46cf0",
+      "range": {
+        "startLine": 223,
+        "startChar": 26,
+        "endLine": 223,
+        "endChar": 44
+      },
+      "revId": "6fa4d52339b68fe6ed6873d5dc33023546ef59aa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a64d36c0_076c96cf",
         "filename": "pkg/deploy/cluster/templates/instances.tmpl",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2019-10-15T22:25:49Z",
       "side": 1,
       "message": "If x.TelemetryInBandManagementVip is not set, then the loadbalancer_management_ip will not be set?\nShouldn\u0027t it always be set?",
+      "range": {
+        "startLine": 192,
+        "startChar": 42,
+        "endLine": 192,
+        "endChar": 68
+      },
+      "revId": "6fa4d52339b68fe6ed6873d5dc33023546ef59aa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f96dce22_5f9541f4",
+        "filename": "pkg/deploy/cluster/templates/instances.tmpl",
+        "patchSetId": 3
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 49
+      },
+      "writtenOn": "2019-10-16T02:28:18Z",
+      "side": 1,
+      "message": "No, for out-of-band this will not be set.",
+      "parentUuid": "a64d36c0_076c96cf",
       "range": {
         "startLine": 192,
         "startChar": 42,
