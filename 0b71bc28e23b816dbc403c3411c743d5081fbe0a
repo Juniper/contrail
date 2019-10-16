@@ -107,6 +107,24 @@
     },
     {
       "key": {
+        "uuid": "0334da10_07e39f8e",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-16T17:18:01Z",
+      "side": 1,
+      "message": "\u003e know which schema errors you did\n\ns/know/want to know/",
+      "parentUuid": "8f62b42c_a0108798",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c48d822a_f959a89f",
         "filename": "pkg/schema/schema.go",
         "patchSetId": 4
