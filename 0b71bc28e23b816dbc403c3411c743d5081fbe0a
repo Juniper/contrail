@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7bea07e6_f684cfad",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-16T17:16:16Z",
+      "side": 1,
+      "message": "Good idea, we can have it as a flag also.",
+      "parentUuid": "16a912b0_ec7c8f7a",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cf323761_cd3b88d4",
         "filename": "pkg/cmd/contrailschema/generate.go",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2019-10-16T15:35:30Z",
       "side": 1,
       "message": "Is debug level too verbose to be default log level?",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "438d23d1_04ee03b0",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-16T17:16:16Z",
+      "side": 1,
+      "message": "It is the most verbose level, so I think it shouldn\u0027t be default. Debug messages contained logs that can be understood only by package developer, they were meaningless for the binary user. IMO we should have a designated log level for package developers to be able to debug the program.",
+      "parentUuid": "cf323761_cd3b88d4",
       "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "8f62b42c_a0108798",
+        "filename": "pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-16T17:16:16Z",
+      "side": 1,
+      "message": "Because the error is wrapped, pkg/errors writes two stacktraces. If you develop the pkg/schema tool the stacktraces are fine and quite handy, but when you want to generate schema and know which schema errors you did then it\u0027s completely unreadable.\n\nInstead of single log message telling you \"your type has unknown reference\" you get ~30 lines of text containing two stacktraces split with the actual error messages. When I saw this the first time, even as a pkg/schema developer, I thought that the program paniced.",
+      "parentUuid": "02bfa64b_26713f11",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c48d822a_f959a89f",
         "filename": "pkg/schema/schema.go",
         "patchSetId": 4
@@ -64,6 +118,24 @@
       "writtenOn": "2019-10-16T15:35:30Z",
       "side": 1,
       "message": "Original array of OrderedProperties is modified here, instead of a copy. Please create and assign new slice before loop. See ValidCopy(): https://play.golang.org/p/9zyrF_siL83",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04c2ab73_5e9d25b8",
+        "filename": "pkg/schema/schema.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-16T17:16:16Z",
+      "side": 1,
+      "message": "That\u0027s true, I don\u0027t know what I was thinking.",
+      "parentUuid": "c48d822a_f959a89f",
       "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -84,6 +156,24 @@
       "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9eec8df0_9f6e9192",
+        "filename": "pkg/schema/schema_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-16T17:16:16Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "57ac1ccf_b24577ea",
+      "revId": "0b71bc28e23b816dbc403c3411c743d5081fbe0a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
