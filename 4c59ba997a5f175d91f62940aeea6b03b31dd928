@@ -247,6 +247,30 @@
       "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e58c34a_41b81186",
+        "filename": "pkg/schema/test_data/schema_enums/schema/base.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 578
+      },
+      "writtenOn": "2019-10-16T07:45:39Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f76e8550_2a0d2824",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 3
+      },
+      "revId": "4c59ba997a5f175d91f62940aeea6b03b31dd928",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
