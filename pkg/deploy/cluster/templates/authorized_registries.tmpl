@@ -4,6 +4,6 @@ authorized_registries:
     username: {{ cluster.ContainerRegistryUsername }}
     password: {{ cluster.ContainerRegistryPassword }}
     {%if tag%}
-    tag: {{ tag }}
+    tag: "{{ tag }}"
     {%endif%}
 {%endif%}
