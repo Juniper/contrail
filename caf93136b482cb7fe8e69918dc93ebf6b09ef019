@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0ba32142_0ccdd59f",
+        "filename": "pkg/proxy/reverse.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:43:19Z",
+      "side": 1,
+      "message": "I also tried path.Join() - integration tests fail with that. Didn\u0027t investigate too much and kept implementation of original proxy from standard library.\nPlease fix at choice.",
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d42bc152_a1272e10",
+        "filename": "pkg/proxy/reverse_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:43:19Z",
+      "side": 1,
+      "message": "Using external package proxy_test ensures testing through interfaces. Please adjust or explain your point.",
+      "range": {
+        "startLine": 1,
+        "startChar": 8,
+        "endLine": 1,
+        "endChar": 13
+      },
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
