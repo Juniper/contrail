@@ -268,7 +268,7 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 	}
 
 	// TODO: Ensure playMCSetupControllerGWRoutes ordering isn't important
-	if err = m.provision(); err != nil {
+	if err = m.updateProvision(); err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
@@ -283,6 +283,23 @@ func (m *multiCloudProvisioner) provision() error {
 	args := []string{
 		"all", "provision", "--topology", m.getClusterTopoFile(m.workDir),
 		"--secret", m.getClusterSecretFile(m.workDir), "--tf_state", m.getTFStateFile(),
+	}
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
+	}
+	vars := []string{
+		fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK")),
+		fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID")),
+	}
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
+}
+
+func (m *multiCloudProvisioner) updateProvision() error {
+	cmd := multicloudCLI
+	args := []string{
+		"all", "provision", "--topology", m.getClusterTopoFile(m.workDir),
+		"--secret", m.getClusterSecretFile(m.workDir), "--tf_state", m.getTFStateFile(),
+		"--update",
 	}
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
