@@ -15,16 +15,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	playbookCmd    = "ansible-playbook"
-	filePermRWOnly = 0600
-)
-
-// Player runs Ansible playbooks.
-type Player interface {
-	Play()
-}
-
 // CLIClient allows to play Ansible playbooks via ansible-playbook CLI.
 type CLIClient struct {
 	reporter *report.Reporter
@@ -63,7 +53,7 @@ func (c *CLIClient) Play(repositoryPath string, ansibleArgs []string, virtualenv
 		return c.mockPlay(ansibleArgs)
 	}
 
-	cmd, err := prepareCmd(repositoryPath, ansibleArgs, virtualenvPath)
+	cmd, err := prepareCLICmd(repositoryPath, ansibleArgs, virtualenvPath)
 	if err != nil {
 		return err
 	}
@@ -79,7 +69,7 @@ func (c *CLIClient) Play(repositoryPath string, ansibleArgs []string, virtualenv
 	return nil
 }
 
-func prepareCmd(repositoryPath string, ansibleArgs []string, virtualenvPath string) (*exec.Cmd, error) {
+func prepareCLICmd(repositoryPath string, ansibleArgs []string, virtualenvPath string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 	if virtualenvPath != "" {
 		var err error
