@@ -63,6 +63,30 @@
       "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7eb1b35_0a7ecfa9",
+        "filename": "pkg/proxy/reverse_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-17T21:16:34Z",
+      "side": 1,
+      "message": "Alternatively we can change the tests to make them more component/integration test semantic by placing them in some different file like `integration_test.go`. I think I just don\u0027t like when test files created by adding *_test.go suffix to some go file (like reverse_test.go from reverse.go) don\u0027t contain internal unit tests.",
+      "parentUuid": "56c3109e_cb7057f2",
+      "range": {
+        "startLine": 1,
+        "startChar": 8,
+        "endLine": 1,
+        "endChar": 13
+      },
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
