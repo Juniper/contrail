@@ -8,7 +8,7 @@ import (
 )
 
 func TestSchema(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema"}, "")
+	api, err := MakeAPI([]string{"test_data/schema"}, "", false)
 	assert.Nil(t, err, "API reading failed")
 	assert.Equal(t, 4, len(api.Types))
 	assert.Equal(t, 4, len(api.Schemas))
@@ -30,8 +30,35 @@ func TestSchema(t *testing.T) {
 	assert.Equal(t, 1005, virtualNetwork.References["network_ipam"].Index)
 }
 
+func TestMakeAPIGivenInvalidRef(t *testing.T) {
+	tests := map[string]struct {
+		skipMissingRefs bool
+		fails           bool
+	}{
+		"skipMissingRefs unset":       {skipMissingRefs: false, fails: true},
+		"skipMissingRefs set to true": {skipMissingRefs: true},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			api, err := MakeAPI([]string{"test_data/invalid_ref"}, "", tt.skipMissingRefs)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+
+				assert.Len(t, api.Types, 1)
+				assert.Len(t, api.Schemas, 3)
+
+				virtualNetwork := api.SchemaByID("virtual_network")
+				assert.Nil(t, virtualNetwork.References["network_ipam"])
+			}
+		})
+	}
+}
+
 func TestSchemaEnums(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema_enums"}, "overrides")
+	api, err := MakeAPI([]string{"test_data/schema_enums"}, "overrides", false)
 	assert.Nil(t, err, "API reading failed")
 	project := api.SchemaByID("project")
 	assert.NotNil(t, project, "Project can't be <nil>")
@@ -51,7 +78,7 @@ func TestSchemaEnums(t *testing.T) {
 }
 
 func TestReferencesExtendBase(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema_extend"}, "")
+	api, err := MakeAPI([]string{"test_data/schema_extend"}, "", false)
 	require.Nil(t, err, "API reading failed")
 	assert.Equal(t, 5, len(api.Schemas))
 
@@ -69,7 +96,7 @@ func TestReferencesExtendBase(t *testing.T) {
 }
 
 func TestJSONTag(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema_extend"}, "")
+	api, err := MakeAPI([]string{"test_data/schema_extend"}, "", false)
 	require.Nil(t, err, "API reading failed")
 	assert.Equal(t, 5, len(api.Schemas))
 
