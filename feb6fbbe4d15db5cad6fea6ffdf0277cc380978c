@@ -16,6 +16,24 @@
       "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57ab8f42_80117c7e",
+        "filename": "playbooks/contrail-go-docker/run.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 760
+      },
+      "writtenOn": "2019-10-17T13:58:26Z",
+      "side": 1,
+      "message": "Can this be a future improvement? It\u0027s not trivial, if you want to keep the builds predictable - it needs to distinguish between temporary and permanent errors somehow, so it didn\u0027t download images semi-randomly depending on some khem-khem network timeouts.",
+      "parentUuid": "0abeb412_44ae095f",
+      "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
