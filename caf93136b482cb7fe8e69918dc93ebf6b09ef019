@@ -39,6 +39,30 @@
       "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "56c3109e_cb7057f2",
+        "filename": "pkg/proxy/reverse_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-17T20:58:18Z",
+      "side": 1,
+      "message": "I think we shouldn\u0027t use external test as a default. I was surprised that this struct had the external test while not having any unit test. For me external tests have different meaning (black box tests that don\u0027t check every if case or cyclic import hack). Those tests look more like white box tests for me.\n\nThe internal test package is a default behavior. I don\u0027t like when we diverge from default behavior without clear reason (I didn\u0027t know your intent until I saw your comment, I thought that this was to fix a cyclic dependency).\n\nAlso see Dave Chenney\u0027s opinion (however I don\u0027t think he clearly supports this one): https://dave.cheney.net/practical-go/presentations/qcon-china.html#_prefer_internal_tests_to_external_tests",
+      "parentUuid": "d42bc152_a1272e10",
+      "range": {
+        "startLine": 1,
+        "startChar": 8,
+        "endLine": 1,
+        "endChar": 13
+      },
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
