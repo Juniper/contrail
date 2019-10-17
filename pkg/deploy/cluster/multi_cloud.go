@@ -229,7 +229,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	if err = m.provision(); err != nil {
+	if err = m.provision(createAction); err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
@@ -267,8 +267,7 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	// TODO: Ensure playMCSetupControllerGWRoutes ordering isn't important
-	if err = m.provision(); err != nil {
+	if err = m.provision(updateAction); err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
@@ -278,11 +277,14 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 	return nil
 }
 
-func (m *multiCloudProvisioner) provision() error {
+func (m *multiCloudProvisioner) provision(cloudAction string) error {
 	cmd := multicloudCLI
 	args := []string{
 		"all", "provision", "--topology", m.getClusterTopoFile(m.workDir),
 		"--secret", m.getClusterSecretFile(m.workDir), "--tf_state", m.getTFStateFile(),
+	}
+	if cloudAction == updateAction {
+		args = append(args, "--update")
 	}
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
