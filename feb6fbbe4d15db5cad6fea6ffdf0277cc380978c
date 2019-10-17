@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0abeb412_44ae095f",
+        "filename": "playbooks/contrail-go-docker/run.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-10-17T13:51:37Z",
+      "side": 1,
+      "message": "Why don\u0027t we try using branch latest and if it doesn\u0027t exists, then fall back to master latest?",
+      "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
