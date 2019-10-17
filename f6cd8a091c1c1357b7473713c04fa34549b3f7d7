@@ -1,0 +1,170 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "91a1b100_b32897ef",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "There is some complexity here, please test that.",
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "865c74c5_6f8d5093",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "\"destInfo\"",
+      "range": {
+        "startLine": 131,
+        "startChar": 1,
+        "endLine": 131,
+        "endChar": 8
+      },
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9b69432d_b9df389b",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "Please wrap error for stack trace",
+      "range": {
+        "startLine": 134,
+        "startChar": 10,
+        "endLine": 134,
+        "endChar": 13
+      },
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2a4613e4_ef3faa43",
+        "filename": "pkg/fileutil/template/template.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "Return that error, if any.",
+      "range": {
+        "startLine": 20,
+        "startChar": 18,
+        "endLine": 20,
+        "endChar": 19
+      },
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "95cf1164_ff11d86b",
+        "filename": "pkg/fileutil/template/template.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "Use Compile() and return error, if any.",
+      "range": {
+        "startLine": 23,
+        "startChar": 25,
+        "endLine": 23,
+        "endChar": 36
+      },
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e529dcb9_b563e0a3",
+        "filename": "pkg/fileutil/template/template_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "FYI rules on imports order were changed in REVIEW.md",
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9d35aa8a_4fe8cb4d",
+        "filename": "pkg/fileutil/template/template_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "Use relative path, e.g. \"./test_template.tmpl\" to make it more portable.",
+      "range": {
+        "startLine": 75,
+        "startChar": 20,
+        "endLine": 75,
+        "endChar": 58
+      },
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c842a180_fb9d4997",
+        "filename": "pkg/fileutil/template/template_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T11:40:57Z",
+      "side": 1,
+      "message": "Nit: it could be const",
+      "revId": "f6cd8a091c1c1357b7473713c04fa34549b3f7d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    }
+  ]
+}
