@@ -28,6 +28,7 @@ const (
 	workRoot                              = "/tmp/contrail_cluster"
 	allInOneClusterTemplatePath           = "./test_data/test_all_in_one_cluster.tmpl"
 	createPlaybooks                       = "./test_data/expected_ansible_create_playbook.yml"
+	destroyPlaybooks                      = "./test_data/expected_ansible_destroy_playbook.yml"
 	createAppformixPlaybooks              = "./test_data/expected_ansible_create_appformix_playbook.yml"
 	updatePlaybooks                       = "./test_data/expected_ansible_update_playbook.yml"
 	updateAppformixPlaybooks              = "./test_data/expected_ansible_update_appformix_playbook.yml"
@@ -309,7 +310,7 @@ func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 			expectedPlaybooks = upgradeEncryptPlaybooks
 		}
 	case addComputeProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
+		// remove instances.yml to mock trigger cluster update
 		err = os.Remove(generatedInstancesPath())
 		if err != nil {
 			assert.NoError(t, err, "failed to delete instances.yml")
@@ -317,14 +318,8 @@ func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 		if expectedInventory != "" {
 			expectedPlaybooks = addComputeEncryptPlaybooks
 		}
-	case deleteComputeProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
-		err = os.Remove(generatedInstancesPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete instances.yml")
-		}
-	case addCSNProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
+	case deleteComputeProvisioningAction, addCSNProvisioningAction, addCVFMProvisioningAction, destroyAction:
+		// remove instances.yml to mock trigger cluster update
 		err = os.Remove(generatedInstancesPath())
 		if err != nil {
 			assert.NoError(t, err, "failed to delete instances.yml")
@@ -337,12 +332,6 @@ func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 		}
 		config.Action = createAction
 		cluster["provisioning_action"] = ""
-	case addCVFMProvisioningAction:
-		// remove instances.yml to mock trriger cluster update
-		err = os.Remove(generatedInstancesPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete instances.yml")
-		}
 	}
 	data = map[string]interface{}{"contrail-cluster": cluster}
 	for _, client := range ts.Clients {
@@ -448,7 +437,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	// update cluster
 	config.Action = updateAction
-	// remove instances.yml to trriger cluster update
+	// remove instances.yml to trigger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
@@ -669,6 +658,10 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, ts, config,
 		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
+
+	// DESTROY test
+	runClusterActionTest(t, ts, config,
+		destroyAction, expectedInstance, "", destroyPlaybooks, expectedEndpoints)
 
 	// delete cluster
 	config.Action = deleteAction
@@ -978,7 +971,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 
 	// update cluster
 	config.Action = updateAction
-	// remove instances.yml to trriger cluster update
+	// remove instances.yml to trigger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
@@ -1120,7 +1113,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 
 	// update cluster
 	config.Action = "update"
-	// remove instances.yml to trriger cluster update
+	// remove instances.yml to trigger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
