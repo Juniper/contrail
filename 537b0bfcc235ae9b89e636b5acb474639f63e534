@@ -1,0 +1,226 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2eee5f85_62072b5f",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Please use relative paths (in multiple places)",
+      "range": {
+        "startLine": 53,
+        "startChar": 19,
+        "endLine": 53,
+        "endChar": 27
+      },
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "15c2ee08_324365d5",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Use t.Run() twice in order to create 2 * len(tests) subtests here.",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1295ecc_67043a0c",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Move helpers below their usages. In particular move this function after its first usage or after last usage (your choice).",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f925e837_7cf06071",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Name things consistently across function calls. In particular name it \"requestsToStartWith\"",
+      "range": {
+        "startLine": 235,
+        "startChar": 15,
+        "endLine": 235,
+        "endChar": 30
+      },
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8ceedc46_59485153",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "\"DoAPIRequests()\" or similar. Storing data in DB is just API Server implementation detail.",
+      "range": {
+        "startLine": 243,
+        "startChar": 32,
+        "endLine": 243,
+        "endChar": 47
+      },
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38e72c8d_c6ea2413",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Use t.Run() here",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "17faec5a_87e68852",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 533,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Use t.Run() here",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00794706_40a54612",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 588,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Use t.Run() here.",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "15eb922d_ddf35b43",
+        "filename": "pkg/cloud/test_data/aws/sample_create_requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "I am sure this file could be named better, e.g. create_cloud_resources.yml",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6da8d28a_6dd92739",
+        "filename": "pkg/cloud/test_data/aws/test_aws_update/requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Removing template test is a step in good direction, but I think this is not the best solution. Unfortunately a lot of duplication and boilerplate is introduced here.\n\nThink about using plain Go tests, where you can create abstractions for CRUDing resources in order to reduce duplication. See: https://sourcegraph.com/github.com/Juniper/contrail/-/blob/pkg/apisrv/proxy_test.go#L248:73\nI am not asking on refactoring it here.",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8c9e054c_8ce83018",
+        "filename": "pkg/cloud/test_data/aws/test_aws_update/requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "Just get rid of that field. In other places too.",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3335e3b5_72d1ed37",
+        "filename": "pkg/cloud/test_data/gcp/sample_create_requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-17T14:41:44Z",
+      "side": 1,
+      "message": "File and test could be named better, e.g. filename: \"create_cloud_resources\", name: \"Create cloud resources\"\nIn other places too.",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
