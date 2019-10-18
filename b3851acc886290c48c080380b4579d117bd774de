@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6653bbf3_8b9460a4",
+        "filename": "pkg/deploy/cluster/templates/authorized_registries.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-10-18T15:52:28Z",
+      "side": 1,
+      "message": "This change doesn\u0027t seems to be relevant to this jira ticket",
+      "revId": "b3851acc886290c48c080380b4579d117bd774de",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
