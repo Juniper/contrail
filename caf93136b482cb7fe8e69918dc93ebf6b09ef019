@@ -147,6 +147,30 @@
       "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da5ae8c6_946d1810",
+        "filename": "pkg/proxy/reverse_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-18T18:09:22Z",
+      "side": 1,
+      "message": "I agree, when I was changing it was more clear to me, but after seeing your comment I realized how subjective is it. I guess it\u0027s a matter of convention that we agree on in the repo.",
+      "parentUuid": "3ee445f7_8c43643b",
+      "range": {
+        "startLine": 1,
+        "startChar": 8,
+        "endLine": 1,
+        "endChar": 13
+      },
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
