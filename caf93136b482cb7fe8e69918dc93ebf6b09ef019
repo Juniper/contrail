@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "947a7024_3032b994",
+        "filename": "pkg/proxy/reverse.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-18T13:16:54Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "87fa3fb1_48454d69",
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d42bc152_a1272e10",
         "filename": "pkg/proxy/reverse_test.go",
         "patchSetId": 1
@@ -105,6 +123,30 @@
       "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ee445f7_8c43643b",
+        "filename": "pkg/proxy/reverse_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-18T13:16:54Z",
+      "side": 1,
+      "message": "\u003e avoiding the bureaucracy of external testing.\n\nIn this case there is no added bureaucracy and it really doesn\u0027t matter if it is external or internal. It is still unit test. It is just matter of preference and habits. Let\u0027s leave it as internal test.",
+      "parentUuid": "c7eb1b35_0a7ecfa9",
+      "range": {
+        "startLine": 1,
+        "startChar": 8,
+        "endLine": 1,
+        "endChar": 13
+      },
+      "revId": "caf93136b482cb7fe8e69918dc93ebf6b09ef019",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
