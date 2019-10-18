@@ -34,6 +34,24 @@
       "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23a8fd53_ed6bc83f",
+        "filename": "playbooks/contrail-go-docker/run.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-10-18T12:05:39Z",
+      "side": 1,
+      "message": "The problem with this approach is, contrail-base in master branch will use latest base OS.\nSo the CI/CD will happen based on latest OS and daily build a specific branch will use different version of base OS and thus daily builds might fail.\n\nSo it is better to use branch latest version of contrail-base container. If not available in nearly created branch, let\u0027s use master latest or before any new branch create let\u0027s tag master latest contrail-base as branch latest once.",
+      "parentUuid": "57ab8f42_80117c7e",
+      "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
