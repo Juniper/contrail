@@ -40,7 +40,7 @@ var portMap = map[string]string{
 	glance:    "9292",
 	swift:     "8080",
 	appformix: "9000",
-	xflow:     "8090",
+	xflow:     "7090",
 }
 
 // EndpointData is the representation of cluster endpoints.
