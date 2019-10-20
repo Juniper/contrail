@@ -15,6 +15,7 @@ test_data:
     parent_uuid: {{ appformixFlowsUUID }}
     node_refs:
     - uuid: {{ nodeUUID }}
+    telemetry_in_band_interface_name: eth0
   appformix-cluster: &appformix-cluster
     name: appformix-cluster
     uuid: {{ appformixClusterUUID }}
@@ -41,11 +42,10 @@ test_data:
     uuid: {{ appformixFlowsUUID }}
     openstack_cluster_refs:
     - uuid: {{ openstackClusterUUID }}
-    xflow_license: /opt/xflow/xflow_license.sig
     keepalived_shared_ip: 10.84.5.20
-    clickhouse:
-      retention_period_secs: 7200
-      retention_size_bytes: 0
+    telemetry_in_band_cidr: 10.84.5.0/24
+    telemetry_in_band_management_vip: 1.2.3.100
+    telemetry_in_band_vlan_id: 128
     appformix_flows_configuration:
       key_value_pair:
       - key: clickhouse_volumes_host_path

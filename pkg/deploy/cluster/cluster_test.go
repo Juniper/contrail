@@ -741,9 +741,9 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 	runAppformixClusterTest(t, expectedInstances, "", context, expectedEndpoints)
 }
 
-func TestXflow(t *testing.T) {
+func TestXflowOutOfBand(t *testing.T) {
 	ts, err := integration.LoadTest(
-		"test_data/test_xflow_cluster.tmpl",
+		"test_data/test_xflow_outofband_cluster.tmpl",
 		map[string]interface{}{
 			"appformixFlowsUUID":     "f0151fa2-2db7-476f-b4a9-58fcda2130b7",
 			"nodeUUID":               "d63c420a-d4af-49d2-a7de-dd0665f2134a",
@@ -777,7 +777,49 @@ func TestXflow(t *testing.T) {
 	err = d.createInventory()
 	assert.NoError(t, err, "unable to create inventory")
 
-	expectedInstance := "test_data/expected_xflow_instances.yaml"
+	expectedInstance := "test_data/expected_xflow_outofband_instances.yaml"
+
+	assertGeneratedInstancesContainExpected(t, expectedInstance,
+		"Instance file created during cluster create is not as expected")
+}
+
+func TestXflowInBand(t *testing.T) {
+	ts, err := integration.LoadTest(
+		"test_data/test_xflow_inband_cluster.tmpl",
+		map[string]interface{}{
+			"appformixFlowsUUID":     "f0151fa2-2db7-476f-b4a9-58fcda2130b7",
+			"nodeUUID":               "d63c420a-d4af-49d2-a7de-dd0665f2134a",
+			"contrailClusterUUID":    clusterID,
+			"appformixClusterUUID":   "appformix-cluster-uuid",
+			"openstackClusterUUID":   "openstack-cluster-uuid",
+			"appformixFlowsNodeUUID": "appformix-flows-node-uuid",
+		},
+	)
+	if err != nil {
+		t.Fatal("Unable to load test scenario", err)
+	}
+	appformixFilesCleanup := createDummyAppformixFiles(t)
+	defer appformixFilesCleanup()
+
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	d, ok := getClusterDeployer(t, &Config{
+		APIServer:    ts.Clients["default"],
+		ClusterID:    clusterID,
+		Action:       "create",
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
+		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
+	}).(*contrailAnsibleDeployer)
+	require.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
+
+	err = d.createInventory()
+	assert.NoError(t, err, "unable to create inventory")
+
+	expectedInstance := "test_data/expected_xflow_inband_instances.yaml"
 
 	assertGeneratedInstancesContainExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")

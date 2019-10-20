@@ -1,3 +1,11 @@
+global_configuration:
+  CONTAINER_REGISTRY: opencontrailnightly
+  REGISTRY_PRIVATE_INSECURE: false
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntpserver:
 instances:
   xflow-node1:
     ip: 1.2.3.4
@@ -5,8 +13,7 @@ instances:
     roles:
       appformix_flows:
 xflow_configuration:
-  xflow_license: /opt/xflow/xflow_license.sig
-  keepalived_shared_ip: 10.84.5.20
+  loadbalancer_collector_vip: 10.84.5.20
   clickhouse_retention_period_secs: 7200
   kafka_volumes_host_path:
   clickhouse_volumes_host_path:
