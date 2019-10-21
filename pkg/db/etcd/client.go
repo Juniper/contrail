@@ -25,8 +25,8 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc/grpclog"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 const (

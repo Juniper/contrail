@@ -18,6 +18,21 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
+  digest = "1:c8518b59fa6bd3e75629bb2a738dfbbbff26512f33c7aaa58866f6530badca9b"
+  name = "github.com/Juniper/asf"
+  packages = [
+    "pkg/fileutil",
+    "pkg/fileutil/template",
+    "pkg/format",
+    "pkg/logutil",
+    "pkg/logutil/report",
+    "pkg/osutil",
+    "pkg/retry",
+  ]
+  pruneopts = ""
+  revision = "20ad8b5af62a4f4d25265ff73906204687b3b7e7"
+
+[[projects]]
   branch = "2.x"
   digest = "1:0e612616721a5da1f8597fe67f521aaaaf4decddd63ccd25aa4bff03468278d2"
   name = "github.com/Masterminds/semver"
@@ -1343,6 +1358,13 @@
   input-imports = [
     "github.com/DavidCai1993/etcd-lock",
     "github.com/ExpansiveWorlds/instrumentedsql",
+    "github.com/Juniper/asf/pkg/fileutil",
+    "github.com/Juniper/asf/pkg/fileutil/template",
+    "github.com/Juniper/asf/pkg/format",
+    "github.com/Juniper/asf/pkg/logutil",
+    "github.com/Juniper/asf/pkg/logutil/report",
+    "github.com/Juniper/asf/pkg/osutil",
+    "github.com/Juniper/asf/pkg/retry",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
     "github.com/coreos/etcd/clientv3/concurrency",
@@ -1387,10 +1409,6 @@
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",
-    "github.com/volatiletech/sqlboiler/strmangle",
-    "github.com/yudai/gotty/backend/localcommand",
-    "github.com/yudai/gotty/server",
-    "github.com/yudai/gotty/utils",
     "golang.org/x/crypto/ssh",
     "golang.org/x/net/websocket",
     "golang.org/x/tools/cmd/goimports",

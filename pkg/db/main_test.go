@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
