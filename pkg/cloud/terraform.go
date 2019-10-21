@@ -1,8 +1,8 @@
 package cloud
 
 import (
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/osutil"
+	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/osutil"
 )
 
 func destroyTopology(c *Cloud) error {

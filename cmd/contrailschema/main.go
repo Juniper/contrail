@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/cmd/contrailschema"
-	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 func main() {

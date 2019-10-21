@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
