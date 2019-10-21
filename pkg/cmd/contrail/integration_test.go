@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/require"
 )

@@ -4,10 +4,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
-	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 // manager inerface to manage resources
