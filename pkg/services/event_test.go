@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
