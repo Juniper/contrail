@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
