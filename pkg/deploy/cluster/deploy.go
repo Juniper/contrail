@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Juniper/contrail/pkg/deploy/base"
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
 )
 

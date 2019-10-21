@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/sirupsen/logrus"
 )
 

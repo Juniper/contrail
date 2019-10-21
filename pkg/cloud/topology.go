@@ -11,9 +11,9 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/fileutil/template"
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil/template"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
 )
 
