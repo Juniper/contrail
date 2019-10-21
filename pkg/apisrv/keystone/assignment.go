@@ -10,8 +10,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/format"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
