@@ -11,9 +11,9 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/cloud"
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
