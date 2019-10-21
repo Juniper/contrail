@@ -5,14 +5,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )

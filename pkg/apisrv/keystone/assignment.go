@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
