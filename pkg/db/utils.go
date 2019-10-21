@@ -1,8 +1,8 @@
 package db
 
 import (
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 

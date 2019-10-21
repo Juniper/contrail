@@ -2,16 +2,20 @@ package osutil
 
 import (
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/logutil/report"
 	"github.com/sirupsen/logrus"
 )
 
+type reporter interface {
+	ReportLog(io.Reader)
+}
+
 // ExecCmdAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete.
-func ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
+func ExecCmdAndWait(r reporter, cmd string, args []string, dir string, envVars ...string) error {
 	cmdline := exec.Command(cmd, args...)
 	if dir != "" {
 		cmdline.Dir = dir
@@ -24,7 +28,7 @@ func ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, e
 }
 
 // ExecAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete.
-func ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
+func ExecAndWait(r reporter, cmd *exec.Cmd) error {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
