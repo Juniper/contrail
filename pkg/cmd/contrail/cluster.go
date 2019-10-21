@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/deploy"
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 )
 
 func init() {

@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 
 	"github.com/Juniper/contrail/pkg/agent"
@@ -20,7 +20,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/retry"
+	"github.com/Juniper/asf/pkg/retry"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 

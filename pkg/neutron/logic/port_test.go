@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"

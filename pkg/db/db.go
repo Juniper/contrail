@@ -7,7 +7,7 @@ import (
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"

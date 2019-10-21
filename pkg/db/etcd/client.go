@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 
 	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 )
 
 const (
