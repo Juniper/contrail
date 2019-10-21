@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Juniper/contrail/pkg/cmd/contrailcli"
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 )
 
 func main() {

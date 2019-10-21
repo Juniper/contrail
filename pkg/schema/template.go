@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 )

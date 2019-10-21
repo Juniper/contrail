@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/fileutil/template"
+	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/retry"
+	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"

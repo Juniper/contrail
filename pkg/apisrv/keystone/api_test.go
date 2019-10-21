@@ -15,7 +15,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
