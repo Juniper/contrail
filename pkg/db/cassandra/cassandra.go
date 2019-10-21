@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 
-	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
