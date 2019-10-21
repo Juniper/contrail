@@ -17,3 +17,7 @@ required = [
 [[constraint]]
   name = "github.com/hashicorp/terraform"
   version = "0.11.11"
+
+[[constraint]]
+  name = "github.com/Juniper/asf"
+  revision = "ea6619e362ce9a890eaee52aa6a258ad4b946403"
