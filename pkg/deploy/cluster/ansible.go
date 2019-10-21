@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/ansible"
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/fileutil/template"
-	"github.com/Juniper/contrail/pkg/osutil"
+	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil/template"
+	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/flosch/pongo2"
 
 	shellwords "github.com/mattn/go-shellwords"

@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 )
 
 const (

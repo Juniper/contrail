@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/asf/pkg/format"
 )
 
 //Sharable resource can share.
