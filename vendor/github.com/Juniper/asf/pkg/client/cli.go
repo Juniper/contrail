@@ -11,7 +11,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/models"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/schema"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/flosch/pongo2"
@@ -89,11 +89,11 @@ func (c *CLI) ShowResource(schemaID, uuid string) (string, error) {
 		return "", err
 	}
 
-	data, ok := response[models.SchemaIDToKind(schemaID)].(map[string]interface{})
+	data, ok := response[basemodels.SchemaIDToKind(schemaID)].(map[string]interface{})
 	if !ok {
 		return "", errors.Errorf(
 			"resource in response is not a JSON object: %v",
-			response[models.SchemaIDToKind(schemaID)],
+			response[basemodels.SchemaIDToKind(schemaID)],
 		)
 	}
 
@@ -178,7 +178,7 @@ const listHelpTemplate = `List command possible usages:
 {% endfor %}`
 
 func pluralPath(schemaID string) string {
-	return "/" + models.SchemaIDToKind(schemaID) + "s"
+	return "/" + basemodels.SchemaIDToKind(schemaID) + "s"
 }
 
 func queryParameters(lp *ListParameters) url.Values {
@@ -291,7 +291,7 @@ func (c *CLI) SetResourceParameter(schemaID, uuid, yamlString string) (string, e
 		context.Background(),
 		urlPath(schemaID, uuid),
 		map[string]interface{}{
-			models.SchemaIDToKind(schemaID): fileutil.YAMLtoJSONCompat(data),
+			basemodels.SchemaIDToKind(schemaID): fileutil.YAMLtoJSONCompat(data),
 		},
 		nil,
 	)
@@ -356,7 +356,7 @@ func (c *CLI) DeleteResources(filePath string) (string, error) {
 }
 
 func urlPath(schemaID, uuid string) string {
-	return "/" + models.SchemaIDToKind(schemaID) + "/" + uuid
+	return "/" + basemodels.SchemaIDToKind(schemaID) + "/" + uuid
 }
 
 // ShowSchema returns schema with with given schemaID.
