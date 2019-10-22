@@ -34,6 +34,7 @@
         - image: circleci/postgres:10.3-alpine
           name: contrail_postgres
           environment:
+            GO111MODULE: on # remove after go 1.13 update
             POSTGRES_USER: root
             POSTGRES_DB: contrail123
           command: postgres -c wal_level=logical
@@ -65,6 +66,7 @@
         - image: circleci/postgres:10.3-alpine
           name: contrail_postgres
           environment:
+            GO111MODULE: on # remove after go 1.13 update
             POSTGRES_USER: root
             POSTGRES_DB: contrail123
           command: postgres -c wal_level=logical
