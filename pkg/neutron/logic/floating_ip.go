@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -115,7 +115,7 @@ func (fip *Floatingip) ReadAll(
 	}
 
 	listResponse, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			ObjectUUIDs: filters["id"],
 			Filters:     createVncFilters(filters),
 			RefUUIDs:    rf,
@@ -193,10 +193,10 @@ func (fip *Floatingip) Delete(ctx context.Context, rp RequestParameters, id stri
 	}
 }
 
-func createRefFilters(rc RequestContext, f Filters) (map[string]*baseservices.UUIDs, error) {
-	refs := make(map[string]*baseservices.UUIDs)
+func createRefFilters(rc RequestContext, f Filters) (map[string]*asfservices.UUIDs, error) {
+	refs := make(map[string]*asfservices.UUIDs)
 	if !rc.IsAdmin {
-		refs[models.FloatingIPFieldProjectRefs] = &baseservices.UUIDs{
+		refs[models.FloatingIPFieldProjectRefs] = &asfservices.UUIDs{
 			UUIDs: []string{rc.TenantID},
 		}
 	} else if projects, ok := f["tenant_id"]; ok {
@@ -204,13 +204,13 @@ func createRefFilters(rc RequestContext, f Filters) (map[string]*baseservices.UU
 		if err != nil {
 			return nil, err
 		}
-		refs[models.FloatingIPFieldProjectRefs] = &baseservices.UUIDs{
+		refs[models.FloatingIPFieldProjectRefs] = &asfservices.UUIDs{
 			UUIDs: ps,
 		}
 	}
 
 	if vmis, ok := f["port_id"]; ok {
-		refs[models.FloatingIPFieldVirtualMachineInterfaceRefs] = &baseservices.UUIDs{
+		refs[models.FloatingIPFieldVirtualMachineInterfaceRefs] = &asfservices.UUIDs{
 			UUIDs: vmis,
 		}
 	}
@@ -218,10 +218,10 @@ func createRefFilters(rc RequestContext, f Filters) (map[string]*baseservices.UU
 	return refs, nil
 }
 
-func createVncFilters(f Filters) []*baseservices.Filter {
-	var filters []*baseservices.Filter
+func createVncFilters(f Filters) []*asfservices.Filter {
+	var filters []*asfservices.Filter
 	if ip, ok := f["floating_ip_address"]; ok {
-		filters = append(filters, &baseservices.Filter{
+		filters = append(filters, &asfservices.Filter{
 			Key:    models.FloatingIPFieldFloatingIPAddress,
 			Values: ip,
 		})
@@ -248,7 +248,7 @@ func (fip *Floatingip) getFloatingIPPool(
 	ctx context.Context, rp RequestParameters,
 ) (*models.FloatingIPPool, error) {
 	fIPPListResponse, err := rp.ReadService.ListFloatingIPPool(ctx, &services.ListFloatingIPPoolRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			ParentUUIDs: []string{fip.FloatingNetworkID},
 		},
 	})
@@ -267,7 +267,7 @@ func (fip *Floatingip) getVMIRefs(
 	if fip.PortID == "" {
 		return nil, nil
 	}
-	response, err := rp.IDToFQNameService.IDToFQName(ctx, &services.IDToFQNameRequest{
+	response, err := rp.FQNameService.IDToFQName(ctx, &asfservices.IDToFQNameRequest{
 		UUID: fip.PortID,
 	})
 	if err != nil {
@@ -359,7 +359,7 @@ func getFloatingIPTenantID(fIP *models.FloatingIP) string {
 }
 
 func getFloatingNetworkID(ctx context.Context, rp RequestParameters, fIP *models.FloatingIP) (string, error) {
-	response, err := rp.FQNameToIDService.FQNameToID(ctx, &services.FQNameToIDRequest{
+	response, err := rp.FQNameService.FQNameToID(ctx, &asfservices.FQNameToIDRequest{
 		FQName: getGrandParentFQName(fIP.GetFQName()),
 		Type:   models.KindVirtualNetwork,
 	})

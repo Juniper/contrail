@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -44,7 +45,7 @@ type ContrailTypeLogicService struct {
 	InTransactionDoer InTransactionDoer
 	AddressManager    ipam.AddressManager
 	IntPoolAllocator  IntPoolAllocator
-	MetadataGetter    baseservices.MetadataGetter
+	MetadataGetter    asfservices.MetadataGetter
 	WriteService      services.WriteService
 	defaultGSCUUID    string
 }

@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	strings "strings"
-
-	"github.com/gogo/protobuf/types"
-	"github.com/labstack/echo"
+	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/gogo/protobuf/types"
+	"github.com/labstack/echo"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
 )
@@ -120,7 +120,7 @@ func (t *SetTagRequest) parseTagAttrs(rawJSON map[string]json.RawMessage) error 
 	return nil
 }
 
-func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefOperation) (*Event, error) {
+func (t *SetTagRequest) tagRefEvent(tagUUID string, operation services.RefOperation) (*Event, error) {
 	return NewRefUpdateEvent(RefUpdateOption{
 		ReferenceType: asfmodels.ReferenceKind(t.ObjType, models.KindTag),
 		FromUUID:      t.ObjUUID,
