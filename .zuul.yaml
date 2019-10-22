@@ -31,7 +31,10 @@
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
-        - image: circleci/golang:1.12
+        - image: circleci/golang:1.13
+          environment:
+            GO111MODULE: "on" # remove after go 1.13 update
+            GOFLAGS: "-mod=vendor" # remove this after removing vendoring
         - image: circleci/postgres:10.3-alpine
           name: contrail_postgres
           environment:
@@ -63,6 +66,9 @@
       enable_tpc_repo: false
       docker:
         - image: circleci/golang:1.12
+          environment:
+            GO111MODULE: "on" # remove after go 1.13 update
+            GOFLAGS: "-mod=vendor" # remove this after removing vendoring
         - image: circleci/postgres:10.3-alpine
           name: contrail_postgres
           environment:
