@@ -45,9 +45,3 @@
   command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail make testenv"
   become: yes
   become_user: root
-
-  # TODO(ijohnson): remove below task once asf is made public 
-- name: Copy .ssh to source dir
-  command: cp -r {{ ansible_env.HOME }}/.ssh {{ sourcedir }}/src/github.com/Juniper/contrail/
-  become: yes
-  become_user: root

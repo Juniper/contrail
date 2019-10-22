@@ -8,7 +8,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
@@ -19,6 +18,7 @@ import (
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // We haven't used standard Go benchmark because we need more
@@ -62,7 +62,7 @@ func TestBenchAPI(t *testing.T) {
 	logrus.Info("Benchmark list:")
 	Benchmark(workerCount, loopCount, func(w, l int) error {
 		_, err := c.ListProject(ctx, &services.ListProjectRequest{
-			Spec: &baseservices.ListSpec{},
+			Spec: &asfservices.ListSpec{},
 		})
 		return err
 	})
@@ -78,7 +78,7 @@ func cleanup(ctx context.Context, t *testing.T, restClient *client.HTTP) {
 	//cleanup
 	for i := 0; i < 10000; i++ {
 		projects, err := restClient.ListProject(ctx, &services.ListProjectRequest{
-			Spec: &baseservices.ListSpec{},
+			Spec: &asfservices.ListSpec{},
 		})
 		assert.NoError(t, err)
 		if len(projects.GetProjects()) <= 1 {

@@ -7,11 +7,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
-	neutronmock "github.com/Juniper/contrail/pkg/neutron/mock"
 	"github.com/Juniper/contrail/pkg/services"
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func TestSubnetResponse_CIDRFromVnc(t *testing.T) {
@@ -260,7 +261,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 	}
 
 	type mockKVs struct {
-		Response *services.RetrieveValuesResponse
+		Response *asfservices.RetrieveValuesResponse
 		Error    error
 	}
 
@@ -410,7 +411,6 @@ func TestSubnet_ReadAll(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rp := logic.RequestParameters{
 				ReadService: mockReadService(mockCtrl, tt.mockVN.VirtualNetworks, tt.mockVN.Error),
-				UserAgentKV: mockUserAgentService(mockCtrl, tt.mockKVs.Response, tt.mockKVs.Error),
 			}
 
 			subnet := &logic.Subnet{}
@@ -428,7 +428,7 @@ func TestSubnet_Read(t *testing.T) {
 	}
 
 	type mockKVs struct {
-		Response *services.RetrieveValuesResponse
+		Response *asfservices.RetrieveValuesResponse
 		Error    error
 	}
 
@@ -491,7 +491,6 @@ func TestSubnet_Read(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rp := logic.RequestParameters{
 				ReadService: mockReadService(mockCtrl, tt.mockVN.VirtualNetworks, tt.mockVN.Error),
-				UserAgentKV: mockUserAgentService(mockCtrl, tt.mockKVs.Response, tt.mockKVs.Error),
 			}
 
 			subnet := &logic.Subnet{}
@@ -513,16 +512,6 @@ func mockReadService(
 ) *servicesmock.MockService {
 	mock := servicesmock.NewMockService(mockCtrl)
 	mock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).Return(vns, err).AnyTimes()
-	return mock
-}
-
-func mockUserAgentService(
-	mockCtrl *gomock.Controller,
-	res *services.RetrieveValuesResponse,
-	err error,
-) *neutronmock.MockuserAgentKVServer {
-	mock := neutronmock.NewMockuserAgentKVServer(mockCtrl)
-	mock.EXPECT().RetrieveValues(gomock.Any(), gomock.Any()).Return(res, err).AnyTimes()
 	return mock
 }
 

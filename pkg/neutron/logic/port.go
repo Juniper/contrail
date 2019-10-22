@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -132,7 +132,7 @@ func releaseIPAddresses(ctx context.Context, rp RequestParameters, vmi *models.V
 		// TODO handle shared ip case
 
 		response, err := rp.ReadService.ListInstanceIP(ctx, &services.ListInstanceIPRequest{
-			Spec: &baseservices.ListSpec{
+			Spec: &asfservices.ListSpec{
 				ObjectUUIDs: []string{iip.GetUUID()},
 			},
 		})
@@ -211,7 +211,7 @@ func (port *Port) ReadAll(
 			return ps, nil
 		}
 
-		idToFQNameRes, err := rp.IDToFQNameService.IDToFQName(ctx, &services.IDToFQNameRequest{
+		idToFQNameRes, err := rp.FQNameService.IDToFQName(ctx, &asfservices.IDToFQNameRequest{
 			UUID: deviceUUIDs[0],
 		})
 
@@ -404,7 +404,7 @@ func (port *Port) listInstanceIPForNetwork(
 	fields []string,
 ) (*[]*models.InstanceIP, error) {
 	list, err := rp.ReadService.ListInstanceIP(ctx, &services.ListInstanceIPRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			BackRefUUIDs: []string{netID},
 			Fields:       fields,
 		},
@@ -749,7 +749,7 @@ func (port *Port) listSecurityGroups(
 	}
 
 	res, err := rp.ReadService.ListSecurityGroup(ctx, &services.ListSecurityGroupRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			ObjectUUIDs: uuids,
 			Fields:      fields,
 		},
@@ -867,8 +867,8 @@ func (port *Port) checkIfMacAddressIsAvailable(ctx context.Context, rp RequestPa
 	}
 
 	vmisRes, err := rp.ReadService.ListVirtualMachineInterface(ctx, &services.ListVirtualMachineInterfaceRequest{
-		Spec: &baseservices.ListSpec{
-			Filters: []*baseservices.Filter{
+		Spec: &asfservices.ListSpec{
+			Filters: []*asfservices.Filter{
 				{
 					Key:    models.VirtualMachineInterfaceFieldVirtualMachineInterfaceMacAddresses,
 					Values: []string{port.MacAddress},

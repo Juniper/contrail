@@ -1,3 +1,0 @@
-ssh-keyscan -H localhost >> ~/.ssh/known_hosts
-sudo /var/lib/contrail_cloud/scripts/install_contrail_cloud_manager.sh
-sudo /var/lib/contrail_cloud/scripts/inventory-assign.sh
