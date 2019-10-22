@@ -86,7 +86,8 @@ $(foreach mock,$(MOCKS),$(eval $(call create-generate-mock-target,$(mock))))
 
 generate_mocks: $(MOCKS)
 
-PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
+GOGOPROTO_PATH = $(shell go list -f "{{ .Dir }}" -m github.com/gogo/protobuf)
+PROTO := ./bin/protoc -I $(GOGOPROTO_PATH) -I $(GOGOPROTO_PATH)/protobuf -I ./proto
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
 
 pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
