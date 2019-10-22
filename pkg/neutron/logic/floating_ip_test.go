@@ -8,12 +8,12 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfservices "github.com/Juniper/asf/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
@@ -51,7 +51,7 @@ func TestFloatingip_Create(t *testing.T) {
 			request: loadNeutronRequest(t, createDirectory+"create_fip.json"),
 			given: func() {
 				read.EXPECT().ListFloatingIPPool(gomock.Any(), &services.ListFloatingIPPoolRequest{
-					Spec: &baseservices.ListSpec{
+					Spec: &asfservices.ListSpec{
 						ParentUUIDs: []string{
 							"0a673570-47eb-4b88-b648-5de06c65a37e",
 						},

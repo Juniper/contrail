@@ -14,13 +14,7 @@
   template_path: vendor/github.com/Juniper/asf/pkg/db/db.go.tmpl
   output_dir: pkg/db
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/db_common.go.tmpl
-  output_dir: pkg/db
-- type: all
   template_path: vendor/github.com/Juniper/asf/pkg/db/db_test.go.tmpl
-  output_dir: pkg/db
-- type: alltype
-  template_path: vendor/github.com/Juniper/asf/pkg/db/db_types.go.tmpl
   output_dir: pkg/db
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/etcd/notifier_service.go.tmpl
@@ -35,16 +29,7 @@
   template_path: vendor/github.com/Juniper/asf/pkg/models/type_validation.go.tmpl
   output_dir: pkg/models
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/base_quota_counter.go.tmpl
-  output_dir: pkg/services
-- type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/base_quota_getter.go.tmpl
-  output_dir: pkg/services
-- type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/quota_checker_service.go.tmpl
-  output_dir: pkg/services
-- type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl
+  template_path: vendor/github.com/Juniper/asf/pkg/services/quota.go.tmpl
   output_dir: pkg/services
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/services/sanitizer_service.go.tmpl
@@ -67,6 +52,9 @@
 - type: all
   template_path: pkg/services/prop_collection_update.go.tmpl
   output_dir: pkg/services
+- type: all
+  template_path: vendor/github.com/Juniper/asf/pkg/rbac/service.go.tmpl
+  output_dir: pkg/rbac
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/sync/producer.go.tmpl
   output_dir: pkg/sync

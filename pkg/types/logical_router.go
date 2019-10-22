@@ -6,12 +6,12 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -586,7 +586,7 @@ func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Conte
 	}
 
 	bgpvpns, err := sv.ReadService.ListBGPVPN(
-		ctx, &services.ListBGPVPNRequest{Spec: baseservices.SimpleListSpec(bgpvpnUUIDs, models.BGPVPNFieldBGPVPNType)},
+		ctx, &services.ListBGPVPNRequest{Spec: asfservices.SimpleListSpec(bgpvpnUUIDs, models.BGPVPNFieldBGPVPNType)},
 	)
 	if err != nil {
 		return err
@@ -627,7 +627,7 @@ func (sv *ContrailTypeLogicService) checkRouterHasBGPVPNAssocViaNetwork(
 
 	vnsResp, err := sv.ReadService.ListVirtualNetwork(
 		ctx, &services.ListVirtualNetworkRequest{
-			Spec: baseservices.SimpleListSpec(vnUUIDs, models.VirtualNetworkFieldBGPVPNRefs),
+			Spec: asfservices.SimpleListSpec(vnUUIDs, models.VirtualNetworkFieldBGPVPNRefs),
 		},
 	)
 	if err != nil {
@@ -678,7 +678,7 @@ func (sv *ContrailTypeLogicService) getLinkedVnUUIDs(
 
 	vmisResp, err := sv.ReadService.ListVirtualMachineInterface(
 		ctx, &services.ListVirtualMachineInterfaceRequest{
-			Spec: baseservices.SimpleListSpec(vmiUUIDs, models.VirtualMachineInterfaceFieldVirtualNetworkRefs),
+			Spec: asfservices.SimpleListSpec(vmiUUIDs, models.VirtualMachineInterfaceFieldVirtualNetworkRefs),
 		},
 	)
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/stretchr/testify/assert"
 
+	asfdb "github.com/Juniper/asf/pkg/db"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -591,4 +592,9 @@ func validateSubnetUUID(t *testing.T, ipamSubnet *models.IpamSubnetType, subnetU
 	}
 	_, err := uuid.FromString(subnetUUID)
 	assert.NoError(t, err)
+}
+
+func clearIPAddressPool(ctx context.Context) error {
+	_, err := asfdb.GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+	return err
 }
