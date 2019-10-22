@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dd98d86b_3bc97e89",
+        "filename": "cmd/contrail/main.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-22T17:00:12Z",
+      "side": 1,
+      "message": "I think it should be plugged somewhere in `./pkg/apisrv/server.go`. In https://github.com/Juniper/contrail/blob/master/pkg/apisrv/server.go#L71 we instantiate echo server that is being used for API server.",
+      "revId": "83b17931b38995c719c8555ff0616d1624086143",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
