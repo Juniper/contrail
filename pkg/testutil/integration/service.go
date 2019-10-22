@@ -83,44 +83,6 @@ func DeleteAccessControlList(t *testing.T, s services.WriteService, uuid string)
 	require.NoError(t, err, deleteFailureMessage(uuid, r))
 }
 
-// CreateContrailCluster creates a Contrail cluster resource in given service.
-func CreateContrailCluster(
-	t *testing.T, s services.WriteService, obj *models.ContrailCluster,
-) *models.ContrailCluster {
-	r, err := s.CreateContrailCluster(
-		context.Background(),
-		&services.CreateContrailClusterRequest{ContrailCluster: obj},
-	)
-	require.NoError(t, err, createFailureMessage(obj, r))
-	return r.GetContrailCluster()
-}
-
-// DeleteContrailCluster deletes a Contrail cluster resource from given service.
-func DeleteContrailCluster(t *testing.T, s services.WriteService, uuid string) {
-	r, err := s.DeleteContrailCluster(context.Background(), &services.DeleteContrailClusterRequest{ID: uuid})
-	require.NoError(t, err, deleteFailureMessage(uuid, r))
-}
-
-// CreateEndpoint creates an endpoint resource in given service.
-func CreateEndpoint(t *testing.T, s services.WriteService, obj *models.Endpoint) *models.Endpoint {
-	r, err := s.CreateEndpoint(context.Background(), &services.CreateEndpointRequest{Endpoint: obj})
-	require.NoError(t, err, createFailureMessage(obj, r))
-	return r.GetEndpoint()
-}
-
-// UpdateEndpoint updates an endpoint resource in given service.
-func UpdateEndpoint(t *testing.T, s services.WriteService, obj *models.Endpoint) *models.Endpoint {
-	r, err := s.UpdateEndpoint(context.Background(), &services.UpdateEndpointRequest{Endpoint: obj})
-	require.NoError(t, err, updateFailureMessage(obj, r))
-	return r.GetEndpoint()
-}
-
-// DeleteEndpoint deletes a network IPAM resource from given service.
-func DeleteEndpoint(t *testing.T, s services.WriteService, uuid string) {
-	r, err := s.DeleteEndpoint(context.Background(), &services.DeleteEndpointRequest{ID: uuid})
-	require.NoError(t, err, deleteFailureMessage(uuid, r))
-}
-
 // CreateNetworkIpam creates a network IPAM resource in given service.
 func CreateNetworkIpam(t *testing.T, s services.WriteService, obj *models.NetworkIpam) *models.NetworkIpam {
 	r, err := s.CreateNetworkIpam(context.Background(), &services.CreateNetworkIpamRequest{NetworkIpam: obj})

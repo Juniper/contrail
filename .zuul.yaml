@@ -62,7 +62,7 @@
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
-        - image: circleci/golang:1.12
+        - image: circleci/golang:1.13
         - image: circleci/postgres:10.3-alpine
           name: contrail_postgres
           environment:
