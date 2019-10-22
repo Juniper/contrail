@@ -3,13 +3,11 @@ package integration
 import (
 	"context"
 	"net/http"
-	"path"
 	"testing"
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
@@ -166,22 +164,4 @@ func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
 	var responseData interface{}
 	r, err := c.Do(context.Background(), echo.GET, path, nil, nil, &responseData, []int{http.StatusNotFound})
 	assert.NoError(t, err, "getting resource failed\n response: %+v\n responseData: %+v", r, responseData)
-}
-
-// EnsureContrailClusterDeleted deletes resource with given UUID, ignoring "not found" error.
-func (c *HTTPAPIClient) EnsureContrailClusterDeleted(t *testing.T, uuid string) {
-	var response interface{}
-	_, err := c.EnsureDeleted(
-		context.Background(),
-		path.Join(models.ContrailClusterSingularPathPrefix, uuid),
-		&response,
-	)
-	assert.NoError(t, err)
-}
-
-// EnsureEndpointDeleted deletes resource with given UUID, ignoring "not found" error.
-func (c *HTTPAPIClient) EnsureEndpointDeleted(t *testing.T, uuid string) {
-	var response interface{}
-	_, err := c.EnsureDeleted(context.Background(), path.Join(models.EndpointSingularPathPrefix, uuid), &response)
-	assert.NoError(t, err, deleteFailureMessage(uuid, response))
 }
