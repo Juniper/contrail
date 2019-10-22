@@ -7,11 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const timeOut = 10 * time.Second
@@ -202,7 +203,7 @@ func TestDependencyResolution(t *testing.T) {
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
 				assert.Equal(t, result, e)
-				assert.Equal(t, services.OperationUpdate, e.Operation())
+				assert.Equal(t, asfservices.OperationUpdate, e.Operation())
 				assert.Equal(t, e.GetResource().GetParentUUID(), "domain")
 			},
 		},
@@ -258,7 +259,7 @@ func TestDependencyResolution(t *testing.T) {
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
 				assert.Equal(t, result, e)
-				assert.Equal(t, services.OperationUpdate, e.Operation())
+				assert.Equal(t, asfservices.OperationUpdate, e.Operation())
 				assert.Equal(t, e.GetResource().GetParentUUID(), "domain")
 			},
 		},
@@ -312,7 +313,7 @@ func TestDependencyResolution(t *testing.T) {
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
 				assert.Equal(t, result, e)
-				assert.Equal(t, services.OperationDelete, e.Operation())
+				assert.Equal(t, asfservices.OperationDelete, e.Operation())
 
 				e = cache.Get(ri2.UUID)
 				assert.Nil(t, e)
@@ -376,7 +377,7 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
 				assert.Equal(t, result, e)
-				assert.Equal(t, services.OperationDelete, e.Operation())
+				assert.Equal(t, asfservices.OperationDelete, e.Operation())
 
 				r, err := cache.ListVirtualNetwork(context.Background(), &services.ListVirtualNetworkRequest{})
 				assert.NoError(t, err)
@@ -399,7 +400,7 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
 				assert.Equal(t, result, e)
-				assert.Equal(t, services.OperationCreate, e.Operation())
+				assert.Equal(t, asfservices.OperationCreate, e.Operation())
 
 				r, err := cache.ListVirtualNetwork(context.Background(), &services.ListVirtualNetworkRequest{})
 				assert.NoError(t, err)

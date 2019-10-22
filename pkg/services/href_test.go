@@ -4,15 +4,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -89,7 +89,7 @@ func deleteResource(ctx context.Context, t *testing.T, client services.Service, 
 	e, err := services.NewEvent(services.EventOption{
 		UUID:      object.GetUUID(),
 		Kind:      object.Kind(),
-		Operation: services.OperationDelete,
+		Operation: asfservices.OperationDelete,
 	})
 	require.NoError(t, err)
 	_, err = e.Process(ctx, client)

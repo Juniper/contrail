@@ -15,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // Data source and destination types.
@@ -128,7 +129,7 @@ func writeRDBMS(events *services.EventList) (err error) {
 
 	return dbService.DoWithoutConstraints(context.Background(), func(ctx context.Context) error {
 		return dbService.DoInTransaction(ctx, func(ctx context.Context) error {
-			_, err = events.Process(ctx, dbService, services.NoTransaction)
+			_, err = events.Process(ctx, dbService, asfservices.NoTransaction)
 			return err
 		})
 	},
@@ -143,7 +144,7 @@ func writeEtcd(events *services.EventList, etcdNotifierPath string) error {
 
 	etcdNotifierService.SetNext(&services.BaseService{})
 
-	_, err = events.Process(context.Background(), etcdNotifierService, services.NoTransaction)
+	_, err = events.Process(context.Background(), etcdNotifierService, asfservices.NoTransaction)
 	return errors.Wrap(err, "processing events on etcdNotifierService failed")
 }
 
