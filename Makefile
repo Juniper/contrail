@@ -2,10 +2,10 @@ ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH := public/doc/index.html
 CONTRAIL_OPENAPI_PATH := public/openapi.json
-CONTRAILSCHEMA := $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
-CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
 GOPATH ?= $(shell go env GOPATH)
+CONTRAILSCHEMA = $(GOPATH)/bin/contrailschema
+CONTRAILUTIL := $(GOPATH)/bin/contrailutil
 PATH := $(PATH):$(GOPATH)/bin
 SOURCEDIR ?= $(GOPATH)
 
@@ -52,7 +52,8 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 		--template-config tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
-PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf -I ./vendor/github.com/gogo/protobuf/protobuf -I ./vendor/github.com/Juniper/asf -I ./proto
+GOGOPROTO_PATH = ./vendor/github.com/gogo/protobuf
+PROTO := ./bin/protoc -I ./vendor/ -I $(GOGOPROTO_PATH) -I $(GOGOPROTO_PATH)/protobuf -I ./vendor/github.com/Juniper/asf -I ./proto
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
 
 pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
@@ -63,7 +64,7 @@ Mpkg/services/baseservices/base.proto=github.com/Juniper/asf/pkg/services/basese
 plugins=grpc:$(GOPATH)/src/ $<
 	go tool fix $@
 
-MOCKGEN = $(shell go list -f "{{ .Target }}" ./vendor/github.com/golang/mock/mockgen)
+MOCKGEN = $(GOPATH)/bin/mockgen
 MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/gen_service_interface.go \
 	pkg/services/mock/fqname_to_id.go \

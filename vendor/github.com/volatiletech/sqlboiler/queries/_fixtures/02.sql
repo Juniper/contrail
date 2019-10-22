@@ -1,1 +1,0 @@
-SELECT * FROM "q" ORDER BY a ASC, b DESC;

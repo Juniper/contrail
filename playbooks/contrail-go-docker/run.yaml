@@ -36,8 +36,10 @@
           command: make reset_db
         - name: Build the source code
           command: make build
-        - name: Run tests and linters on the source code and check vendored dependencies in parallel
-          command: make -j test lint check
+        - name: Check vendored dependencies
+          command: make check
+        - name: Run tests and linters on the source code in parallel
+          command: make -j test lint
         - name: Generate docker images (depends on the nightly job to have already pushed contrail-base:branch-latest image)
           # After branching, make sure to push a contrail-base:1234.latest image (a nightly build does it), otherwise this step will fail.
           # Workaround is to manually change this step to use BASE_IMAGE_TAG='master.latest'
