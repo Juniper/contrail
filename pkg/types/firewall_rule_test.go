@@ -4,17 +4,17 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/asf/pkg/errutil"
 	asfmodels "github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
@@ -535,7 +535,7 @@ func TestCreateFirewallRule(t *testing.T) {
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = baseservices.WithInternalRequest(ctx)
+				ctx = asfservices.WithInternalRequest(ctx)
 			}
 
 			paramRequest := &services.CreateFirewallRuleRequest{FirewallRule: &tt.testFirewallRule}
@@ -867,7 +867,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = baseservices.WithInternalRequest(ctx)
+				ctx = asfservices.WithInternalRequest(ctx)
 			}
 
 			expectedResponse := &services.UpdateFirewallRuleResponse{
