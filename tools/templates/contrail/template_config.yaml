@@ -1,87 +1,113 @@
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/apiserver/service_chain.go.tmpl
+  template_path: pkg/apiserver/service_chain.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/apiserver
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/client/client_grpc.go.tmpl
+  template_path: pkg/client/client_grpc.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/client
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/client/client_http.go.tmpl
+  template_path: pkg/client/client_http.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/client
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/cache/db.go.tmpl
+  template_path: pkg/cache/db.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/cache
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/db.go.tmpl
+  template_path: pkg/db/db.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/db
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/db_common.go.tmpl
+  template_path: pkg/db/db_common.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/db
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/db_test.go.tmpl
+  template_path: pkg/db/db_test.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/db
 - type: alltype
-  template_path: vendor/github.com/Juniper/asf/pkg/db/db_types.go.tmpl
+  template_path: pkg/db/db_types.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/db
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/etcd/notifier_service.go.tmpl
+  template_path: pkg/etcd/notifier_service.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/etcd
 - type: alltype
-  template_path: vendor/github.com/Juniper/asf/pkg/models/model.go.tmpl
+  template_path: pkg/models/model.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/models
 - type: alltype
   template_path: pkg/models/prop_collection.go.tmpl
   output_dir: pkg/models
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/models/type_validation.go.tmpl
+  template_path: pkg/models/type_validation.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/models
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/base_quota_counter.go.tmpl
+  template_path: pkg/services/base_quota_counter.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/base_quota_getter.go.tmpl
+  template_path: pkg/services/base_quota_getter.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/quota_checker_service.go.tmpl
+  template_path: pkg/services/quota_checker_service.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl
+  template_path: pkg/services/rbac_service.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/sanitizer_service.go.tmpl
+  template_path: pkg/services/sanitizer_service.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/service.go.tmpl
+  template_path: pkg/services/service.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl
+  template_path: pkg/services/service_common.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/service_interface.go.tmpl
+  template_path: pkg/services/service_interface.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/event_encoding.go.tmpl
+  template_path: pkg/services/event_encoding.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/list_response_encoding.go.tmpl
+  template_path: pkg/services/list_response_encoding.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/services
 - type: all
   template_path: pkg/services/prop_collection_update.go.tmpl
   output_dir: pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/sync/producer.go.tmpl
+  template_path: pkg/sync/producer.go.tmpl
+  module: github.com/Juniper/asf
   output_dir: pkg/sync
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/models/model.proto.tmpl
+  template_path: pkg/models/model.proto.tmpl
+  module: github.com/Juniper/asf
   output_dir: proto/github.com/Juniper/contrail/pkg/models
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/services/service.proto.tmpl
+  template_path: pkg/services/service.proto.tmpl
+  module: github.com/Juniper/asf
   output_dir: proto/github.com/Juniper/contrail/pkg/services
 - type: all
   template_path: pkg/services/plugins.proto.tmpl
   output_dir: proto/github.com/Juniper/contrail/pkg/services
 - type: all
-  template_path: vendor/github.com/Juniper/asf/tools/init_psql.sql.tmpl
+  template_path: tools/init_psql.sql.tmpl
+  module: github.com/Juniper/asf
   output_dir: tools
 - type: all
-  template_path: vendor/github.com/Juniper/asf/tools/cleanup_psql.sql.tmpl
+  template_path: tools/cleanup_psql.sql.tmpl
+  module: github.com/Juniper/asf
   output_dir: tools
