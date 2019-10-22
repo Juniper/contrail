@@ -1,1 +1,0 @@
-SELECT "c".* FROM cats as c INNER JOIN dogs d on d.cat_id = cats.id;
