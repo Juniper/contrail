@@ -11,13 +11,13 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	asfmodels "github.com/Juniper/asf/pkg/models"
 	uuid "github.com/satori/go.uuid"
 	models "{{ modelsImportPath }}"
 )
@@ -39,7 +39,7 @@ const (
 )
 
 // Reference is a generic reference that can be retrieved from ref update event.
-type Reference = asfmodels.Reference
+type Reference = basemodels.Reference
 
 // Chain setup chain of services.
 func Chain(services ...Service) {
@@ -273,7 +273,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	if data.RefUUID == "" {
-		m, err := service.MetadataGetter.GetMetadata(ctx, asfmodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
+		m, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
 		if err != nil {
 			return errutil.ToHTTPError(errutil.ErrorBadRequestf("error resolving ref-uuid using ref-fq-name: %v", err))
 		}
@@ -281,7 +281,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	}
 
 	e, err := NewRefUpdateEvent(RefUpdateOption{
-		ReferenceType: asfmodels.ReferenceKind(data.Type, data.RefType),
+		ReferenceType: basemodels.ReferenceKind(data.Type, data.RefType),
 		FromUUID:      data.UUID,
 		ToUUID:        data.RefUUID,
 		Operation:     data.Operation,
@@ -660,8 +660,8 @@ func sortDelete(ctx context.Context, service *ContrailService, events *EventList
 
 func getRefMapFromObjects(
 		ctx context.Context, service *ContrailService, events []*Event,
-) (map[*Event]asfmodels.References, error) {
-	refMap := make(map[*Event]asfmodels.References)
+) (map[*Event]basemodels.References, error) {
+	refMap := make(map[*Event]basemodels.References)
 	for i, ev := range events {
 		obj, _, err := GetObjectAndType(ctx, ev.GetUUID(), service, service)
 		if err != nil {
@@ -683,7 +683,7 @@ func GetObjectAndType(
 	uuid string,
 	idToFQNameService IDToFQNameService,
 	readService ReadService,
-) (asfmodels.Object, string, error) {
+) (basemodels.Object, string, error) {
 	idResp, err := idToFQNameService.IDToFQName(ctx, &IDToFQNameRequest{UUID: uuid})
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "error getting type for provided UUID: %v", uuid)
@@ -696,7 +696,7 @@ func GetObjectAndType(
 	return o, idResp.Type, nil
 }
 
-func syncSort(events *EventList, refMap map[*Event]asfmodels.References) (*EventList, error) {
+func syncSort(events *EventList, refMap map[*Event]basemodels.References) (*EventList, error) {
 	g := NewEventGraph(events.Events, refMap)
 	if g.HasCycle() {
 		return events, errors.New("cycle found in reference graph")
@@ -747,8 +747,8 @@ func (e *EventList) separateListByOperation() (*EventList, *EventList, *EventLis
 	return createList, updateList, deleteList
 }
 
-func getRefMapFromEvents(events []*Event) map[*Event]asfmodels.References {
-	refMap := map[*Event]asfmodels.References{}
+func getRefMapFromEvents(events []*Event) map[*Event]basemodels.References {
+	refMap := map[*Event]basemodels.References{}
 	for _, ev := range events {
 		refMap[ev] = ev.getReferences()
 	}
@@ -831,11 +831,11 @@ func (service *ContrailService) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.
-func GetObject(ctx context.Context, rs ReadService, typeName, uuid string) (asfmodels.Object, error) {
+func GetObject(ctx context.Context, rs ReadService, typeName, uuid string) (basemodels.Object, error) {
 	return getObject(ctx, rs, typeName, uuid, nil)
 }
 
-func getObject(ctx context.Context, rs ReadService, typeName, uuid string, fields []string) (asfmodels.Object, error) {
+func getObject(ctx context.Context, rs ReadService, typeName, uuid string, fields []string) (basemodels.Object, error) {
 	kind := strings.Replace(typeName, "_", "-", -1)
 	switch kind {
 		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

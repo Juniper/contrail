@@ -12,24 +12,18 @@ import (
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/retry"
-	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apiserver"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/cassandra"
-	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/deploy"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
 	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/rbac"
-	"github.com/Juniper/contrail/pkg/replication"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 	"github.com/sirupsen/logrus"
@@ -76,23 +70,6 @@ func Run() error {
 			wg.Wait()
 		},
 	})
-	contrailCmd.AddCommand(&cobra.Command{
-		Use:   "cloud",
-		Short: "sub command cloud is used to manage public cloud infra",
-		Long: `Cloud is a sub command used to manage
-            public cloud infra. Currently
-            supported infra are Azure`,
-		Run: func(cmd *cobra.Command, args []string) {
-			manageCloud(configFile)
-		},
-	})
-	contrailCmd.AddCommand(&cobra.Command{
-		Use:   "deploy",
-		Short: "Start managing contrail cluster",
-		Run: func(cmd *cobra.Command, args []string) {
-			manageCluster(configFile)
-		},
-	})
 
 	return contrailCmd.Execute()
 }
@@ -113,34 +90,12 @@ func initConfig(configFile string) {
 	}
 }
 
-func manageCloud(configFile string) {
-	manager, err := cloud.NewCloudManagerFromConfigFile(configFile)
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-	if err = manager.Manage(); err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-}
-
-func manageCluster(configFile string) {
-	manager, err := deploy.NewDeployManager(configFile)
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-
-	if err = manager.Manage(); err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-}
-
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
 	maybeStartCacheService(wg)
 	MaybeStart("replication.cassandra", startCassandraReplicator, wg)
 	MaybeStart("replication.amqp", startAmqpReplicator, wg)
 	MaybeStart("server", startServer, wg)
-	MaybeStart("agent", startAgent, wg)
 	MaybeStart("sync", startSync, wg)
 	MaybeStart("compilation", startCompilationService, wg)
 	MaybeStart("collector", startCollectorWatcher, wg)
@@ -251,17 +206,9 @@ func startServer() {
 	staticProxyPlugin, err := proxy.NewStaticByViper()
 	logutil.FatalWithStackTraceIfError(err)
 
-	es := endpoint.NewStore()
-	dynamicProxy := proxy.NewDynamicFromViper(es, dbService) // TODO(dfurman): it could use head of service chain
-	// TODO(dfurman): move to proxy constructor and use context for cancellation
-	dynamicProxy.StartEndpointsSync()
-	defer dynamicProxy.StopEndpointsSync()
-
 	plugins := []asfapiserver.APIPlugin{
 		serviceChain,
 		staticProxyPlugin,
-		dynamicProxy,
-		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
 	}
 	plugins = append(plugins, services.ContrailPlugins(
@@ -272,7 +219,7 @@ func startServer() {
 	)...)
 
 	if viper.GetBool("keystone.local") {
-		k, initErr := keystone.Init(es)
+		k, initErr := keystone.Init()
 		logutil.FatalWithStackTraceIfError(initErr)
 		plugins = append(plugins, k)
 	}
@@ -295,10 +242,6 @@ func startServer() {
 
 	server, err := asfapiserver.NewServer(plugins, NoAuthPaths())
 	logutil.FatalWithStackTraceIfError(err)
-
-	r, err := startVNCReplicator(es)
-	logutil.FatalWithStackTraceIfError(err)
-	defer r.Stop()
 
 	err = server.Run()
 	logutil.FatalWithStackTraceIfError(err)
@@ -360,26 +303,7 @@ func NewServiceChain(dbService *db.Service, c collector.Collector) (*services.Co
 func NoAuthPaths() []string {
 	return []string{
 		"/v3/auth/tokens", // TODO(mblotniak): Is this ever used?
-		strings.Join([]string{
-			models.ContrailClusterPluralPath,
-			"?fields=",
-			models.ContrailClusterFieldUUID,
-			",",
-			models.ContrailClusterFieldName,
-		}, ""),
 	}
-}
-
-func startVNCReplicator(es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es)
-	if err != nil {
-		return nil, err
-	}
-	err = vncReplicator.Start()
-	if err != nil {
-		return nil, err
-	}
-	return vncReplicator, nil
 }
 
 const (
@@ -410,19 +334,6 @@ func startCompilationService() {
 
 	if err = server.Run(ctx); err != nil {
 		logrus.Warn(err)
-	}
-}
-
-func startAgent() {
-	agent, err := agent.NewAgentByConfig()
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-	defer agent.Stop()
-
-	err = agent.Start()
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
 	}
 }
 

@@ -14,7 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	asfmodels "github.com/Juniper/asf/pkg/models"
 	models "{{ modelsImportPath }}"
 	services "{{ servicesImportPath }}"
 )
@@ -27,12 +26,12 @@ type NotifierService struct {
 	services.BaseService
 	Path   string
 	Client *etcd.Client
-	Codec  asfmodels.Codec
+	Codec  models.Codec
 	log    *logrus.Entry
 }
 
 // NewNotifierService creates a etcd Notifier Service.
-func NewNotifierService(path string, codec asfmodels.Codec) (*NotifierService, error) {
+func NewNotifierService(path string, codec models.Codec) (*NotifierService, error) {
 	ec, err := NewClientByViper("etcd-notifier")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to etcd server")
@@ -269,7 +268,7 @@ func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
 	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
 		txn := etcd.GetTxn(ctx)
 		oldData := txn.Get(key)
-		newData, err := asfmodels.UpdateData(ns.Codec, oldData, o, request.GetFieldMask())
+		newData, err := models.UpdateData(ns.Codec, oldData, o, request.GetFieldMask())
 		if err != nil {
 			return errors.Wrap(err, "error processing update data for etcd")
 		}

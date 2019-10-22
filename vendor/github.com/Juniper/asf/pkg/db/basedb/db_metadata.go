@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models"
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // CreateMetadata creates fqname, uuid pair with type.
-func (db *BaseDB) CreateMetadata(ctx context.Context, metaData *models.Metadata) error {
+func (db *BaseDB) CreateMetadata(ctx context.Context, metaData *basemodels.Metadata) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
 		fqNameStr, err := fqNameToString(metaData.FQName)
@@ -31,9 +32,9 @@ func (db *BaseDB) CreateMetadata(ctx context.Context, metaData *models.Metadata)
 // GetMetadata gets metadata from database. It requires type and fq_name or uuid.
 func (db *BaseDB) GetMetadata(
 	ctx context.Context,
-	requested models.Metadata,
-) (*models.Metadata, error) {
-	metadatas, err := db.ListMetadata(ctx, []*models.Metadata{&requested})
+	requested basemodels.Metadata,
+) (*basemodels.Metadata, error) {
+	metadatas, err := db.ListMetadata(ctx, []*basemodels.Metadata{&requested})
 
 	if err != nil {
 		return nil, errors.Wrapf(FormatDBError(err), "failed to get metadata")
@@ -48,7 +49,7 @@ func (db *BaseDB) GetMetadata(
 
 func buildMetadataFilter(
 	dialect Dialect,
-	metaDatas []*models.Metadata,
+	metaDatas []*basemodels.Metadata,
 ) (where string, values []interface{}, err error) {
 	index := 0
 	var filters []string
@@ -81,9 +82,9 @@ func buildMetadataFilter(
 // ListMetadata gets metadata from database.
 func (db *BaseDB) ListMetadata(
 	ctx context.Context,
-	requested []*models.Metadata,
-) ([]*models.Metadata, error) {
-	var metadatas []*models.Metadata
+	requested []*basemodels.Metadata,
+) ([]*basemodels.Metadata, error) {
+	var metadatas []*basemodels.Metadata
 
 	var query bytes.Buffer
 	query.WriteString("select uuid,type, fq_name from metadata where ")
@@ -103,7 +104,7 @@ func (db *BaseDB) ListMetadata(
 		}
 
 		for rows.Next() {
-			metadata := &models.Metadata{}
+			metadata := &basemodels.Metadata{}
 			fqNameString := ""
 			err := rows.Scan(&metadata.UUID, &metadata.Type, &fqNameString)
 			err = FormatDBError(err)
