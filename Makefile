@@ -2,15 +2,15 @@ ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH := public/doc/index.html
 CONTRAIL_OPENAPI_PATH := public/openapi.json
-CONTRAILSCHEMA := $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
-CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
 GOPATH ?= $(shell go env GOPATH)
+CONTRAILSCHEMA = $(shell go list -f '{{ .Target }}' github.com/Juniper/asf/cmd/contrailschema)
+CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 PATH := $(PATH):$(GOPATH)/bin
 SOURCEDIR ?= $(GOPATH)
 
 DB_FILES := gen_init_psql.sql init_psql.sql init_data.yaml
-SRC_DIRS := cmd pkg vendor
+SRC_DIRS := cmd pkg
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""
 ANSIBLE_DEPLOYER_BRANCH ?= master
@@ -52,7 +52,9 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 		--template-config tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
-PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf -I ./vendor/github.com/gogo/protobuf/protobuf -I ./vendor/github.com/Juniper/asf -I ./proto
+GOGOPROTO_PATH = $(shell go list -f "{{ .Dir }}" -m github.com/gogo/protobuf)
+ASF_PATH = $(shell go list -f "{{ .Dir }}" -m github.com/Juniper/asf)
+PROTO = ./bin/protoc -I $(GOGOPROTO_PATH) -I $(GOGOPROTO_PATH)/protobuf -I ./proto -I $(ASF_PATH)
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
 
 pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
@@ -63,7 +65,7 @@ Mpkg/services/baseservices/base.proto=github.com/Juniper/asf/pkg/services/basese
 plugins=grpc:$(GOPATH)/src/ $<
 	go tool fix $@
 
-MOCKGEN = $(shell go list -f "{{ .Target }}" ./vendor/github.com/golang/mock/mockgen)
+MOCKGEN = $(shell go list -f "{{ .Target }}" github.com/golang/mock/mockgen)
 MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/gen_service_interface.go \
 	pkg/services/mock/fqname_to_id.go \
@@ -93,7 +95,6 @@ format_gen: ## Format generated source code
 clean_gen: ## Remove generated source code and documentation
 	rm -rf public/[^watch.html]* doc/proto.md
 	find tools/ proto/ pkg/ -name gen_* -delete
-	find pkg -name 'mock' -type d -exec rm -rf '{}' +
 
 build: ## Build all binaries without producing output
 	go build ./cmd/...
@@ -107,7 +108,7 @@ install_contrailcli:  ## Install Contrailcli binary
 	go install ./cmd/contrailcli
 
 install_contrailschema: ## Install Contrailschema binary
-	go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/
+	go install github.com/Juniper/asf/cmd/contrailschema/
 
 install_contrailutil: ## Install Contrailutil binary
 	go install ./cmd/contrailutil
@@ -138,7 +139,7 @@ test: ## Run tests with coverage
 lint: ## Run linters on the source code
 	./tools/lint.sh
 
-check: ## Check vendored dependencies
+check: ## Check if dependencies are locked
 	./tools/check.sh
 
 format: ## Format source code
