@@ -1,6 +1,0 @@
----
-  definitions:
-    HogeHoge:
-      minimum: 1
-      maximum: 101
-      type: "integer"
