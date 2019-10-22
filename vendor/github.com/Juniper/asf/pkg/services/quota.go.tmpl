@@ -1,0 +1,226 @@
+{% autoescape off %}
+package services
+
+import (
+	"context"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/services"
+
+	models "{{ modelsImportPath }}"
+)
+type QuotaCheckerService struct {
+	BaseService
+	resourceCounter QuotaResourceCounter
+	limitGetter     QuotaLimitGetter
+}
+
+// NewQuotaCheckerService creates QuotaCheckerService.
+func NewQuotaCheckerService(rs ReadService) *QuotaCheckerService {
+	return &QuotaCheckerService{
+		resourceCounter: &SimpleQuotaCounter{rs: rs},
+		limitGetter: &SimpleQuotaLimitGetter{rs: rs},
+	}
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %} {% set ThisID = schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+
+// Handle{{ name }} retrieves limit for the handled resource, counts resources of this type and verifies the quota.
+func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
+	limit, err := svc.limitGetter.{{ name }}Limit(ctx, obj)
+	if err != nil {
+		return errors.Wrapf(err, "could not get quota for resource {{ name }}(%v)", obj.GetUUID())
+	}
+
+	if limit == NoQuotaLimit {
+		logrus.Debugf("Quota for {{ name }}(%v) in is not set - continue", obj.GetUUID())
+		return nil
+	}
+
+	count, err := svc.resourceCounter.Count{{ name }}(ctx, obj)
+	if err != nil {
+		return errors.Wrapf(err, "could not get count for resource {{ name }}(%v)", obj.GetUUID())
+	}
+
+	logrus.Debugf("Quota limit for {{ name }} is %v, count is %v", limit, count)
+
+	if count >= limit {
+		return errutil.ErrorQuotaExceededf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
+	}
+
+	return nil
+}
+
+// Create{{ name }} is an implementation of handling quota verification during object creation
+func (svc *QuotaCheckerService) Create{{ name }}(ctx context.Context, request *Create{{ name }}Request) (*Create{{ name }}Response, error) {
+	logrus.Debugf("Create{{ name }} request = %+v;", request)
+	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
+		return nil, err
+	}
+	if svc.next == nil {
+		return nil, nil
+	}
+	return svc.Next().Create{{ name }}(ctx, request)
+}
+
+/* TODO might be not needed
+func (svc *QuotaCheckerService) Update{{ name }}(ctx context.Context, request *Update{{ name }}Request) (*Update{{ name }}Response, error) {
+	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
+		return nil, err
+	}
+	if svc.next == nil {
+		return nil, nil
+	}
+	return svc.Next().Update{{ name }}(ctx, request)
+}
+*/
+{% else %}// Type {{ name }} is not under quota{% endif %}
+
+{% endif %}{% endfor %}
+
+// NoQuotaLimit indicates no limit for resource creation.
+const NoQuotaLimit = 0
+
+type QuotaResourceCounter interface {
+{%- for schema in schemas -%}
+{%- if schema.Type != "abstract" and schema.ID -%}
+{%- set ThisID = schema.ID -%}
+{%- set name = schema.JSONSchema.GoName -%}
+{%- set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID -%}
+{%- if QuotaDef %}
+	Count{{ name }}(ctx context.Context, obj *models.{{ name }}) (int64, error)
+{%- endif -%}
+{%- endif -%}
+{%- endfor %}
+}
+
+// DummyQuotaCounter is a dummy counter that returns a count of zero for all resources.
+// TODO (Kamil): can be removed after quota counting logic is implemented for all resources.
+type DummyQuotaCounter struct {}
+
+// SimpleQuotaCounter implements quota counting logic for resources whose only possible parent is project.
+type SimpleQuotaCounter struct {
+	DummyQuotaCounter
+	rs ReadService
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% set ThisID = schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+
+// Count{{ name }} returns a count of zero resources of type {{ name }}.
+func (_ *DummyQuotaCounter) Count{{ name }}(_ context.Context, _ *models.{{ name }}) (int64, error) {
+	return 0, nil
+}
+
+{% endif %}
+{% endif %}{% endfor %}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% set ThisID = schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+
+{% if schema.Parents|length == 1 %}{% for _, pdef in schema.Parents %}{% if pdef.LinkTo.TypeName == "project" %}
+
+// Count{{ name }} returns the number of resources of type {{ name }} in the given objects' parent project.
+func (c *SimpleQuotaCounter) Count{{ name }}(ctx context.Context, obj *models.{{ name }}) (int64, error) {
+	if obj.GetParentUUID() == "" {
+		logrus.Warnf("orphan resource: %v; counting 0 resources for quota", obj.GetUUID())
+		return 0, nil
+	}
+
+	resp, err := c.rs.List{{ name }}(ctx, &List{{ name }}Request{
+		Spec: &services.ListSpec{
+			Count: true,
+			Filters: []*services.Filter{
+				{Key: "parent_uuid", Values: []string{obj.GetParentUUID()}},
+			},
+		},
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.{{ name }}Count, nil
+}
+
+{% endif %}{% endfor %}{% endif %}
+
+{% endif %}
+{% endif %}{% endfor %}
+
+type QuotaLimitGetter interface {
+{%- for schema in schemas -%}
+{%- if schema.Type != "abstract" and schema.ID -%}
+{%- set ThisID = schema.ID -%}
+{%- set name = schema.JSONSchema.GoName -%}
+{%- set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID -%}
+{%- if QuotaDef %}
+	{{ name }}Limit(ctx context.Context, obj *models.{{ name }}) (int64, error)
+{%- endif -%}
+{%- endif -%}
+{%- endfor %}
+}
+
+// DummyQuotaLimitGetter is a dummy getter that returns no limit for all resources.
+// TODO (Kamil): can be removed after getting the quota limit is implemented for all resources.
+type DummyQuotaLimitGetter struct {}
+
+// SimpleQuotaLimitGetter implements quota limit getting for resources whose only possible parent is project.
+type SimpleQuotaLimitGetter struct {
+	DummyQuotaLimitGetter
+	rs ReadService
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% set ThisID = schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+
+// {{ name }}Limit returns no limit for resources of type {{ name }}.
+func (_ *DummyQuotaLimitGetter) {{ name }}Limit(_ context.Context, _ *models.{{ name }}) (int64, error) {
+	return NoQuotaLimit, nil
+}
+
+{% endif %}
+{% endif %}{% endfor %}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% set ThisID = schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+
+{% if schema.Parents|length == 1 %}{% for _, pdef in schema.Parents %}{% if pdef.LinkTo.TypeName == "project" %}
+
+// {{ name }}Limit returns the quota limit in the given objects' parent project.
+func (g *SimpleQuotaLimitGetter) {{ name }}Limit(ctx context.Context, obj *models.{{ name }}) (int64, error) {
+	if obj.GetParentUUID() == "" {
+		logrus.Warnf("orphan resource: %v; assuming no limit for quota", obj.GetUUID())
+		return NoQuotaLimit, nil
+	}
+
+	resp, err := g.rs.GetProject(ctx, &GetProjectRequest{ID: obj.GetParentUUID(), Fields: []string{"quota"}})
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.Project.Quota.{{ name }}, nil
+}
+
+{% endif %}{% endfor %}{% endif %}
+
+{% endif %}
+{% endif %}{% endfor %}
+
+{% endautoescape %}

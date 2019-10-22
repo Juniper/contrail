@@ -7,10 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -26,6 +25,7 @@ import (
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	protocodec "github.com/gogo/protobuf/codec"
 	uuid "github.com/satori/go.uuid"
 )
@@ -36,8 +36,8 @@ import (
 
 func TestFQNameToIDGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewFQNameToIDClient(conn)
-		resp, err := c.FQNameToID(ctx, &services.FQNameToIDRequest{
+		c := asfservices.NewFQNameToIDClient(conn)
+		resp, err := c.FQNameToID(ctx, &asfservices.FQNameToIDRequest{
 			FQName: []string{"default-domain"},
 			Type:   "domain",
 		})
@@ -49,8 +49,8 @@ func TestFQNameToIDGRPC(t *testing.T) {
 
 func TestIDToFQNameGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewIDToFQNameClient(conn)
-		resp, err := c.IDToFQName(ctx, &services.IDToFQNameRequest{
+		c := asfservices.NewIDToFQNameClient(conn)
+		resp, err := c.IDToFQName(ctx, &asfservices.IDToFQNameRequest{
 			UUID: integration.DefaultDomainUUID,
 		})
 		assert.NoError(t, err)
@@ -158,14 +158,14 @@ func TestChownGRPC(t *testing.T) {
 
 func TestIPAMGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewIPAMClient(conn)
-		allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{
+		c := asfservices.NewIntPoolClient(conn)
+		allocateResp, err := c.AllocateInt(ctx, &asfservices.AllocateIntRequest{
 			Pool:  types.VirtualNetworkIDPoolKey,
 			Owner: db.EmptyIntOwner,
 		})
 		assert.NoError(t, err)
 
-		_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
+		_, err = c.DeallocateInt(ctx, &asfservices.DeallocateIntRequest{
 			Pool:  types.VirtualNetworkIDPoolKey,
 			Value: allocateResp.GetValue(),
 		})
@@ -222,13 +222,13 @@ func TestRefRelaxGRPC(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 
-		r := services.NewRefRelaxClient(conn)
-		response, err := r.RelaxRef(ctx, &services.RelaxRefRequest{
+		r := asfservices.NewRefRelaxClient(conn)
+		response, err := r.RelaxRef(ctx, &asfservices.RelaxRefRequest{
 			UUID:    network.GetUUID(),
 			RefUUID: policy.GetUUID(),
 		})
 		assert.NoError(t, err)
-		assert.Equal(t, &services.RelaxRefResponse{
+		assert.Equal(t, &asfservices.RelaxRefResponse{
 			UUID: network.GetUUID(),
 		}, response)
 
@@ -388,7 +388,7 @@ func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, pro
 func testProjectRead(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
 	return func(t *testing.T) {
 		response, err := c.ListProject(ctx, &services.ListProjectRequest{
-			Spec: &baseservices.ListSpec{
+			Spec: &asfservices.ListSpec{
 				Limit: 1,
 			},
 		})

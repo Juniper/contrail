@@ -7,11 +7,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
-	neutronmock "github.com/Juniper/contrail/pkg/neutron/mock"
 	"github.com/Juniper/contrail/pkg/services"
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	neutronmock "github.com/Juniper/contrail/pkg/neutron/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func TestSubnetResponse_CIDRFromVnc(t *testing.T) {
