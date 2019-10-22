@@ -8,13 +8,15 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
 
 const (
@@ -39,8 +41,10 @@ func TestFloatingip_Create(t *testing.T) {
 
 	read := servicesmock.NewMockReadService(mockCtrl)
 	write := servicesmock.NewMockWriteService(mockCtrl)
-	fqNameToID := servicesmock.NewMockFQNameToIDService(mockCtrl)
-	idToFQName := servicesmock.NewMockIDToFQNameService(mockCtrl)
+	metadataGetter := typesmock.NewMockMetadataGetter(mockCtrl)
+	FQNamePlugin := &asfservices.FQNameTranslationPlugin{
+		MetadataGetter: metadataGetter,
+	}
 
 	tests := []*neutronTestCase{
 		{
@@ -51,7 +55,7 @@ func TestFloatingip_Create(t *testing.T) {
 			request: loadNeutronRequest(t, createDirectory+"create_fip.json"),
 			given: func() {
 				read.EXPECT().ListFloatingIPPool(gomock.Any(), &services.ListFloatingIPPoolRequest{
-					Spec: &baseservices.ListSpec{
+					Spec: &asfservices.ListSpec{
 						ParentUUIDs: []string{
 							"0a673570-47eb-4b88-b648-5de06c65a37e",
 						},
@@ -67,9 +71,24 @@ func TestFloatingip_Create(t *testing.T) {
 						expected: loadCreateFloatingIPRequest(t, createDirectory+"create_floating-ip_request.json"),
 					}).Return(loadCreateFloatingIPResponse(t, createDirectory+"create_floating-ip_response.json"), nil)
 
-				fqNameToID.EXPECT().FQNameToID(gomock.Any(),
-					loadFQNameToIDRequest(t, createDirectory+"network_fqname-to-id_request.json"),
-				).Return(loadFQNameToIDResponse(t, createDirectory+"network_fqname-to-id_response.json"), nil)
+				metadataGetter.EXPECT().GetMetadata(gomock.Any(),
+					asfmodels.FQNameMetadata(
+						[]string{"default-domain",
+							"ctest-FloatingipBasicTestSanity-99684235",
+							"ctest-fvn-50778358"},
+						"virtual-network")).Return(&asfmodels.Metadata{
+					UUID: "0a673570-47eb-4b88-b648-5de06c65a37e"},
+					nil,
+				).AnyTimes()
+
+				metadataGetter.EXPECT().GetMetadata(gomock.Any(),
+					asfmodels.UUIDMetadata(
+						"5c5829af-8331-4e19-b3c3-d307ec619e95")).Return(&asfmodels.Metadata{
+					FQName: []string{"default-domain",
+						"ctest-FloatingipBasicTestSanity-99684235",
+						"5c5829af-8331-4e19-b3c3-d307ec619e95"}},
+					nil,
+				)
 			},
 			expected: loadFloatingipResponse(t, createDirectory+"create_fip_response.json"),
 		},
@@ -84,10 +103,6 @@ func TestFloatingip_Create(t *testing.T) {
 					&services.GetFloatingIPRequest{
 						ID: "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
 					}).Return(loadGetFloatingIPResponse(t, readDirectory+"get_floating-ip_response.json"), nil)
-
-				fqNameToID.EXPECT().FQNameToID(gomock.Any(),
-					loadFQNameToIDRequest(t, readDirectory+"network_fqname-to-id_request.json"),
-				).Return(loadFQNameToIDResponse(t, readDirectory+"network_fqname-to-id_response.json"), nil)
 			},
 			expected: loadFloatingipResponse(t, readDirectory+"read_fip_response.json"),
 		},
@@ -98,15 +113,6 @@ func TestFloatingip_Create(t *testing.T) {
 			},
 			request: loadNeutronRequest(t, updateDirectory+"update_fip.json"),
 			given: func() {
-				idToFQName.EXPECT().IDToFQName(gomock.Any(), gomock.Any()).Return(
-					&services.IDToFQNameResponse{
-						FQName: []string{
-							"default-domain",
-							"ctest-FloatingipBasicTestSanity-99684235",
-							"5c5829af-8331-4e19-b3c3-d307ec619e95",
-						},
-					}, nil)
-
 				read.EXPECT().GetVirtualMachineInterface(gomock.Any(), &services.GetVirtualMachineInterfaceRequest{
 					ID: "5c5829af-8331-4e19-b3c3-d307ec619e95",
 				}).Return(loadVirtualMachineInterfaceResponse(t, updateDirectory+"get_vmi_response.json"), nil)
@@ -123,9 +129,6 @@ func TestFloatingip_Create(t *testing.T) {
 					ID: "5c5829af-8331-4e19-b3c3-d307ec619e95",
 				}).Return(loadVirtualMachineInterfaceResponse(t, updateDirectory+"get_vmi_response.json"), nil)
 
-				fqNameToID.EXPECT().FQNameToID(gomock.Any(),
-					loadFQNameToIDRequest(t, updateDirectory+"network_fqname-to-id_request.json"),
-				).Return(loadFQNameToIDResponse(t, updateDirectory+"network_fqname-to-id_response.json"), nil)
 			},
 			expected: loadFloatingipResponse(t, updateDirectory+"update_fip_response.json"),
 		},
@@ -136,13 +139,11 @@ func TestFloatingip_Create(t *testing.T) {
 			ctx := context.Background()
 
 			rp := RequestParameters{
-				ReadService:       read,
-				WriteService:      write,
-				UserAgentKV:       nil,
-				IDToFQNameService: idToFQName,
-				FQNameToIDService: fqNameToID,
-				RequestContext:    tt.request.Context,
-				FieldMask:         tt.request.Data.FieldMask,
+				ReadService:    read,
+				WriteService:   write,
+				FQNameService:  FQNamePlugin,
+				RequestContext: tt.request.Context,
+				FieldMask:      tt.request.Data.FieldMask,
 			}
 
 			tt.run(ctx, t, rp)
@@ -235,16 +236,6 @@ func loadUpdateFloatingIPRequest(t *testing.T, path string) (r *services.UpdateF
 }
 
 func loadCreateFloatingIPResponse(t *testing.T, path string) (r *services.CreateFloatingIPResponse) {
-	require.NoError(t, fileutil.LoadFile(path, &r))
-	return r
-}
-
-func loadFQNameToIDRequest(t *testing.T, path string) (r *services.FQNameToIDRequest) {
-	require.NoError(t, fileutil.LoadFile(path, &r))
-	return r
-}
-
-func loadFQNameToIDResponse(t *testing.T, path string) (r *services.FQNameToIDResponse) {
 	require.NoError(t, fileutil.LoadFile(path, &r))
 	return r
 }

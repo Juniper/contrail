@@ -8,7 +8,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -23,8 +23,8 @@ const SetTagPath = "set-tag"
 // SetTagPlugin provides set-tag HTTP endpoint and GRPC service.
 type SetTagPlugin struct {
 	Service           Service
-	InTransactionDoer InTransactionDoer
-	MetadataGetter    baseservices.MetadataGetter
+	InTransactionDoer services.InTransactionDoer
+	MetadataGetter    services.MetadataGetter
 }
 
 // RegisterHTTPAPI registers the set-tag endpoint.
@@ -88,7 +88,7 @@ func (p *SetTagPlugin) SetTag(ctx context.Context, setTag *SetTagRequest) (*type
 		Data:      map[string]interface{}{"tag_refs": references.Unique()},
 		Kind:      obj.Kind(),
 		UUID:      obj.GetUUID(),
-		Operation: OperationUpdate,
+		Operation: services.OperationUpdate,
 	})
 	if err != nil {
 		return nil, err

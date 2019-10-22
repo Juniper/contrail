@@ -6,9 +6,12 @@ import (
 
 	asfetcd "github.com/Juniper/asf/pkg/etcd"
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfrbac "github.com/Juniper/asf/pkg/rbac"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	db "{{ dbImportPath }}"
 	etcd "{{ etcdImportPath }}"
 	models "{{ modelsImportPath }}"
+	rbac "{{ rbacImportPath }}"
 	services "{{ servicesImportPath }}"
 )
 
@@ -17,22 +20,18 @@ import (
 // It returns first service of the built service chain.
 // TODO(dfurman): return services.Service when ContrailService is split to plugins.
 func SetupServiceChain(
-	dbService *db.Service, ag services.AccessGetter, extraServices ...services.Service,
+	dbService *db.Service, ag asfrbac.AccessGetter, extraServices ...services.Service,
 ) (*services.ContrailService, error) {
 	tv, err := models.NewTypeValidatorWithFormat()
 	if err != nil {
 		return nil, errors.Wrap(err, "new type validator with format")
 	}
-
 	cs := &services.ContrailService{
-		BaseService:        services.BaseService{},
-		DBService:          dbService,
-		TypeValidator:      tv,
-		MetadataGetter:     dbService,
-		InTransactionDoer:  dbService,
-		IntPoolAllocator:   dbService,
-		RefRelaxer:         dbService,
-		UserAgentKVService: dbService,
+		BaseService:       services.BaseService{},
+		DBService:         dbService,
+		TypeValidator:     tv,
+		MetadataGetter:    dbService,
+		InTransactionDoer: dbService,
 	}
 
 	serviceChain := []services.Service{
@@ -42,20 +41,19 @@ func SetupServiceChain(
 			InTransactionDoer: dbService,
 		},
 		&services.SanitizerService{
-			MetadataGetter: dbService,
+			Sanitizer: asfservices.Sanitizer{MetadataGetter: dbService},
 		},
-		&services.RBACService{
-			ReadService:  dbService,
-			AccessGetter: ag,
-			AAAMode:      viper.GetString("aaa_mode"),
+		&rbac.RBACService{
+			Guard: asfrbac.Guard{
+				AccessGetter: ag,
+				AAAMode:      viper.GetString("aaa_mode"),
+			},
 		},
 		services.NewQuotaCheckerService(dbService),
 	}
-
 	serviceChain = append(serviceChain, extraServices...)
 
 	if viper.GetBool("server.notify_etcd") {
-		// TODO(Michał): Make the codec configurable
 		en, enErr := etcd.NewNotifierService(viper.GetString(asfetcd.ETCDPathVK), asfmodels.JSONCodec)
 		if enErr != nil {
 			return nil, errors.Wrap(enErr, "new notifier service")
