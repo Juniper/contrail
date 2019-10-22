@@ -6,13 +6,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/Juniper/asf/pkg/db"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/asf/pkg/logutil"
 )
 
 // PostgresWatcher allows subscribing to PostgreSQL logical replication messages.
@@ -39,7 +38,7 @@ type postgresWatcherConnection interface {
 	SendStatus(received, saved LSN) error
 	IsInRecovery(context.Context) (bool, error)
 
-	DumpSnapshot(ctx context.Context, snapshotName string) (basedb.DatabaseData, error)
+	DumpSnapshot(ctx context.Context, snapshotName string) (db.DatabaseData, error)
 }
 
 // NewPostgresWatcher creates new watcher and initializes its connections.
@@ -178,7 +177,7 @@ func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
 		return errors.Wrap(w.muteCancellationError(err), "dumping snapshot failed")
 	}
 
-	if err := dumpData.ForEachRow(func(schemaID string, row basedb.RowData) error {
+	if err := dumpData.ForEachRow(func(schemaID string, row db.RowData) error {
 		return w.consumer.Handle(
 			ctx, []Change{change{kind: schemaID, data: row, pk: row.PK(), operation: CreateOperation}},
 		)

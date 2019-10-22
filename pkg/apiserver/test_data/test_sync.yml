@@ -278,8 +278,7 @@ workflow:
   expect:
     message:
       $contains: "failed to retrieve object for event at index: 0, operation: 'DELETE', kind 'project', uuid 'does_not_exists':
-        error getting type for provided UUID: does_not_exists:
-         failed to retrieve metadata for UUID does_not_exists: rpc error: code = NotFound desc = not found"
+        error getting type for provided UUID: does_not_exists:"
 
 - name: Try to create project with invalid parent UUID
   request:

@@ -9,12 +9,13 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 func TestHomepageResources(t *testing.T) {
@@ -61,29 +62,19 @@ func TestHomepageResources(t *testing.T) {
 					"method": "POST",
 				},
 			},
-			link(addr, "action", "POST", services.SyncPath),
-			link(addr, "action", "POST", services.UserAgentKVPath),
-			link(addr, "action", "POST", services.RefRelaxForDeletePath),
+			link(addr, "action", "POST", asfservices.SyncPath),
+			link(addr, "action", "POST", asfservices.UserAgentKVPath),
+			link(addr, "action", "POST", asfservices.RefRelaxForDeletePath),
 			link(addr, "action", "POST", services.PropCollectionUpdatePath),
 			link(addr, "action", "POST", services.SetTagPath),
 			link(addr, "action", "POST", services.ChownPath),
-			link(addr, "action", "GET", services.IntPoolPath),
-			link(addr, "action", "POST", services.IntPoolPath),
-			link(addr, "action", "DELETE", services.IntPoolPath),
-			link(addr, "action", "POST", services.IntPoolsPath),
-			link(addr, "action", "DELETE", services.IntPoolsPath),
-			link(addr, "action", "GET", services.ObjPerms),
+			link(addr, "action", "GET", asfservices.IntPoolPath),
+			link(addr, "action", "POST", asfservices.IntPoolPath),
+			link(addr, "action", "DELETE", asfservices.IntPoolPath),
+			link(addr, "action", "POST", asfservices.IntPoolsPath),
+			link(addr, "action", "DELETE", asfservices.IntPoolsPath),
+			link(addr, "action", "GET", asfservices.ObjPermsPath),
 
-			link(addr, "action", "POST", services.UploadCloudKeysPath),
-
-			map[string]interface{}{
-				"link": map[string]interface{}{
-					"href":   resolve(addr, proxy.DefaultPath),
-					"name":   proxy.DefaultPath,
-					"rel":    "proxy",
-					"method": nil,
-				},
-			},
 			// static proxy
 			map[string]interface{}{
 				"link": map[string]interface{}{
@@ -149,13 +140,6 @@ func TestRoutesAreRegistered(t *testing.T) {
 		}
 	}
 
-	// TODO(Witaut): Use staticProxyPlugin directly instead.
-	{
-		proxyPath := proxy.ConfigFromViper().Path
-
-		routes.add(resolve(proxyPath))
-		routes.add(resolve(proxyPath, "*"))
-	}
 	for _, r := range []string{
 		"/",
 	} {
@@ -165,9 +149,14 @@ func TestRoutesAreRegistered(t *testing.T) {
 	for _, plugin := range append([]apiserver.APIPlugin{
 		&cache.DB{},
 		&keystone.Keystone{},
-		services.UploadCloudKeysPlugin{},
 		&services.ContrailService{},
-	}, services.ContrailPlugins(nil, nil, nil, nil)...) {
+		&asfservices.FQNameTranslationPlugin{},
+		&asfservices.ObjPermsPlugin{},
+		&asfservices.IntPoolPlugin{},
+		&asfservices.RefUpdatePlugin{},
+		&asfservices.RefRelaxPlugin{},
+		&asfservices.UserAgentKVPlugin{},
+	}, services.ContrailPlugins(nil, nil, nil)...) {
 		plugin.RegisterHTTPAPI(&routes)
 	}
 

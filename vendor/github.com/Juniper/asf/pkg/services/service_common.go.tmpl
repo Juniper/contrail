@@ -2,44 +2,23 @@ package services
 
 import (
 	"context"
-	"strings"
 	"fmt"
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Juniper/asf/pkg/apiserver"
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/gogo/protobuf/types"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
-	uuid "github.com/satori/go.uuid"
 	models "{{ modelsImportPath }}"
 )
 
-// TODO(dfurman): move non-template code out of template
 // TODO(dfurman): write tests
-
-//API Path definitions.
-const (
-	SyncPath                 = "sync"
-	FQNameToIDPath           = "fqname-to-id"
-	IDToFQNamePath           = "id-to-fqname"
-	UserAgentKVPath          = "useragent-kv"
-	RefUpdatePath            = "ref-update"
-	RefRelaxForDeletePath    = "ref-relax-for-delete"
-	IntPoolPath              = "int-pool"
-	IntPoolsPath             = "int-pools"
-	ObjPerms                 = "obj-perms"
-)
-
-// Reference is a generic reference that can be retrieved from ref update event.
-type Reference = asfmodels.Reference
 
 // Chain setup chain of services.
 func Chain(services ...Service) {
@@ -53,64 +32,10 @@ func Chain(services ...Service) {
 	}
 }
 
-// BaseService is a service that is a link in service chain and has implemented
-// all Service methods as noops. Can be embedded in struct to create new service.
-type BaseService struct {
-	next Service
-}
-
-// Next gets next service to call in service chain.
-func (service *BaseService) Next() Service {
-	return service.next
-}
-
-// SetNext sets next service in service chain.
-func (service *BaseService) SetNext(next Service) {
-	service.next = next
-}
-
 // InternalContextWriteServiceWrapper is a WriteService that marks it requests
 // with internal request context.
 type InternalContextWriteServiceWrapper struct {
 	WriteService
-}
-
-// InTransactionDoer executes do function atomically.
-type InTransactionDoer interface {
-	DoInTransaction(ctx context.Context, do func(context.Context) error) error
-}
-
-// NoTransaction executes do function non-atomically.
-var NoTransaction = noTransaction{}
-
-type noTransaction struct{}
-
-// DoInTransaction just runs do.
-func (noTransaction) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
-	return do(ctx)
-}
-
-// IntPoolAllocator (de)allocates integers in an integer pool.
-type IntPoolAllocator interface {
-	CreateIntPool(context.Context, string, int64, int64) error
-	GetIntOwner(context.Context, string, int64) (string, error)
-	DeleteIntPool(context.Context, string) error
-	AllocateInt(context.Context, string, string) (int64, error)
-	SetInt(context.Context, string, int64, string) error
-	DeallocateInt(context.Context, string, int64) error
-}
-
-// RefRelaxer makes references not prevent the referenced resource from being deleted.
-type RefRelaxer interface {
-	RelaxRef(ctx context.Context, request *RelaxRefRequest) error
-}
-
-// UserAgentKVService is a service which manages operations on key-value store
-type UserAgentKVService interface {
-	StoreKeyValue(ctx context.Context, key string, value string) error
-	RetrieveValues(ctx context.Context, keys []string) (vals []string, err error)
-	DeleteKey(ctx context.Context, key string) error
-	RetrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error)
 }
 
 // RefUpdateToUpdateService is a service that promotes CreateRef and DeleteRef
@@ -120,7 +45,7 @@ type RefUpdateToUpdateService struct {
 	BaseService
 
 	ReadService       ReadService
-	InTransactionDoer InTransactionDoer
+	InTransactionDoer services.InTransactionDoer
 }
 
 //EventProcessor can handle events on generic way.
@@ -172,7 +97,7 @@ func (p *FQNameCache) Process(ctx context.Context, event *Event) (*Event, error)
 
 func (p *FQNameCache) updateFQNameCache(event *Event) {
 	switch request := event.Unwrap().(type) {
-	case ResourceEvent:
+	case services.ResourceEvent:
 		r := request.GetResource()
 		p.idToFQName[r.GetUUID()] = r.GetFQName()
 	case DeleteRequest:
@@ -197,7 +122,7 @@ func (p *FQNameCache) sanitizeCreateRefEvent(event *Event) error {
 // EventListProcessor processes event lists in transaction.
 type EventListProcessor struct {
 	EventProcessor
-	InTransactionDoer InTransactionDoer
+	InTransactionDoer services.InTransactionDoer
 }
 
 // ProcessList processes list of events.
@@ -225,398 +150,28 @@ type ContrailService struct {
 	BaseService
 
 	DBService          ReadService
-	MetadataGetter     baseservices.MetadataGetter
+	MetadataGetter     services.MetadataGetter
 	TypeValidator      *models.TypeValidator
-	InTransactionDoer  InTransactionDoer
-	IntPoolAllocator   IntPoolAllocator
-	RefRelaxer         RefRelaxer
-	UserAgentKVService UserAgentKVService
+	InTransactionDoer  services.InTransactionDoer
 }
 
-// RefUpdate represents ref-update input data.
-type RefUpdate struct {
-	Operation RefOperation           `json:"operation"`
-	Type      string                 `json:"type"`
-	UUID      string                 `json:"uuid"`
-	RefType   string                 `json:"ref-type"`
-	RefUUID   string                 `json:"ref-uuid"`
-	RefFQName []string               `json:"ref-fq-name"`
-	Attr      map[string]interface{} `json:"attr,omitempty"`
-}
-
-func (r *RefUpdate) validate() error {
-	if r.UUID == "" || r.Type == "" || r.RefType == "" || r.Operation == "" {
-		return errutil.ErrorBadRequestf(
-			"uuid/type/ref-type/operation is null: %s, %s, %s, %s",
-			r.UUID, r.Type, r.RefType, r.Operation,
-		)
-	}
-
-	if r.Operation != RefOperationAdd && r.Operation != RefOperationDelete {
-		return errutil.ErrorBadRequestf("operation should be ADD or DELETE, was %s", r.Operation)
-	}
-
-	return nil
-}
-
-// RESTRefUpdate handles a ref-update request.
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
-	var data RefUpdate
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	if err := data.validate(); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	ctx := c.Request().Context()
-	if data.RefUUID == "" {
-		m, err := service.MetadataGetter.GetMetadata(ctx, asfmodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
-		if err != nil {
-			return errutil.ToHTTPError(errutil.ErrorBadRequestf("error resolving ref-uuid using ref-fq-name: %v", err))
-		}
-		data.RefUUID = m.UUID
-	}
-
+// UpdateRef performs a RefUpdate.
+func (service *ContrailService) UpdateRef(ctx context.Context, req *services.RefUpdate) error {
 	e, err := NewRefUpdateEvent(RefUpdateOption{
-		ReferenceType: asfmodels.ReferenceKind(data.Type, data.RefType),
-		FromUUID:      data.UUID,
-		ToUUID:        data.RefUUID,
-		Operation:     data.Operation,
-		Attr:          data.Attr,
+		ReferenceType: asfmodels.ReferenceKind(req.Type, req.RefType),
+		FromUUID:      req.UUID,
+		ToUUID:        req.RefUUID,
+		Operation:     req.Operation,
+		Attr:          req.Attr,
 	})
 	if err != nil {
-		return errutil.ToHTTPError(errutil.ErrorBadRequest(err.Error()))
+		return errutil.ErrorBadRequest(err.Error())
 	}
-	if _, err = e.Process(ctx, service); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
+	_, err = e.Process(ctx, service)
+	return err
 }
-
-// RESTRefRelaxForDelete handles a ref-relax-for-delete request.
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
-	var data RelaxRefRequest
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	if err := validateRelaxRefRequest(&data); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	response, err := service.RelaxRef(c.Request().Context(), &data)
-	if err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	return c.JSON(http.StatusOK, response)
-}
-
-func validateRelaxRefRequest(r *RelaxRefRequest) error {
-	if r.UUID == "" || r.RefUUID == "" {
-		return errutil.ErrorBadRequestf(
-			"bad request: both uuid and ref-uuid should be specified: %s, %s", r.UUID, r.RefUUID)
-	}
-
-	return nil
-}
-
-// RelaxRef makes a reference not prevent the referenced resource from being deleted.
-func (service *ContrailService) RelaxRef(ctx context.Context, request *RelaxRefRequest) (*RelaxRefResponse, error) {
-	err := service.RefRelaxer.RelaxRef(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return &RelaxRefResponse{UUID: request.UUID}, nil
-}
-
-// RESTCreateIntPool handles a POST on int-pools requests
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
-	ctx := c.Request().Context()
-	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
-	}
-
-	data := &CreateIntPoolRequest{}
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	if _, err := service.CreateIntPool(ctx, data); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{})
-}
-
-// RESTGetIntOwner handles a GET on int-owner requests
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
-	ctx := c.Request().Context()
-	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
-	}
-	aValue := c.QueryParam("value")
-	if aValue == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid request: missing value for getting int owner")
-	}
-	value, err := strconv.Atoi(aValue)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid request: invalid value (%v) "+
-			"for getting int owner: %v", aValue, err))
-	}
-	if value < 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid request: invalid value (%v) "+
-			"for getting int owner", value))
-	}
-	pool := c.QueryParam("pool")
-	if pool == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "invalid request: missing pool name for getting int owner")
-	}
-	response, err := service.GetIntOwner(ctx, &GetIntOwnerRequest{Pool: pool, Value: int64(value)})
-	if err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	return c.JSON(http.StatusOK, response)
-}
-
-// RESTDeleteIntPool handles a POST on int-pools requests
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTDeleteIntPool(c echo.Context) error {
-	ctx := c.Request().Context()
-	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
-	}
-
-	data := &DeleteIntPoolRequest{}
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	if _, err := service.DeleteIntPool(ctx, data); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{})
-}
-
-// CreateIntPool creates empty int pool
-func (service *ContrailService) CreateIntPool(
-	ctx context.Context, r *CreateIntPoolRequest,
-) (*types.Empty, error) {
-	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		return service.IntPoolAllocator.CreateIntPool(ctx, r.Pool, r.Start, r.End)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &types.Empty{}, nil
-}
-
-// GetIntOwner returns owner of allocated int in given int-pool.
-func (service *ContrailService) GetIntOwner(
-	ctx context.Context, request *GetIntOwnerRequest,
-) (*GetIntOwnerResponse, error) {
-	if request.GetPool() == "" {
-		return nil, errutil.ErrorBadRequest("Missing pool name for getting int owner")
-	}
-
-	var err error
-	response := &GetIntOwnerResponse{}
-	err = service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		var owner string
-		owner, err = service.IntPoolAllocator.GetIntOwner(ctx, request.GetPool(), request.GetValue())
-		if err != nil {
-			return err
-		}
-		response.Owner = owner
-		return nil
-	})
-
-	if err != nil && !errutil.IsNotFound(err) {
-		return nil, errutil.ErrorBadRequestf("Failed to fetch int owner: %s", err)
-	}
-	return response, nil
-}
-
-// DeleteIntPool deletes int pool
-func (service *ContrailService) DeleteIntPool(
-	ctx context.Context, r *DeleteIntPoolRequest,
-) (*types.Empty, error) {
-	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		return service.IntPoolAllocator.DeleteIntPool(ctx, r.Pool)
-	}); err != nil {
-		return nil, err
-	}
-	return &types.Empty{}, nil
-}
-
-// IntPoolAllocationBody represents int-pool input data.
-type IntPoolAllocationBody struct {
-	Pool  string `json:"pool"`
-	Value *int64 `json:"value,omitempty"`
-	Owner string `json:"owner,omitempty"`
-}
-
-// RESTIntPoolAllocate handles a POST request on int-pool.
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
-	ctx := c.Request().Context()
-	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
-	}
-	var allocReq IntPoolAllocationBody
-	if err := c.Bind(&allocReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-	var allocatedVal int64
-	if allocReq.Value == nil {
-		resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: allocReq.Pool, Owner: allocReq.Owner})
-		if err != nil {
-			return errutil.ToHTTPError(err)
-		}
-		allocatedVal = resp.Value
-	} else {
-		if _, err := service.SetInt(
-			ctx,
-			&SetIntRequest{Pool: allocReq.Pool, Value: *allocReq.Value, Owner: allocReq.Owner},
-		); err != nil {
-			return errutil.ToHTTPError(err)
-		}
-		allocatedVal = *allocReq.Value
-	}
-
-	return c.JSON(http.StatusOK, map[string]interface{}{"value": allocatedVal})
-}
-
-// AllocateInt allocates int in given int-pool.
-func (service *ContrailService) AllocateInt(
-	ctx context.Context, request *AllocateIntRequest,
-) (*AllocateIntResponse, error) {
-	var v int64
-	if request.GetPool() == "" {
-		err := errutil.ErrorBadRequest("Missing pool name for int-pool allocation")
-		return nil, err
-	}
-	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		var err error
-		if v, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool(), request.GetOwner()); err != nil {
-			return errutil.ErrorBadRequestf("Failed to allocate next int: %s", err)
-		}
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return &AllocateIntResponse{Value: v}, nil
-}
-
-// SetInt sets int in given int-pool.
-func (service *ContrailService) SetInt(ctx context.Context, request *SetIntRequest) (*types.Empty, error) {
-	if request.GetPool() == "" {
-		err := errutil.ErrorBadRequest("Missing pool name for int-pool allocation")
-		return nil, err
-	}
-	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		if err := service.IntPoolAllocator.SetInt(
-			ctx, request.GetPool(), request.GetValue(), request.GetOwner(),
-		); err != nil {
-			return errutil.ErrorBadRequestf("Failed to allocate specified int: %s", err)
-		}
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return &types.Empty{}, nil
-}
-
-// RESTIntPoolDeallocate handles a DELETE request on int-pool.
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
-	ctx := c.Request().Context()
-	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
-	}
-	var allocReq IntPoolAllocationBody
-	if err := c.Bind(&allocReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-	if allocReq.Value == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "missing value for int-pool deallocation")
-	}
-	if _, err := service.DeallocateInt(
-		ctx, &DeallocateIntRequest{Pool: allocReq.Pool, Value: *allocReq.Value}); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-	return c.NoContent(http.StatusOK)
-}
-
-// DeallocateInt deallocates int in given int-pool.
-func (service *ContrailService) DeallocateInt(
-	ctx context.Context, request *DeallocateIntRequest,
-) (*types.Empty, error) {
-	if request.GetPool() == "" {
-		return nil, errutil.ErrorBadRequest("missing pool name for int-pool allocation")
-	}
-	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		if err := service.IntPoolAllocator.DeallocateInt(ctx, request.GetPool(), request.GetValue()); err != nil {
-			return errutil.ErrorBadRequest(err.Error())
-		}
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-	return &types.Empty{}, nil
-}
-
-// GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
-func GetRequestSchema(r *http.Request) string {
-	if r.TLS != nil {
-		return "https://"
-	}
-	return "http://"
-}
-
-var requestIDKey interface{} = "requestIDKey"
-
-// WithRequestID assign new request_id to context if there is no one in.
-func WithRequestID(ctx context.Context, requestID string) context.Context {
-	if ctx.Value(requestIDKey) != nil {
-		return ctx
-	}
-
-	if requestID == "" {
-		requestID = "req-" + uuid.NewV4().String()
-	}
-
-	return context.WithValue(ctx, requestIDKey, requestID)
-}
-
-// GetRequestID retrieves request id from context.
-func GetRequestID(ctx context.Context) string {
-	value := ctx.Value(requestIDKey)
-	if value == nil {
-		return "NO-REQUESTID"
-	}
-
-	requestID, ok := value.(string)
-	if !ok {
-		return "NO-REQUESTID"
-	}
-
-	return requestID
-}
-
-// RESTSync
 
 // RESTSync handles Sync API request.
-// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTSync(c echo.Context) error {
 	events := &EventList{}
 	if err := c.Bind(events); err != nil {
@@ -641,9 +196,9 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 
 func sortEvents(ctx context.Context, service *ContrailService, events *EventList) (*EventList, error) {
 	switch events.OperationType() {
-	case OperationDelete:
+	case services.OperationDelete:
 		return sortDelete(ctx, service, events)
-	case OperationCreate, OperationMixed:
+	case services.OperationCreate, services.OperationMixed:
 		return sortMixed(events)
 	default:
 		return events, nil
@@ -663,14 +218,14 @@ func getRefMapFromObjects(
 ) (map[*Event]asfmodels.References, error) {
 	refMap := make(map[*Event]asfmodels.References)
 	for i, ev := range events {
-		obj, _, err := GetObjectAndType(ctx, ev.GetUUID(), service, service)
+		obj, _, err := GetObjectAndType(ctx, ev.GetUUID(), service.MetadataGetter, service)
 		if err != nil {
 			return nil, errors.Wrapf(err,
 				"failed to retrieve object for event at index: %v, operation: '%v', kind '%v', uuid '%v'",
 				i, ev.Operation(), ev.Kind(), ev.GetUUID())
 		}
 		refMap[ev] = obj.GetReferences()
-		if parentRef := extractParentAsRef(obj); parentRef != nil {
+		if parentRef := asfmodels.ExtractParent(obj); parentRef != nil {
 			refMap[ev] = append(refMap[ev], parentRef)
 		}
 	}
@@ -681,19 +236,19 @@ func getRefMapFromObjects(
 func GetObjectAndType(
 	ctx context.Context,
 	uuid string,
-	idToFQNameService IDToFQNameService,
+	mg services.MetadataGetter,
 	readService ReadService,
 ) (asfmodels.Object, string, error) {
-	idResp, err := idToFQNameService.IDToFQName(ctx, &IDToFQNameRequest{UUID: uuid})
+	m, err := mg.GetMetadata(ctx, asfmodels.UUIDMetadata(uuid))
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "error getting type for provided UUID: %v", uuid)
 	}
 
-	o, err := GetObject(ctx, readService, idResp.Type, uuid)
+	o, err := GetObject(ctx, readService, m.Type, uuid)
 	if err != nil {
-		return nil, "", errors.Wrapf(err, "error getting %v with UUID = %v", idResp.Type, uuid)
+		return nil, "", errors.Wrapf(err, "error getting %v with UUID = %v", m.Type, uuid)
 	}
-	return o, idResp.Type, nil
+	return o, m.Type, nil
 }
 
 func syncSort(events *EventList, refMap map[*Event]asfmodels.References) (*EventList, error) {
@@ -736,11 +291,11 @@ func (e *EventList) separateListByOperation() (*EventList, *EventList, *EventLis
 	createList, updateList, deleteList := &EventList{}, &EventList{}, &EventList{}
 	for _, event := range e.Events {
 		switch event.Operation() {
-		case OperationCreate:
+		case services.OperationCreate:
 			createList.Events = append(createList.Events, event)
-		case OperationUpdate:
+		case services.OperationUpdate:
 			updateList.Events = append(updateList.Events, event)
-		case OperationDelete:
+		case services.OperationDelete:
 			deleteList.Events = append(deleteList.Events, event)
 		}
 	}
@@ -753,15 +308,6 @@ func getRefMapFromEvents(events []*Event) map[*Event]asfmodels.References {
 		refMap[ev] = ev.getReferences()
 	}
 	return refMap
-}
-
-
-// RESTGetObjPerms
-
-// RESTGetObjPerms handles GET operation of obj-perms request.
-// TODO(dfurman): it should be ASF plugin
-func (service *ContrailService) RESTGetObjPerms(c echo.Context) error {
-	return c.JSON(http.StatusOK, auth.GetIdentity(c.Request().Context()).GetObjPerms())
 }
 
 // RegisterHTTPAPI registers REST API and action endpoints.
@@ -803,31 +349,12 @@ func (service *ContrailService) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 
 {% endif %}{% endfor %}
 
-	// TODO(dfurman): move registration of those endpoints to external plugins
-	r.POST(SyncPath, service.RESTSync)
-	r.POST(FQNameToIDPath, service.RESTFQNameToUUID, apiserver.WithHomepageName("name-to-id"))
-	r.POST(IDToFQNamePath, service.RESTIDToFQName, apiserver.WithHomepageName("id-to-name"))
-	r.POST(UserAgentKVPath, service.RESTUserAgentKV)
-	r.POST(RefUpdatePath, service.RESTRefUpdate)
-	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
-	r.GET(IntPoolPath, service.RESTGetIntOwner)
-	r.POST(IntPoolPath, service.RESTIntPoolAllocate)
-	r.DELETE(IntPoolPath, service.RESTIntPoolDeallocate)
-	r.POST(IntPoolsPath, service.RESTCreateIntPool)
-	r.DELETE(IntPoolsPath, service.RESTDeleteIntPool)
-	r.GET(ObjPerms, service.RESTGetObjPerms)
+	r.POST(services.SyncPath, service.RESTSync)
 }
 
 // RegisterGRPCAPI registers GRPC services.
 func (service *ContrailService) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 	r.RegisterService(&_ContrailService_serviceDesc, service)
-
-	// TODO(dfurman): move registration of those endpoints to external plugins
-	r.RegisterService(&_IPAM_serviceDesc, service)
-	r.RegisterService(&_RefRelax_serviceDesc, service)
-	r.RegisterService(&_FQNameToID_serviceDesc, service)
-	r.RegisterService(&_IDToFQName_serviceDesc, service)
-	r.RegisterService(&_UserAgentKV_serviceDesc, service)
 }
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.
