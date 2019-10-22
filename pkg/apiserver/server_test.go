@@ -4,14 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfservices "github.com/Juniper/asf/pkg/services"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -72,7 +72,7 @@ func TestHTTPCRUD(t *testing.T) {
 	assert.NoError(t, err)
 
 	response, err := hc.ListProject(ctx, &services.ListProjectRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			Limit: 1,
 		},
 	})

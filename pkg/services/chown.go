@@ -7,13 +7,13 @@ import (
 
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -24,7 +24,7 @@ const ChownPath = "chown"
 type ChownPlugin struct {
 	Service           Service
 	InTransactionDoer InTransactionDoer
-	MetadataGetter    baseservices.MetadataGetter
+	MetadataGetter    asfservices.MetadataGetter
 }
 
 // RegisterHTTPAPI registers the chown endpoint.
@@ -73,7 +73,7 @@ func (p *ChownPlugin) Chown(ctx context.Context, request *ChownRequest) (*types.
 		event, err := NewEvent(EventOption{
 			UUID:      request.GetUUID(),
 			Kind:      metadata.Type,
-			Operation: OperationUpdate,
+			Operation: asfservices.OperationUpdate,
 			Data: map[string]interface{}{
 				"perms2": map[string]interface{}{
 					"owner": request.GetOwner(),

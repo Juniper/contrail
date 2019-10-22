@@ -2,11 +2,9 @@ syntax = "proto3";
 package services;
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
-import "google/protobuf/wrappers.proto";
 
-import "pkg/services/baseservices/base.proto";
+import "pkg/services/base.proto";
 import "{{ modelsImportPath }}/gen_model.proto";
 
 option (gogoproto.goproto_enum_prefix_all) = false;
@@ -67,7 +65,7 @@ message Delete{{ schema.JSONSchema.GoName }}Response {
 }
 
 message List{{ schema.JSONSchema.GoName }}Request {
-	github.com.Juniper.asf.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
+	github.com.Juniper.asf.pkg.services.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
 }
 
 message List{{ schema.JSONSchema.GoName }}Response {
@@ -122,67 +120,6 @@ message Event {
 	}
 }
 
-service RefRelax {
-	rpc RelaxRef (RelaxRefRequest) returns (RelaxRefResponse);
-}
-
-message RelaxRefRequest {
-	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
-	string RefUUID = 2 [(gogoproto.customname) = "RefUUID",(gogoproto.jsontag) = "ref-uuid"];
-}
-
-message RelaxRefResponse {
-	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
-}
-
-service IPAM {
-	rpc CreateIntPool (CreateIntPoolRequest) returns (google.protobuf.Empty);
-	rpc GetIntOwner (GetIntOwnerRequest) returns (GetIntOwnerResponse);
-	rpc DeleteIntPool (DeleteIntPoolRequest) returns (google.protobuf.Empty);
-	rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
-	rpc SetInt (SetIntRequest) returns (google.protobuf.Empty);
-	rpc DeallocateInt (DeallocateIntRequest) returns (google.protobuf.Empty);
-}
-
-message GetIntOwnerRequest {
-	string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
-	int64 Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
-}
-
-message GetIntOwnerResponse {
-	string Owner = 1 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
-}
-
-message CreateIntPoolRequest {
-	string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
-	int64 Start = 2 [(gogoproto.customname) = "Start",(gogoproto.jsontag) = "start"];
-	int64 End = 3 [(gogoproto.customname) = "End",(gogoproto.jsontag) = "end"];
-}
-
-message DeleteIntPoolRequest {
-	string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
-}
-
-message AllocateIntRequest {
-	string Pool = 1 [(gogoproto.customname) = "Pool"];
-	string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
-}
-
-message AllocateIntResponse {
-	int64 Value = 1 [(gogoproto.customname) = "Value"];
-}
-
-message SetIntRequest {
-	string Pool = 1 [(gogoproto.customname) = "Pool"];
-	int64 Value = 2 [(gogoproto.customname) = "Value"];
-	string Owner = 3 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
-}
-
-message DeallocateIntRequest {
-	string Pool = 1 [(gogoproto.customname) = "Pool"];
-	int64 Value = 2 [(gogoproto.customname) = "Value"];
-}
-
 service Watch {
 	rpc Watch(stream WatchRequest) returns (stream WatchResponse) {}
 }
@@ -211,58 +148,4 @@ message WatchResponse {
 	bool canceled = 3;
 	string cancel_reason = 4;
 	repeated Event events = 5;
-}
-
-service UserAgentKV {
-	rpc StoreKeyValue(StoreKeyValueRequest) returns (google.protobuf.Empty);
-	rpc RetrieveValues(RetrieveValuesRequest) returns (RetrieveValuesResponse);
-	rpc RetrieveKVPs(google.protobuf.Empty) returns (RetrieveKVPsResponse);
-	rpc DeleteKey(DeleteKeyRequest) returns (google.protobuf.Empty);
-}
-
-message StoreKeyValueRequest {
-	string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
-	string Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
-}
-
-message RetrieveValuesRequest {
-	repeated string Keys = 1 [(gogoproto.customname) = "Keys",(gogoproto.jsontag) = "key"];
-}
-
-message RetrieveValuesResponse {
-	repeated string Values = 1 [(gogoproto.customname) = "Values",(gogoproto.jsontag) = "value"];
-}
-
-message RetrieveKVPsResponse {
-	repeated models.KeyValuePair value = 1 [(gogoproto.customname) = "KeyValuePairs",(gogoproto.jsontag) = "value"];
-}
-
-message DeleteKeyRequest {
-	string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
-}
-
-service FQNameToID {
-	rpc FQNameToID(FQNameToIDRequest) returns (FQNameToIDResponse);
-}
-
-message FQNameToIDRequest {
-	repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
-	string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
-}
-
-message FQNameToIDResponse {
-	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
-}
-
-service IDToFQName {
-	rpc IDToFQName(IDToFQNameRequest) returns (IDToFQNameResponse);
-}
-
-message IDToFQNameRequest {
-	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
-}
-
-message IDToFQNameResponse {
-	repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
-	string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
 }

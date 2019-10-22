@@ -20,6 +20,7 @@ type generateFlags struct {
 	ETCDImportPath     string
 	ModelsImportPath   string
 	ServicesImportPath string
+	RBACImportPath     string
 	SchemaOutputPath   string
 	OpenAPIOutputPath  string
 	NoRegenerate       bool
@@ -58,6 +59,10 @@ func init() {
 	generateCmd.Flags().StringVarP(
 		&flags.ServicesImportPath, "services-import-path", "", "",
 		"Generated services import path, e.g. github.com/client/repository/pkg/services",
+	)
+	generateCmd.Flags().StringVarP(
+		&flags.RBACImportPath, "rbac-import-path", "", "",
+		"Generated rbac import path, e.g. github.com/client/repository/pkg/rbac",
 	)
 	generateCmd.Flags().StringVarP(&flags.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
 	generateCmd.Flags().StringVarP(&flags.OpenAPIOutputPath, "openapi-output", "", "", "OpenAPI Output path")
@@ -128,6 +133,7 @@ func generateCode() error {
 		ETCDImportPath:     flags.ETCDImportPath,
 		ModelsImportPath:   flags.ModelsImportPath,
 		ServicesImportPath: flags.ServicesImportPath,
+		RBACImportPath:     flags.RBACImportPath,
 		NoRegenerate:       flags.NoRegenerate,
 	}); err != nil {
 		return errors.Wrap(err, "generate files")
