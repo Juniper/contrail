@@ -3,7 +3,6 @@
 set -o errexit
 
 go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogofaster
-go install ./vendor/github.com/golang/dep/cmd/dep
 go install ./vendor/github.com/golang/mock/mockgen
 go install ./vendor/github.com/mattn/goveralls
 go install ./vendor/github.com/mitchellh/gox
