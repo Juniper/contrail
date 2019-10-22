@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // TODO(dfurman): move non-template code out of template
@@ -24,11 +25,11 @@ import (
 type SerializedObject struct {
 	data  []byte
 	obj   proto.Message
-	codec models.Codec
+	codec Codec
 }
 
 // NewSerializedObject constructs serialized object.
-func NewSerializedObject(d []byte, o proto.Message, c models.Codec) *SerializedObject {
+func NewSerializedObject(d []byte, o proto.Message, c Codec) *SerializedObject {
 	return &SerializedObject{
 		data:  d,
 		obj:   o,
@@ -54,6 +55,85 @@ func (s *SerializedObject) Map(f func()) error {
 	s.data, err = s.codec.Encode(s.obj)
 	return err
 }
+
+// CODEC
+
+// Codec can encode objects and update encoded data with new data object.
+type Codec interface {
+	Encode(obj proto.Message) ([]byte, error)
+	Decode(data []byte, obj proto.Message) error
+	Key() string
+}
+
+// JSONCodec is Codec which uses JSON format for storing data.
+var JSONCodec Codec = jsonCodec{}
+
+type jsonCodec struct{}
+
+// Encode serializes data to JSON format.
+func (j jsonCodec) Encode(obj proto.Message) ([]byte, error) {
+	return json.Marshal(obj)
+}
+
+// Decode serializes data to JSON format.
+func (j jsonCodec) Decode(data []byte, obj proto.Message) error {
+	return json.Unmarshal(data, obj)
+}
+
+// Key returns codec identifier.
+func (j jsonCodec) Key() string {
+	return "json"
+}
+
+// ProtoCodec is Codec which uses Proto format for storing data.
+var ProtoCodec Codec = protoCodec{}
+
+type protoCodec struct{}
+
+// Encode serializes data to Proto format.
+func (j protoCodec) Encode(obj proto.Message) ([]byte, error) {
+	return proto.Marshal(obj)
+}
+
+// Decode serializes data to Proto format.
+func (j protoCodec) Decode(data []byte, obj proto.Message) error {
+	if len(data) == 0 {
+		return nil
+	}
+	return proto.Unmarshal(data, obj)
+}
+
+// Key returns codec identifier.
+func (j protoCodec) Key() string {
+	return "proto"
+}
+
+// UpdateData deserializes oldData into same type as object provided in update,
+// applies an update and then serializes the result.
+func UpdateData(c Codec, oldData []byte, update basemodels.Object, fm types.FieldMask) ([]byte, error) {
+	if update == nil || len(fm.Paths) == 0 {
+		return oldData, nil
+	}
+	if len(oldData) == 0 {
+		return c.Encode(update)
+	}
+	oldObj := proto.Clone(update)
+	if err := c.Decode(oldData, oldObj); err != nil {
+		return nil, err
+	}
+
+	updateData := basemodels.ApplyFieldMask(update.ToMap(), fm)
+	output, ok := oldObj.(basemodels.Object)
+	if !ok {
+		return nil, errors.Errorf("proto.Clone returned bad object type - %T (library bug)", oldObj)
+	}
+	if err := output.ApplyMap(updateData); err != nil {
+		return nil, err
+	}
+	return c.Encode(output)
+}
+
+
 
 //Version is a model version.
 const Version = "1.0"
@@ -346,12 +426,12 @@ func (m *{{ schema.JSONSchema.GoName }}) SetHref(href string) {
 	m.Href = href
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetReferences() models.References {
+func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var refs models.References
+	var refs basemodels.References
 	{% for _, reference in schema.References %}
 	for _, ref := range m.{{ reference.GoName }}Refs {
 		refs = append(refs, ref)
@@ -369,19 +449,19 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveReferences() {
 	{%- endfor %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs models.References) {
+func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs basemodels.References) {
 	for _, ref := range m.GetTagRefs() {
 		refs = append(refs, ref)
 	}
 	return refs
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []models.Object {
+func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
 	{%- if schema.BackReferences|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var backRefs []models.Object
+	var backRefs []basemodels.Object
 	{%- for _, backref in schema.BackReferences %}
 	for _, backRef := range m.{{ backref.LinkTo.JSONSchema.GoName }}BackRefs {
 		backRefs = append(backRefs, backRef)
@@ -393,12 +473,12 @@ func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []models.Object {
 	{%- endif %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []models.Object {
+func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []basemodels.Object {
 	{%- if schema.Children|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var children []models.Object
+	var children []basemodels.Object
 	{% for _, reference in schema.Children %}
 	for _, child := range m.{{ reference.LinkTo.JSONSchema.GoName }}s {
 		children = append(children, child)
@@ -580,7 +660,7 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetToKind() st
 	return Kind{{ reference.GoName }}
 }
 
-func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetAttribute() models.RefAttribute {
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetAttribute() basemodels.RefAttribute {
 	{%- if reference.RefType %}
 	return r.GetAttr()
 	{%- else %}
@@ -607,7 +687,7 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(i inte
 	var err error
 
 	result := []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
-	if ok := models.ForEach(i, func(elem interface{}){
+	if ok := basemodels.ForEach(i, func(elem interface{}){
 		switch e := elem.(type) {
 			case map[string]interface{}:
 				uuid, uuidError := format.InterfaceToStringE(e["uuid"])
@@ -634,7 +714,7 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(i inte
 				result = append(result, &e)
 			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
 				result = append(result, e)
-			case models.Reference:
+			case basemodels.Reference:
 				result = append(
 					result,
 					&{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID: e.GetUUID(), To: e.GetTo()},
