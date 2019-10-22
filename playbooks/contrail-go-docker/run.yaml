@@ -30,14 +30,14 @@
         - name: Install development dependencies
           command: make deps
           retries: 3
-        - name: Check vendored dependencies
-          command: make check
         - name: Run the source code generator
           command: make generate
         - name: Reset databases with latest schema and load initial data
           command: make reset_db
         - name: Build the source code
           command: make build
+        - name: Check vendored dependencies
+          command: make check
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
         - name: Generate docker images (depends on the nightly job to have already pushed contrail-base:branch-latest image)
