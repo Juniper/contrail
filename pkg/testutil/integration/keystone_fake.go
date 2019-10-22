@@ -6,7 +6,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/labstack/echo"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
@@ -17,7 +16,7 @@ import (
 func NewKeystoneServerFake(t *testing.T, keystoneAuthURL, user, password string) *httptest.Server {
 	e := echo.New()
 
-	k, err := keystone.Init(nil)
+	k, err := keystone.Init()
 	if err != nil {
 		return nil
 	}
@@ -31,12 +30,9 @@ func NewKeystoneServerFake(t *testing.T, keystoneAuthURL, user, password string)
 }
 
 func withKeystoneUser(k *keystone.Keystone, user, password string) (*keystone.Keystone, error) {
-	sa, ok := k.Assignment.(*asfkeystone.StaticAssignment)
-	if !ok {
-		return nil, errors.New("failed to add user to Keystone fake: wrong Assignment type")
+	sa := asfkeystone.StaticAssignment{
+		Users:    make(map[string]*asfkeystone.User),
 	}
-
-	sa.Users = map[string]*asfkeystone.User{}
 	sa.Users[user] = &asfkeystone.User{
 		Domain:   sa.Domains[DefaultDomainID],
 		ID:       user,

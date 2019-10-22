@@ -8,11 +8,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 var sgNoRuleFQName = []string{defaultDomainName, defaultProjectName, noRuleSecurityGroup}
@@ -234,7 +234,7 @@ func listSecurityGroups(
 	sgResponse, err := rp.ReadService.ListSecurityGroup(
 		ctx,
 		&services.ListSecurityGroupRequest{
-			Spec: &baseservices.ListSpec{
+			Spec: &asfservices.ListSpec{
 				ObjectUUIDs: filter[idKey],
 				ParentUUIDs: parentUUIDs,
 				Detail:      true,

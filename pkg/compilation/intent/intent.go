@@ -5,13 +5,15 @@ import (
 
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // EvaluateContext contains context information for Resource to handle CRUD
 type EvaluateContext struct {
 	WriteService     services.WriteService
 	ReadService      services.ReadService
-	IntPoolAllocator services.IntPoolAllocator
+	IntPoolAllocator asfservices.IntPoolAllocator
 	IntentLoader     Loader
 }
 

@@ -14,11 +14,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -122,8 +122,8 @@ func getVirtualNetworkIDsFromKV(
 	ctx context.Context, rp RequestParameters, keys []string,
 ) (ids []string, err error) {
 	kvsResponse, err := rp.UserAgentKV.RetrieveValues(
-		ctx, &services.RetrieveValuesRequest{Keys: keys},
-	)
+		ctx,
+		&asfservices.RetrieveValuesRequest{Keys: keys})
 	if err != nil {
 		return nil, err
 	}
@@ -427,7 +427,7 @@ func portUpdateIfaceRouteTable(
 	}
 
 	ipsResponse, err := rp.ReadService.ListInstanceIP(ctx, &services.ListInstanceIPRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			Fields: []string{
 				models.InstanceIPFieldInstanceIPAddress,
 				models.InstanceIPFieldVirtualMachineInterfaceRefs,
@@ -614,8 +614,8 @@ func findInterfaceRouteTable(
 	ctx context.Context, rp *RequestParameters, FQName []string,
 ) (*models.InterfaceRouteTable, error) {
 	irts, err := rp.ReadService.ListInterfaceRouteTable(ctx, &services.ListInterfaceRouteTableRequest{
-		Spec: &baseservices.ListSpec{
-			Filters: []*baseservices.Filter{
+		Spec: &asfservices.ListSpec{
+			Filters: []*asfservices.Filter{
 				{
 					Key:    models.FabricFieldFQName,
 					Values: FQName,
@@ -744,8 +744,8 @@ func (s *Subnet) getNetworkIpam(
 	ipamFQName := asfmodels.ChildFQName(parentFQName, defaultNetworkIpamName)
 
 	networkIpamRes, err := rp.ReadService.ListNetworkIpam(ctx, &services.ListNetworkIpamRequest{
-		Spec: &baseservices.ListSpec{
-			Filters: []*baseservices.Filter{
+		Spec: &asfservices.ListSpec{
+			Filters: []*asfservices.Filter{
 				{Key: models.NetworkIpamFieldFQName, Values: ipamFQName},
 			},
 			Limit: 1,
