@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/Juniper/contrail/pkg/collector"
-	"github.com/Juniper/contrail/pkg/services"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -37,7 +38,7 @@ func (p *payloadVncAPILatencyStatsLog) Build() *collector.Message {
 func VncAPILatencyStatsLog(
 	ctx context.Context, operation, application string, responseTime int64,
 ) collector.MessageBuilder {
-	requestID := services.GetRequestID(ctx)
+	requestID := asfservices.RequestID(ctx)
 
 	return &payloadVncAPILatencyStatsLog{
 		NodeName: vncStatNodeName,

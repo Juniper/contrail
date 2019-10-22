@@ -6,13 +6,13 @@ import (
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 type keystoneClient interface {
@@ -24,9 +24,9 @@ type Service struct {
 	services.BaseService
 	Keystone          keystoneClient
 	ReadService       services.ReadService
-	MetadataGetter    baseservices.MetadataGetter
+	MetadataGetter    asfservices.MetadataGetter
 	WriteService      services.WriteService
-	InTransactionDoer services.InTransactionDoer
+	InTransactionDoer asfservices.InTransactionDoer
 }
 
 // GetProject ensures that projects in keystone exists in contrail and returns it
