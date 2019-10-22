@@ -9,7 +9,6 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
@@ -74,16 +73,6 @@ func TestHomepageResources(t *testing.T) {
 			link(addr, "action", "DELETE", services.IntPoolsPath),
 			link(addr, "action", "GET", services.ObjPerms),
 
-			link(addr, "action", "POST", services.UploadCloudKeysPath),
-
-			map[string]interface{}{
-				"link": map[string]interface{}{
-					"href":   resolve(addr, proxy.DefaultPath),
-					"name":   proxy.DefaultPath,
-					"rel":    "proxy",
-					"method": nil,
-				},
-			},
 			// static proxy
 			map[string]interface{}{
 				"link": map[string]interface{}{
@@ -149,13 +138,6 @@ func TestRoutesAreRegistered(t *testing.T) {
 		}
 	}
 
-	// TODO(Witaut): Use staticProxyPlugin directly instead.
-	{
-		proxyPath := proxy.ConfigFromViper().Path
-
-		routes.add(resolve(proxyPath))
-		routes.add(resolve(proxyPath, "*"))
-	}
 	for _, r := range []string{
 		"/",
 	} {
@@ -165,7 +147,6 @@ func TestRoutesAreRegistered(t *testing.T) {
 	for _, plugin := range append([]apiserver.APIPlugin{
 		&cache.DB{},
 		&keystone.Keystone{},
-		services.UploadCloudKeysPlugin{},
 		&services.ContrailService{},
 	}, services.ContrailPlugins(nil, nil, nil, nil)...) {
 		plugin.RegisterHTTPAPI(&routes)
