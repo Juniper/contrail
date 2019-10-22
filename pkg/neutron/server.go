@@ -14,17 +14,16 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	google_protobuf3 "github.com/gogo/protobuf/types"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // Server implementation.
 type Server struct {
 	ReadService       services.ReadService
 	WriteService      services.WriteService
-	UserAgentKV       userAgentKVServer
-	IDToFQNameService services.IDToFQNameService
-	FQNameToIDService services.FQNameToIDService
-	InTransactionDoer services.InTransactionDoer
+	UserAgentKV       *asfservices.UserAgentKVPlugin
+	FQNameService     *asfservices.FQNameTranslationPlugin
+	InTransactionDoer asfservices.InTransactionDoer
 	Log               *logrus.Entry
 }
 
@@ -67,13 +66,12 @@ func (s *Server) handleNeutronPostRequest(c echo.Context) error {
 
 func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
 	rp := logic.RequestParameters{
-		ReadService:       s.ReadService,
-		WriteService:      s.WriteService,
-		UserAgentKV:       s.UserAgentKV,
-		IDToFQNameService: s.IDToFQNameService,
-		FQNameToIDService: s.FQNameToIDService,
-		RequestContext:    r.Context,
-		FieldMask:         r.Data.FieldMask,
+		ReadService:    s.ReadService,
+		WriteService:   s.WriteService,
+		UserAgentKV:    s.UserAgentKV,
+		FQNameService:  s.FQNameService,
+		RequestContext: r.Context,
+		FieldMask:      r.Data.FieldMask,
 		Log: s.Log.WithFields(logrus.Fields{
 			"type":       r.Context.Type,
 			"request-id": r.Context.RequestID,
@@ -101,11 +99,4 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 		logrus.WithError(err).WithField("request", r).Errorf("failed to handle")
 		return nil, err
 	}
-}
-
-type userAgentKVServer interface {
-	StoreKeyValue(context.Context, *services.StoreKeyValueRequest) (*google_protobuf3.Empty, error)
-	RetrieveValues(context.Context, *services.RetrieveValuesRequest) (*services.RetrieveValuesResponse, error)
-	RetrieveKVPs(context.Context, *google_protobuf3.Empty) (*services.RetrieveKVPsResponse, error)
-	DeleteKey(context.Context, *services.DeleteKeyRequest) (*google_protobuf3.Empty, error)
 }

@@ -3,11 +3,12 @@ package logic
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/services"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // Resource interface defines Neutron API operations
@@ -74,12 +75,11 @@ type Fields []string
 
 // RequestParameters structure
 type RequestParameters struct {
-	RequestContext    RequestContext
-	ReadService       services.ReadService
-	WriteService      services.WriteService
-	UserAgentKV       services.UserAgentKVServer
-	IDToFQNameService services.IDToFQNameService
-	FQNameToIDService services.FQNameToIDService
-	FieldMask         types.FieldMask
-	Log               *logrus.Entry
+	RequestContext RequestContext
+	ReadService    services.ReadService
+	WriteService   services.WriteService
+	UserAgentKV    *asfservices.UserAgentKVPlugin
+	FQNameService  *asfservices.FQNameTranslationPlugin
+	FieldMask      types.FieldMask
+	Log            *logrus.Entry
 }

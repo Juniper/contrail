@@ -58,7 +58,8 @@ func setupTLSConfig(sslOpts *SslOptions) (*tls.Config, error) {
 
 	sslOpts.InsecureSkipVerify = !sslOpts.EnableHostVerification
 
-	return sslOpts.Config, nil
+	// return clone to avoid race
+	return sslOpts.Config.Clone(), nil
 }
 
 type policyConnPool struct {
@@ -89,14 +90,17 @@ func connConfig(cfg *ClusterConfig) (*ConnConfig, error) {
 	}
 
 	return &ConnConfig{
-		ProtoVersion:   cfg.ProtoVersion,
-		CQLVersion:     cfg.CQLVersion,
-		Timeout:        cfg.Timeout,
-		ConnectTimeout: cfg.ConnectTimeout,
-		Compressor:     cfg.Compressor,
-		Authenticator:  cfg.Authenticator,
-		Keepalive:      cfg.SocketKeepalive,
-		tlsConfig:      tlsConfig,
+		ProtoVersion:    cfg.ProtoVersion,
+		CQLVersion:      cfg.CQLVersion,
+		Timeout:         cfg.Timeout,
+		ConnectTimeout:  cfg.ConnectTimeout,
+		Dialer:          cfg.Dialer,
+		Compressor:      cfg.Compressor,
+		Authenticator:   cfg.Authenticator,
+		AuthProvider:    cfg.AuthProvider,
+		Keepalive:       cfg.SocketKeepalive,
+		tlsConfig:       tlsConfig,
+		disableCoalesce: tlsConfig != nil, // write coalescing doesn't work with framing on top of TCP like in TLS.
 	}, nil
 }
 
@@ -420,7 +424,9 @@ func (pool *hostConnPool) fill() {
 
 			// this is call with the connection pool mutex held, this call will
 			// then recursively try to lock it again. FIXME
-			go pool.session.handleNodeDown(pool.host.ConnectAddress(), pool.port)
+			if pool.session.cfg.ConvictionPolicy.AddFailure(err, pool.host) {
+				go pool.session.handleNodeDown(pool.host.ConnectAddress(), pool.port)
+			}
 			return
 		}
 
@@ -501,7 +507,7 @@ func (pool *hostConnPool) connect() (err error) {
 	var conn *Conn
 	reconnectionPolicy := pool.session.cfg.ReconnectionPolicy
 	for i := 0; i < reconnectionPolicy.GetMaxRetries(); i++ {
-		conn, err = pool.session.connect(pool.host, pool)
+		conn, err = pool.session.connect(pool.session.ctx, pool.host, pool)
 		if err == nil {
 			break
 		}

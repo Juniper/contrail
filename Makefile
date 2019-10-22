@@ -1,15 +1,15 @@
 BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH := public/doc/index.html
 CONTRAIL_OPENAPI_PATH := public/openapi.json
-CONTRAILSCHEMA := $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
-CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
+CONTRAILSCHEMA = $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
+CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 GOPATH ?= $(shell go env GOPATH)
 PATH := $(PATH):$(GOPATH)/bin
-SOURCEDIR ?= $(GOPATH)
+SOURCEDIR ?= $(realpath .)
 
 DB_FILES := gen_init_psql.sql init_psql.sql init_data.yaml
-SRC_DIRS := cmd pkg vendor
+SRC_DIRS := cmd pkg govendor
 
 BASE_IMAGE_REGISTRY ?= opencontrailnightly
 BASE_IMAGE_REPOSITORY ?= contrail-base
@@ -20,7 +20,7 @@ ifneq ($(filter generate,$(MAKECMDGOALS)),)
 .NOTPARALLEL:
 endif
 
-all: deps generate install testenv reset_db test lint check ## Perform all checks
+all: deps govendor generate install testenv reset_db test lint check ## Perform all checks
 
 deps: ## Install development dependencies
 	./tools/deps.sh
@@ -40,6 +40,7 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 		--etcd-import-path github.com/Juniper/contrail/pkg/etcd \
 		--models-import-path github.com/Juniper/contrail/pkg/models \
 		--services-import-path github.com/Juniper/contrail/pkg/services \
+		--rbac-import-path github.com/Juniper/contrail/pkg/rbac \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
@@ -47,25 +48,27 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 		--template-config tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
-PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf -I ./vendor/github.com/gogo/protobuf/protobuf -I ./vendor/github.com/Juniper/asf -I ./proto
+GOGOPROTO_PATH = ./vendor/github.com/gogo/protobuf
+ASF_PATH = ./vendor/github.com/Juniper/asf
+PROTO = ./bin/protoc -I $(GOGOPROTO_PATH) -I $(GOGOPROTO_PATH)/protobuf -I ./proto -I $(ASF_PATH)
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
 
 pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
+	# M options in protoc are definitions of go import substitutions in resulting go files
+	# see: https://github.com/gogo/protobuf/blob/master/README#L239
 	$(PROTO) --gogofaster_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mpkg/services/baseservices/base.proto=github.com/Juniper/asf/pkg/services/baseservices,\
-plugins=grpc:$(GOPATH)/src/ $<
+Mpkg/services/base.proto=github.com/Juniper/asf/pkg/services,\
+plugins=grpc:. $<
+	cp -a github.com/Juniper/contrail/* .
+	rm -r github.com
 	go tool fix $@
 
 MOCKGEN = $(shell go list -f "{{ .Target }}" ./vendor/github.com/golang/mock/mockgen)
 MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/gen_service_interface.go \
-	pkg/services/mock/fqname_to_id.go \
-	pkg/services/mock/id_to_fqname.go \
 	pkg/types/ipam/mock/address_manager.go \
-	pkg/neutron/mock/server.go \
-	pkg/cloud/mock/tf_state.go
 
 define create-generate-mock-target
   $1: $(shell dirname $(shell dirname $1))/$(shell basename $1)
@@ -88,7 +91,6 @@ format_gen: ## Format generated source code
 clean_gen: ## Remove generated source code and documentation
 	rm -rf public/[^watch.html]* doc/proto.md
 	find tools/ proto/ pkg/ -name gen_* -delete
-	find pkg -name 'mock' -type d -exec rm -rf '{}' +
 
 build: ## Build all binaries without producing output
 	go build ./cmd/...
@@ -133,7 +135,10 @@ test: ## Run tests with coverage
 lint: ## Run linters on the source code
 	./tools/lint.sh
 
-check: ## Check vendored dependencies
+govendor: ## vendor all dependencies
+	./tools/vendor.sh
+
+check: ## Check if dependencies are locked
 	./tools/check.sh
 
 format: ## Format source code
@@ -167,7 +172,6 @@ docker_prepare: ## Prepare common data to generate Docker files (use target `doc
 	$(foreach db_file, $(DB_FILES), cp tools/$(db_file) $(BUILD_DIR)/docker/contrail_go/etc;)
 	cp -r public $(BUILD_DIR)/docker/contrail_go/public
 	$(foreach src, $(SRC_DIRS), cp -a ../contrail/$(src) $(BUILD_DIR)/docker/contrail_go/src/contrail;)
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/deploy/cluster/templates/* $(BUILD_DIR)/docker/contrail_go/templates/
 
 docker_build: ## Build Docker image with Contrail binary
 	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)

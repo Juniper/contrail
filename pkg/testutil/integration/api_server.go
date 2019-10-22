@@ -7,18 +7,15 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/apiserver"
-	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/cmd/contrail"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron"
 	"github.com/Juniper/contrail/pkg/proxy"
-	"github.com/Juniper/contrail/pkg/replication"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/pkg/errors"
@@ -27,7 +24,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfdb "github.com/Juniper/asf/pkg/db"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
@@ -75,10 +74,8 @@ type APIServer struct {
 	testServer *httptest.Server
 	dbService  *db.Service
 	// TODO(Witaut): Remove this when AddKeystoneProjectAndUser is removed.
-	keystone   *keystone.Keystone
-	proxy      *proxy.Dynamic
-	replicator *replication.Replicator
-	log        *logrus.Entry
+	keystone *keystone.Keystone
+	log      *logrus.Entry
 }
 
 // APIServerConfig contains parameters for test API Server.
@@ -125,7 +122,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	}
 	analytics.AddLoggerHook(analyticsCollector)
 
-	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(analyticsCollector))
+	sqlDB, err := asfdb.ConnectDB(analytics.WithCommitLatencyReporting(analyticsCollector))
 	if err != nil {
 		return nil, err
 	}
@@ -141,38 +138,39 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
-	es := endpoint.NewStore()
-	dynamicProxy := proxy.NewDynamicFromViper(es, dbService)
-	dynamicProxy.StartEndpointsSync() // TODO(dfurman): move to proxy constructor and use context for cancellation
-
-	k, err := keystone.Init(es)
+	k, err := keystone.Init()
 	if err != nil {
 		return nil, err
 	}
 
+	FQNamePlugin := &asfservices.FQNameTranslationPlugin{MetadataGetter: dbService}
+	userAgentKVPlugin := &asfservices.UserAgentKVPlugin{UserAgentKVService: dbService}
+
 	plugins := []apiserver.APIPlugin{
 		serviceChain,
 		staticProxyPlugin,
-		dynamicProxy,
-		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
 		k,
 		c.CacheDB,
+		FQNamePlugin,
+		&asfservices.ObjPermsPlugin{},
+		&asfservices.IntPoolPlugin{IntPoolAllocator: dbService, InTransactionDoer: dbService},
+		&asfservices.RefUpdatePlugin{MetadataGetter: dbService, RefUpdater: serviceChain},
+		&asfservices.RefRelaxPlugin{RefRelaxer: dbService},
+		userAgentKVPlugin,
 	}
 	plugins = append(plugins, services.ContrailPlugins(
 		serviceChain,
 		dbService,
 		dbService,
-		serviceChain,
 	)...)
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		plugins = append(plugins, &neutron.Server{
 			ReadService:       serviceChain,
 			WriteService:      serviceChain,
-			UserAgentKV:       serviceChain,
-			IDToFQNameService: serviceChain,
-			FQNameToIDService: serviceChain,
+			UserAgentKV:       userAgentKVPlugin,
+			FQNameService:     FQNamePlugin,
 			InTransactionDoer: dbService,
 			Log:               logutil.NewLogger("neutron-server"),
 		})
@@ -186,22 +184,13 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
 	serverHandler = server.Echo
 
-	var r *replication.Replicator
-	if c.EnableVNCReplication {
-		if r, err = startVNCReplicator(es); err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
-
 	return &APIServer{
 		APIServer:  server,
 		testServer: ts,
 		dbService:  dbService,
 		// TODO(Witaut): Remove this when AddKeystoneProjectAndUser is removed.
-		keystone:   k,
-		proxy:      dynamicProxy,
-		replicator: r,
-		log:        logutil.NewLogger("test-api-server"),
+		keystone: k,
+		log:      logutil.NewLogger("test-api-server"),
 	}, nil
 }
 
@@ -339,18 +328,6 @@ func setViper(config map[string]interface{}) {
 	}
 }
 
-func startVNCReplicator(es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es)
-	if err != nil {
-		return nil, err
-	}
-	err = vncReplicator.Start()
-	if err != nil {
-		return nil, err
-	}
-	return vncReplicator, nil
-}
-
 // URL returns server base URL.
 func (s *APIServer) URL() string {
 	return s.testServer.URL
@@ -366,25 +343,24 @@ func (s *APIServer) CloseT(t *testing.T) {
 // Close closes the server.
 func (s *APIServer) Close() error {
 	s.log.Debug("Closing test API server")
-	if s.replicator != nil {
-		s.replicator.Stop()
-	}
 	s.testServer.Close()
-	s.proxy.StopEndpointsSync()
 	return s.dbService.Close()
-}
-
-// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *APIServer) ForceProxyUpdate() {
-	s.proxy.ForceUpdate()
 }
 
 // AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
 // TODO: Remove that, because it modifies internal state of SUT.
 // TODO: Use pre-created Server's keystone assignment.
 func (s *APIServer) AddKeystoneProjectAndUser(t testing.TB, testID string) func() {
-	assignment, ok := s.keystone.Assignment.(*asfkeystone.StaticAssignment)
-	require.True(t, ok, "s.keystone.Assignment should be a StaticAssignment")
+	assignment := asfkeystone.StaticAssignment{
+		Domains: map[string]*asfkeystone.Domain{
+			DefaultDomainID: {
+				ID:   DefaultDomainID,
+				Name: DefaultDomainName,
+			},
+		},
+		Projects: make(map[string]*asfkeystone.Project),
+		Users:    make(map[string]*asfkeystone.User),
+	}
 
 	assignment.Projects[testID] = &asfkeystone.Project{
 		Domain: assignment.Domains[DefaultDomainID],
