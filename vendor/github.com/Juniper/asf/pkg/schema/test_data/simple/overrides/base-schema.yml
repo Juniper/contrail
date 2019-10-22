@@ -1,8 +1,0 @@
----
-  id: "base"
-  schema:
-    properties:
-      uuid:
-        operation: "CR"
-        presence: "true"
-        description: "UUID of the object, system automatically allocates one if not provided"
