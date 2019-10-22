@@ -11,6 +11,8 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"net/http"
+	"strings"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -52,6 +54,17 @@ func TestServer(t *testing.T) {
 			integration.RunTest(t, "./test_data/test_"+test+".yml", server)
 		})
 	}
+}
+
+func TestHTTPRedirect(t *testing.T) {
+	// DRAFT
+	httpsUrl := server.URL()
+	httpUrl := strings.Replace(httpsUrl, "https:", "http:", 1)
+	//hc := integration.NewTestingHTTPClient(t, httpUrl, integration.BobUserID)
+	//assert.NotNil(t, hc)
+	resp, err := http.Get(httpUrl)
+	assert.NoError(t, err)
+	assert.Equal(t, 301, resp.StatusCode)
 }
 
 func TestHTTPCRUD(t *testing.T) {

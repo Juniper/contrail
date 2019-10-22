@@ -100,6 +100,8 @@ func (s *Server) Init() (err error) {
 		}))
 	}
 
+	s.Echo.Pre(middleware.HTTPSRedirect())
+
 	if viper.GetBool("server.enable_gzip") {
 		s.Echo.Use(middleware.Gzip())
 	}
