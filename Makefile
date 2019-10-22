@@ -1,20 +1,15 @@
-ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH := public/doc/index.html
 CONTRAIL_OPENAPI_PATH := public/openapi.json
-CONTRAILSCHEMA := $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
-CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
 GOPATH ?= $(shell go env GOPATH)
+CONTRAILSCHEMA = $(shell go list -f '{{ .Target }}' github.com/Juniper/asf/cmd/contrailschema)
+CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 PATH := $(PATH):$(GOPATH)/bin
 SOURCEDIR ?= $(GOPATH)
 
 DB_FILES := gen_init_psql.sql init_psql.sql init_data.yaml
-SRC_DIRS := cmd pkg vendor
-
-ANSIBLE_DEPLOYER_REPO_DIR ?= ""
-ANSIBLE_DEPLOYER_BRANCH ?= master
-ANSIBLE_DEPLOYER_REVISION ?= HEAD
+SRC_DIRS := cmd pkg
 
 BASE_IMAGE_REGISTRY ?= opencontrailnightly
 BASE_IMAGE_REPOSITORY ?= contrail-base
@@ -52,7 +47,9 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 		--template-config tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
-PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf -I ./vendor/github.com/gogo/protobuf/protobuf -I ./vendor/github.com/Juniper/asf -I ./proto
+GOGOPROTO_PATH = $(shell go list -f "{{ .Dir }}" -m github.com/gogo/protobuf)
+ASF_PATH = $(shell go list -f "{{ .Dir }}" -m github.com/Juniper/asf)
+PROTO = ./bin/protoc -I $(GOGOPROTO_PATH) -I $(GOGOPROTO_PATH)/protobuf -I ./proto -I $(ASF_PATH)
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
 
 pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
@@ -63,14 +60,13 @@ Mpkg/services/baseservices/base.proto=github.com/Juniper/asf/pkg/services/basese
 plugins=grpc:$(GOPATH)/src/ $<
 	go tool fix $@
 
-MOCKGEN = $(shell go list -f "{{ .Target }}" ./vendor/github.com/golang/mock/mockgen)
+MOCKGEN = $(shell go list -f "{{ .Target }}" github.com/golang/mock/mockgen)
 MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/gen_service_interface.go \
 	pkg/services/mock/fqname_to_id.go \
 	pkg/services/mock/id_to_fqname.go \
 	pkg/types/ipam/mock/address_manager.go \
-	pkg/neutron/mock/server.go \
-	pkg/cloud/mock/tf_state.go
+	pkg/neutron/mock/server.go
 
 define create-generate-mock-target
   $1: $(shell dirname $(shell dirname $1))/$(shell basename $1)
@@ -93,7 +89,6 @@ format_gen: ## Format generated source code
 clean_gen: ## Remove generated source code and documentation
 	rm -rf public/[^watch.html]* doc/proto.md
 	find tools/ proto/ pkg/ -name gen_* -delete
-	find pkg -name 'mock' -type d -exec rm -rf '{}' +
 
 build: ## Build all binaries without producing output
 	go build ./cmd/...
@@ -107,7 +102,7 @@ install_contrailcli:  ## Install Contrailcli binary
 	go install ./cmd/contrailcli
 
 install_contrailschema: ## Install Contrailschema binary
-	go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/
+	go install github.com/Juniper/asf/cmd/contrailschema/
 
 install_contrailutil: ## Install Contrailutil binary
 	go install ./cmd/contrailutil
@@ -138,7 +133,7 @@ test: ## Run tests with coverage
 lint: ## Run linters on the source code
 	./tools/lint.sh
 
-check: ## Check vendored dependencies
+check: ## Check if dependencies are locked
 	./tools/check.sh
 
 format: ## Format source code
@@ -172,14 +167,6 @@ docker_prepare: ## Prepare common data to generate Docker files (use target `doc
 	$(foreach db_file, $(DB_FILES), cp tools/$(db_file) $(BUILD_DIR)/docker/contrail_go/etc;)
 	cp -r public $(BUILD_DIR)/docker/contrail_go/public
 	$(foreach src, $(SRC_DIRS), cp -a ../contrail/$(src) $(BUILD_DIR)/docker/contrail_go/src/contrail;)
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/deploy/cluster/templates/* $(BUILD_DIR)/docker/contrail_go/templates/
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
-ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
-		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git $(BUILD_DIR)/docker/contrail_go/contrail-ansible-deployer
-		cd $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
-else
-		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
-endif
 
 docker_build: ## Build Docker image with Contrail binary
 	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)
