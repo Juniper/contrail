@@ -31,8 +31,6 @@ const (
 	basicAuth         = "basic-auth"
 
 	defaultProjectName = "admin"
-	defaultDomainID    = "default"
-	defaultDomainName  = "Default"
 )
 
 type vncAPIHandle struct {
@@ -43,15 +41,26 @@ type vncAPIHandle struct {
 	auth          *keystone.Keystone
 }
 
-func newVncAPIHandle(
-	epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHandle {
+func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) (*vncAPIHandle, error) {
 	handle := &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
 		log:           logutil.NewLogger("vnc_replication_client"),
 		auth:          auth,
+		APIServer:     client.NewHTTPFromConfig(),
 	}
-	return handle
+	return handle, nil
+}
+
+func (h *vncAPIHandle) listConfigEndpoints() ([]*models.Endpoint, error) {
+	request := &services.ListEndpointRequest{
+		Spec: &baseservices.ListSpec{
+			Fields:  []string{"uuid", "parent_uuid", "prefix"},
+			Filters: []*baseservices.Filter{{Key: "prefix", Values: []string{configService}}},
+		},
+	}
+	resp, err := h.APIServer.ListEndpoint(context.Background(), request)
+	return resp.GetEndpoints(), err
 }
 
 // CreateClient creates client for given endpoint.
@@ -60,46 +69,23 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		return
 	}
 
-	var id, password string
-	var projectID, projectName string
-	var domainID, domainName string
+	config := client.LoadHTTPConfig()
 	authType, err := h.auth.GetAuthType(ep.ParentUUID)
 	if err != nil {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
 	}
-	if authType == basicAuth {
-		id = viper.GetString("client.id")
-		password = viper.GetString("client.password")
-		domainID = viper.GetString("client.domain_id")
-		projectID = viper.GetString("client.project_id")
-		domainName = viper.GetString("client.domain_name")
-		projectName = viper.GetString("client.project_name")
-	} else {
-		domainID = defaultDomainID
-		domainName = defaultDomainName
+	if authType != basicAuth {
+		config.Scope = &kscommon.Scope{Domain: kscommon.DefaultDomain()}
 		// get keystone endpoint
-		var authEndpoint *endpoint.Endpoint
-		authEndpoint, err = h.readAuthEndpoint(ep.ParentUUID)
+		var e *endpoint.Endpoint
+		e, err = h.readAuthEndpoint(ep.ParentUUID)
 		if err != nil {
 			h.log.Warnf("VNC API client not prepared for %s, %v", ep.ParentUUID, err)
 		}
-		id = authEndpoint.Username
-		password = authEndpoint.Password
+		config.SetCredentials(e.Username, e.Password)
 	}
 
-	c := client.NewHTTP(&client.HTTPConfig{
-		ID:       id,
-		Password: password,
-		Endpoint: viper.GetString("client.endpoint"),
-		AuthURL:  viper.GetString("keystone.authurl"),
-		Scope: kscommon.NewScope(
-			domainID,
-			domainName,
-			projectID,
-			projectName,
-		),
-		Insecure: viper.GetBool("insecure"),
-	})
+	c := client.NewHTTP(config)
 
 	ctx := auth.NoAuth(context.Background())
 	if viper.GetString("keystone.authurl") != "" {
@@ -158,12 +144,12 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 			apiClient.Scope.Project.Domain)
 		if err == nil {
 			apiClient.Scope = kscommon.NewScope(
-				defaultDomainID, defaultDomainName,
+				kscommon.DefaultDomainID, kscommon.DefaultDomainName,
 				projectID, defaultProjectName)
 		}
 	}
 	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(defaultDomainID, projectID,
+	varCtx := auth.NewContext(kscommon.DefaultDomainID, projectID,
 		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
 	var authKey interface{} = "auth"
 	ctx = context.WithValue(ctx, authKey, varCtx)
@@ -206,8 +192,8 @@ func (h *vncAPIHandle) DeleteClient(endpointID string) {
 // Replicate propagates given event to VNC API.
 func (h *vncAPIHandle) Replicate(action, sourceURL string, data interface{}, response interface{}) {
 	if len(h.clients) == 0 {
-		if err := h.initialize(); err != nil {
-			h.log.Errorf("clients not initialized: %v", err)
+		if err := h.initClients(); err != nil {
+			h.log.Errorf("Clients not initialized: %v", err)
 		}
 	}
 	for _, vncAPI := range h.clients {
@@ -215,63 +201,15 @@ func (h *vncAPIHandle) Replicate(action, sourceURL string, data interface{}, res
 	}
 }
 
-func (h *vncAPIHandle) initialize() (err error) {
-	if err = h.initClient(); err != nil {
-		return err
-	}
-	var endpoints []*models.Endpoint
-	if endpoints, err = h.listConfigEndpoints(); err != nil {
+func (h *vncAPIHandle) initClients() error {
+	endpoints, err := h.listConfigEndpoints()
+	if err != nil {
 		return err
 	}
 	for _, e := range endpoints {
 		h.CreateClient(e)
 	}
 	return nil
-}
-
-func (h *vncAPIHandle) initClient() error {
-	h.APIServer = client.NewHTTP(&client.HTTPConfig{
-		ID:       viper.GetString("client.id"),
-		Password: viper.GetString("client.password"),
-		Endpoint: viper.GetString("client.endpoint"),
-		AuthURL:  viper.GetString("keystone.authurl"),
-		Scope: kscommon.NewScope(
-			viper.GetString("client.domain_id"),
-			viper.GetString("client.domain_name"),
-			viper.GetString("client.project_id"),
-			viper.GetString("client.project_name"),
-		),
-		Insecure: viper.GetBool("insecure"),
-	})
-
-	var err error
-	if viper.GetString("keystone.authurl") != "" {
-		_, err = h.APIServer.Login(context.Background())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (h *vncAPIHandle) listConfigEndpoints() (endpoints []*models.Endpoint, err error) {
-	request := &services.ListEndpointRequest{
-		Spec: &baseservices.ListSpec{
-			Fields: []string{"uuid", "parent_uuid", "prefix"},
-			Filters: []*baseservices.Filter{
-				{
-					Key:    "prefix",
-					Values: []string{configService},
-				},
-			},
-		},
-	}
-	var resp *services.ListEndpointResponse
-	resp, err = h.APIServer.ListEndpoint(context.Background(), request)
-	if err != nil {
-		return nil, err
-	}
-	return resp.GetEndpoints(), nil
 }
 
 type vncAPI struct {
