@@ -2,6 +2,40 @@
   "comments": [
     {
       "key": {
+        "uuid": "c438900a_36591d3e",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-23T20:35:20Z",
+      "side": 1,
+      "message": "How about moving this to an proxy_integration_test.go or something similar? I tried adding a unit test recently and for the proxy and I stumbled upon the fact that it is a external test. On the other hand this is clearly not a simple unit test file. What do you think?",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d7cd843_2465e5a9",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-23T20:35:20Z",
+      "side": 1,
+      "message": "Redundant newline",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "96d55656_139f2d90",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 3
@@ -13,6 +47,23 @@
       "writtenOn": "2019-10-23T17:29:22Z",
       "side": 1,
       "message": "Previous version of this test used Alice (admin) client for requests: https://review.opencontrail.org/c/Juniper/contrail/+/54683/3/pkg/apisrv/proxy_test.go#b610 So it did not verify if request was proxied to remote Keystone or handled by local Keystone.\n\nIt looks like requests are not proxied to remote Keystone, even if proxy endpoint is created.\n\nI\u0027ll take a look at it tommorow and create a bug if necessary.",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90189d60_58169ad6",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-23T20:35:20Z",
+      "side": 1,
+      "message": "I would opt for similar error handling approach like in production code - pass errs everywhere and handle them in top level.\n\nI know that NewKeystoneServerFake is meant to be a testing function, so let\u0027s keep it like it is, but here `withKeystoneUser` can return (*ketstone.Keystone, error) and this can be handled in NewKeystoneServerFake. That makes the signature less polluted and easier to reuse in other code (I know that this func has low reuse probability, but I would try to stick to this). The resulting code handles errors like any other code.",
       "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
