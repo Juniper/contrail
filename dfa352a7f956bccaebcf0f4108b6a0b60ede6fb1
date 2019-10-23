@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "96d55656_139f2d90",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 442,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-23T17:29:22Z",
+      "side": 1,
+      "message": "Previous version of this test used Alice (admin) client for requests: https://review.opencontrail.org/c/Juniper/contrail/+/54683/3/pkg/apisrv/proxy_test.go#b610 So it did not verify if request was proxied to remote Keystone or handled by local Keystone.\n\nIt looks like requests are not proxied to remote Keystone, even if proxy endpoint is created.\n\nI\u0027ll take a look at it tommorow and create a bug if necessary.",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
