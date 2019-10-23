@@ -7,10 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
-
-	"github.com/Juniper/contrail/pkg/fileutil"
 )
 
 const (
@@ -26,6 +25,9 @@ type TemplateConfig struct {
 
 // ApplyTemplates writes files with content generated from templates.
 func ApplyTemplates(api *API, config []*TemplateConfig) error {
+	if api == nil {
+		return errors.New("received API is nil")
+	}
 	if err := registerCustomFilters(); err != nil {
 		return err
 	}
@@ -55,6 +57,9 @@ func (tc *TemplateConfig) resolveOutputPath() error {
 }
 
 func (tc *TemplateConfig) isOutdated(api *API) bool {
+	if api.Timestamp.IsZero() {
+		return true
+	}
 	sourceInfo, err := os.Stat(tc.TemplatePath)
 	if err != nil {
 		return true

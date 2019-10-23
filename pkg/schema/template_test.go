@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	schemaPath         = "test_data/schema"
+	schemaPath         = "test_data/simple/schema"
 	templateConfigPath = "test_data/templates/template_config.yaml"
 
 	allPath    = "test_output/gen_all.yml"
@@ -75,7 +75,7 @@ func TestGeneratedFilePath(t *testing.T) {
 }
 
 func makeAPI(t *testing.T) *API {
-	api, err := MakeAPI([]string{schemaPath}, "", false)
+	api, err := MakeAPI([]string{schemaPath}, nil, false)
 	assert.Nil(t, err)
 
 	return api
