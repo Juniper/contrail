@@ -48,7 +48,7 @@ func Init(e *echo.Echo, endpoints *endpoint.Store, keystoneClient *Client) (*Key
 	keystone := &Keystone{
 		Endpoints: endpoints,
 		Client:    keystoneClient,
-		APIClient: client.NewHTTPByViper(),
+		APIClient: client.NewHTTPFromConfig(),
 	}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {

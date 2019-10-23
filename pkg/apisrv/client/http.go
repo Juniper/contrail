@@ -28,6 +28,39 @@ const (
 	retryCount = 2
 )
 
+// HTTPConfig contains HTTP client configuration.
+type HTTPConfig struct {
+	ID       string          `yaml:"id"`
+	Password string          `yaml:"password"`
+	Endpoint string          `yaml:"endpoint"`
+	AuthURL  string          `yaml:"authurl"`
+	Scope    *keystone.Scope `yaml:"scope"`
+	Insecure bool            `yaml:"insecure"`
+}
+
+// LoadHTTPConfig creates new config object based on viper configuration.
+func LoadHTTPConfig() *HTTPConfig {
+	return &HTTPConfig{
+		ID:       viper.GetString("client.id"),
+		Password: viper.GetString("client.password"),
+		Endpoint: viper.GetString("client.endpoint"),
+		AuthURL:  viper.GetString("keystone.authurl"),
+		Scope: keystone.NewScope(
+			viper.GetString("client.domain_id"),
+			viper.GetString("client.domain_name"),
+			viper.GetString("client.project_id"),
+			viper.GetString("client.project_name"),
+		),
+		Insecure: viper.GetBool("insecure"),
+	}
+}
+
+// SetCredentials sets custom credentials in HTTPConfig.
+func (c *HTTPConfig) SetCredentials(username, password string) {
+	c.ID = username
+	c.Password = password
+}
+
 // HTTP represents API Server HTTP client.
 type HTTP struct {
 	services.BaseService
@@ -37,16 +70,6 @@ type HTTP struct {
 	HTTPConfig `yaml:",inline"`
 
 	AuthToken string
-}
-
-// HTTPConfig contains HTTP client configuration.
-type HTTPConfig struct {
-	ID       string          `yaml:"id"`
-	Password string          `yaml:"password"`
-	Endpoint string          `yaml:"endpoint"`
-	AuthURL  string          `yaml:"authurl"`
-	Scope    *keystone.Scope `yaml:"scope"`
-	Insecure bool            `yaml:"insecure"`
 }
 
 // NewHTTP makes API Server HTTP client.
@@ -62,21 +85,9 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 	}
 }
 
-// NewHTTPByViper makes API Server HTTP client with viper config
-func NewHTTPByViper() *HTTP {
-	return NewHTTP(&HTTPConfig{
-		ID:       viper.GetString("client.id"),
-		Password: viper.GetString("client.password"),
-		Endpoint: viper.GetString("client.endpoint"),
-		AuthURL:  viper.GetString("keystone.authurl"),
-		Scope: keystone.NewScope(
-			viper.GetString("client.domain_id"),
-			viper.GetString("client.domain_name"),
-			viper.GetString("client.project_id"),
-			viper.GetString("client.project_name"),
-		),
-		Insecure: viper.GetBool("insecure"),
-	})
+// NewHTTPFromConfig makes API Server HTTP client with viper config
+func NewHTTPFromConfig() *HTTP {
+	return NewHTTP(LoadHTTPConfig())
 }
 
 func transport(endpoint string, insecure bool) *http.Transport {
