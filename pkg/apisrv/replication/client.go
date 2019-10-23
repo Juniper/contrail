@@ -43,18 +43,60 @@ type vncAPIHandle struct {
 	auth          *keystone.Keystone
 }
 
-func newVncAPIHandle(
-	epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHandle {
+func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) (*vncAPIHandle, error) {
 	handle := &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
 		log:           logutil.NewLogger("vnc_replication_client"),
 		auth:          auth,
 	}
-	return handle
+	if err := handle.initialize(); err != nil {
+		return nil, err
+	}
+	return handle, nil
+}
+
+func (h *vncAPIHandle) initialize() (err error) {
+	if err = h.initClient(); err != nil {
+		return err
+	}
+	var endpoints []*models.Endpoint
+	if endpoints, err = h.listConfigEndpoints(); err != nil {
+		return err
+	}
+	for _, e := range endpoints {
+		h.CreateClient(e)
+	}
+	return nil
+}
+
+func (h *vncAPIHandle) initClient() error {
+	h.APIServer = client.NewHTTP(&client.HTTPConfig{
+		ID:       viper.GetString("client.id"),
+		Password: viper.GetString("client.password"),
+		Endpoint: viper.GetString("client.endpoint"),
+		AuthURL:  viper.GetString("keystone.authurl"),
+		Scope: kscommon.NewScope(
+			viper.GetString("client.domain_id"),
+			viper.GetString("client.domain_name"),
+			viper.GetString("client.project_id"),
+			viper.GetString("client.project_name"),
+		),
+		Insecure: viper.GetBool("insecure"),
+	})
+
+	var err error
+	if viper.GetString("keystone.authurl") != "" {
+		_, err = h.APIServer.Login(context.Background())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // CreateClient creates client for given endpoint.
+// TODO test this when APIServer is nil
 func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 	if ep.Prefix != configService {
 		return
@@ -205,55 +247,10 @@ func (h *vncAPIHandle) DeleteClient(endpointID string) {
 
 // Replicate propagates given event to VNC API.
 func (h *vncAPIHandle) Replicate(action, sourceURL string, data interface{}, response interface{}) {
-	if len(h.clients) == 0 {
-		if err := h.initialize(); err != nil {
-			h.log.Errorf("clients not initialized: %v", err)
-		}
-	}
 	for _, vncAPI := range h.clients {
 		vncAPI.Replicate(action, sourceURL, data, response)
 	}
 }
-
-func (h *vncAPIHandle) initialize() (err error) {
-	if err = h.initClient(); err != nil {
-		return err
-	}
-	var endpoints []*models.Endpoint
-	if endpoints, err = h.listConfigEndpoints(); err != nil {
-		return err
-	}
-	for _, e := range endpoints {
-		h.CreateClient(e)
-	}
-	return nil
-}
-
-func (h *vncAPIHandle) initClient() error {
-	h.APIServer = client.NewHTTP(&client.HTTPConfig{
-		ID:       viper.GetString("client.id"),
-		Password: viper.GetString("client.password"),
-		Endpoint: viper.GetString("client.endpoint"),
-		AuthURL:  viper.GetString("keystone.authurl"),
-		Scope: kscommon.NewScope(
-			viper.GetString("client.domain_id"),
-			viper.GetString("client.domain_name"),
-			viper.GetString("client.project_id"),
-			viper.GetString("client.project_name"),
-		),
-		Insecure: viper.GetBool("insecure"),
-	})
-
-	var err error
-	if viper.GetString("keystone.authurl") != "" {
-		_, err = h.APIServer.Login(context.Background())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (h *vncAPIHandle) listConfigEndpoints() (endpoints []*models.Endpoint, err error) {
 	request := &services.ListEndpointRequest{
 		Spec: &baseservices.ListSpec{
