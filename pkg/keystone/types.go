@@ -68,10 +68,24 @@ type Scope struct {
 	Project *Project `json:"project,omitempty"`
 }
 
+// Domain field default values.
+const (
+	DefaultDomainID   = "default"
+	DefaultDomainName = "Default"
+)
+
 //Domain represents domain object.
 type Domain struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+// DefaultDomain constructs domain with default values.
+func DefaultDomain() *Domain {
+	return &Domain{
+		ID:   DefaultDomainID,
+		Name: DefaultDomainName,
+	}
 }
 
 //Project represents project object.

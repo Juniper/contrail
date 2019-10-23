@@ -17,18 +17,13 @@ func (s *Scope) GetDomain() *Domain {
 func NewScope(domainID, domainName, projectID, projectName string) *Scope {
 	scope := &Scope{
 		Project: &Project{
-			Domain: &Domain{},
+			ID:   projectID,
+			Name: projectName,
+			Domain: &Domain{
+				ID:   domainID,
+				Name: domainName,
+			},
 		},
-	}
-	if domainID != "" {
-		scope.Project.Domain.ID = domainID
-	} else if domainName != "" {
-		scope.Project.Domain.Name = domainName
-	}
-	if projectID != "" {
-		scope.Project.ID = projectID
-	} else if projectName != "" {
-		scope.Project.Name = projectName
 	}
 	return scope
 }

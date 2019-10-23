@@ -60,9 +60,14 @@ func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
+
+	handler, err := newVncAPIHandle(epStore, localKeystone)
+	if err != nil {
+		return nil, err
+	}
 	return &Replicator{
 		serviceWaitGroup: &sync.WaitGroup{},
-		handler:          newVncAPIHandle(epStore, localKeystone),
+		handler:          handler,
 		log:              logutil.NewLogger("vnc_replication"),
 	}, nil
 }
