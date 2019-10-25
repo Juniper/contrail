@@ -1,0 +1,288 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "18a046ec_32458684",
+        "filename": "pkg/ansible/client_interface.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "I think this shouldn\u0027t be moved. The interfaces should be as close to usage as possible. Files should be split by responsibilities, not by content types (interface/implementation).\n\nSee related: https://dave.cheney.net/practical-go/presentations/qcon-china.html#_consider_fewer_larger_packages",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c643a24_453363d1",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This func has very rich logging - it\u0027s ok, but it\u0027s also a bit too verbose for an `Info` level. I think those logs should be `Debug` since they allow track the execution, but may cause clutter in server\u0027s log.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9430c00_505a41f8",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This smells - do we run different code specifically for the test? Then what\u0027s the point of writing the code and tests?",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fe156bff_c6fba8e9",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This comment is redundant and should be removed, because line below gives us the same information (prepareDockerCmd is repeated and the type is known because we have a statically typed language ;) ).",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35e4f9b2_b8298a49",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "Similar to L79",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "58ef5576_1a6150c4",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "Do we need to create a client during every Play call? Maybe we should create it in constructor.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f85f14b_1caa1adf",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "Please see comment in L194.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "793fb4a5_195c4c1c",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "panic? Is that a reason to crash the server?",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cf3bb74d_41045923",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This one log can be left as a Info level log.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "314feb54_84a421c5",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This is not neccesary, please use `:\u003d` instead.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4a9f5cf0_5fc92972",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "Optional: Since the definition is short, I would inline it in the ContainerList call.",
+      "range": {
+        "startLine": 181,
+        "startChar": 22,
+        "endLine": 181,
+        "endChar": 59
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "663d2273_3c80c5f1",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "Because of the zero value this may be indistinguishable from found container. Please use pointer type or additional boolean value to tell user that  that a container was found.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f2d0b20_77421055",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This name might be misleading, because in some cases we also create the container.\n\nIMO the function extraction was too early. The if (L197) should be left in the outer function, because we could clearly see the branching. We could even remove comment in L115, because the code would tell us the same.\n\nWhat I think should be extracted are the if-else bodies. They clearly have their own responsibilities. Example names would be createRunningContainer and startExistingContainer.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "793f7ccc_e8b08b43",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "You can return here, the if below is redundant.",
+      "range": {
+        "startLine": 256,
+        "startChar": 2,
+        "endLine": 256,
+        "endChar": 7
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "db3c884d_20f992df",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "Interface used in production code shouldn\u0027t be defined in test code.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f156c3da_e1301e39",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-25T17:26:50Z",
+      "side": 1,
+      "message": "This mock is a little bit too \"smart\". It has it\u0027s own logic that can introduce it\u0027s own bugs. I think the mock should store the predefined results and leave assertions to the test code.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
