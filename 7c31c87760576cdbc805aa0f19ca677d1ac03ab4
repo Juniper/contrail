@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "6708ccc5_4a6306ec",
+        "filename": "pkg/ansible/client_interface.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "18a046ec_32458684",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2c643a24_453363d1",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -33,6 +51,24 @@
       "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bb809cd7_c85c3bc6",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Changed logs related with container manipulation to debug logs",
+      "parentUuid": "2c643a24_453363d1",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -70,6 +106,24 @@
     },
     {
       "key": {
+        "uuid": "0b1bce3a_27e5dfff",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fe156bff_c6fba8e9",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "35e4f9b2_b8298a49",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -87,6 +141,24 @@
     },
     {
       "key": {
+        "uuid": "a66fbe29_41d892b6",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "35e4f9b2_b8298a49",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "58ef5576_1a6150c4",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -98,6 +170,24 @@
       "writtenOn": "2019-10-25T17:26:50Z",
       "side": 1,
       "message": "Do we need to create a client during every Play call? Maybe we should create it in constructor.",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a933c204_f49fcc59",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "In github.com/Juniper/contrail/pkg/deploy/cluster/cluster.go, a new client is created in this function:\n\nfunc newAnsibleDeployer(c *Cluster, cData *base.Data) *contrailAnsibleDeployer {\n\td :\u003d newDeployCluster(c, cData, \"contrail-ansible-deployer\")\n\treturn \u0026contrailAnsibleDeployer{\n\t\tdeployCluster: *d,\n\t\tansibleClient: ansible.NewCLIClient(\n\t\t\td.Reporter,\n\t\t\tc.config.LogFile,\n\t\t\td.getWorkingDir(),\n\t\t\tc.config.Test,\n\t\t),\n\t}\n}\n\nSo this ansibleClient in the future is supposed to hold both CLIClient and DockerClient structs (both implementation of Play interface in github.com/Juniper/contrail/pkg/ansible). To influence this function as little as possible, I think the docker client (from docker SDK) shouldn\u0027t be created in constructor, because there is an err variable involved in the returning value of client.NewClientWithOpts(), which should be handled in DockerClient\u0027s Play() function instead of when creating a new Ansible deployer.",
+      "parentUuid": "58ef5576_1a6150c4",
       "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -121,6 +211,24 @@
     },
     {
       "key": {
+        "uuid": "ee64c9a6_59cfc442",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0f85f14b_1caa1adf",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "793fb4a5_195c4c1c",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -135,6 +243,24 @@
       "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aba91d3c_4c685e37",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Fixed it to return the err.",
+      "parentUuid": "793fb4a5_195c4c1c",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -155,6 +281,24 @@
     },
     {
       "key": {
+        "uuid": "5eab698c_76b71cc6",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cf3bb74d_41045923",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "314feb54_84a421c5",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -172,6 +316,24 @@
     },
     {
       "key": {
+        "uuid": "e369cbf9_81b40f3b",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "314feb54_84a421c5",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4a9f5cf0_5fc92972",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -183,6 +345,30 @@
       "writtenOn": "2019-10-25T17:26:50Z",
       "side": 1,
       "message": "Optional: Since the definition is short, I would inline it in the ContainerList call.",
+      "range": {
+        "startLine": 181,
+        "startChar": 22,
+        "endLine": 181,
+        "endChar": 59
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a9b90d4b_08be5b84",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Yeah, I agree, because you can see that in some of my function settings, I setup the parameters within the call. The things I am very curious about is that, can there be potential benefits (e.g. clear view of each parameters) if I list all parameters for a func call, no matter how trivial the init of the param is?",
+      "parentUuid": "4a9f5cf0_5fc92972",
       "range": {
         "startLine": 181,
         "startChar": 22,
@@ -212,6 +398,24 @@
     },
     {
       "key": {
+        "uuid": "68173c27_4d6a6f2f",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Changed the return type to pointer.",
+      "parentUuid": "663d2273_3c80c5f1",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3f2d0b20_77421055",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -226,6 +430,24 @@
       "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e024e067_dd2557d3",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Yeah, it feels clearer to decouple the functionalities that way, thanks.",
+      "parentUuid": "3f2d0b20_77421055",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -252,6 +474,30 @@
     },
     {
       "key": {
+        "uuid": "10d45fb8_af737e00",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "I get the reason why the if below if redundant. From my understanding, the if err !\u003d nil {} structure is kinda standard for Golang error handling, informing the reader how the code is gonna handle the error. So my though here is that by keeping this structure, the code is more expectable to readers. What do you think?",
+      "parentUuid": "793f7ccc_e8b08b43",
+      "range": {
+        "startLine": 256,
+        "startChar": 2,
+        "endLine": 256,
+        "endChar": 7
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "db3c884d_20f992df",
         "filename": "pkg/ansible/docker_client_test.go",
         "patchSetId": 3
@@ -266,6 +512,24 @@
       "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "99d78909_ffc532cd",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-10-25T23:56:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "db3c884d_20f992df",
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
