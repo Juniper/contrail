@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "30ecffaf_9a622748",
+        "filename": "pkg/apisrv/replication/client.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-10-25T22:38:26Z",
+      "side": 1,
+      "message": "newVncAPIHandle will be called during server Init here https://github.com/Juniper/contrail/blob/c5050d40291489d91515490df198b261442cd354/pkg/apisrv/server.go#L193.  By that time api-server will not be started.\n\nSo  \"_, err :\u003d cl.Login(context.Background())\" should fail, I wonder how the UT\u0027s are passing.",
+      "revId": "9c21c7eb77c4b2320f71ade46767d787380ed2f1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
