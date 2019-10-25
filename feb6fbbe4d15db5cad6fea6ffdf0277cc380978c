@@ -52,6 +52,24 @@
       "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ff9fce72_f14b4dff",
+        "filename": "playbooks/contrail-go-docker/run.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 760
+      },
+      "writtenOn": "2019-10-25T14:34:06Z",
+      "side": 1,
+      "message": "You are right about the base OS image version.\nHowever, I refuse one thing, I don\u0027t want to create CI that works randomly. (I don\u0027t want to fall back to master just because of some transient tagging error or network error.) So I\u0027m changing to always use the branched tag, plz review.",
+      "parentUuid": "23a8fd53_ed6bc83f",
+      "revId": "feb6fbbe4d15db5cad6fea6ffdf0277cc380978c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
