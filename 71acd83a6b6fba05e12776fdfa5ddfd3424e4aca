@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d14f67bc_d5c45365",
+        "filename": "pkg/apisrv/grpc_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-28T23:15:09Z",
+      "side": 1,
+      "message": "Is it a prefix or a suffix then? Maybe it should be just called AuthPath?",
+      "revId": "71acd83a6b6fba05e12776fdfa5ddfd3424e4aca",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "244fb388_71146f74",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-28T23:15:09Z",
+      "side": 1,
+      "message": "No nil checks here? It won\u0027t panic?",
+      "revId": "71acd83a6b6fba05e12776fdfa5ddfd3424e4aca",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7ab5041b_d923a36a",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-28T23:15:09Z",
+      "side": 1,
+      "message": "Please be consistent with the naming - keystoneEndpoint should be shortened as well.",
+      "revId": "71acd83a6b6fba05e12776fdfa5ddfd3424e4aca",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "908eebba_81fd3b90",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 309,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-28T23:15:09Z",
+      "side": 1,
+      "message": "I guess this variable is redundant",
+      "range": {
+        "startLine": 309,
+        "startChar": 3,
+        "endLine": 309,
+        "endChar": 18
+      },
+      "revId": "71acd83a6b6fba05e12776fdfa5ddfd3424e4aca",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
