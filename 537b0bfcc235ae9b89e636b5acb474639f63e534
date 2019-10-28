@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "d0b53e69_2147000c",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "1. Add workRoot parameter to Cloud Config (https://sourcegraph.com/github.com/Juniper/contrail/-/blob/pkg/cloud/manager.go#L85:18) and set it in tests to \"test_output/tmp\".\n\n2. Add workDir parameter to GetCloudDir function\n\n3. Cloud should use defaultWorkRoot when config.workRoot is empty.\n\nI suggest to add a TODO: use relative path in every test that uses relative paths for now. And implement it in separate CR.",
+      "parentUuid": "f22e5a80_e3067acb",
+      "range": {
+        "startLine": 53,
+        "startChar": 19,
+        "endLine": 53,
+        "endChar": 27
+      },
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "15c2ee08_324365d5",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 18
@@ -84,6 +108,24 @@
     },
     {
       "key": {
+        "uuid": "230bb454_81467055",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a9020f5e_a25ec128",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e1295ecc_67043a0c",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 18
@@ -116,6 +158,24 @@
       "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f51d0557_c45fd631",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0d795253_c7a72d52",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -190,6 +250,30 @@
     },
     {
       "key": {
+        "uuid": "a9d78477_064a9763",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6d66b051_69bf3a3e",
+      "range": {
+        "startLine": 235,
+        "startChar": 15,
+        "endLine": 235,
+        "endChar": 30
+      },
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8ceedc46_59485153",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 18
@@ -237,6 +321,30 @@
     },
     {
       "key": {
+        "uuid": "6c64d99f_bafe9221",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c4dcc094_fc549e17",
+      "range": {
+        "startLine": 243,
+        "startChar": 32,
+        "endLine": 243,
+        "endChar": 47
+      },
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "38e72c8d_c6ea2413",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 18
@@ -251,6 +359,24 @@
       "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a585ac0_89c49aef",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 476,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "38e72c8d_c6ea2413",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -289,6 +415,24 @@
     },
     {
       "key": {
+        "uuid": "043a5edb_79dfc2bb",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 533,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a704ec2d_c20e1790",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "00794706_40a54612",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 18
@@ -321,6 +465,24 @@
       "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6be920ad_620402aa",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 588,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "44170926_73b5c0bf",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -359,6 +521,24 @@
     },
     {
       "key": {
+        "uuid": "288a007c_fe2d7540",
+        "filename": "pkg/cloud/test_data/aws/sample_create_requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2fd44929_292bd06b",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6da8d28a_6dd92739",
         "filename": "pkg/cloud/test_data/aws/test_aws_update/requests.yml",
         "patchSetId": 18
@@ -391,6 +571,24 @@
       "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "36cb8d56_c7455690",
+        "filename": "pkg/cloud/test_data/aws/test_aws_update/requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7ff02d27_f3860159",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -429,6 +627,24 @@
     },
     {
       "key": {
+        "uuid": "56e7653a_9eb930e8",
+        "filename": "pkg/cloud/test_data/aws/test_aws_update/requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0634e48e_86336a48",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3335e3b5_72d1ed37",
         "filename": "pkg/cloud/test_data/gcp/sample_create_requests.yml",
         "patchSetId": 18
@@ -461,6 +677,24 @@
       "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24cc926c_b848b7ff",
+        "filename": "pkg/cloud/test_data/gcp/sample_create_requests.yml",
+        "patchSetId": 18
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-28T10:06:31Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3ba105cb_3d3481f5",
+      "revId": "537b0bfcc235ae9b89e636b5acb474639f63e534",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
