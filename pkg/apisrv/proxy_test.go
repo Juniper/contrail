@@ -400,13 +400,14 @@ func neutronPortsPublicPath(clusterName string) string {
 // Keystone tests //
 ////////////////////
 
-func TestKeystoneEndpointsProxying(t *testing.T) {
+const (
+	endpointName         = "keystone-endpoint"
+	usernameC, usernameD = "test-user-C", "test-user-D"
+	passwordC, passwordD = "test-password-C", "test-password-D"
+)
+
+func TestKeystoneRequestsProxying(t *testing.T) {
 	// arrange
-	const (
-		endpointName         = "keystone-endpoint"
-		usernameC, usernameD = "test-user-C", "test-user-D"
-		passwordC, passwordD = "test-password-C", "test-password-D"
-	)
 	clusterCName, clusterDName := contrailClusterName(t, "C"), contrailClusterName(t, "D")
 	authURL := server.URL() + keystone.AuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
@@ -466,49 +467,116 @@ func TestKeystoneEndpointsProxying(t *testing.T) {
 	// act/assert
 	// When multiple cluster endpoints are present auth middleware should find the keystone endpoint
 	// with X-Cluster-ID in the header.
-	verifyKeystoneCreateTokenRequest(
-		auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterCName)),
-		t,
-		hcUserC,
-		"with X-Cluster-ID",
-	)
-	verifyKeystoneCreateTokenRequest(
-		auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterDName)),
-		t,
-		hcUserD,
-		"with X-Cluster-ID",
-	)
-	verifyKeystoneReadTokenRequest(
-		auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterCName)),
-		t,
-		hcUserC,
-		"with X-Cluster-ID",
-	)
-	verifyKeystoneReadTokenRequest(
-		auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterDName)),
-		t,
-		hcUserD,
-		"with X-Cluster-ID",
-	)
+	verifyKeystoneCreateTokenRequest(ctxWithXClusterID(clusterCName), t, hcUserC, "with X-Cluster-ID")
+	verifyKeystoneCreateTokenRequest(ctxWithXClusterID(clusterDName), t, hcUserD, "with X-Cluster-ID")
+	verifyKeystoneReadTokenRequest(ctxWithXClusterID(clusterCName), t, hcUserC, "with X-Cluster-ID")
+	verifyKeystoneReadTokenRequest(ctxWithXClusterID(clusterDName), t, hcUserD, "with X-Cluster-ID")
 
 	// When multiple cluster endpoints are present auth middleware cannot not find keystone endpoint
 	// without X-Cluster-ID in the header.
-	verifyKeystoneCreateTokenRequestFails(t, hcUserC, "without X-Cluster-ID")
-	verifyKeystoneCreateTokenRequestFails(t, hcUserD, "without X-Cluster-ID")
-	verifyKeystoneReadTokenRequestFails(t, hcUserC, "without X-Cluster-ID")
-	verifyKeystoneReadTokenRequestFails(t, hcUserD, "without X-Cluster-ID")
+	verifyKeystoneCreateTokenRequestFails(context.Background(), t, hcUserC, "without X-Cluster-ID")
+	verifyKeystoneCreateTokenRequestFails(context.Background(), t, hcUserD, "without X-Cluster-ID")
+	verifyKeystoneReadTokenRequestFails(context.Background(), t, hcUserC, "without X-Cluster-ID")
+	verifyKeystoneReadTokenRequestFails(context.Background(), t, hcUserD, "without X-Cluster-ID")
+}
+
+func TestKeystoneRequestsProxyingWithClosedRemoteKeystoneServers(t *testing.T) {
+	// arrange
+	clusterCName, clusterDName := contrailClusterName(t, "C"), contrailClusterName(t, "D")
+	authURL := server.URL() + keystone.AuthPath
+	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
+	hcUserC := client.NewHTTP(&client.HTTPConfig{
+		ID:       usernameC,
+		Password: passwordC,
+		Endpoint: server.URL(),
+		AuthURL:  authURL,
+		Insecure: true,
+	})
+	hcUserD := client.NewHTTP(&client.HTTPConfig{
+		ID:       usernameD,
+		Password: passwordD,
+		Endpoint: server.URL(),
+		AuthURL:  authURL,
+		Insecure: true,
+	})
+
+	cleanupCCC := createContrailCluster(t, hcBob, clusterCName)
+	defer cleanupCCC()
+	cleanupCCD := createContrailCluster(t, hcBob, clusterDName)
+	defer cleanupCCD()
+
+	ksPrivateC := integration.NewKeystoneServerFake(t, authURL, usernameC, passwordC)
+	defer ksPrivateC.Close()
+	ksPublicC := integration.NewKeystoneServerFake(t, authURL, usernameC, passwordC)
+	defer ksPublicC.Close()
+	ksPrivateD := integration.NewKeystoneServerFake(t, authURL, usernameD, passwordD)
+	defer ksPrivateD.Close()
+	ksPublicD := integration.NewKeystoneServerFake(t, authURL, usernameD, passwordD)
+	defer ksPublicD.Close()
+
+	cleanupEC := createEndpoint(t, hcBob, endpointParameters{
+		clusterName:    clusterCName,
+		endpointName:   endpointName,
+		endpointPrefix: keystoneEndpointPrefix,
+		privateURL:     ksPrivateC.URL,
+		publicURL:      ksPublicC.URL,
+		username:       usernameC,
+		password:       passwordC,
+	})
+	defer cleanupEC()
+
+	cleanupED := createEndpoint(t, hcBob, endpointParameters{
+		clusterName:    clusterDName,
+		endpointName:   endpointName,
+		endpointPrefix: keystoneEndpointPrefix,
+		privateURL:     ksPrivateD.URL,
+		publicURL:      ksPublicD.URL,
+		username:       usernameD,
+		password:       passwordD,
+	})
+	defer cleanupED()
+
+	server.ForceProxyUpdate()
+
+	// act/assert
+	verifyKeystoneCreateTokenRequest(ctxWithXClusterID(clusterCName), t, hcUserC, "0/2 Keystone servers closed")
+	verifyKeystoneCreateTokenRequest(ctxWithXClusterID(clusterDName), t, hcUserD, "0/2 Keystone servers closed")
+	verifyKeystoneReadTokenRequest(ctxWithXClusterID(clusterCName), t, hcUserC, "0/2 Keystone servers closed")
+	verifyKeystoneReadTokenRequest(ctxWithXClusterID(clusterDName), t, hcUserD, "0/2 Keystone servers closed")
+
+	ksPrivateC.Close()
+	ksPublicC.Close()
+
+	// TODO: fix implementation
+	//verifyKeystoneCreateTokenRequest(ctxWithXClusterID(clusterCName), t, hcUserC, "1/2 Keystone servers closed")
+	//verifyKeystoneCreateTokenRequest(ctxWithXClusterID(clusterDName), t, hcUserD, "1/2 Keystone servers closed")
+	//verifyKeystoneReadTokenRequest(ctxWithXClusterID(clusterCName), t, hcUserC, "1/2 Keystone servers closed")
+	//verifyKeystoneReadTokenRequest(ctxWithXClusterID(clusterDName), t, hcUserD, "1/2 Keystone servers closed")
+
+	ksPrivateD.Close()
+	ksPublicD.Close()
+
+	// verify failure
+	verifyKeystoneCreateTokenRequestFails(ctxWithXClusterID(clusterCName), t, hcUserC, "all Keystone servers closed")
+	verifyKeystoneCreateTokenRequestFails(ctxWithXClusterID(clusterDName), t, hcUserD, "all Keystone servers closed")
+	verifyKeystoneReadTokenRequestFails(ctxWithXClusterID(clusterCName), t, hcUserC, "all Keystone servers closed")
+	verifyKeystoneReadTokenRequestFails(ctxWithXClusterID(clusterDName), t, hcUserD, "all Keystone servers closed")
+}
+
+func ctxWithXClusterID(clusterName string) context.Context {
+	return auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterName))
 }
 
 func verifyKeystoneCreateTokenRequest(
 	ctx context.Context, t *testing.T, hc *client.HTTP, msg string,
 ) {
 	_, err := hc.Login(ctx)
-	assert.NoError(t, err, msg, fmt.Sprintf("HTTP client ID: %s", hc.ID))
+	assert.NoError(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 
-func verifyKeystoneCreateTokenRequestFails(t *testing.T, hc *client.HTTP, msg string) {
-	_, err := hc.Login(context.Background())
-	assert.Error(t, err, "operation succeeded unexpectedly", msg, fmt.Sprintf("HTTP client ID: %s", hc.ID))
+func verifyKeystoneCreateTokenRequestFails(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+	_, err := hc.Login(ctx)
+	assert.Error(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 
 func verifyKeystoneReadTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
@@ -524,12 +592,12 @@ func verifyKeystoneReadTokenRequest(ctx context.Context, t *testing.T, hc *clien
 	}
 }
 
-func verifyKeystoneReadTokenRequestFails(t *testing.T, hc *client.HTTP, msg string) {
+func verifyKeystoneReadTokenRequestFails(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
 	var response interface{}
-	_, err := hc.Read(context.Background(), path.Join(keystone.AuthPath, "auth/tokens"), &response)
+	_, err := hc.Read(ctx, path.Join(keystone.AuthPath, "auth/tokens"), &response)
 
-	assert.Error(t, err, msg, fmt.Sprintf("HTTP client ID: %s", hc.ID))
-	assert.Nil(t, response, msg, fmt.Sprintf("HTTP client ID: %s", hc.ID))
+	assert.Error(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
+	assert.Nil(t, response, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 
 ////////////////////////////////////

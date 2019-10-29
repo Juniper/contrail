@@ -407,6 +407,7 @@ func (s *Server) registerStaticProxyEndpoints() error {
 			return errors.Errorf("no target URLs provided for prefix %v", prefix)
 		}
 
+		// TODO(dfurman): proxy requests to all provided target URLs
 		t, err := url.Parse(targetURLs[0])
 		if err != nil {
 			return errors.Wrapf(err, "bad proxy target URL: %s", targetURLs[0])
