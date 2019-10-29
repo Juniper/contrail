@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "e1feec43_77a55a9b",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-29T15:22:30Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "38c37f51_9d381562",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0d7cd843_2465e5a9",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 3
@@ -69,6 +87,24 @@
       "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b8d6b30_f51222fe",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-29T15:22:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "01ba346e_09f59c41",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -139,6 +175,24 @@
       "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a0e80c37_4ece28e8",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-29T15:22:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ca0169aa_548c009e",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
