@@ -168,9 +168,9 @@ func runUnderCloudActionTest(
 func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]interface{}) {
 	// mock keystone to let access server after cloudManager create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.NewKeystoneServerFake(t, keystoneAuthURL, "", "")
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.NewKeystoneServerFake(t, keystoneAuthURL, "", "")
 	defer ksPrivate.Close()
 
 	// Create the cloudManager and related objects

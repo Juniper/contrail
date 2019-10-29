@@ -110,11 +110,9 @@ func runCloudTest(
 ) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	ksPublic := integration.NewKeystoneServerFake(t, keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	ksPrivate := integration.NewKeystoneServerFake(t, keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
 	// create cloud related objects

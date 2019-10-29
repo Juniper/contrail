@@ -44,22 +44,13 @@ type proxyService struct {
 	log              *logrus.Entry
 }
 
-func newProxyService(
-	e *echo.Echo, es *endpoint.Store, dbService services.Service, dynamicProxyPath string,
-) *proxyService {
-	log := logutil.NewLogger("proxy-service")
-
-	if dynamicProxyPath == "" {
-		dynamicProxyPath = DefaultDynamicProxyPath
-	}
-	e.Group(dynamicProxyPath, dynamicProxyMiddleware(es, dynamicProxyPath))
-
+func newProxyService(es *endpoint.Store, dbService services.Service, dynamicProxyPath string) *proxyService {
 	return &proxyService{
 		endpointStore:    es,
 		dbService:        dbService,
 		dynamicProxyPath: dynamicProxyPath,
 		forceUpdateChan:  make(chan chan struct{}),
-		log:              log,
+		log:              logutil.NewLogger("proxy-service"),
 	}
 }
 
@@ -143,8 +134,8 @@ func clusterID(url, dynamicProxyPath string) (clusterID string) {
 	return ""
 }
 
-// Serve starts proxy service.
-func (p *proxyService) Serve() {
+// StartEndpointsSync starts synchronization of proxy endpoints.
+func (p *proxyService) StartEndpointsSync() {
 	serviceCtx, cancel := context.WithCancel(context.Background())
 	p.stopService = cancel
 
@@ -308,8 +299,8 @@ func (p *proxyService) ForceUpdate() {
 	<-wait
 }
 
-// Stop stops proxy service.
-func (p *proxyService) Stop() {
+// StopEndpointsSync stops synchronization of proxy endpoints.
+func (p *proxyService) StopEndpointsSync() {
 	// stop proxy server poll
 	p.stopService()
 	// wait for the proxy server poll to complete

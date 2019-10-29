@@ -172,6 +172,7 @@ func (e *Store) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
 	if clusterID == "" {
 		return nil
 	}
+	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
 	if targets == nil {
 		return nil
