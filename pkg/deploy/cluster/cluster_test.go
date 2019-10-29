@@ -375,11 +375,11 @@ func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.NewKeystoneServerFake(t, keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
-	defer ksPublic.Close()
-	ksPrivate := integration.NewKeystoneServerFake(t, keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
-	defer ksPrivate.Close()
+	//keystoneAuthURL := viper.GetString("keystone.authurl")
+	//ksPublic := integration.NewKeystoneServerFake(t, keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	//defer ksPublic.Close()
+	//ksPrivate := integration.NewKeystoneServerFake(t, keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
+	//defer ksPrivate.Close()
 
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(allInOneClusterTemplatePath, pContext)
