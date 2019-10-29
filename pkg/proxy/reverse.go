@@ -18,9 +18,8 @@ import (
 
 // Proxy constants.
 const (
-	UserAgentHeader = "User-Agent"
-
 	skipServerCertificateVerification = true // TODO: add "insecure" field to endpoint schema
+	userAgentHeader                   = "User-Agent"
 )
 
 // NewReverseProxy returns a new ReverseProxy that routes URLs to the scheme, host, and base path
@@ -71,9 +70,9 @@ func mergeQueries(requestQuery, targetQuery string) string {
 }
 
 func withNoDefaultUserAgent(h http.Header) http.Header {
-	if _, ok := h[UserAgentHeader]; !ok {
+	if _, ok := h[userAgentHeader]; !ok {
 		// explicitly disable User-Agent so it's not set to default value
-		h.Set(UserAgentHeader, "")
+		h.Set(userAgentHeader, "")
 	}
 	return h
 }

@@ -51,7 +51,7 @@ func GetAuthSkipPaths() ([]string, error) {
 //nolint: gocyclo
 func AuthMiddleware(keystoneClient *Client, skipPath []string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		keystoneClient.AuthURL = keystoneClient.LocalAuthURL
+		keystoneClient.AuthURLs = keystoneClient.LocalAuthURL
 		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
 			for _, pathQuery := range skipPath {
@@ -99,7 +99,7 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string) echo.MiddlewareFu
 
 //AuthInterceptor for Auth process for gRPC based apps.
 func AuthInterceptor(keystoneClient *Client) grpc.UnaryServerInterceptor {
-	keystoneClient.AuthURL = keystoneClient.LocalAuthURL
+	keystoneClient.AuthURLs = keystoneClient.LocalAuthURL
 	auth := keystoneClient.NewAuth()
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

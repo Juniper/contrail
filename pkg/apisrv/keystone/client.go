@@ -4,29 +4,29 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"strings"
-	"time"
 
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
+// Keystone client constants.
 const (
+	LocalKeystonePath = "/keystone/v3"
+
 	keystoneVersion = "v3"
-	authPrefix      = "/keystone/" + keystoneVersion
-	pathSep         = "/"
 )
 
 // Client represents a client.
 type Client struct {
-	AuthURL      string `yaml:"authurl"`
+	AuthURLs     string `yaml:"authurl"`
 	LocalAuthURL string `yaml:"local_authurl"`
 	httpClient   *http.Client
 	InSecure     bool `yaml:"insecure"`
@@ -35,7 +35,7 @@ type Client struct {
 // NewClient makes keystone client.
 func NewClient(authURL string, insecure bool) *Client {
 	c := &Client{
-		AuthURL:      authURL,
+		AuthURLs:     authURL,
 		LocalAuthURL: authURL,
 		InSecure:     insecure,
 	}
@@ -57,7 +57,7 @@ func (k *Client) Init() {
 
 // SetAuthURL uses specified auth url in the keystone auth.
 func (k *Client) SetAuthURL(authURL string) {
-	k.AuthURL = authURL + "/" + keystoneVersion
+	k.AuthURLs = authURL + "/" + keystoneVersion
 }
 
 // SetAuthIdentity uses specified auth creds in the keystone auth request.
@@ -71,7 +71,7 @@ func (k *Client) SetAuthIdentity(
 
 // NewAuth creates new keystone auth
 func (k *Client) NewAuth() *keystone.Auth {
-	auth := keystone.New(k.AuthURL)
+	auth := keystone.New(k.AuthURLs)
 	auth.Client = k.httpClient
 	return auth
 }
@@ -87,71 +87,59 @@ func (k *Client) ValidateToken(c echo.Context) error {
 }
 
 func (k *Client) tokenRequest(c echo.Context) error {
+	rp, err := proxy.NewReverseProxy([]string{k.AuthURLs})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("new reverse proxy: %v", err))
+	}
+
 	r := c.Request()
 	r.URL.Path = "/auth/tokens"
-	tokenURL, err := url.Parse(k.AuthURL)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	server := newCustomSingleHostReverseProxy(tokenURL)
-	server.ServeHTTP(c.Response(), r)
+
+	rp.ServeHTTP(c.Response(), r)
 	return nil
 }
 
 // GetDomains sends domain get request to keystone endpoint.
 func (k *Client) GetDomains(c echo.Context) error {
-	r := c.Request()
-	r.URL.Path = strings.TrimPrefix(r.URL.Path, authPrefix)
-	projectURL, err := url.Parse(k.AuthURL)
+	rp, err := proxy.NewReverseProxy([]string{k.AuthURLs})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("new reverse proxy: %v", err))
 	}
-	server := newCustomSingleHostReverseProxy(projectURL)
-	server.ServeHTTP(c.Response(), r)
+
+	r := c.Request()
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, LocalKeystonePath)
+
+	rp.ServeHTTP(c.Response(), r)
 	return nil
 }
 
 // GetProjects sends project get request to keystone endpoint.
 func (k *Client) GetProjects(c echo.Context) error {
-	r := c.Request()
-	r.URL.Path = strings.TrimPrefix(r.URL.Path, authPrefix)
-	projectURL, err := url.Parse(k.AuthURL)
+	rp, err := proxy.NewReverseProxy([]string{k.AuthURLs})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("new reverse proxy: %v", err))
 	}
-	server := newCustomSingleHostReverseProxy(projectURL)
-	server.ServeHTTP(c.Response(), r)
+
+	r := c.Request()
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, LocalKeystonePath)
+
+	rp.ServeHTTP(c.Response(), r)
 	return nil
 }
 
 // GetProject sends project get request to keystone endpoint.
 func (k *Client) GetProject(c echo.Context, id string) error {
-	r := c.Request()
-	urlParts := []string{
-		strings.TrimPrefix(r.URL.Path, authPrefix), id}
-	r.URL.Path = strings.Join(urlParts, pathSep)
-	projectURL, err := url.Parse(k.AuthURL)
+	rp, err := proxy.NewReverseProxy([]string{k.AuthURLs})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("new reverse proxy: %v", err))
 	}
-	server := newCustomSingleHostReverseProxy(projectURL)
-	server.ServeHTTP(c.Response(), r)
+
+	r := c.Request()
+	r.URL.Path = strings.Join(
+		[]string{strings.TrimPrefix(r.URL.Path, LocalKeystonePath), id},
+		"/",
+	)
+
+	rp.ServeHTTP(c.Response(), r)
 	return nil
-}
-
-func newCustomSingleHostReverseProxy(url *url.URL) (server *httputil.ReverseProxy) {
-	server = httputil.NewSingleHostReverseProxy(url)
-	//TODO:(ijohnson) add insecure to endpoint schema
-	if url.Scheme == "https" {
-		server.Transport = &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			TLSHandshakeTimeout: 10 * time.Second,
-		}
-	}
-
-	return server
 }

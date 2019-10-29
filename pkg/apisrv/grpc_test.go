@@ -460,7 +460,7 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 		ID:       projectName,
 		Password: projectName,
 		Endpoint: server.URL(),
-		AuthURL:  server.URL() + keystone.AuthPath,
+		AuthURL:  server.URL() + keystone.LocalKeystonePath,
 		Scope:    pkgkeystone.NewScope("", "default", "", projectName),
 		Insecure: true,
 	})

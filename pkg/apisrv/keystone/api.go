@@ -21,8 +21,6 @@ import (
 
 // Keystone constants.
 const (
-	AuthPath = "/keystone/v3"
-
 	configService   = "config"
 	xClusterIDKey   = "X-Cluster-ID"
 	basicAuth       = "basic-auth"
