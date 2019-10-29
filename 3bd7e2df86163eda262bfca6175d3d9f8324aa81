@@ -1,0 +1,222 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "421b1136_f10ed5bd",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "\"absolute\"",
+      "range": {
+        "startLine": 38,
+        "startChar": 51,
+        "endLine": 38,
+        "endChar": 59
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2dc0e944_e48db0dd",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "Please strip \"copying file failed\" in multiple places, beacuse it describes result of the error, not its cause. Take a look if in doubt: https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully",
+      "range": {
+        "startLine": 138,
+        "startChar": 32,
+        "endLine": 138,
+        "endChar": 52
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0061770b_994bd472",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 151,
+        "startChar": 1,
+        "endLine": 151,
+        "endChar": 4
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11cdf258_94f02bae",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "This could be local const. Just add const keyword here.",
+      "range": {
+        "startLine": 13,
+        "startChar": 1,
+        "endLine": 13,
+        "endChar": 12
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11e1ca41_e0192912",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "Please keep Copy() args (tt.srcFilepath, tt.dstFilepath, tt.overwrite)) next to each other.",
+      "range": {
+        "startLine": 23,
+        "startChar": 2,
+        "endLine": 23,
+        "endChar": 11
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f5c471ae_7cc63f81",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "Use relative paths, e.g. test_output/copy_test_file. It will create a test_output directory within fileutil direcotry.",
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1be9228b_fe3349b5",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "IMO this is not needed.",
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "964bb694_9f86ee44",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "Call it once (not twice), before all those assertions to differentiate Act (when) section from Assert (then) section.",
+      "range": {
+        "startLine": 68,
+        "startChar": 20,
+        "endLine": 68,
+        "endChar": 28
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7a04b10a_093fdef7",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "\"createParentDirectory\"",
+      "range": {
+        "startLine": 83,
+        "startChar": 5,
+        "endLine": 83,
+        "endChar": 24
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce839cf0_bc795444",
+        "filename": "pkg/fileutil/fileutil_test.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T12:09:11Z",
+      "side": 1,
+      "message": "Please just read and return file content here and do assertions in unit test body. Use assert.Equal().",
+      "range": {
+        "startLine": 99,
+        "startChar": 5,
+        "endLine": 99,
+        "endChar": 17
+      },
+      "revId": "3bd7e2df86163eda262bfca6175d3d9f8324aa81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
