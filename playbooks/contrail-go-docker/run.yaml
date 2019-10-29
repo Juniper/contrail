@@ -52,12 +52,3 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
-
-- hosts: builder
-  name: Publish containers to the internal registry
-  roles:
-    - role: publish-container-images
-      registry: "{{ contrail_docker_registry }}"
-      tag: "{{distro}}{{ packaging.docker_version }}"
-      images:
-        - { name: contrail-go, tag: latest }
