@@ -38,7 +38,7 @@ func TestBenchAPI(t *testing.T) {
 		ID:       testName,
 		Password: testName,
 		Endpoint: host,
-		AuthURL:  host + apisrvkeystone.AuthPath,
+		AuthURL:  host + apisrvkeystone.LocalAuthPath,
 		Scope:    keystone.NewScope("", "default", "", testName),
 		Insecure: true,
 	})

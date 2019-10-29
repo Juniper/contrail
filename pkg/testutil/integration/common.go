@@ -373,7 +373,7 @@ func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server 
 			ID:       c.ID,
 			Password: c.Password,
 			Endpoint: server.URL(),
-			AuthURL:  server.URL() + keystone.AuthPath,
+			AuthURL:  server.URL() + keystone.LocalAuthPath,
 			Scope:    c.Scope,
 			Insecure: c.Insecure,
 		})

@@ -18,9 +18,8 @@ import (
 
 // Proxy constants.
 const (
-	UserAgentHeader = "User-Agent"
-
 	skipServerCertificateVerification = true // TODO: add "insecure" field to endpoint schema
+	userAgentHeader                   = "User-Agent"
 )
 
 // NewReverseProxy returns a new ReverseProxy that routes URLs to the scheme, host, and base path
@@ -53,11 +52,20 @@ func parseTargetURLs(rawTargetURLs []string) []*url.URL {
 
 func director(firstTargetURL *url.URL) func(r *http.Request) {
 	return func(r *http.Request) {
+		fmt.Println("hoge rp.director start")
+		fmt.Printf("firstTargetURL: %v %#v\n", firstTargetURL, firstTargetURL)
+		fmt.Printf("r.URL: %v %#v\n", r.URL, r.URL)
+		fmt.Printf("r.Header: %v\n", r.Header)
+
 		r.URL.Scheme = firstTargetURL.Scheme
 		r.URL.Host = firstTargetURL.Host // request host might be reassigned in ReverseProxy.Transport.DialContext.
 		r.URL.Path = path.Join("/", firstTargetURL.Path, r.URL.Path)
 		r.URL.RawQuery = mergeQueries(r.URL.RawQuery, firstTargetURL.RawQuery)
 		r.Header = withNoDefaultUserAgent(r.Header)
+
+		fmt.Println("hoge rp.director end")
+		fmt.Printf("r.URL: %v %#v\n", r.URL, r.URL)
+		fmt.Printf("r.Header: %v\n", r.Header)
 
 		logrus.WithField("url", r.URL).Debug("Reverse proxy: proxying request")
 	}
@@ -71,9 +79,9 @@ func mergeQueries(requestQuery, targetQuery string) string {
 }
 
 func withNoDefaultUserAgent(h http.Header) http.Header {
-	if _, ok := h[UserAgentHeader]; !ok {
+	if _, ok := h[userAgentHeader]; !ok {
 		// explicitly disable User-Agent so it's not set to default value
-		h.Set(UserAgentHeader, "")
+		h.Set(userAgentHeader, "")
 	}
 	return h
 }
@@ -88,6 +96,8 @@ func transport(targetURLs []*url.URL) *http.Transport {
 }
 
 func roundRobinDial(ctx context.Context, network string, targetURLs []*url.URL) (net.Conn, error) {
+	fmt.Printf("hoge rp.transport.Dial; network %v, targetURLs %v\n", network, targetURLs)
+
 	var errs []error
 	var d net.Dialer
 	for _, targetURL := range targetURLs {
