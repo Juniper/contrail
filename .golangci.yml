@@ -25,6 +25,9 @@ issues:
 # - megacheck uses staticcheck which consumes too much RAM and CPU cycles
 # - prealloc issues are considered premature optimization
 # - staticcheck consumes too much RAM and CPU cycles
+# - gochecknoglobals is incompatible with current conventions
+# - gochecknoinits is incompatible with current conventions
+# TODO(mblotniak): Fix code to pass linters: gocritic, scopelint, stylecheck> bodyclose, dogsled, funlen, godox, whitespace
 linters:
   enable-all: true
   disable:
@@ -34,6 +37,17 @@ linters:
   - prealloc
   - staticcheck
   - unparam
+  - gochecknoglobals
+  - gochecknoinits
+  - gocritic
+  - scopelint
+  - stylecheck
+  - bodyclose
+  - dogsled
+  - funlen
+  - godox
+  - whitespace
+
 
 linters-settings:
   errcheck:

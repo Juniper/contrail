@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
-	"github.com/sirupsen/logrus"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 // ResourceManager to manage resources
