@@ -167,23 +167,21 @@ func (s *Server) Init() (err error) {
 	endpointStore := endpoint.NewStore()
 	s.serveDynamicProxy(endpointStore)
 
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	var keystoneClient *keystone.Client
+	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
 	if keystoneAuthURL != "" {
 		var skipPaths []string
-		keystoneClient = keystone.NewClient(keystoneAuthURL, viper.GetBool("keystone.insecure"))
 		skipPaths, err = keystone.GetAuthSkipPaths()
 		if err != nil {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
-		s.Echo.Use(keystone.AuthMiddleware(keystoneClient, skipPaths))
+		s.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
 	} else if viper.GetBool("no_auth") {
 		s.Echo.Use(noAuthMiddleware())
 	}
-	localKeystone := viper.GetBool("keystone.local")
-	if localKeystone {
+
+	if viper.GetBool("keystone.local") {
 		var k *keystone.Keystone
-		k, err = keystone.Init(s.Echo, endpointStore, keystoneClient)
+		k, err = keystone.Init(s.Echo, endpointStore, keystoneInsecure)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
@@ -207,7 +205,10 @@ func (s *Server) Init() (err error) {
 			grpc.CustomCodec(protocodec.New(0)),
 		}
 		if keystoneAuthURL != "" {
-			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(keystoneClient)))
+			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(
+				keystoneAuthURL,
+				keystoneInsecure,
+			)))
 		} else if viper.GetBool("no_auth") {
 			opts = append(opts, grpc.UnaryInterceptor(noAuthInterceptor()))
 		}
@@ -407,6 +408,7 @@ func (s *Server) registerStaticProxyEndpoints() error {
 			return errors.Errorf("no target URLs provided for prefix %v", prefix)
 		}
 
+		// TODO(dfurman): proxy requests to all provided target URLs
 		t, err := url.Parse(targetURLs[0])
 		if err != nil {
 			return errors.Wrapf(err, "bad proxy target URL: %s", targetURLs[0])

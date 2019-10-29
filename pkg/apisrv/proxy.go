@@ -24,7 +24,7 @@ import (
 // Proxy service related constants.
 const (
 	DefaultDynamicProxyPath = "proxy"
-	ProxySyncInterval       = 2 * time.Second
+	ProxySyncInterval       = 100 * time.Millisecond
 	XClusterIDKey           = "X-Cluster-ID"
 
 	limit         = 100
@@ -63,11 +63,11 @@ func dynamicProxyMiddleware(
 			pp := proxyPrefix(r.URL.Path, scope(r.URL.Path))
 			rp, err := reverseProxy(es, r.URL.Path, pp)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
 			if err = setClusterIDKeyHeader(r, dynamicProxyPath); err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
 			r.URL.Path = strings.TrimPrefix(r.URL.Path, strings.TrimSuffix(pp, endpoint.PublicURLScope))
