@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "38c37f51_9d381562",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T11:22:27Z",
+      "side": 1,
+      "message": "We could do it in separate CR. We have multiple tests without integration_test.go suffix that use spawned API Server (server_test.go, homepage_test.go, ...). So we could rename them all without code change in separate CR.\n\nNow I want to focus on fixing proxy bug and moving on to ASF",
+      "parentUuid": "c438900a_36591d3e",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0d7cd843_2465e5a9",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2019-10-23T20:35:20Z",
       "side": 1,
       "message": "Redundant newline",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "01ba346e_09f59c41",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T11:22:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0d7cd843_2465e5a9",
       "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "c8c1edd2_646d1a96",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 442,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T11:22:27Z",
+      "side": 1,
+      "message": "Test removed, because it did not test proxy at all.",
+      "parentUuid": "96d55656_139f2d90",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "90189d60_58169ad6",
         "filename": "pkg/testutil/integration/keystone_fake.go",
         "patchSetId": 3
@@ -64,6 +118,24 @@
       "writtenOn": "2019-10-23T20:35:20Z",
       "side": 1,
       "message": "I would opt for similar error handling approach like in production code - pass errs everywhere and handle them in top level.\n\nI know that NewKeystoneServerFake is meant to be a testing function, so let\u0027s keep it like it is, but here `withKeystoneUser` can return (*ketstone.Keystone, error) and this can be handled in NewKeystoneServerFake. That makes the signature less polluted and easier to reuse in other code (I know that this func has low reuse probability, but I would try to stick to this). The resulting code handles errors like any other code.",
+      "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ca0169aa_548c009e",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-29T11:22:27Z",
+      "side": 1,
+      "message": "Good idea. For this example I\u0027d like to keep NewKeystoneServerFake as place for assertion.\n\nGenerally I\u0027d like not to pollute integration tests\u0027 code with bare assertions, to make them shorter and arguably more readable, so I do assertions on lower levels. But this solution is optimal.",
+      "parentUuid": "90189d60_58169ad6",
       "revId": "dfa352a7f956bccaebcf0f4108b6a0b60ede6fb1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
