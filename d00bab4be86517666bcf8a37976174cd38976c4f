@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3b46c2d4_40a31a49",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-29T15:54:45Z",
+      "side": 1,
+      "message": "Does this change the logic?",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "64f317b3_c6c72a54",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-29T15:54:45Z",
+      "side": 1,
+      "message": "This changes the logic - now some assertions will be skipped if one of them fails.",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e57aec76_5050acff",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-29T15:54:45Z",
+      "side": 1,
+      "message": "Can this be inlined and added to `files`?",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ad17297e_bec36e80",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-29T15:54:45Z",
+      "side": 1,
+      "message": "log the error instead of adding nolint",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
