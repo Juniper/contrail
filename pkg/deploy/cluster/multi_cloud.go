@@ -88,6 +88,10 @@ func (m *multiCloudProvisioner) Deploy() error {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) deploy() error {
+	if m.clusterData.ClusterInfo.ProvisioningState != statusNoState {
+		return nil
+	}
+
 	m.updateMCWorkDir()
 	pa := m.clusterData.ClusterInfo.ProvisioningAction
 
@@ -254,9 +258,6 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
-	if m.clusterData.ClusterInfo.ProvisioningState == statusNoState {
-		return false, nil
-	}
 	if _, err := os.Stat(m.getClusterTopoFile(m.workDir)); err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
