@@ -99,6 +99,30 @@
     },
     {
       "key": {
+        "uuid": "9e06eb95_88869520",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "+1, sorry I\u0027ve missed that",
+      "parentUuid": "97120414_66577f0e",
+      "range": {
+        "startLine": 38,
+        "startChar": 1,
+        "endLine": 38,
+        "endChar": 8
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cb2e3e32_ee4fc672",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 4
@@ -110,6 +134,24 @@
       "writtenOn": "2019-10-30T15:05:14Z",
       "side": 1,
       "message": "IMO this list of parameters is a little too long. Could you pass DockerClientConfig struct?\nOptionally store it as DockerClient\u0027s cfg/config field. It causes that configuration is nicely separated from other fields.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1133ab86_7fde7869",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "I partially disagree. I also thing this signature is a bit lengthy, however config structs usually suggest that some parameters are optional (because you can use keyed initializer, you cannot do this with argument list). I don\u0027t think it\u0027s mandatory always. On the other hand we could rely on bool zero values and that way we could omit them in some cases.",
+      "parentUuid": "cb2e3e32_ee4fc672",
       "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -139,6 +181,30 @@
     },
     {
       "key": {
+        "uuid": "2c9574a6_b21565c6",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "d1e213bb_7d89d4d1",
+      "range": {
+        "startLine": 82,
+        "startChar": 1,
+        "endLine": 82,
+        "endChar": 4
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "33bf220c_61b6fe89",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 4
@@ -150,6 +216,24 @@
       "writtenOn": "2019-10-30T15:05:14Z",
       "side": 1,
       "message": "This should be comment of DockerClient / DockerClientConfig in order for user of package to see usage prerequisites quicker.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed664aa9_93cf06e8",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "33bf220c_61b6fe89",
       "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -173,6 +257,24 @@
     },
     {
       "key": {
+        "uuid": "0a9ee481_2395e892",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "+1, sorry I\u0027ve missed that",
+      "parentUuid": "6fdef8ba_c94434e2",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d7cda020_d15b3d12",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 4
@@ -184,6 +286,30 @@
       "writtenOn": "2019-10-30T15:05:14Z",
       "side": 1,
       "message": "Please make it a member function instead of passing all those parameters. searchContainer, startExistingContainer, createRunningContainer, cleanContainer as well.",
+      "range": {
+        "startLine": 91,
+        "startChar": 8,
+        "endLine": 91,
+        "endChar": 17
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c970291_e6c9b2c2",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "Yep, that\u0027s the next refactoring step I would suggest after extracting the client. All those helper functions clearly deserve to be a method.",
+      "parentUuid": "d7cda020_d15b3d12",
       "range": {
         "startLine": 91,
         "startChar": 8,

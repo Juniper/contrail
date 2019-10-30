@@ -465,6 +465,30 @@
     },
     {
       "key": {
+        "uuid": "d0fc8410_eba5164b",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-10-30T15:47:58Z",
+      "side": 1,
+      "message": "Ok, so if that\u0027s not only me, I guess it should be inlined.\n\nBTW IMO this refactoring.guru page seems controversial and I disagree with the second link. I think that such functions shouldn\u0027t be extracted until they give some real value. The example they\u0027ve shown is invalid (they skipped the fact that the function still has to have access to the variables, either by params or methods) and I think is a way to produce cluttered Java code. Who are they to call themselves gurus? I see no references in the example, only subjective description.",
+      "parentUuid": "1570cd30_51997141",
+      "range": {
+        "startLine": 181,
+        "startChar": 22,
+        "endLine": 181,
+        "endChar": 59
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "663d2273_3c80c5f1",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
