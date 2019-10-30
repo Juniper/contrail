@@ -29,6 +29,7 @@ func manageCloud() {
 	}
 
 	if err := manager.Manage(); err != nil {
+		manager.SetActionToFailure()
 		logutil.FatalWithStackTrace(err)
 	}
 }
