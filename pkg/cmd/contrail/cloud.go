@@ -29,6 +29,9 @@ func manageCloud() {
 	}
 
 	if err := manager.Manage(); err != nil {
-		logutil.FatalWithStackTrace(err)
+		if setErr := manager.Fail(err.Error()); setErr != nil {
+			manager.Log.Errorf("Could not set Cloud state to failed state: %v", setErr)
+		}
+		manager.Log.Fatalf("Cloud operation failed: %v", err)
 	}
 }
