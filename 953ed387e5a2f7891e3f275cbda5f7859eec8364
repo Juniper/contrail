@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "94dabb0f_300ea7d1",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-30T15:51:49Z",
+      "side": 1,
+      "message": "Is this relevant here?",
+      "range": {
+        "startLine": 164,
+        "startChar": 46,
+        "endLine": 164,
+        "endChar": 61
+      },
+      "revId": "953ed387e5a2f7891e3f275cbda5f7859eec8364",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "739be910_9624c5b6",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-30T15:51:49Z",
+      "side": 1,
+      "message": "Put functions below their usage.",
+      "revId": "953ed387e5a2f7891e3f275cbda5f7859eec8364",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
