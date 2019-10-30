@@ -489,6 +489,30 @@
     },
     {
       "key": {
+        "uuid": "2bdf1279_2e3b0f22",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T16:49:32Z",
+      "side": 1,
+      "message": "Ok, extracting functions is controversial.\nHowever, this place needs just inlining.",
+      "parentUuid": "d0fc8410_eba5164b",
+      "range": {
+        "startLine": 181,
+        "startChar": 22,
+        "endLine": 181,
+        "endChar": 59
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "663d2273_3c80c5f1",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
