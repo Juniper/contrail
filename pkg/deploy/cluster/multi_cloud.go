@@ -189,7 +189,9 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 
 	err := m.verifyCloudStatus()
 	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		if m.clusterData.ClusterInfo.ProvisioningState != statusCreated {
+			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		}
 		return err
 	}
 
@@ -251,7 +253,9 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 	status[statusField] = statusUpdateFailed
 
 	if err := m.verifyCloudStatus(); err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		if m.clusterData.ClusterInfo.ProvisioningState != statusCreated {
+			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		}
 		return err
 	}
 
