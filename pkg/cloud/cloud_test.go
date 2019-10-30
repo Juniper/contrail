@@ -266,7 +266,7 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
-	assert.NoErrorf(t, cl.Manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
+	assert.NoErrorf(t, cl.manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
 
@@ -473,7 +473,7 @@ func testPublicCloudUpdateWithoutRemovingSecret(t *testing.T, pc *providerConfig
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
-	assert.NoErrorf(t, cl.manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
+	assert.NoErrorf(t, cl.handleCloudRequest(), "failed to handle cloud request: %s", pc.cloudAction)
 
 	compareSecret(t, pc.expectedSecretFile, cl.config.CloudID)
 }
@@ -604,7 +604,7 @@ func testPublicCloudDeletion(t *testing.T, pc *providerConfig) {
 
 	cl := prepareCloud(t, pc.cloudUUID, updateAction)
 
-	assert.NoError(t, cl.Manage(), "failed to manage cloud, while deleting cloud")
+	assert.NoError(t, cl.manage(), "failed to manage cloud, while deleting cloud")
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
 
@@ -673,7 +673,7 @@ func testOnPremUpdate(t *testing.T, pc *providerConfig) {
 	defer postActions(t, pc.cloudUUID)
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
-	assert.NoErrorf(t, cl.Manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
+	assert.NoErrorf(t, cl.manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
 	compareTopology(t, pc.expectedTopologyFile, cl.config.CloudID)
@@ -734,9 +734,9 @@ func testOnPremDelete(t *testing.T, pc *providerConfig) {
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
 	if pc.manageFails {
-		assert.Error(t, cl.Manage(), "manage cloud succeded but it shouldn't")
+		assert.Error(t, cl.manage(), "manage cloud succeded but it shouldn't")
 	} else {
-		assert.NoError(t, cl.Manage(), "failed to manage cloud, while deleting cloud")
+		assert.NoError(t, cl.manage(), "failed to manage cloud, while deleting cloud")
 		verifyCloudDeleted(cl.ctx, t, cl.APIServer, pc.cloudUUID)
 	}
 
