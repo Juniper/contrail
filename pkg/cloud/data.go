@@ -1038,11 +1038,6 @@ func (d *Data) update(isDelRequest bool) error {
 	return d.updateUsers()
 }
 
-func (d *Data) isCloudCreated() bool {
-	status := d.info.ProvisioningState
-	return d.cloud.config.Action != createAction || (status != statusNoState && status != "")
-}
-
 func (d *Data) isCloudPrivate() bool {
 	for _, provider := range d.info.CloudProviders {
 		if provider.Type == onPrem {
