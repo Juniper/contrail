@@ -117,6 +117,9 @@ func (m *multiCloudProvisioner) Deploy() error {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) deploy() error {
+	if m.clusterData.ClusterInfo.ProvisioningState != statusNoState {
+		return nil
+	}
 
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
@@ -149,7 +152,7 @@ func (m *multiCloudProvisioner) deploy() error {
 			return err
 		}
 	case deleteCloud:
-		if !m.isMCDeleteRequest() {
+		if m.clusterData.ClusterInfo.ProvisioningAction != deleteCloud {
 			return nil
 		}
 		status := map[string]interface{}{}
@@ -360,18 +363,7 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
 }
 
-func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
-	if m.clusterData.ClusterInfo.ProvisioningState == statusNoState &&
-		m.clusterData.ClusterInfo.ProvisioningAction == deleteCloud {
-		return true
-	}
-	return false
-}
-
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
-	if m.clusterData.ClusterInfo.ProvisioningState == statusNoState {
-		return false, nil
-	}
 	status := map[string]interface{}{}
 	if _, err := os.Stat(m.getClusterTopoFile(m.workDir)); err == nil {
 		ok, err := m.compareClusterTopologyFile()
