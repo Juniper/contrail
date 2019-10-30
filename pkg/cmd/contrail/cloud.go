@@ -1,6 +1,8 @@
 package contrail
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/cloud"
@@ -29,6 +31,9 @@ func manageCloud() {
 	}
 
 	if err := manager.Manage(); err != nil {
+		if setErr := manager.SetActionToFailure(err.Error()); setErr != nil {
+			logutil.FatalWithStackTrace(errors.New(err.Error() + ". " + setErr.Error()))
+		}
 		logutil.FatalWithStackTrace(err)
 	}
 }

@@ -118,6 +118,10 @@ func (m *multiCloudProvisioner) Deploy() error {
 // nolint: gocyclo
 func (m *multiCloudProvisioner) deploy() error {
 
+	if m.clusterData.ClusterInfo.ProvisioningState == statusCreated {
+		return nil
+	}
+
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
