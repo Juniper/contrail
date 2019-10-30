@@ -1,0 +1,507 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c9018d4d_4cb96bfe",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "\"Add handling of\"",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 5
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "85468b5d_751ec331",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Please adjust commit description to current implementation.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "661c90dd_abfa6e04",
+        "filename": "pkg/ansible/cli_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "CI failed. In order to find failures click CI\u0027s link in Gerrit CR comments, navigate to Ara (http://logs.opencontrail.org/63/54663/4/check/contrail-go-docker/96f8ee6/ara/), expand tasks and click red \"FAILED\" rectangle. It is the nices way to see CI failures.\nCI Steps to fix:\n- make check\n- make lint",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "13b792e8_533d405d",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Please run \"make deps \u0026\u0026 dep ensure\" in order to fix \"make check\" step.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "97120414_66577f0e",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "\"Do not store Contexts inside a struct type; instead, pass a Context explicitly to each function that needs it.\" See: https://golang.org/pkg/context/",
+      "range": {
+        "startLine": 38,
+        "startChar": 1,
+        "endLine": 38,
+        "endChar": 8
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cb2e3e32_ee4fc672",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "IMO this list of parameters is a little too long. Could you pass DockerClientConfig struct?\nOptionally store it as DockerClient\u0027s cfg/config field. It causes that configuration is nicely separated from other fields.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d1e213bb_7d89d4d1",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Please move it next to the usage (i.e. execCmd())",
+      "range": {
+        "startLine": 82,
+        "startChar": 1,
+        "endLine": 82,
+        "endChar": 4
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "33bf220c_61b6fe89",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "This should be comment of DockerClient / DockerClientConfig in order for user of package to see usage prerequisites quicker.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6fdef8ba_c94434e2",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "I think we should not log sensitive information, such as passwords.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d7cda020_d15b3d12",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Please make it a member function instead of passing all those parameters. searchContainer, startExistingContainer, createRunningContainer, cleanContainer as well.",
+      "range": {
+        "startLine": 91,
+        "startChar": 8,
+        "endLine": 91,
+        "endChar": 17
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2f9e3ea0_20656dec",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Typo",
+      "range": {
+        "startLine": 101,
+        "startChar": 25,
+        "endLine": 101,
+        "endChar": 33
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1a664696_b171836f",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "It think it should be image/imageRef/imageName, because this string references concrete Docker image. Please rename across  function call chain and in other functions. Correct me if I\u0027m wrong.",
+      "range": {
+        "startLine": 154,
+        "startChar": 51,
+        "endLine": 154,
+        "endChar": 64
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4b63cfb_7662486c",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Redundant variable. My explanation in patchset 3 comment.\nauthStr as well.",
+      "range": {
+        "startLine": 155,
+        "startChar": 1,
+        "endLine": 155,
+        "endChar": 11
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0239a46e_2760558c",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Linter will fail on that unchecked error. I suggest:\n\ndefer func() {\n  err \u003d reader.Close()\n  if err !\u003d nil {\n    c.log.WithError(err).Debug(...)\n  }\n}()",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "791c0e40_ea192d08",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 190,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Unused parameter",
+      "range": {
+        "startLine": 190,
+        "startChar": 100,
+        "endLine": 190,
+        "endChar": 113
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "170c35af_0b964b41",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 190,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Implementation returns values in different order. Please fix here and in createRunningContainer too.",
+      "range": {
+        "startLine": 190,
+        "startChar": 123,
+        "endLine": 190,
+        "endChar": 163
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "62edf3f9_a344c394",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "IMO 2 redundant variables",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c973ec1_47404737",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 198,
+        "startChar": 1,
+        "endLine": 198,
+        "endChar": 12
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "47938355_c1c0d332",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Is it a requirement to log it separately to file? If yes, I oppose to that., because it increases complexity and responsibility of the component.\nIf no, please use pkg/logutil based logger here and log to stdout. Then remove writeLog parameter.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aa52fb06_25bdaccc",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Shouldn\u0027t logic be inverted?",
+      "range": {
+        "startLine": 247,
+        "startChar": 4,
+        "endLine": 247,
+        "endChar": 22
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "832c84ea_345b8f4c",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "IMO helper types and functions should be kept below their usages (below test functions), because they are and implementation detail of tests.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "85efd025_f72e0310",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Please use t.Run() to create subtests. See: https://sourcegraph.com/github.com/Juniper/contrail/-/blob/pkg/errutil/errutil_test.go#L36 https://blog.golang.org/subtests\nIn other tests too.",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "51350fb4_2160fb7d",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Redundant variable. In other tests too.",
+      "range": {
+        "startLine": 130,
+        "startChar": 2,
+        "endLine": 130,
+        "endChar": 5
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f0b0adc_6242a6b6",
+        "filename": "pkg/ansible/docker_client_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "\"Pulling image\" Below as well.",
+      "range": {
+        "startLine": 139,
+        "startChar": 14,
+        "endLine": 139,
+        "endChar": 28
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cb34f3ee_365b904d",
+        "filename": "pkg/deploy/cluster/test_data/test_ansible_playbook_container.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "Is this file used?",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

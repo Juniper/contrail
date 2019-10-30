@@ -441,6 +441,30 @@
     },
     {
       "key": {
+        "uuid": "1570cd30_51997141",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "IMO it is best to avoid such temp variables and initialize everything inline or extracting to helper functions.\nThis is considered the best practice (see: https://refactoring.guru/inline-temp https://refactoring.guru/replace-temp-with-query). It emphasizes _what_ function does (lists containers, searches among them) instead of _how_ it does it (calculates containerListOpts, etc.).\n\nPlease remove containerListOpts.",
+      "parentUuid": "5c031fba_6131f557",
+      "range": {
+        "startLine": 181,
+        "startChar": 22,
+        "endLine": 181,
+        "endChar": 59
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "663d2273_3c80c5f1",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -579,6 +603,30 @@
       "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9edee7d3_e5a3613f",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-30T15:05:14Z",
+      "side": 1,
+      "message": "IMO, this temp is redundant.",
+      "parentUuid": "8fb9f958_a20c80b8",
+      "range": {
+        "startLine": 256,
+        "startChar": 2,
+        "endLine": 256,
+        "endChar": 7
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
