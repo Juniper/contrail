@@ -33,6 +33,23 @@
       "revId": "37419a819763bf3b61a317d47a9b79197033fc67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d4e92237_ca3c61ac",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 540,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-31T15:29:01Z",
+      "side": 1,
+      "message": "Created bug for that one: https://contrail-jws.atlassian.net/browse/CEM-10198",
+      "revId": "37419a819763bf3b61a317d47a9b79197033fc67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
