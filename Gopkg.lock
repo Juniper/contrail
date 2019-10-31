@@ -68,22 +68,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:8e47871087b94913898333f37af26732faaab30cdb41571136cf7aec9921dae7"
-  name = "github.com/PuerkitoBio/purell"
-  packages = ["."]
-  pruneopts = ""
-  revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
-  version = "v1.1.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:331a419049c2be691e5ba1d24342fc77c7e767a80c666a18fd8a9f7b82419c1c"
-  name = "github.com/PuerkitoBio/urlesc"
-  packages = ["."]
-  pruneopts = ""
-  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
-
-[[projects]]
   digest = "1:61c24bdb660a326b420d5422c4fd124041b4aac88e212c6ac75f3a57b0b9cada"
   name = "github.com/agext/levenshtein"
   packages = ["."]
@@ -353,38 +337,6 @@
   pruneopts = ""
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
-
-[[projects]]
-  branch = "master"
-  digest = "1:1287439f7765209116509fffff2b8f853845e4b35572b41a1aadda42cbcffcc2"
-  name = "github.com/go-openapi/jsonpointer"
-  packages = ["."]
-  pruneopts = ""
-  revision = "779f45308c19820f1a69e9a4cd965f496e0da10f"
-
-[[projects]]
-  branch = "master"
-  digest = "1:07ac8ac445f68b0bc063d11845d479fb7e09c906ead7a8c4165b59777df09d74"
-  name = "github.com/go-openapi/jsonreference"
-  packages = ["."]
-  pruneopts = ""
-  revision = "36d33bfe519efae5632669801b180bf1a245da3b"
-
-[[projects]]
-  branch = "master"
-  digest = "1:fd4008f8283b993180f0626d0c7b2f48880e9dbb6bd92a91cac7ded30dc66777"
-  name = "github.com/go-openapi/spec"
-  packages = ["."]
-  pruneopts = ""
-  revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
-
-[[projects]]
-  branch = "master"
-  digest = "1:7389c0b36f48825d32e482c60968e6f2b20ac44763616bb8c0cfb61de03bb4c9"
-  name = "github.com/go-openapi/swag"
-  packages = ["."]
-  pruneopts = ""
-  revision = "0d03ad0b6405ada874d59d97c416b5cf4234e154"
 
 [[projects]]
   branch = "master"
@@ -791,18 +743,6 @@
   pruneopts = ""
   revision = "d419a98cdbed11a922bf76f257b7c4be79b50e73"
   version = "v1.7.4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:ccc20cacf54eb16464dad02efa1c14fa7c0b9e124639b0d2a51dcc87b0154e4c"
-  name = "github.com/mailru/easyjson"
-  packages = [
-    "buffer",
-    "jlexer",
-    "jwriter",
-  ]
-  pruneopts = ""
-  revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
 
 [[projects]]
   digest = "1:9ea83adf8e96d6304f394d40436f2eb44c1dc3250d223b74088cc253a6cd0a1c"
@@ -1268,7 +1208,6 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
-    "width",
   ]
   pruneopts = ""
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
@@ -1376,7 +1315,6 @@
     "github.com/docker/docker/api/types/network",
     "github.com/docker/docker/client",
     "github.com/flosch/pongo2",
-    "github.com/go-openapi/spec",
     "github.com/gocql/gocql",
     "github.com/gogo/protobuf/codec",
     "github.com/gogo/protobuf/gogoproto",
