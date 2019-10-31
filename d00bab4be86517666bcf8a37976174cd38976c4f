@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "8ab4b924_beae9849",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-31T15:15:06Z",
+      "side": 1,
+      "message": "OK. Now I see that the old behavior (checking openstackControlNodes instead of cluster.OpenstackControlNodes) is probably a typo.",
+      "parentUuid": "63677c80_7aa8a963",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "64f317b3_c6c72a54",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 7
@@ -69,6 +87,24 @@
       "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b18831e1_34035575",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-31T15:15:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "fe51bc4a_02ecf241",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -107,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "8d7f17b2_80c2e583",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-31T15:15:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d451801b_b3be2ce0",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ad17297e_bec36e80",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 7
@@ -136,6 +190,24 @@
       "side": 1,
       "message": "Do you think logging is enough or the test should fail?",
       "parentUuid": "ad17297e_bec36e80",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f907357d_8581d873",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-10-31T15:15:06Z",
+      "side": 1,
+      "message": "Making the test fail (and deferring the failure (like with assert.*) so that all possible cleanup still gets run) would be nice.",
+      "parentUuid": "523595b9_3cd380c7",
       "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
