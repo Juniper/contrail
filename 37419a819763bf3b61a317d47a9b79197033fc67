@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "96699363_d57eace4",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-31T15:18:28Z",
+      "side": 1,
+      "message": "As now I am looking on it, this code should use all available keystone endpoints in order for this CR be complete. I\u0027ll modify this part in this CR.",
+      "revId": "37419a819763bf3b61a317d47a9b79197033fc67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "824b5675_8170f10c",
+        "filename": "pkg/apisrv/keystone/api.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 320,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-10-31T15:18:28Z",
+      "side": 1,
+      "message": "I think that this is acceptable approach, because Keystone user credentials are independent of used Keystone instance (within cluster). Am I right?",
+      "revId": "37419a819763bf3b61a317d47a9b79197033fc67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
