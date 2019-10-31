@@ -29,6 +29,7 @@
     "pkg/osutil",
     "pkg/proxy",
     "pkg/retry",
+    "pkg/schema",
   ]
   pruneopts = ""
   revision = "88839029b6508874e6a3b2db823786257d4ce99e"
@@ -719,7 +720,6 @@
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
 
 [[projects]]
-  branch = "master"
   digest = "1:591a2778aa6e896980757ea87e659b3aa13d8c0e790310614028463a31c0998b"
   name = "github.com/kr/pretty"
   packages = ["."]
@@ -735,7 +735,6 @@
   version = "v1.1.2"
 
 [[projects]]
-  branch = "master"
   digest = "1:109e0a9b9e74c5c8adf94a2dc4dd4a9ca2a183d4d87ffecd4e62db69a5ede55a"
   name = "github.com/kr/text"
   packages = ["."]
@@ -1367,6 +1366,7 @@
     "github.com/Juniper/asf/pkg/osutil",
     "github.com/Juniper/asf/pkg/proxy",
     "github.com/Juniper/asf/pkg/retry",
+    "github.com/Juniper/asf/pkg/schema",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
     "github.com/coreos/etcd/clientv3/concurrency",
