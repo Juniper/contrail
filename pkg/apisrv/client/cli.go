@@ -11,9 +11,9 @@ import (
 
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/schema"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/flosch/pongo2"

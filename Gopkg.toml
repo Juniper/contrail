@@ -1,4 +1,5 @@
 required = [
+    "github.com/go-openapi/spec", # ASF dependency
     "github.com/gogo/protobuf/gogoproto", # required only to satisfy "dep check"
     "github.com/gogo/protobuf/protoc-gen-gogofaster",
     "github.com/gogo/protobuf/sortkeys", # required only to satisfy "dep check"
