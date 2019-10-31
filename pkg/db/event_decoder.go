@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/schema"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-
-	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/schema"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 // DecodeRowEvent transforms row data into *services.Event.
