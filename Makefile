@@ -55,15 +55,19 @@ generate: fast_generate format_gen
 CONTRAIL_OPENAPI_PATH=public/openapi.json
 CONTRAIL_APIDOC_PATH=public/doc/index.html
 
-generate_go:
+install_contrailschema:
+	# `go install` does nothing if the binary is unchanged, so it's cheap to call
+	go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/
+
+generate_go: install_contrailschema
 	# Generate for contrail resources.
 	@mkdir -p public/
-	go run cmd/contrailschema/main.go generate --no-regenerate \
+	contrailschema generate --no-regenerate \
 		--schemas schemas/contrail --addons schemas/addons --templates tools/templates/contrail/template_config.yaml \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
-	go run  cmd/contrailschema/main.go generate --no-regenerate \
+	contrailschema generate --no-regenerate \
 		--schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
@@ -107,9 +111,15 @@ clean_gen:
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
-install:
+install: install_contrail install_contrailcli install_conrailutil
+
+install_contrail:
 	go install ./cmd/contrail
+
+install_contrailcli:
 	go install ./cmd/contrailcli
+
+install_contrailutil:
 	go install ./cmd/contrailutil
 
 testenv: ## Setup docker based test environment
@@ -126,8 +136,8 @@ clean_db: truncate_db init_db ## Truncate all database tables and load initial d
 truncate_db:
 	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/gen_cleanup_psql.sql
 
-init_db: ## Load initial data to databases
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
+init_db: install_conrailutil ## Load initial data to databases
+	contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
