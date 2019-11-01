@@ -68,7 +68,7 @@ func (c *Cluster) GetDeployer() (base.Deployer, error) {
 	case "rhospd":
 		return newOvercloudDeployer(c)
 	case "ansible", "tripleo":
-		return newAnsibleDeployer(c, cData), nil
+		return newAnsibleDeployer(c, cData)
 	case mCProvisioner:
 		return newMCProvisioner(c, cData), nil
 	}
@@ -132,8 +132,15 @@ func newOvercloudDeployer(c *Cluster) (base.Deployer, error) {
 	return o.GetDeployer()
 }
 
-func newAnsibleDeployer(c *Cluster, cData *base.Data) *contrailAnsibleDeployer {
+func newAnsibleDeployer(c *Cluster, cData *base.Data) (*contrailAnsibleDeployer, error) {
 	d := newDeployCluster(c, cData, "contrail-ansible-deployer")
+	dockerClient, err := ansible.NewDockerClient(
+		d.Reporter,
+		c.config.LogFile,
+	)
+	if err != nil {
+		return nil, err
+	}
 	return &contrailAnsibleDeployer{
 		deployCluster: *d,
 		ansibleClient: ansible.NewCLIClient(
@@ -142,7 +149,8 @@ func newAnsibleDeployer(c *Cluster, cData *base.Data) *contrailAnsibleDeployer {
 			d.getWorkingDir(),
 			c.config.Test,
 		),
-	}
+		dockerClient: dockerClient,
+	}, nil
 }
 
 func newMCProvisioner(c *Cluster, cData *base.Data) *multiCloudProvisioner {

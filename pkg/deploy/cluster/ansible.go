@@ -35,7 +35,6 @@ const (
 	deleteComputeProvisioningAction = "DELETE_COMPUTE"
 	addCSNProvisioningAction        = "ADD_CSN"
 	addCVFMProvisioningAction       = "ADD_CVFM"
-	destroyAction                   = "DESTROY"
 
 	enable  = "yes"
 	disable = "no"
@@ -48,6 +47,7 @@ type openstackVariables struct {
 type contrailAnsibleDeployer struct {
 	deployCluster
 	ansibleClient *ansible.CLIClient
+	dockerClient  *ansible.DockerClient
 }
 
 // nolint: gocyclo
@@ -392,9 +392,10 @@ func (a *contrailAnsibleDeployer) play(ansibleArgs []string) error {
 	return a.playFromDirectory(a.getAnsibleDeployerRepoDir(), ansibleArgs)
 }
 
+// TODO: actually input required - image registry, username, password and whether keep container alive
 func (a *contrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
 	a.Log.WithField("directory", directory).Info("Running playbook")
-	return a.ansibleClient.Play(directory, ansibleArgs, "")
+	return a.dockerClient.Play("", "", "", directory, ansibleArgs, true)
 }
 
 func (a *contrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {
@@ -425,24 +426,9 @@ func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string
 	return a.play(ansibleArgs)
 }
 
-func (a *contrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) error {
-	destroyAnsibleArgs := ansibleArgs[:2]
-	switch a.clusterData.ClusterInfo.Orchestrator {
-	case orchestratorOpenstack:
-		destroyAnsibleArgs = append(destroyAnsibleArgs, defaultOpenstackDestoryPlay)
-	}
-	return a.play(destroyAnsibleArgs)
-}
-
 func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
 	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
 	return a.play(ansibleArgs)
-}
-
-func (a *contrailAnsibleDeployer) playContrailDestroy(ansibleArgs []string) error {
-	destroyAnsibleArgs := ansibleArgs[:2]
-	destroyAnsibleArgs = append(destroyAnsibleArgs, defaultContrailDestoryPlay)
-	return a.play(destroyAnsibleArgs)
 }
 
 func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
@@ -631,18 +617,6 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playAppformixProvision(); err != nil {
 			return err
 		}
-	case destroyAction:
-		if err := a.playOrchestratorDestroy(args); err != nil {
-			return err
-		}
-		if err := a.playContrailDestroy(args); err != nil {
-			return err
-		}
-		/*
-			if err := a.cleanupResources(args); err != nil {
-				return err
-			}
-		*/
 	}
 	return nil
 }
