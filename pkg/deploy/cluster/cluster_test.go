@@ -684,17 +684,18 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		"MGMT_INT_IP":     "127.0.0.1",
 		"CONTROL_NODES":   "",
 		"OPENSTACK_NODES": "",
+		"CLUSTER_NAME": t.Name(),
 	}
 	expectedEndpoints := map[string]string{
-		"config":                "http://127.0.0.1:8082",
-		"nodejs":                "https://127.0.0.1:8143",
-		"telemetry":             "http://127.0.0.1:8081",
-		"baremetal":             "http://127.0.0.1:6385",
-		"swift":                 "http://127.0.0.1:8080",
-		"glance":                "http://127.0.0.1:9292",
-		"compute":               "http://127.0.0.1:8774",
-		"keystone":              "http://127.0.0.1:5000",
-		"endpoint_user_created": "http://127.0.0.1:8082",
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+		"appformix": "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_instances.yml"
 	switch computeType {
@@ -841,6 +842,7 @@ func TestAllInOneVfabricManager(t *testing.T) {
 		"CONTROL_NODES":   "",
 		"OPENSTACK_NODES": "",
 		"VFABRIC_MANAGER": true,
+		"CLUSTER_NAME": t.Name(),
 	}
 	expectedEndpoints := map[string]string{
 		"config":                "http://127.0.0.1:8082",
@@ -851,7 +853,7 @@ func TestAllInOneVfabricManager(t *testing.T) {
 		"glance":                "http://127.0.0.1:9292",
 		"compute":               "http://127.0.0.1:8774",
 		"keystone":              "http://127.0.0.1:5000",
-		"endpoint_user_created": "http://127.0.0.1:8082",
+		"appformix": "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_vfabric_manager_instances.yml"
 
@@ -864,6 +866,7 @@ func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 		"MGMT_INT_IP":      "127.0.0.1",
 		"CONTROL_NODES":    "",
 		"OPENSTACK_NODES":  "",
+		"CLUSTER_NAME": t.Name(),
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -884,6 +887,7 @@ func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
 		"MGMT_INT_IP":     "127.0.0.1",
 		"CONTROL_NODES":   "127.0.0.1",
 		"OPENSTACK_NODES": "127.0.0.1",
+		"CLUSTER_NAME": t.Name(),
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -910,6 +914,7 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		"CONTAINER_REGISTRY_PASSWORD": "testRegistry123",
 		"ZTP_ROLE":                    true,
 		"SSL_ENABLE":                  "yes",
+		"CLUSTER_NAME": t.Name(),
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "https://10.1.1.100:8082",
@@ -935,6 +940,7 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 		"OPENSTACK_NODES": "",
 		"ENABLE_ZTP":      true,
 		"WEBUI_NODES":     "10.1.1.35",
+		"CLUSTER_NAME": t.Name(),
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -1466,6 +1472,7 @@ func TestTripleoClusterImport(t *testing.T) {
 			"PROVISIONER_TYPE":       "tripleo",
 			"PROVISIONING_STATE":     "CREATED",
 			"PROVISIONING_ACTION":    "",
+			"CLUSTER_NAME": t.Name(),
 		},
 	)
 	require.NoError(t, err, "failed to load cluster test data")
@@ -1519,4 +1526,12 @@ func TestTripleoClusterImport(t *testing.T) {
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
+    // delete cluster
+    config.Action = deleteAction
+    clusterDeployer, err = NewCluster(config)
+    assert.NoError(t, err, "failed to create cluster manager to delete cluster")
+    deployer, err = clusterDeployer.GetDeployer()
+    assert.NoError(t, err, "failed to create deployer")
+    err = deployer.Deploy()
+    assert.NoError(t, err, "failed to delete triple0 cluster")
 }
