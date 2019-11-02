@@ -686,15 +686,15 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		"OPENSTACK_NODES": "",
 	}
 	expectedEndpoints := map[string]string{
-		"config":                "http://127.0.0.1:8082",
-		"nodejs":                "https://127.0.0.1:8143",
-		"telemetry":             "http://127.0.0.1:8081",
-		"baremetal":             "http://127.0.0.1:6385",
-		"swift":                 "http://127.0.0.1:8080",
-		"glance":                "http://127.0.0.1:9292",
-		"compute":               "http://127.0.0.1:8774",
-		"keystone":              "http://127.0.0.1:5000",
-		"endpoint_user_created": "http://127.0.0.1:8082",
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+		"appformix": "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_instances.yml"
 	switch computeType {
@@ -851,7 +851,7 @@ func TestAllInOneVfabricManager(t *testing.T) {
 		"glance":                "http://127.0.0.1:9292",
 		"compute":               "http://127.0.0.1:8774",
 		"keystone":              "http://127.0.0.1:5000",
-		"endpoint_user_created": "http://127.0.0.1:8082",
+		"appformix": "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_vfabric_manager_instances.yml"
 

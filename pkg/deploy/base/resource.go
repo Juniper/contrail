@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -72,14 +71,14 @@ func (r *ResourceManager) getDefaultCredential() (user, password, keypair string
 
 }
 
-func (r *ResourceManager) getEndpoints(parentUUIDs []string) (endpointIDs []string, err error) {
+func (r *ResourceManager) getEndpoints(parentUUIDs, prefixes []string) (endpointIDs []string, err error) {
 	request := &services.ListEndpointRequest{
 		Spec: &baseservices.ListSpec{
 			Fields: []string{"uuid"},
 			Filters: []*baseservices.Filter{
 				{
 					Key:    "prefix",
-					Values: format.GetKeys(portMap),
+					Values: prefixes,
 				},
 			},
 			ParentUUIDs: parentUUIDs,
