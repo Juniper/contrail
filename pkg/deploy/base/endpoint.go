@@ -338,7 +338,7 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 // Update endpoint
 func (e *EndpointData) Update() error {
 	e.Log.Infof("Updating service endpoints for cluster: %s", e.ClusterID)
-	err := e.Remove()
+	err := e.remove(e.getEndpointPrefixes())
 	if err != nil {
 		return err
 	}
@@ -346,10 +346,42 @@ func (e *EndpointData) Update() error {
 	return err
 }
 
+func (e *EndpointData) getEndpointPrefixes() []string {
+	var prefixes []string
+	for k, _ := range e.getContrailEndpointNodes() {
+		prefixes = append(prefixes, k)
+	}
+	if e.ClusterData.ClusterInfo.Orchestrator == "openstack" {
+		for k, _ := range e.getOpenstackEndpointNodes() {
+			prefixes = append(prefixes, k)
+		}
+	}
+	// appformix and xflow endpoints
+	xflowEndpoints, err := e.getXflowEndpointNodes()
+	if err != nil {
+		for k, _ := range xflowEndpoints {
+			prefixes = append(prefixes, k)
+		}
+	}
+	for k, v := range e.getAppformixEndpointNodes() {
+		if v != nil {
+			prefixes = append(prefixes, k)
+		}
+	}
+	return prefixes
+}
+
 // Remove endpoint
 func (e *EndpointData) Remove() error {
-	e.Log.Infof("Deleting service endpoints for cluster: %s", e.ClusterID)
-	endpointIDs, err := e.ResManager.getEndpoints([]string{e.ClusterID})
+	return e.remove(format.GetKeys(portMap))
+}
+
+func (e *EndpointData) remove(prefixes []string) error {
+	e.Log.WithFields(logrus.Fields{
+		"prefixes":     prefixes,
+		"cluster-uuid": e.ClusterID,
+	}).Info("Deleting service endpoints for cluster")
+	endpointIDs, err := e.ResManager.getEndpoints([]string{e.ClusterID}, prefixes)
 	if err != nil {
 		return err
 	}
