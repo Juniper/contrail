@@ -513,6 +513,30 @@
     },
     {
       "key": {
+        "uuid": "eead149e_68e98c48",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2bdf1279_2e3b0f22",
+      "range": {
+        "startLine": 181,
+        "startChar": 22,
+        "endLine": 181,
+        "endChar": 59
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "663d2273_3c80c5f1",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 3
@@ -666,6 +690,30 @@
       "side": 1,
       "message": "IMO, this temp is redundant.",
       "parentUuid": "8fb9f958_a20c80b8",
+      "range": {
+        "startLine": 256,
+        "startChar": 2,
+        "endLine": 256,
+        "endChar": 7
+      },
+      "revId": "7c31c87760576cdbc805aa0f19ca677d1ac03ab4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5d63aac8_4a952a3e",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "Still to do",
+      "parentUuid": "9edee7d3_e5a3613f",
       "range": {
         "startLine": 256,
         "startChar": 2,

@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d69d72d3_9e328910",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "Please comply to https://sourcegraph.com/github.com/Juniper/contrail/-/blob/REVIEW.md#function-signature-formatting",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d287cb58_b5e0de2b",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "I think context should be parameter of function Play(). Please do not create new ctx here.\n\nIn that way callers can pass context with cancel/timeout/deadline to Play().",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a55364a8_a4fdc706",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "Won\u0027t this assignment always mask error of ioutil.ReadAll(reader)? Even if reader.Close() returns nil error.\nErrors of ioutil.ReadAll(reader) are more important, because they give information about operation (opposed to cleanup after operation).\n\nPlease log this error (preferably) or ignore it.\nThird option is using creating multierror, e.g from pkg/errutil, but I do not see point in that.",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "41f066c7_bc6ed265",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "Please do not add new implementation to this CR.\nCould you do switch from ansibleClient to dockerClient in next change request?",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4327144c_b73efe22",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-04T15:05:50Z",
+      "side": 1,
+      "message": "Please do not add new implementation to this CR.\nCould you do switch from ansibleClient to dockerClient in next change request?",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
