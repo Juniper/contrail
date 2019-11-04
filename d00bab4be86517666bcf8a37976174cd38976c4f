@@ -211,6 +211,24 @@
       "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4fd8d419_178883b7",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-04T14:26:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f907357d_8581d873",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
