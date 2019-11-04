@@ -17,3 +17,7 @@ required = [
 [[constraint]]
   name = "github.com/hashicorp/terraform"
   version = "0.11.11"
+
+[[constraint]]
+  name = "github.com/docker/docker"
+  revision = "ac7306503d237d548e376a89ab0b899ea1a245b0"
