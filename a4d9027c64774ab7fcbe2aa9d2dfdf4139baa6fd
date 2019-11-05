@@ -16,6 +16,24 @@
       "revId": "a4d9027c64774ab7fcbe2aa9d2dfdf4139baa6fd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c91f0ed_90804304",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-05T09:11:08Z",
+      "side": 1,
+      "message": "We (me and Maciej Łastawiecki) checked if fake remote Keystone is used in ClusterTest. It is not. Maciej will probably remove it in future CRs. I forgot to uncomment it. Fixed now.",
+      "parentUuid": "b7539f40_e744893c",
+      "revId": "a4d9027c64774ab7fcbe2aa9d2dfdf4139baa6fd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
