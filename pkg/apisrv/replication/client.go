@@ -63,7 +63,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
 	}
 	if authType != basicAuth {
-		config.Scope = &kscommon.Scope{Domain: kscommon.DefaultDomain()}
+		config.Scope = &kscommon.Scope{Project: &kscommon.Project{Domain: kscommon.DefaultDomain()}}
 		// get keystone endpoint
 		var e *endpoint.Endpoint
 		e, err = h.readAuthEndpoint(ep.ParentUUID)
