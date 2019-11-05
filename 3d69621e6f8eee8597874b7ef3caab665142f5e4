@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a0a0cd79_cc75331f",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d69d72d3_9e328910",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d287cb58_b5e0de2b",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 5
@@ -33,6 +51,24 @@
       "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9109b8ac_9d3bc4f9",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d287cb58_b5e0de2b",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "380bbc4e_55a86cf5",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Patchest 7 solution is nice. Done.",
+      "parentUuid": "a55364a8_a4fdc706",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "41f066c7_bc6ed265",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 5
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "1ae2611c_94bee71e",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "41f066c7_bc6ed265",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4327144c_b73efe22",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 5
@@ -84,6 +156,24 @@
       "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e7368702_0e5053ab",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4327144c_b73efe22",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
