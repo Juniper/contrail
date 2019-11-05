@@ -40,7 +40,7 @@ func (k *Client) GetProject(ctx echo.Context, authURLs []string, id string) erro
 }
 
 func (k *Client) proxyRequestToRemoteKeystone(ctx echo.Context, authURLs []string) error {
-	rp, err := proxy.NewReverseProxy(authURLs)
+	rp, err := proxy.NewReverseProxy(authURLs, nil)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("new reverse proxy: %v", err))
 	}

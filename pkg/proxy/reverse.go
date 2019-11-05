@@ -20,19 +20,26 @@ import (
 const (
 	skipServerCertificateVerification = true // TODO: add "insecure" field to endpoint schema
 	userAgentHeader                   = "User-Agent"
+	xServiceTokenHeader               = "X-Service-Token"
 )
+
+type serviceTokener interface {
+	// ServiceToken returns a service token that can be added to openstack requests.
+	ServiceToken() (string, error)
+}
 
 // NewReverseProxy returns a new ReverseProxy that routes URLs to the scheme, host, and base path
 // provided in target. If the target's path is "/base" and the incoming request was for "/dir",
 // the target request will be for /base/dir.
-func NewReverseProxy(rawTargetURLs []string) (*httputil.ReverseProxy, error) {
+// If addServiceToken is true, the proxy will add the server's service token to all requests.
+func NewReverseProxy(rawTargetURLs []string, serviceTokener serviceTokener) (*httputil.ReverseProxy, error) {
 	targetURLs := parseTargetURLs(rawTargetURLs)
 	if len(targetURLs) == 0 {
 		return nil, errors.New("no valid target URLs given")
 	}
 
 	return &httputil.ReverseProxy{
-		Director:  director(targetURLs[0]),
+		Director:  director(targetURLs[0], serviceTokener),
 		Transport: transport(targetURLs),
 	}, nil
 }
@@ -50,13 +57,18 @@ func parseTargetURLs(rawTargetURLs []string) []*url.URL {
 	return targetURLs
 }
 
-func director(firstTargetURL *url.URL) func(r *http.Request) {
+func director(firstTargetURL *url.URL, st serviceTokener) func(r *http.Request) {
 	return func(r *http.Request) {
 		r.URL.Scheme = firstTargetURL.Scheme
 		r.URL.Host = firstTargetURL.Host // request host might be reassigned in ReverseProxy.Transport.DialContext.
 		r.URL.Path = path.Join("/", firstTargetURL.Path, r.URL.Path)
 		r.URL.RawQuery = mergeQueries(r.URL.RawQuery, firstTargetURL.RawQuery)
 		r.Header = withNoDefaultUserAgent(r.Header)
+		var err error
+		r.Header, err = withServiceToken(r.Header, st)
+		if err != nil {
+			logrus.WithField("url", r.URL).Error("Reverse proxy: failed to add service token to request; passing it through without a service token")
+		}
 
 		logrus.WithField("url", r.URL).Debug("Reverse proxy: proxying request")
 	}
@@ -75,6 +87,18 @@ func withNoDefaultUserAgent(h http.Header) http.Header {
 		h.Set(userAgentHeader, "")
 	}
 	return h
+}
+
+func withServiceToken(h http.Header, st serviceTokener) (http.Header, error) {
+	if st == nil {
+		return h, nil
+	}
+	token, err := st.ServiceToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to add service token to request")
+	}
+	h.Set(xServiceTokenHeader, token)
+	return h, nil
 }
 
 func transport(targetURLs []*url.URL) *http.Transport {
