@@ -9,6 +9,11 @@ Configuration Example
 # Keystone configuration
 keystone:
     authurl: http://localhost:5000/v3
+    service_user:
+        id: goapi
+        password: goapi
+        project_id: service
+        domain_id: default
 ```
 
 ```yaml
