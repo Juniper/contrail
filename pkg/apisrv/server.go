@@ -31,6 +31,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	protocodec "github.com/gogo/protobuf/codec"
 )
@@ -422,15 +423,39 @@ func (s *Server) registerStaticProxyEndpoints() error {
 }
 
 func (s *Server) serveDynamicProxy(es *endpoint.Store) {
-	dpp := viper.GetString("server.dynamic_proxy_path")
-	if dpp == "" {
-		dpp = DefaultDynamicProxyPath
+	config := loadDynamicProxyConfig()
+	s.Echo.Group(config.Path, dynamicProxyMiddleware(es, config))
+
+	s.Proxy = newProxyService(es, s.DBService, config)
+	s.Proxy.StartEndpointsSync()
+}
+
+func loadDynamicProxyConfig() *DynamicProxyConfig {
+	path := viper.GetString("server.dynamic_proxy_path")
+	if path == "" {
+		path = DefaultDynamicProxyPath
 	}
 
-	s.Echo.Group(dpp, dynamicProxyMiddleware(es, dpp))
+	return &DynamicProxyConfig{
+		Path:                         path,
+		ServiceTokenEndpointPrefixes: viper.GetStringSlice("server.service_token_endpoint_prefixes"),
+		ServiceUserClientConfig:      loadServiceUserClientConfig(),
+	}
+}
 
-	s.Proxy = newProxyService(es, s.DBService, dpp)
-	s.Proxy.StartEndpointsSync()
+func loadServiceUserClientConfig() *client.HTTPConfig {
+	c := client.LoadHTTPConfig()
+	c.SetCredentials(
+		viper.GetString("keystone.service_user.id"),
+		viper.GetString("keystone.service_user.password"),
+	)
+	c.Scope = kstypes.NewScope(
+		viper.GetString("keystone.service_user.domain_id"),
+		viper.GetString("keystone.service_user.domain_name"),
+		viper.GetString("keystone.service_user.project_id"),
+		viper.GetString("keystone.service_user.project_name"),
+	)
+	return c
 }
 
 func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
