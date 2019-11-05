@@ -31,6 +31,7 @@ import (
 const (
 	keystoneEndpointPrefix = "keystone"
 	neutronEndpointPrefix  = "neutron"
+	swiftEndpointPrefix    = "swift"
 	portsPath              = "/ports"
 )
 
@@ -185,6 +186,62 @@ func TestDynamicProxyServiceWithClosedTargetServers(t *testing.T) {
 
 	ok2Neutron.Close()
 	verifyNeutronReadRequestsFail(t, hc, clusterName)
+}
+
+func TestDynamicProxyServiceInjectingServiceToken(t *testing.T) {
+	// arrange
+	const (
+		swiftEndpointName     = "some-swift"
+		unrelatedEndpointName = "neutron"
+	)
+
+	clusterName := contrailClusterName(t, "")
+	hc := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
+
+	cleanupCC := createContrailCluster(t, hc, clusterName)
+	defer cleanupCC()
+
+	swift := newTestHTTPServer(routes{
+		portsPath: func(c echo.Context) error {
+			_, ok := c.Request().Header["X-Service-Token"]
+			assert.True(t, ok, "an X-Service-Token header should be added to the request")
+			return c.JSON(http.StatusOK, &portsResponse{Foo: fooValueWithStatus(http.StatusOK)})
+		},
+	})
+	defer swift.Close()
+
+	unrelated := newTestHTTPServer(routes{
+		portsPath: func(c echo.Context) error {
+			_, ok := c.Request().Header["X-Service-Token"]
+			assert.False(t, ok, "no X-Service-Token header should be added to the request")
+			return c.JSON(http.StatusOK, &portsResponse{Foo: fooValueWithStatus(http.StatusOK)})
+		},
+	})
+	defer unrelated.Close()
+
+	cleanupSwiftEndpoint := createEndpoint(t, hc, endpointParameters{
+		clusterName:    clusterName,
+		endpointName:   swiftEndpointName,
+		endpointPrefix: swiftEndpointPrefix,
+		privateURL:     swift.URL,
+		publicURL:      swift.URL,
+	})
+	defer cleanupSwiftEndpoint()
+
+	cleanupUnrelatedEndpoint := createEndpoint(t, hc, endpointParameters{
+		clusterName:    clusterName,
+		endpointName:   unrelatedEndpointName,
+		endpointPrefix: neutronEndpointPrefix,
+		privateURL:     unrelated.URL,
+		publicURL:      unrelated.URL,
+	})
+	defer cleanupUnrelatedEndpoint()
+
+	server.ForceProxyUpdate()
+
+	// act/assert
+	verifyNeutronReadRequest(t, hc, swiftPrivatePath(clusterName), fooValueWithStatus(http.StatusOK))
+	verifyNeutronReadRequest(t, hc, neutronPortsPrivatePath(clusterName), fooValueWithStatus(http.StatusOK))
 }
 
 func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
@@ -392,6 +449,17 @@ func neutronPortsPublicPath(clusterName string) string {
 		apisrv.DefaultDynamicProxyPath,
 		contrailClusterUUID(clusterName),
 		neutronEndpointPrefix,
+		portsPath,
+	)
+}
+
+func swiftPrivatePath(clusterName string) string {
+	return path.Join(
+		"/",
+		apisrv.DefaultDynamicProxyPath,
+		contrailClusterUUID(clusterName),
+		swiftEndpointPrefix,
+		endpoint.PrivateURLScope,
 		portsPath,
 	)
 }

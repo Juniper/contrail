@@ -45,6 +45,8 @@ server:
   static_files:
     public: ../../public
   dynamic_proxy_path: proxy
+  # TODO Make this shorter
+  dynamic_proxy_inject_service_token_endpoint_prefix: swift
   proxy:
     /contrail:
     - http://localhost:8082
@@ -90,6 +92,19 @@ keystone:
           - id: aa907485e1f94a14834d8c69ed9cb3b2
             name: neutron
             project: *neutron
+        goapi:
+          id: goapi
+          name: GoAPI
+          domain: *default
+          password: goapi
+          email: go@api
+          roles:
+          - id: admin
+            name: admin
+            project: *admin
+          - id: aa907485e1f94a14834d8c69ed9cb3b2
+            name: neutron
+            project: *neutron
         bob:
           id: bob
           name: Bob
@@ -105,6 +120,11 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+  service_token:
+    id: goapi
+    password: goapi
+    project_id: admin
+    domain_id: default
 
 sync:
   enabled: true
