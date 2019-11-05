@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "0d5a3d8a_b160d549",
+        "filename": "Gopkg.toml",
+        "patchSetId": 7
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
+      "side": 1,
+      "message": "It was strange that when dep ensure was run, github.com/docker/docker was not downloaded as the latest version, instead, an old version that doesn\u0027t provide any function my code use was in vendor. Say I want it to download master like go get, but dep ensure or dep ensure --add github.com/docker/docker gave me v1.13.x which is useless. Have you encounter any problem like this?",
+      "parentUuid": "3244520d_5186feaf",
+      "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6facf3ff_bf53a312",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 7
@@ -30,6 +48,24 @@
       "writtenOn": "2019-11-05T09:44:01Z",
       "side": 1,
       "message": "Please do not add new implementation to this CR.",
+      "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "01a0f312_8bc6fb65",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 634,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
+      "side": 1,
+      "message": "Don\u0027t understand what you mean, it is the same as base. Can you tell me where is the modification?",
+      "parentUuid": "6facf3ff_bf53a312",
       "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

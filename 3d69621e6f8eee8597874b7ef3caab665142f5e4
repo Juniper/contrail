@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "64216b9a_6de4f6ca",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d69d72d3_9e328910",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d287cb58_b5e0de2b",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 5
@@ -63,6 +81,24 @@
         "id": 558
       },
       "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d287cb58_b5e0de2b",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "820a0fc1_8c337d70",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
       "side": 1,
       "message": "Done",
       "parentUuid": "d287cb58_b5e0de2b",
@@ -107,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "f3b39c6a_5985bc2c",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
+      "side": 1,
+      "message": "Yeah, I notice that I overlooked the shadowing over erro from ioutil.ReadAll(reader), I used this code block instead to tackle the error.\n\ndefer func() {\n\ttempErr :\u003d reader.Close()\n\tif err \u003d\u003d nil {\n\t\terr \u003d tempErr\n\t}\n}()",
+      "parentUuid": "a55364a8_a4fdc706",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "41f066c7_bc6ed265",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 5
@@ -142,6 +196,24 @@
     },
     {
       "key": {
+        "uuid": "e6315894_2ed1499f",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "41f066c7_bc6ed265",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4327144c_b73efe22",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 5
@@ -168,6 +240,24 @@
         "id": 558
       },
       "writtenOn": "2019-11-05T09:44:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4327144c_b73efe22",
+      "revId": "3d69621e6f8eee8597874b7ef3caab665142f5e4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "45279929_0c02c834",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-05T18:55:55Z",
       "side": 1,
       "message": "Done",
       "parentUuid": "4327144c_b73efe22",
