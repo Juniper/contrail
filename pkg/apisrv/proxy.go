@@ -2,6 +2,7 @@ package apisrv
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"net/http/httputil"
 	"reflect"
@@ -9,8 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/proxy"
@@ -19,6 +22,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Proxy service related constants.
@@ -26,6 +30,7 @@ const (
 	DefaultDynamicProxyPath = "proxy"
 	ProxySyncInterval       = 2 * time.Second
 	XClusterIDKey           = "X-Cluster-ID"
+	XServiceTokenKey        = "X-Service-Token"
 
 	limit         = 100
 	pathSeparator = "/"
@@ -67,6 +72,10 @@ func dynamicProxyMiddleware(
 			}
 
 			if err = setClusterIDKeyHeader(r, dynamicProxyPath); err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err)
+			}
+
+			if err = setServiceTokenHeader(r, pp); err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
@@ -132,6 +141,49 @@ func clusterID(url, dynamicProxyPath string) (clusterID string) {
 		return paths[2]
 	}
 	return ""
+}
+
+func setServiceTokenHeader(r *http.Request, proxyPrefix string) error {
+	endpointPrefix := strings.Split(proxyPrefix, pathSeparator)[3]
+	allowedPrefix := viper.GetString("server.dynamic_proxy_inject_service_token_endpoint_prefix")
+	// TODO Use a regex instead?
+	if endpointPrefix != allowedPrefix {
+		return nil
+	}
+
+	// TODO Use client.HTTP instead
+	ks := &client.Keystone{
+		URL: viper.GetString("keystone.authurl"),
+		HTTPClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+			},
+		},
+	}
+
+	clusterID := r.Header.Get(XClusterIDKey)
+	ctx := auth.WithXClusterID(context.TODO(), clusterID)
+	resp, err := ks.ObtainToken(
+		ctx,
+		viper.GetString("keystone.service_user.id"),
+		viper.GetString("keystone.service_user.password"),
+		keystone.NewScope(
+			viper.GetString("keystone.service_user.domain_id"),
+			viper.GetString("keystone.service_user.domain_name"),
+			viper.GetString("keystone.service_user.project_id"),
+			viper.GetString("keystone.service_user.project_name"),
+		),
+	)
+	if err != nil {
+		return err // TODO Wrap
+	}
+
+	if resp == nil {
+		return errors.New("got no service token from Keystone")
+	}
+
+	r.Header.Set(XServiceTokenKey, resp.Header.Get("X-Subject-Token"))
+	return nil
 }
 
 // StartEndpointsSync starts synchronization of proxy endpoints.
