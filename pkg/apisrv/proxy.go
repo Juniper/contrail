@@ -19,6 +19,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Proxy service related constants.
@@ -26,6 +27,7 @@ const (
 	DefaultDynamicProxyPath = "proxy"
 	ProxySyncInterval       = 2 * time.Second
 	XClusterIDKey           = "X-Cluster-ID"
+	XServiceTokenKey        = "X-Service-Token"
 
 	limit         = 100
 	pathSeparator = "/"
@@ -67,6 +69,10 @@ func dynamicProxyMiddleware(
 			}
 
 			if err = setClusterIDKeyHeader(r, dynamicProxyPath); err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err)
+			}
+
+			if err = setServiceTokenHeader(r, pp); err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
@@ -132,6 +138,18 @@ func clusterID(url, dynamicProxyPath string) (clusterID string) {
 		return paths[2]
 	}
 	return ""
+}
+
+func setServiceTokenHeader(r *http.Request, proxyPrefix string) error {
+	endpointPrefix := strings.Split(proxyPrefix, pathSeparator)[3]
+	allowedPrefix := viper.GetString("server.dynamic_proxy_inject_service_token_endpoint_prefix")
+	logrus.Warningf("endpointPrefix: %q, allowedPrefix: %q", endpointPrefix, allowedPrefix)
+	// TODO Use a regex instead?
+	if endpointPrefix == allowedPrefix {
+		// TODO Get a real token from the cluster's Keystone
+		r.Header.Set(XServiceTokenKey, "hogehoge")
+	}
+	return nil
 }
 
 // StartEndpointsSync starts synchronization of proxy endpoints.
