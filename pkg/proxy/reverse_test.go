@@ -59,18 +59,21 @@ func TestNewReverseProxy(t *testing.T) {
 func TestReverseProxy(t *testing.T) {
 	require.NoError(t, logutil.Configure(logrus.DebugLevel.String())) // for debugging
 	const (
-		message           = "msg"
-		sampleRequestPath = "/resources?query1=one&query2=two"
-		sampleTargetPath  = "/target?targetQuery=foo"
+		message                = "msg"
+		sampleRequestPath      = "/resources?query1=one&query2=two"
+		sampleTargetPath       = "/target?targetQuery=foo"
+		sampleSwiftRequestPath = "/v1/AUTH_23436c71c0d148019cc5d7b6e066d514/contrail_container/test34"
+		sampleSwiftTargetPath  = ""
 	)
 
 	for _, tt := range []struct {
-		name        string
-		userAgent   string
-		requestPath string
-		targetPath  string
-		method      string
-		receivedURL *url.URL
+		name           string
+		userAgent      string
+		requestPath    string
+		targetPath     string
+		method         string
+		receivedURL    *url.URL
+		receivedHeader http.Header
 	}{{
 		name:   "simple proxy",
 		method: http.MethodGet,
@@ -123,12 +126,30 @@ func TestReverseProxy(t *testing.T) {
 			Path:     "/target/resources",
 			RawQuery: "targetQuery=foo&query1=one&query2=two",
 		},
+	}, {
+		name:        "adds X-Service-Token to a swift request",
+		method:      http.MethodGet,
+		requestPath: sampleSwiftRequestPath,
+		targetPath:  sampleSwiftTargetPath,
+		userAgent:   "test-client",
+		receivedURL: &url.URL{
+			Path:     "/v1/AUTH_23436c71c0d148019cc5d7b6e066d514/contrail_container/test34",
+			RawQuery: "",
+		},
+		receivedHeader: http.Header{
+			"X-Service-Token": []string{"4793e2594eb54e538fbe0a6265b2e0bf"},
+		},
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
 			bs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, tt.method, r.Method)
 				assert.Equal(t, tt.receivedURL, r.URL)
 				assert.Equal(t, tt.userAgent, r.UserAgent())
+				for key, expectedValues := range tt.receivedHeader {
+					values, ok := r.Header[key]
+					assert.Truef(t, ok, "an %q header should be added by the request", key)
+					assert.Equalf(t, expectedValues, values, "header %q should have values: %v", key, values)
+				}
 
 				_, pErr := fmt.Fprint(w, message)
 				if pErr != nil {
