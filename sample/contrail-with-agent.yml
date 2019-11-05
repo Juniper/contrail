@@ -45,6 +45,8 @@ server:
   static_files:
     public: public
   dynamic_proxy_path: proxy
+  service_token_endpoints:
+  - swift
   proxy:
     /contrail:
     - http://localhost:8082
@@ -98,6 +100,11 @@ keystone:
   insecure: true
   auth_url: https://localhost:9091/keystone/v3
   authurl: https://localhost:9091/keystone/v3
+  service_user:
+    id: goapi
+    password: goapi
+    project_id: service
+    domain_id: default
 
 sync:
   enabled: false
