@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +44,7 @@ func TestNewReverseProxy(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			rp, err := NewReverseProxy(tt.rawTargetURLs)
+			rp, err := NewReverseProxy(tt.rawTargetURLs, nil)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -65,12 +66,14 @@ func TestReverseProxy(t *testing.T) {
 	)
 
 	for _, tt := range []struct {
-		name        string
-		userAgent   string
-		requestPath string
-		targetPath  string
-		method      string
-		receivedURL *url.URL
+		name           string
+		serviceTokener serviceTokener
+		userAgent      string
+		requestPath    string
+		targetPath     string
+		method         string
+		receivedURL    *url.URL
+		receivedHeader http.Header
 	}{{
 		name:   "simple proxy",
 		method: http.MethodGet,
@@ -123,12 +126,41 @@ func TestReverseProxy(t *testing.T) {
 			Path:     "/target/resources",
 			RawQuery: "targetQuery=foo&query1=one&query2=two",
 		},
+	}, {
+		name: "adds X-Service-Token to a swift request",
+		serviceTokener: fakeServiceTokener{
+			token: "7b8a5eed5fa547a7ba3992a1343717b7",
+		},
+		method: http.MethodGet,
+		receivedURL: &url.URL{
+			Path: "/",
+		},
+		receivedHeader: http.Header{
+			"X-Service-Token": []string{"7b8a5eed5fa547a7ba3992a1343717b7"},
+		},
+	}, {
+		name: "does not add X-Service-Token when obtaining one fails",
+		serviceTokener: fakeServiceTokener{
+			err: errors.New("failed to obtain token"),
+		},
+		method: http.MethodGet,
+		receivedURL: &url.URL{
+			Path: "/",
+		},
+		receivedHeader: http.Header{
+			"X-Service-Token": nil,
+		},
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
 			bs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, tt.method, r.Method)
 				assert.Equal(t, tt.receivedURL, r.URL)
 				assert.Equal(t, tt.userAgent, r.UserAgent())
+				for key, expectedValues := range tt.receivedHeader {
+					values, ok := r.Header[key]
+					assert.Truef(t, ok, "an %q header should be added to the request", key)
+					assert.Equalf(t, expectedValues, values, "header %q should have values: %v", key, values)
+				}
 
 				_, pErr := fmt.Fprint(w, message)
 				if pErr != nil {
@@ -137,7 +169,7 @@ func TestReverseProxy(t *testing.T) {
 			}))
 			defer bs.Close()
 
-			rp, err := NewReverseProxy([]string{bs.URL + tt.targetPath})
+			rp, err := NewReverseProxy([]string{bs.URL + tt.targetPath}, tt.serviceTokener)
 			require.NoError(t, err)
 			rps := httptest.NewServer(rp)
 			defer rps.Close()
@@ -152,6 +184,15 @@ func TestReverseProxy(t *testing.T) {
 			assert.Equal(t, message, string(b))
 		})
 	}
+}
+
+type fakeServiceTokener struct {
+	token string
+	err   error
+}
+
+func (st fakeServiceTokener) ServiceToken() (string, error) {
+	return st.token, st.err
 }
 
 func request(t *testing.T, method, requestURL, userAgent string) *http.Request {

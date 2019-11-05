@@ -96,7 +96,7 @@ func reverseProxy(
 		return nil, errors.New("no targets in proxy target store")
 	}
 
-	return proxy.NewReverseProxy(rawTargetURLs(targets))
+	return proxy.NewReverseProxy(rawTargetURLs(targets), nil) // TODO Use a Keystone client
 }
 
 func scope(urlPath string) string {
