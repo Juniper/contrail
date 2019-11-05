@@ -43,7 +43,7 @@ func TestNewReverseProxy(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			rp, err := NewReverseProxy(tt.rawTargetURLs)
+			rp, err := NewReverseProxy(tt.rawTargetURLs, NullServiceTokener{})
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -65,12 +65,15 @@ func TestReverseProxy(t *testing.T) {
 	)
 
 	for _, tt := range []struct {
-		name        string
-		userAgent   string
-		requestPath string
-		targetPath  string
-		method      string
-		receivedURL *url.URL
+		name               string
+		enableServiceToken bool
+		mockServiceToken   string
+		userAgent          string
+		requestPath        string
+		targetPath         string
+		method             string
+		receivedURL        *url.URL
+		receivedHeader     http.Header
 	}{{
 		name:   "simple proxy",
 		method: http.MethodGet,
@@ -123,12 +126,28 @@ func TestReverseProxy(t *testing.T) {
 			Path:     "/target/resources",
 			RawQuery: "targetQuery=foo&query1=one&query2=two",
 		},
+	}, {
+		name:               "adds X-Service-Token to a swift request",
+		enableServiceToken: true,
+		mockServiceToken:   "7b8a5eed5fa547a7ba3992a1343717b7",
+		method:             http.MethodGet,
+		receivedURL: &url.URL{
+			Path: "/",
+		},
+		receivedHeader: http.Header{
+			"X-Service-Token": []string{"7b8a5eed5fa547a7ba3992a1343717b7"},
+		},
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
 			bs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, tt.method, r.Method)
 				assert.Equal(t, tt.receivedURL, r.URL)
 				assert.Equal(t, tt.userAgent, r.UserAgent())
+				for key, expectedValues := range tt.receivedHeader {
+					values, ok := r.Header[key]
+					assert.Truef(t, ok, "an %q header should be added to the request", key)
+					assert.Equalf(t, expectedValues, values, "header %q should have values: %v", key, values)
+				}
 
 				_, pErr := fmt.Fprint(w, message)
 				if pErr != nil {
@@ -137,7 +156,8 @@ func TestReverseProxy(t *testing.T) {
 			}))
 			defer bs.Close()
 
-			rp, err := NewReverseProxy([]string{bs.URL + tt.targetPath})
+			st := fakeServiceTokener(tt.mockServiceToken)
+			rp, err := NewReverseProxy([]string{bs.URL + tt.targetPath}, st)
 			require.NoError(t, err)
 			rps := httptest.NewServer(rp)
 			defer rps.Close()
@@ -152,6 +172,12 @@ func TestReverseProxy(t *testing.T) {
 			assert.Equal(t, message, string(b))
 		})
 	}
+}
+
+type fakeServiceTokener string
+
+func (st fakeServiceTokener) ServiceToken() string {
+	return string(st)
 }
 
 func request(t *testing.T, method, requestURL, userAgent string) *http.Request {
