@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7539f40_e744893c",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-11-05T05:26:42Z",
+      "side": 1,
+      "message": "Is this purposefully commented?",
+      "revId": "a4d9027c64774ab7fcbe2aa9d2dfdf4139baa6fd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
