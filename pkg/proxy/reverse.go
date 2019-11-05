@@ -20,19 +20,21 @@ import (
 const (
 	skipServerCertificateVerification = true // TODO: add "insecure" field to endpoint schema
 	userAgentHeader                   = "User-Agent"
+	xServiceTokenHeader               = "X-Service-Token"
 )
 
 // NewReverseProxy returns a new ReverseProxy that routes URLs to the scheme, host, and base path
 // provided in target. If the target's path is "/base" and the incoming request was for "/dir",
 // the target request will be for /base/dir.
-func NewReverseProxy(rawTargetURLs []string) (*httputil.ReverseProxy, error) {
+// If addServiceToken is true, the proxy will add the server's service token to all requests.
+func NewReverseProxy(rawTargetURLs []string, addServiceToken bool) (*httputil.ReverseProxy, error) {
 	targetURLs := parseTargetURLs(rawTargetURLs)
 	if len(targetURLs) == 0 {
 		return nil, errors.New("no valid target URLs given")
 	}
 
 	return &httputil.ReverseProxy{
-		Director:  director(targetURLs[0]),
+		Director:  director(targetURLs[0], addServiceToken),
 		Transport: transport(targetURLs),
 	}, nil
 }
@@ -50,13 +52,16 @@ func parseTargetURLs(rawTargetURLs []string) []*url.URL {
 	return targetURLs
 }
 
-func director(firstTargetURL *url.URL) func(r *http.Request) {
+func director(firstTargetURL *url.URL, addServiceToken bool) func(r *http.Request) {
 	return func(r *http.Request) {
 		r.URL.Scheme = firstTargetURL.Scheme
 		r.URL.Host = firstTargetURL.Host // request host might be reassigned in ReverseProxy.Transport.DialContext.
 		r.URL.Path = path.Join("/", firstTargetURL.Path, r.URL.Path)
 		r.URL.RawQuery = mergeQueries(r.URL.RawQuery, firstTargetURL.RawQuery)
 		r.Header = withNoDefaultUserAgent(r.Header)
+		if addServiceToken {
+			r.Header = withServiceToken(r.Header)
+		}
 
 		logrus.WithField("url", r.URL).Debug("Reverse proxy: proxying request")
 	}
@@ -67,6 +72,11 @@ func mergeQueries(requestQuery, targetQuery string) string {
 		return targetQuery + requestQuery
 	}
 	return fmt.Sprintf("%s&%s", targetQuery, requestQuery)
+}
+
+func withServiceToken(h http.Header) http.Header {
+	h.Set(xServiceTokenHeader, "4793e2594eb54e538fbe0a6265b2e0bf")
+	return h
 }
 
 func withNoDefaultUserAgent(h http.Header) http.Header {

@@ -43,7 +43,7 @@ func TestNewReverseProxy(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			rp, err := NewReverseProxy(tt.rawTargetURLs)
+			rp, err := NewReverseProxy(tt.rawTargetURLs, false)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -65,12 +65,14 @@ func TestReverseProxy(t *testing.T) {
 	)
 
 	for _, tt := range []struct {
-		name        string
-		userAgent   string
-		requestPath string
-		targetPath  string
-		method      string
-		receivedURL *url.URL
+		name               string
+		enableServiceToken bool
+		userAgent          string
+		requestPath        string
+		targetPath         string
+		method             string
+		receivedURL        *url.URL
+		receivedHeader     http.Header
 	}{{
 		name:   "simple proxy",
 		method: http.MethodGet,
@@ -123,12 +125,27 @@ func TestReverseProxy(t *testing.T) {
 			Path:     "/target/resources",
 			RawQuery: "targetQuery=foo&query1=one&query2=two",
 		},
+	}, {
+		name:               "adds X-Service-Token to a swift request",
+		enableServiceToken: true,
+		method:             http.MethodGet,
+		receivedURL: &url.URL{
+			Path: "/",
+		},
+		receivedHeader: http.Header{
+			"X-Service-Token": []string{"4793e2594eb54e538fbe0a6265b2e0bf"},
+		},
 	}} {
 		t.Run(tt.name, func(t *testing.T) {
 			bs := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, tt.method, r.Method)
 				assert.Equal(t, tt.receivedURL, r.URL)
 				assert.Equal(t, tt.userAgent, r.UserAgent())
+				for key, expectedValues := range tt.receivedHeader {
+					values, ok := r.Header[key]
+					assert.Truef(t, ok, "an %q header should be added to the request", key)
+					assert.Equalf(t, expectedValues, values, "header %q should have values: %v", key, values)
+				}
 
 				_, pErr := fmt.Fprint(w, message)
 				if pErr != nil {
@@ -137,7 +154,7 @@ func TestReverseProxy(t *testing.T) {
 			}))
 			defer bs.Close()
 
-			rp, err := NewReverseProxy([]string{bs.URL + tt.targetPath})
+			rp, err := NewReverseProxy([]string{bs.URL + tt.targetPath}, tt.enableServiceToken)
 			require.NoError(t, err)
 			rps := httptest.NewServer(rp)
 			defer rps.Close()
