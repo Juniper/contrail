@@ -13,6 +13,7 @@ instances:
     roles:
       appformix_flows:
         telemetry_in_band_interface_name: eth0
+      appformix_bare_host:
 xflow_configuration:
   loadbalancer_collector_vip: 10.84.5.20
   kafka_volumes_host_path:
