@@ -37,7 +37,6 @@ const (
 
 	// AWS cloud kind
 	AWS    = "aws"
-	azure  = "azure"
 	gcp    = "gcp"
 	onPrem = "private"
 
