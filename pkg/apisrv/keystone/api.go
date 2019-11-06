@@ -46,6 +46,19 @@ type Keystone struct {
 	apiClient        *client.HTTP
 }
 
+//unavailableNeutron := newNeutronServerStub(http.StatusServiceUnavailable)
+//defer unavailableNeutron.Close()
+//cleanupE = createEndpoint(t, hc, endpointParameters{
+//	clusterName:    clusterName,
+//	endpointName:   unavailableEndpointName,
+//	endpointPrefix: neutronEndpointPrefix,
+//	privateURL:     unavailableNeutron.URL,
+//	publicURL:      unavailableNeutron.URL,
+//})
+//defer cleanupE()
+//server.ForceProxyUpdate()
+//
+//verifyFiveNeutronReadRequests(t, hc, clusterName)
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
 func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {

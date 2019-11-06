@@ -32,6 +32,7 @@ const (
 	keystoneEndpointPrefix = "keystone"
 	neutronEndpointPrefix  = "neutron"
 	portsPath              = "/ports"
+	authTokensPath         = "/v3/auth/tokens"
 )
 
 //////////////////////////////
@@ -215,7 +216,6 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	// act/assert
 	verifyFiveNeutronReadRequests(t, hc, clusterName)
 
-	// TODO(dfurman): proxy to other targets when 502/503 received from target
 	badGatewayNeutron := newNeutronServerStub(http.StatusBadGateway)
 	defer badGatewayNeutron.Close()
 
@@ -229,7 +229,7 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	defer cleanupE()
 	server.ForceProxyUpdate()
 
-	verifyFiveNeutronReadRequestsStatus(t, hc, clusterName, []int{http.StatusOK, http.StatusBadGateway})
+	verifyFiveNeutronReadRequests(t, hc, clusterName)
 
 	unavailableNeutron := newNeutronServerStub(http.StatusServiceUnavailable)
 	defer unavailableNeutron.Close()
@@ -243,12 +243,13 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	defer cleanupE()
 	server.ForceProxyUpdate()
 
-	verifyFiveNeutronReadRequestsStatus(
-		t,
-		hc,
-		clusterName,
-		[]int{http.StatusOK, http.StatusBadGateway, http.StatusServiceUnavailable},
-	)
+	verifyFiveNeutronReadRequests(t, hc, clusterName)
+
+	okNeutron.Close()
+
+	// TODO(dfurman): this check is flaky - sometimes response body is empty - fix it
+	// it is not flaky without code that handles 502/503 retries
+	verifyFiveNeutronReadRequestsStatus(t, hc, clusterName, []int{http.StatusBadGateway, http.StatusServiceUnavailable})
 }
 
 func setIncorrectEndpointURLs(t *testing.T, hc *integration.HTTPAPIClient, clusterName, endpointName string) {
@@ -271,8 +272,8 @@ func createNeutronServers(clusterName string) (publicS *httptest.Server, private
 
 func newNeutronPrivateServerStub(clusterName string) *httptest.Server {
 	return newTestHTTPServer(routes{
-		portsPath: func(c echo.Context) error {
-			return c.JSON(http.StatusOK, &portsResponse{Foo: fooValueOnPrivateURL(clusterName)})
+		portsPath: func(ctx echo.Context) error {
+			return ctx.JSON(http.StatusOK, &portsResponse{Foo: fooValueOnPrivateURL(clusterName)})
 		},
 	})
 }
@@ -283,12 +284,12 @@ func fooValueOnPrivateURL(clusterName string) string {
 
 func newNeutronPublicServerStub(clusterName string) *httptest.Server {
 	return newTestHTTPServer(routes{
-		portsPath: func(c echo.Context) error {
-			clusterID := c.Request().Header.Get(apisrv.XClusterIDKey)
+		portsPath: func(ctx echo.Context) error {
+			clusterID := ctx.Request().Header.Get(apisrv.XClusterIDKey)
 			if clusterID != contrailClusterUUID(clusterName) {
-				return c.JSON(http.StatusBadRequest, "cluster ID not found in header")
+				return ctx.JSON(http.StatusBadRequest, "cluster ID not found in header")
 			}
-			return c.JSON(http.StatusOK, &portsResponse{Foo: fooValueOnPublicURL(clusterName)})
+			return ctx.JSON(http.StatusOK, &portsResponse{Foo: fooValueOnPublicURL(clusterName)})
 		},
 	})
 }
@@ -299,29 +300,15 @@ func fooValueOnPublicURL(clusterName string) string {
 
 func newNeutronServerStub(statusToReturn int) *httptest.Server {
 	return newTestHTTPServer(routes{
-		portsPath: func(c echo.Context) error {
-			return c.JSON(statusToReturn, &portsResponse{Foo: fooValueWithStatus(statusToReturn)})
+		portsPath: func(ctx echo.Context) error {
+			return ctx.JSON(statusToReturn, &portsResponse{Foo: fooValueWithStatus(statusToReturn)})
 		},
 	})
-}
-
-func fooValueWithStatus(status int) string {
-	return strconv.Itoa(status)
 }
 
 type portsResponse struct {
 	Foo string `json:"foo"`
 }
-
-func newTestHTTPServer(r routes) *httptest.Server {
-	e := echo.New()
-	for route, handler := range r {
-		e.GET(route, handler)
-	}
-	return httptest.NewServer(e)
-}
-
-type routes map[string]echo.HandlerFunc
 
 func verifyNeutronReadRequests(t *testing.T, c *integration.HTTPAPIClient, clusterName string) {
 	verifyNeutronReadRequest(t, c, neutronPortsPrivatePath(clusterName), fooValueOnPrivateURL(clusterName))
@@ -335,14 +322,6 @@ func verifyFiveNeutronReadRequests(t *testing.T, c *integration.HTTPAPIClient, c
 	}
 }
 
-func verifyNeutronReadRequest(t *testing.T, c *integration.HTTPAPIClient, path, expectedValue string) {
-	var response portsResponse
-	_, err := c.Read(context.Background(), path, &response)
-
-	assert.NoError(t, err, fmt.Sprintf("path: %v, response: %+v", path, response))
-	assert.Equal(t, portsResponse{Foo: expectedValue}, response)
-}
-
 func verifyFiveNeutronReadRequestsStatus(
 	t *testing.T, c *integration.HTTPAPIClient, clusterName string, expectedStatuses []int,
 ) {
@@ -350,6 +329,14 @@ func verifyFiveNeutronReadRequestsStatus(
 		verifyNeutronReadRequestWithStatus(t, c, neutronPortsPrivatePath(clusterName), expectedStatuses)
 		verifyNeutronReadRequestWithStatus(t, c, neutronPortsPublicPath(clusterName), expectedStatuses)
 	}
+}
+
+func verifyNeutronReadRequest(t *testing.T, c *integration.HTTPAPIClient, path, expectedValue string) {
+	var response portsResponse
+	_, err := c.Read(context.Background(), path, &response)
+
+	assert.NoError(t, err, fmt.Sprintf("path: %v, response: %+v", path, response))
+	assert.Equal(t, portsResponse{Foo: expectedValue}, response)
 }
 
 func verifyNeutronReadRequestWithStatus(
@@ -460,7 +447,6 @@ func TestKeystoneRequestsProxying(t *testing.T) {
 		password:       passwordD,
 	})
 	defer cleanupED()
-
 	server.ForceProxyUpdate()
 
 	// act/assert
@@ -530,19 +516,18 @@ func TestKeystoneRequestsProxyingWithClosedRemoteKeystoneServers(t *testing.T) {
 		password:       password,
 	})
 	defer cleanupETwo()
-
 	server.ForceProxyUpdate()
 
 	// act/assert
 	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "0/2 Keystone servers closed")
-	// TODO: find and fix race condition
+	// TODO(dfurman): find and fix race condition
 	//verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "0/2 Keystone servers closed")
 
 	ksPrivateOne.Close()
 	ksPublicOne.Close()
 
 	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "1/2 Keystone servers closed")
-	// TODO: find and fix race condition
+	// TODO(dfurman): find and fix race condition
 	//verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "1/2 Keystone servers closed")
 
 	ksPrivateTwo.Close()
@@ -550,6 +535,111 @@ func TestKeystoneRequestsProxyingWithClosedRemoteKeystoneServers(t *testing.T) {
 
 	verifyFiveCreateTokenRequestsFail(ctxWithXClusterID(clusterName), t, hcTest, "all Keystone servers closed")
 	verifyFiveReadTokenRequestsFail(ctxWithXClusterID(clusterName), t, hcTest, "all Keystone servers closed")
+}
+
+func TestKeystoneRequestsProxyingWithUnavailableRemoteKeystoneServers(t *testing.T) {
+	// TODO(dfurman): reuse retry implementation from dynamicProxyMiddleware
+	//                in keystone.Client.proxyRequestToRemoteKeystone()
+	t.Skip("Not implemented")
+
+	// arrange
+	const (
+		endpointNameHealthy                                    = "keystone-endpoint-healthy"
+		endpointNameBadRequest, endpointNameServiceUnavailable = "keystone-endpoint-502", "keystone-endpoint-503"
+		username                                               = "test-user"
+		password                                               = "test-password"
+	)
+	clusterName := contrailClusterName(t, "")
+	authURL := server.URL() + keystone.LocalAuthPath
+	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
+	hcTest := client.NewHTTP(&client.HTTPConfig{
+		ID:       username,
+		Password: password,
+		Endpoint: server.URL(),
+		AuthURL:  authURL,
+		Insecure: true,
+	})
+
+	cleanupCC := createContrailCluster(t, hcBob, clusterName)
+	defer cleanupCC()
+
+	ksPrivateOne := integration.NewKeystoneServerFake(t, authURL, username, password)
+	defer ksPrivateOne.Close()
+	ksPublicOne := integration.NewKeystoneServerFake(t, authURL, username, password)
+	defer ksPublicOne.Close()
+
+	cleanupEOne := createEndpoint(t, hcBob, endpointParameters{
+		clusterName:    clusterName,
+		endpointName:   endpointNameHealthy,
+		endpointPrefix: keystoneEndpointPrefix,
+		privateURL:     ksPrivateOne.URL,
+		publicURL:      ksPublicOne.URL,
+		username:       username,
+		password:       password,
+	})
+	defer cleanupEOne()
+	server.ForceProxyUpdate()
+
+	// act/assert
+	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "only healthy Keystone server up")
+	// TODO(dfurman): find and fix race condition
+	//verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "only healthy Keystone servers up")
+
+	ksBadGateway := newKeystoneServerStub(http.StatusBadGateway)
+	defer ksBadGateway.Close()
+
+	cleanupEBadGateway := createEndpoint(t, hcBob, endpointParameters{
+		clusterName:    clusterName,
+		endpointName:   endpointNameBadRequest,
+		endpointPrefix: keystoneEndpointPrefix,
+		privateURL:     ksBadGateway.URL,
+		publicURL:      ksBadGateway.URL,
+		username:       username,
+		password:       password,
+	})
+	defer cleanupEBadGateway()
+	server.ForceProxyUpdate()
+
+	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "healthy Keystone server and 502 stub up")
+	// TODO(dfurman): find and fix race condition
+	//verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "healthy Keystone server and 502 stub up")
+
+	ksServiceUnavailable := newKeystoneServerStub(http.StatusServiceUnavailable)
+	defer ksServiceUnavailable.Close()
+
+	cleanupEServiceUnavailable := createEndpoint(t, hcBob, endpointParameters{
+		clusterName:    clusterName,
+		endpointName:   endpointNameServiceUnavailable,
+		endpointPrefix: keystoneEndpointPrefix,
+		privateURL:     ksServiceUnavailable.URL,
+		publicURL:      ksServiceUnavailable.URL,
+		username:       username,
+		password:       password,
+	})
+	defer cleanupEServiceUnavailable()
+	server.ForceProxyUpdate()
+
+	verifyFiveCreateTokenRequests(
+		ctxWithXClusterID(clusterName),
+		t,
+		hcTest,
+		"healthy Keystone server, 502 and 503 stubs up",
+	)
+	// TODO(dfurman): find and fix race condition
+	//verifyFiveReadTokenRequests(
+	//	ctxWithXClusterID(clusterName),
+	//	t,
+	//	hcTest,
+	//	"healthy Keystone server, 502 and 503 stubs up",
+	//)
+}
+
+func newKeystoneServerStub(statusToReturn int) *httptest.Server {
+	return newTestHTTPServer(routes{
+		authTokensPath: func(ctx echo.Context) error {
+			return ctx.JSON(statusToReturn, &portsResponse{Foo: fooValueWithStatus(statusToReturn)})
+		},
+	})
 }
 
 func ctxWithXClusterID(clusterName string) context.Context {
@@ -635,7 +725,6 @@ func TestDynamicProxyServiceWebSocketsSupport(t *testing.T) {
 		publicURL:      target.URL,
 	})
 	defer cleanupE()
-
 	server.ForceProxyUpdate()
 
 	config, err := websocket.NewConfig(requestURL(clusterName, endpointPrefix), "http://localhost/")
@@ -683,6 +772,20 @@ func requestURL(clusterName, endpointPrefix string) string {
 ///////////////////////////
 // Common test utilities //
 ///////////////////////////
+
+func newTestHTTPServer(r routes) *httptest.Server {
+	e := echo.New()
+	for route, handler := range r {
+		e.GET(route, handler)
+	}
+	return httptest.NewServer(e)
+}
+
+type routes map[string]echo.HandlerFunc
+
+func fooValueWithStatus(status int) string {
+	return strconv.Itoa(status)
+}
 
 func contrailClusterName(t *testing.T, suffix string) string {
 	return strings.ReplaceAll(t.Name(), "/", "_") + "-cluster" + suffix
