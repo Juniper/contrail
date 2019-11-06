@@ -188,6 +188,8 @@ func TestDynamicProxyServiceWithClosedTargetServers(t *testing.T) {
 }
 
 func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
+	//t.Skip("TODO")
+
 	// arrange
 	const (
 		okEndpointName, badGatewayEndpointName = "neutron-ok", "neutron-bad-gateway"
@@ -215,7 +217,6 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	// act/assert
 	verifyFiveNeutronReadRequests(t, hc, clusterName)
 
-	// TODO(dfurman): proxy to other targets when 502/503 received from target
 	badGatewayNeutron := newNeutronServerStub(http.StatusBadGateway)
 	defer badGatewayNeutron.Close()
 
@@ -229,7 +230,8 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	defer cleanupE()
 	server.ForceProxyUpdate()
 
-	verifyFiveNeutronReadRequestsStatus(t, hc, clusterName, []int{http.StatusOK, http.StatusBadGateway})
+	fmt.Println("hoge verifying requests with badGatewayNeutron spawned")
+	verifyFiveNeutronReadRequests(t, hc, clusterName)
 
 	unavailableNeutron := newNeutronServerStub(http.StatusServiceUnavailable)
 	defer unavailableNeutron.Close()
@@ -243,12 +245,7 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	defer cleanupE()
 	server.ForceProxyUpdate()
 
-	verifyFiveNeutronReadRequestsStatus(
-		t,
-		hc,
-		clusterName,
-		[]int{http.StatusOK, http.StatusBadGateway, http.StatusServiceUnavailable},
-	)
+	verifyFiveNeutronReadRequests(t, hc, clusterName)
 }
 
 func setIncorrectEndpointURLs(t *testing.T, hc *integration.HTTPAPIClient, clusterName, endpointName string) {
@@ -341,25 +338,6 @@ func verifyNeutronReadRequest(t *testing.T, c *integration.HTTPAPIClient, path, 
 
 	assert.NoError(t, err, fmt.Sprintf("path: %v, response: %+v", path, response))
 	assert.Equal(t, portsResponse{Foo: expectedValue}, response)
-}
-
-func verifyFiveNeutronReadRequestsStatus(
-	t *testing.T, c *integration.HTTPAPIClient, clusterName string, expectedStatuses []int,
-) {
-	for i := 0; i < 5; i++ {
-		verifyNeutronReadRequestWithStatus(t, c, neutronPortsPrivatePath(clusterName), expectedStatuses)
-		verifyNeutronReadRequestWithStatus(t, c, neutronPortsPublicPath(clusterName), expectedStatuses)
-	}
-}
-
-func verifyNeutronReadRequestWithStatus(
-	t *testing.T, c *integration.HTTPAPIClient, path string, expectedStatuses []int,
-) {
-	var response portsResponse
-	r, err := c.Do(context.Background(), echo.GET, path, nil, nil, &response, expectedStatuses)
-
-	assert.NoError(t, err, fmt.Sprintf("path: %v, response: %+v", path, response))
-	assert.Equal(t, portsResponse{Foo: fooValueWithStatus(r.StatusCode)}, response)
 }
 
 func verifyNeutronReadRequestsFail(t *testing.T, c *integration.HTTPAPIClient, clusterName string) {

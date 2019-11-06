@@ -1,19 +1,21 @@
 package apisrv
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/proxy"
+
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/labstack/echo"
@@ -24,8 +26,9 @@ import (
 // Proxy service related constants.
 const (
 	DefaultDynamicProxyPath = "proxy"
-	ProxySyncInterval       = 2 * time.Second
-	XClusterIDKey           = "X-Cluster-ID"
+	//ProxySyncInterval       = 2 * time.Second // TODO: FIXME
+	ProxySyncInterval = 200 * time.Millisecond
+	XClusterIDKey     = "X-Cluster-ID"
 
 	limit         = 100
 	pathSeparator = "/"
@@ -33,7 +36,6 @@ const (
 
 // proxyService provides dynamic HTTP and WebSockets proxy capabilities.
 // TODO(Daniel): move to subpackage to improve design
-// TODO(Daniel): proxy to other targets when 502/503 received from target
 type proxyService struct {
 	endpointStore    *endpoint.Store
 	dbService        services.Service
@@ -54,28 +56,115 @@ func newProxyService(es *endpoint.Store, dbService services.Service, dynamicProx
 	}
 }
 
-func dynamicProxyMiddleware(
-	es *endpoint.Store, dynamicProxyPath string,
-) func(next echo.HandlerFunc) echo.HandlerFunc {
+func dynamicProxyMiddleware(es *endpoint.Store, dynamicProxyPath string) func(next echo.HandlerFunc) echo.HandlerFunc {
+	log := logutil.NewLogger("dynamic-proxy-mw")
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			r := c.Request()
-			pp := proxyPrefix(r.URL.Path, scope(r.URL.Path))
-			rp, err := reverseProxy(es, r.URL.Path, pp)
+		return func(ctx echo.Context) error {
+			r := ctx.Request()
+
+			r, err := withClusterIDKeyHeader(r, dynamicProxyPath)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
-			if err = setClusterIDKeyHeader(r, dynamicProxyPath); err != nil {
+			pp := proxyPrefix(r.URL.Path, urlScope(r.URL.Path))
+			scope := urlScope(r.URL.Path)
+			r.URL.Path = withNoProxyPrefix(r.URL.Path, pp)
+
+			t, err := readTargets(es, scope, pp)
+			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, strings.TrimSuffix(pp, endpoint.PublicURLScope))
+			// former implementation
+			//rp, err := proxy.NewReverseProxy(rawTargetURLs(t))
+			//if err != nil {
+			//	return echo.NewHTTPError(http.StatusInternalServerError, err)
+			//}
+			//rp.ServeHTTP(ctx.Response(), r)
 
-			rp.ServeHTTP(c.Response(), r)
+			rb := &responseBuffer{}
+			for _, targetURL := range rawTargetURLs(t) {
+				rp, err := proxy.NewReverseProxy([]string{targetURL})
+				if err != nil {
+					return echo.NewHTTPError(http.StatusInternalServerError, err)
+				}
+
+				fmt.Printf("hoge before rp.ServeHTTP()"+
+					"ctx: %#v\n request: %#v\n request URL: %#v\n, response: %#v\n, rb: %#v\n",
+					ctx, ctx.Request(), ctx.Request().URL, ctx.Response(), rb,
+				)
+
+				rb = newResponseBuffer(ctx.Response())
+				rp.ServeHTTP(rb, r)
+				fmt.Printf("hoge after  rp.ServeHTTP()"+
+					"ctx: %#v\n request: %#v\n request URL: %#v\n, response: %#v\n, rb: %#v\n",
+					ctx, ctx.Request(), ctx.Request().URL, ctx.Response(), rb,
+				)
+
+				if rb.Status() != http.StatusBadGateway && rb.Status() != http.StatusServiceUnavailable {
+					fmt.Printf("hoge break with status %v\n", rb.Status())
+					break
+				}
+
+				log.WithFields(logrus.Fields{
+					"response-status": rb.Status(),
+					"last-target-url": targetURL,
+				}).Debug("Target server unavailable - retrying request to next target")
+			}
+
+			if err = rb.Flush(); err != nil {
+				return echo.NewHTTPError(http.StatusServiceUnavailable, err)
+			}
+			fmt.Printf("hoge after  rb.Flush()"+
+				"ctx: %#v\n request: %#v\n request URL: %#v\n, response: %#v\n, rb: %#v\n",
+				ctx, ctx.Request(), ctx.Request().URL, ctx.Response(), rb,
+			)
+
 			return nil
 		}
 	}
+}
+
+// responseBuffer allows to postpone writing response to wrapped ResponseWriter.
+type responseBuffer struct {
+	rw     http.ResponseWriter
+	status int
+	body   *bytes.Buffer
+}
+
+func newResponseBuffer(rw http.ResponseWriter) *responseBuffer {
+	return &responseBuffer{
+		rw: rw,
+		//status: http.StatusOK,
+		body: &bytes.Buffer{},
+	}
+}
+
+func (rb responseBuffer) Header() http.Header {
+	return rb.rw.Header()
+}
+
+func (rb responseBuffer) Write(data []byte) (int, error) {
+	return rb.body.Write(data)
+}
+
+func (rb responseBuffer) WriteHeader(statusCode int) {
+	rb.status = statusCode
+}
+
+func (rb responseBuffer) Status() int {
+	return rb.status
+}
+
+func (rb responseBuffer) Flush() error {
+	rb.rw.WriteHeader(rb.status)
+	_, err := rb.rw.Write(rb.body.Bytes())
+	if err != nil {
+		return errors.Wrap(err, "failed to write target's response to client")
+	}
+	return nil
 }
 
 func proxyPrefix(urlPath string, scope string) string {
@@ -83,23 +172,25 @@ func proxyPrefix(urlPath string, scope string) string {
 	return strings.Join(append(prefixes, scope), pathSeparator)
 }
 
-func reverseProxy(
-	es *endpoint.Store, urlPath string, proxyPrefix string,
-) (*httputil.ReverseProxy, error) {
+func withNoProxyPrefix(path, pp string) string {
+	return strings.TrimPrefix(path, strings.TrimSuffix(pp, endpoint.PublicURLScope))
+}
+
+func readTargets(es *endpoint.Store, scope string, proxyPrefix string) ([]*endpoint.Endpoint, error) {
 	ts := es.Read(proxyPrefix)
 	if ts == nil {
 		return nil, errors.Errorf("target store not found for given proxy prefix: %v", proxyPrefix)
 	}
 
-	targets := ts.ReadAll(scope(urlPath))
-	if targets == nil {
+	targets := ts.ReadAll(scope)
+	if len(targets) == 0 {
 		return nil, errors.New("no targets in proxy target store")
 	}
 
-	return proxy.NewReverseProxy(rawTargetURLs(targets))
+	return targets, nil
 }
 
-func scope(urlPath string) string {
+func urlScope(urlPath string) string {
 	if strings.Contains(urlPath, endpoint.PrivateURLScope) {
 		return endpoint.PrivateURLScope
 	}
@@ -114,16 +205,14 @@ func rawTargetURLs(targets []*endpoint.Endpoint) []string {
 	return u
 }
 
-// setClusterIDKeyHeader Sets cluster ID in proxy request, so that the proxy endpoints can use it
-// to get server's Keystone token.
-func setClusterIDKeyHeader(r *http.Request, dynamicProxyPath string) error {
+func withClusterIDKeyHeader(r *http.Request, dynamicProxyPath string) (*http.Request, error) {
 	cid := clusterID(r.URL.Path, dynamicProxyPath)
 	if cid == "" {
-		return errors.Errorf("cluster ID not found in proxy URL: %v", r.URL.Path)
+		return nil, errors.Errorf("cluster ID not found in proxy URL: %v", r.URL.Path)
 	}
 
 	r.Header.Set(XClusterIDKey, cid)
-	return nil
+	return r, nil
 }
 
 func clusterID(url, dynamicProxyPath string) (clusterID string) {
