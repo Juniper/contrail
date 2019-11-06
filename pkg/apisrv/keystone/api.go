@@ -51,7 +51,7 @@ type Keystone struct {
 func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 	keystone := &Keystone{
 		endpointStore: es,
-		client:        &Client{},
+		client:        NewClient(),
 		apiClient:     client.NewHTTPFromConfig(),
 	}
 	assignmentType := viper.GetString("keystone.assignment.type")
