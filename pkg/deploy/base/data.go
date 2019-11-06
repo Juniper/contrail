@@ -1545,6 +1545,110 @@ func (d *Data) GetAllCredsInfo() []*models.Credential {
 	return uniqueCreds
 }
 
+// Check if uniqueNode has any contrail role
+// nolint: gocyclo
+func (d *Data) isPresentInContrailCluster(uniqueNode *models.Node) bool {
+
+	for _, node := range d.ClusterInfo.ContrailConfigNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailConfigDatabaseNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailControlNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailAnalyticsNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailAnalyticsDatabaseNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailAnalyticsAlarmNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailAnalyticsSNMPNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailVcenterFabricManagerNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailVrouterNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailMulticloudGWNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	for _, node := range d.ClusterInfo.ContrailServiceNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if uniqueNode.UUID == nodeRef.UUID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// Check if uniqueNode has any xflow role
+func (d *Data) isPresentInXflow(uniqueNode *models.Node) bool {
+
+	if d.GetXflowData() != nil {
+		for _, node := range d.GetXflowData().getNodes() {
+			if uniqueNode.UUID == node.UUID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetAllNodesInfo gets all node details
 func (d *Data) GetAllNodesInfo() []*models.Node {
 	nodes := d.NodesInfo
@@ -1573,6 +1677,41 @@ func (d *Data) GetAllNodesInfo() []*models.Node {
 	}
 
 	return uniqueNodes
+}
+
+// GetAppformixMonitoredNodes gets appformix monitored nodes
+func (d *Data) GetAppformixMonitoredNodes() []*models.Node {
+
+	uniqueNodes := d.GetAllNodesInfo()
+	// For all contrail and flows nodes which donot have appformix role,
+	// add appformix barehost role
+	// This makes appformix playbook install appformix-manager and monitor the node
+	var monitoredNodes []*models.Node
+	monitoredNodes = nil
+	for _, uniqueNode := range uniqueNodes {
+		isPresentInContrailCluster := d.isPresentInContrailCluster(uniqueNode)
+		isPresentInXflow := d.isPresentInXflow(uniqueNode)
+		if isPresentInContrailCluster == false && isPresentInXflow == false {
+			continue
+		}
+		isFound := false
+		if d.getAppformixClusterData() != nil {
+			for _, node := range d.getAppformixClusterData().nodesInfo {
+				if uniqueNode.UUID == node.UUID {
+					isFound = true
+					break
+				}
+			}
+		}
+
+		if isFound == false {
+			// add barehost role to this node
+			// ie add it to AppformixCluser bare-host list
+			monitoredNodes = append(monitoredNodes, uniqueNode)
+		}
+	}
+
+	return monitoredNodes
 }
 
 func (d *Data) getConfigNodeIPs() (nodeIPs []string) {
