@@ -329,6 +329,7 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 		"k8sCluster":         a.clusterData.GetK8sClusterInfo(),
 		"vcenter":            a.clusterData.GetVCenterClusterInfo(),
 		"appformixCluster":   a.clusterData.GetAppformixClusterInfo(),
+		"monitoredNodes":     a.clusterData.GetAppformixMonitoredNodes(),
 		"xflowCluster":       a.clusterData.GetXflowData(),
 		"nodes":              a.clusterData.GetAllNodesInfo(),
 		"credentials":        a.clusterData.GetAllCredsInfo(),

@@ -12,6 +12,7 @@ instances:
     provider: bms
     roles:
       appformix_flows:
+      appformix_bare_host:
 xflow_configuration:
   loadbalancer_collector_vip: 10.84.5.20
   clickhouse_retention_period_secs: 7200
