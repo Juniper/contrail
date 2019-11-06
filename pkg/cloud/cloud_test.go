@@ -63,13 +63,24 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/aws/create_cloud_resources.yml",
+				"./test_data/aws/test_aws_create/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/aws/test_aws_create/expected_topology.yml",
 			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
 			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
-		},
-		{
+		}, {
+			name:        "Test Create AWS Cloud Failure",
+			cloudUUID:   "cloud_uuid_aws",
+			cloudAction: createAction,
+			manageFails: true,
+			requestsToStartWith: []string{
+				"./test_data/cluster_with_credentials_request.yml",
+				"./test_data/aws/test_aws_create/requests.yml",
+			},
+			expectedTopologyFile: "./test_data/aws/test_aws_create/expected_topology.yml",
+			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
+			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
+		}, {
 			name:        "Test Create GCP Cloud",
 			cloudUUID:   "cloud_uuid_gcp",
 			cloudAction: createAction,
@@ -89,13 +100,12 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/gcp/create_cloud_resources.yml",
+				"./test_data/gcp/test_gcp_create/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/gcp/test_gcp_create/expected_topology.yml",
 			expectedSecretFile:   "./test_data/gcp/expected_secret.yml",
 			expectedCommandsFile: "./test_data/gcp/expected_commands.yml",
-		},
-		{
+		}, {
 			name:        "Test Create Azure Cloud",
 			cloudUUID:   "cloud_uuid_azure",
 			cloudAction: createAction,
@@ -127,13 +137,12 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/azure/create_cloud_resources.yml",
+				"./test_data/azure/test_azure_create/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/azure/test_azure_create/expected_topology.yml",
 			expectedSecretFile:   "./test_data/azure/expected_secret.yml",
 			expectedCommandsFile: "./test_data/azure/expected_commands.yml",
-		},
-		{
+		}, {
 			name:        "Test Update AWS Cloud",
 			cloudUUID:   "cloud_uuid_aws",
 			cloudAction: updateAction,
@@ -161,14 +170,26 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/aws/create_cloud_resources.yml",
+				"./test_data/aws/test_aws_update/prerequisites.yml",
 				"./test_data/aws/test_aws_update/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/aws/test_aws_update/expected_topology.yml",
 			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
 			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
-		},
-		{
+		}, {
+			name:        "Test Update AWS Cloud Fail",
+			cloudUUID:   "cloud_uuid_aws",
+			cloudAction: updateAction,
+			manageFails: true,
+			requestsToStartWith: []string{
+				"./test_data/cluster_with_credentials_request.yml",
+				"./test_data/aws/test_aws_update/prerequisites.yml",
+				"./test_data/aws/test_aws_update/requests.yml",
+			},
+			expectedTopologyFile: "./test_data/aws/test_aws_update/expected_topology.yml",
+			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
+			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
+		}, {
 			name:        "Test Update GCP Cloud",
 			cloudUUID:   "cloud_uuid_gcp",
 			cloudAction: updateAction,
@@ -192,14 +213,13 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/gcp/create_cloud_resources.yml",
+				"./test_data/gcp/test_gcp_update/prerequisites.yml",
 				"./test_data/gcp/test_gcp_update/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/gcp/test_gcp_update/expected_topology.yml",
 			expectedSecretFile:   "./test_data/gcp/expected_secret.yml",
 			expectedCommandsFile: "./test_data/gcp/expected_commands.yml",
-		},
-		{
+		}, {
 			name:        "Test Update Azure Cloud",
 			cloudUUID:   "cloud_uuid_azure",
 			cloudAction: updateAction,
@@ -235,7 +255,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/azure/create_cloud_resources.yml",
+				"./test_data/azure/test_azure_update/prerequisites.yml",
 				"./test_data/azure/test_azure_update/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/azure/test_azure_update/expected_topology.yml",
@@ -266,7 +286,19 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
-	assert.NoErrorf(t, cl.Manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
+	err := cl.Manage()
+
+	if pc.manageFails {
+		assert.Errorf(t, err, "manage cloud should fail, while cloud %s", pc.cloudAction)
+		assert.False(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
+			"modified status is removed")
+		verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
+		return
+	}
+
+	assert.NoErrorf(t, err, "failed to manage cloud, while cloud %s", pc.cloudAction)
+	assert.True(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
+		"modified status is not removed")
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
 
@@ -277,6 +309,14 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	verifyCommandsExecuted(t, pc.expectedCommandsFile, cl.config.CloudID)
 	verifyGeneratedSSHKeyFiles(t, cl.config.CloudID)
+}
+
+func assertModifiedStatusRemoval(ctx context.Context, t *testing.T, APIServer *client.HTTP, cloudUUID string) bool {
+	c, err := APIServer.GetCloud(ctx, &services.GetCloudRequest{
+		ID: cloudUUID,
+	})
+	assert.NoError(t, err)
+	return !(c.Cloud.AwsModified || c.Cloud.AzureModified || c.Cloud.GCPModified)
 }
 
 func prepareForTest(
@@ -472,9 +512,18 @@ func testPublicCloudUpdateWithoutRemovingSecret(t *testing.T, pc *providerConfig
 	defer postActions(t, pc.cloudUUID)
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
+	err := cl.manage()
+
+	if pc.manageFails {
+		assert.Errorf(t, err, "manage cloud should fail, while cloud %s", pc.cloudAction)
+		assert.False(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
+			"modified status is removed")
+		return
+	}
 
 	assert.NoErrorf(t, cl.manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
-
+	assert.True(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
+		"modified status is not removed")
 	compareSecret(t, pc.expectedSecretFile, cl.config.CloudID)
 }
 
@@ -512,14 +561,25 @@ func TestDeletingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/aws/create_cloud_resources.yml",
+				"./test_data/aws/test_aws_delete/prerequisites.yml",
 				"./test_data/aws/test_aws_delete/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/aws/test_aws_delete/expected_topology.yml",
 			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
 			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
-		},
-		{
+		}, {
+			name:        "Delete AWS Cloud Fail",
+			cloudUUID:   "cloud_uuid_aws",
+			manageFails: true,
+			requestsToStartWith: []string{
+				"./test_data/cluster_with_credentials_request.yml",
+				"./test_data/aws/test_aws_delete/prerequisites.yml",
+				"./test_data/aws/test_aws_delete/requests.yml",
+			},
+			expectedTopologyFile: "./test_data/aws/test_aws_delete/expected_topology.yml",
+			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
+			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
+		}, {
 			name:      "Delete GCP Cloud",
 			cloudUUID: "cloud_uuid_gcp",
 			filesToCopy: []*fileToCopy{
@@ -542,14 +602,13 @@ func TestDeletingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/gcp/create_cloud_resources.yml",
+				"./test_data/gcp/test_gcp_delete/prerequisites.yml",
 				"./test_data/gcp/test_gcp_delete/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/gcp/test_gcp_delete/expected_topology.yml",
 			expectedSecretFile:   "./test_data/gcp/expected_secret.yml",
 			expectedCommandsFile: "./test_data/gcp/expected_commands.yml",
-		},
-		{
+		}, {
 			name:      "Delete Azure Cloud",
 			cloudUUID: "cloud_uuid_azure",
 			filesToCopy: []*fileToCopy{
@@ -584,7 +643,7 @@ func TestDeletingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/azure/create_cloud_resources.yml",
+				"./test_data/azure/test_azure_delete/prerequisites.yml",
 				"./test_data/azure/test_azure_delete/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/azure/test_azure_delete/expected_topology.yml",
@@ -604,7 +663,16 @@ func testPublicCloudDeletion(t *testing.T, pc *providerConfig) {
 
 	cl := prepareCloud(t, pc.cloudUUID, updateAction)
 
-	assert.NoError(t, cl.Manage(), "failed to manage cloud, while deleting cloud")
+	err := cl.Manage()
+	if pc.manageFails {
+		assert.Errorf(t, err, "manage cloud should fail, while deleting cloud", pc.cloudAction)
+		assert.False(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
+			"modified status is removed")
+		verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
+		return
+	}
+
+	assert.NoErrorf(t, err, "failed to manage cloud, while deleting", pc.cloudAction)
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
 
@@ -734,7 +802,7 @@ func testOnPremDelete(t *testing.T, pc *providerConfig) {
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
 	if pc.manageFails {
-		assert.Error(t, cl.Manage(), "manage cloud succeded but it shouldn't")
+		assert.Error(t, cl.Manage(), "manage cloud succeeded but it shouldn't")
 	} else {
 		assert.NoError(t, cl.Manage(), "failed to manage cloud, while deleting cloud")
 		verifyCloudDeleted(cl.ctx, t, cl.APIServer, pc.cloudUUID)

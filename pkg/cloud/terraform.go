@@ -5,19 +5,19 @@ import (
 	"github.com/Juniper/asf/pkg/osutil"
 )
 
-func destroyTopology(c *Cloud) error {
+func destroyTopology(c *Cloud, providers []string) error {
 	if tfStateOutputExists(c.config.CloudID) {
 		if err := fileutil.WriteToFile(GetTopoFile(c.config.CloudID), []byte{}, defaultRWOnlyPerm); err != nil {
 			return err
 		}
-		if err := updateTopology(c); err != nil {
+		if err := updateTopology(c, providers); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func updateTopology(c *Cloud) error {
+func updateTopology(c *Cloud, providers []string) error {
 	workDir := GetCloudDir(c.config.CloudID)
 	cmd := "deployer"
 	args := []string{
@@ -25,6 +25,9 @@ func updateTopology(c *Cloud) error {
 		"--topology", GetTopoFile(c.config.CloudID),
 		"--secret", GetSecretFile(c.config.CloudID),
 		"--skip_validation",
+	}
+	for _, p := range providers {
+		args = append(args, "--"+p)
 	}
 	if c.config.Test {
 		return TestCmdHelper(cmd, args, workDir, testTemplate)

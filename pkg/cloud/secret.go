@@ -112,13 +112,21 @@ func getKeyPairObject(ctx context.Context, uuid string,
 }
 
 // Update fills the secret file config
-func (sfc *SecretFileConfig) Update(providers []string, kp *models.Keypair) error {
+func (sfc *SecretFileConfig) Update(kp *models.Keypair) error {
 	sfc.Keypair = kp
-
 	kfd := services.NewKeyFileDefaults()
 
-	awsCredentialsPresent := awsCredentialsExist(kfd)
-	if awsCredentialsPresent {
+	if err := sfc.updateAWSCredentials(kfd); err != nil {
+		return err
+	}
+	if err := sfc.updateAzureCredentials(kfd); err != nil {
+		return err
+	}
+	return sfc.updateGCPCredentials(kfd)
+}
+
+func (sfc *SecretFileConfig) updateAWSCredentials(kfd *services.KeyFileDefaults) error {
+	if awsCredentialsExist(kfd) {
 		awsCreds, err := loadAWSCredentials(
 			kfd.GetAWSAccessPath(),
 			kfd.GetAWSSecretPath(),
@@ -129,21 +137,6 @@ func (sfc *SecretFileConfig) Update(providers []string, kp *models.Keypair) erro
 		sfc.AWSAccessKey = awsCreds.AccessKey
 		sfc.AWSSecretKey = awsCreds.SecretKey
 	}
-
-	if err := sfc.updateAzureCredentials(kfd); err != nil {
-		return err
-	}
-
-	if err := sfc.updateGCPCredentials(kfd); err != nil {
-		return err
-	}
-
-	for _, provider := range providers {
-		if provider == AWS && !awsCredentialsPresent {
-			return errors.New("aws credentials are not present, please provide them")
-		}
-	}
-
 	return nil
 }
 

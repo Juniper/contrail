@@ -1,1 +1,1 @@
-deployer all topology --topology /var/tmp/cloud/cloud_uuid_gcp/topology.yml --secret /var/tmp/cloud/cloud_uuid_gcp/secret.yml --skip_validation
+deployer all topology --topology /var/tmp/cloud/cloud_uuid_gcp/topology.yml --secret /var/tmp/cloud/cloud_uuid_gcp/secret.yml --skip_validation --gcp

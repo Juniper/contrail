@@ -10,6 +10,7 @@ test_data:
     uuid: cloud_uuid_azure
     prebuild_image_id: test-update-image-id
     organization: unit_test
+    azure_modified: true
     cloud_user_refs:
       - uuid: cloud_user_uuid
 
