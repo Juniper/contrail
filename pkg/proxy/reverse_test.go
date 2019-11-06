@@ -158,7 +158,7 @@ func request(t *testing.T, method, requestURL, userAgent string) *http.Request {
 	r, err := http.NewRequest(method, requestURL, nil)
 	require.NoError(t, err)
 
-	r.Header.Set(UserAgentHeader, userAgent)
+	r.Header.Set(userAgentHeader, userAgent)
 
 	return r
 }

@@ -2,9 +2,13 @@ package keystone
 
 import (
 	"context"
+	"crypto/tls"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/databus23/keystone"
@@ -49,10 +53,10 @@ func GetAuthSkipPaths() ([]string, error) {
 
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
 //nolint: gocyclo
-func AuthMiddleware(keystoneClient *Client, skipPath []string) echo.MiddlewareFunc {
+func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.MiddlewareFunc {
+	auth := newKeystoneAuth(authURL, insecure)
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		keystoneClient.AuthURL = keystoneClient.LocalAuthURL
-		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
 			for _, pathQuery := range skipPath {
 				switch c.Request().URL.Path {
@@ -98,9 +102,9 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string) echo.MiddlewareFu
 }
 
 //AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(keystoneClient *Client) grpc.UnaryServerInterceptor {
-	keystoneClient.AuthURL = keystoneClient.LocalAuthURL
-	auth := keystoneClient.NewAuth()
+func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor {
+	auth := newKeystoneAuth(authURL, insecure)
+
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
@@ -117,6 +121,20 @@ func AuthInterceptor(keystoneClient *Client) grpc.UnaryServerInterceptor {
 		}
 		return handler(newCtx, req)
 	}
+}
+
+func newKeystoneAuth(authURL string, insecure bool) *keystone.Auth {
+	a := keystone.New(authURL)
+	a.Client = &http.Client{
+		Transport: httpTransport(insecure),
+	}
+	return a
+}
+
+func httpTransport(insecure bool) *http.Transport {
+	t := cleanhttp.DefaultPooledTransport()
+	t.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
+	return t
 }
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
