@@ -52,6 +52,24 @@
       "revId": "6c64169e8f6dc309f6fe342db22743a1ca40b31c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d29f3446_afedac06",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T22:04:36Z",
+      "side": 1,
+      "message": "Good to know about #2\nI agree.",
+      "parentUuid": "97112f65_7e383a92",
+      "revId": "6c64169e8f6dc309f6fe342db22743a1ca40b31c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

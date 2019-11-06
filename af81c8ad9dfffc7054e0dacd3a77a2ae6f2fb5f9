@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "e45317fd_ec7d429b",
+        "filename": "Gopkg.toml",
+        "patchSetId": 7
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T22:04:36Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "8fdd5b00_55550997",
+      "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6facf3ff_bf53a312",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 7
