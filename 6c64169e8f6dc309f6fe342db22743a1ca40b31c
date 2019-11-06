@@ -34,6 +34,24 @@
       "revId": "6c64169e8f6dc309f6fe342db22743a1ca40b31c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "97112f65_7e383a92",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2019-11-06T19:30:20Z",
+      "side": 1,
+      "message": "#2 is not feasible because ContainerExecStart() is non-blocking, so to make sure exec finishes before execCmd() returns, we need to use docker events for detecting completion of the executed command. This is not as good as ContaineeExecAttach(), because *Attach() can tell when the command finishes execution. Docker CLI\u0027s docker exec ... also use *Attach().\nIMO, #3 is a better solution when we want to use *Attach()",
+      "parentUuid": "eed95e91_c76e7caa",
+      "revId": "6c64169e8f6dc309f6fe342db22743a1ca40b31c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
