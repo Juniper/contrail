@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "42dff4fd_6ff088e6",
+        "filename": "Gopkg.toml",
+        "patchSetId": 7
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "When gopkg.toml and gopkg.lock are empty, dep\u0027s solver chooses basically latest version tagged with semver (not latest commit). Latess docker releaser in Github repo were in 2017: https://github.com/moby/moby/tags?after\u003dv17.04.0-ce-rc1 so it picks one of them.\nSo we need to add constraint to get Docker from \"master\" branch. To do that add contraint to gopkg.toml:\n\n[[constraint]]\n  name \u003d \"github.com/docker/docker\"\n  branch \u003d \"master\"\n\nThen run: dep ensure -update github.com/docker/docker",
+      "parentUuid": "0d5a3d8a_b160d549",
+      "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6facf3ff_bf53a312",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 7
@@ -84,6 +102,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "01a0f312_8bc6fb65",
+      "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6400182f_c0058306",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 634,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "I looked at diff between patchests. This change must have come from rebase. My bad.",
+      "parentUuid": "1a91342e_359d65d0",
       "revId": "af81c8ad9dfffc7054e0dacd3a77a2ae6f2fb5f9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false

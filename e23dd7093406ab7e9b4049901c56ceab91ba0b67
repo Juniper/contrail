@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "e8ac6b62_09e45b04",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "45b80b3c_f3be61ea",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 5
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "85468b5d_751ec331",
         "filename": "/COMMIT_MSG",
         "patchSetId": 4
@@ -126,6 +150,24 @@
     },
     {
       "key": {
+        "uuid": "1ca760d9_0ea84a3a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "93a5f0b2_af53920e",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "661c90dd_abfa6e04",
         "filename": "pkg/ansible/cli_client.go",
         "patchSetId": 4
@@ -155,6 +197,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "661c90dd_abfa6e04",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c15d5398_a932e023",
+        "filename": "pkg/ansible/cli_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "27ceb1d5_94153100",
       "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -208,6 +268,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "13838216_450e26f0",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6e61c877_8f47008b",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e8252c34_1e51879d",
       "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -706,6 +784,30 @@
     },
     {
       "key": {
+        "uuid": "e336e239_9edd108b",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "321d7552_8b7d41ec",
+      "range": {
+        "startLine": 91,
+        "startChar": 8,
+        "endLine": 91,
+        "endChar": 17
+      },
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2f9e3ea0_20656dec",
         "filename": "pkg/ansible/docker_client.go",
         "patchSetId": 4
@@ -924,6 +1026,24 @@
       "side": 1,
       "message": "It was changed from\n\ndefer reader.Close()\n_, err \u003d ioutil.ReadAll(reader)\nif err !\u003d nil {\n\treturn err\n}\nreturn nil\n\nto \n\ndefer func() {\n\terr \u003d reader.Close()\n}()\n_, err \u003d ioutil.ReadAll(reader)\nif err !\u003d nil {\n\treturn err\n}\nreturn err\n\nTo return the close error properly.",
       "parentUuid": "0239a46e_2760558c",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4c71805b_de00c7a2",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9a718d85_a62c1c6b",
       "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -1210,6 +1330,24 @@
       "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38feac47_82bbdc68",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "47938355_c1c0d332",
+      "revId": "e23dd7093406ab7e9b4049901c56ceab91ba0b67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

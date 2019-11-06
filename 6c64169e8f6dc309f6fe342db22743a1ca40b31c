@@ -16,6 +16,24 @@
       "revId": "6c64169e8f6dc309f6fe342db22743a1ca40b31c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eed95e91_c76e7caa",
+        "filename": "pkg/ansible/docker_client.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-06T17:46:18Z",
+      "side": 1,
+      "message": "1. With this approach you print all container log messages as single logrus message. It might not be readable - it needs to be tested with real Docker.\n\n2. Using ContainerExecStart() instead of *Attach might be better for now, because it will simply output everything to stdout/stderr.\nWe will lack logrus formatter, but it might be improved later (3).\n\n3. The improvement might be to wrap hijack Reader into bufio.Scanner (https://golang.org/pkg/bufio/#NewScanner) and use it  read it line by line (https://golang.org/pkg/bufio/#Scanner -\u003e example (lines)) and calling c.log.Debug() for each line.\n\nMy suggestion is to use #2 for now, add \"TODO: use logrus formatter for container logs\" and move on.",
+      "parentUuid": "5967f18d_174c9cbb",
+      "revId": "6c64169e8f6dc309f6fe342db22743a1ca40b31c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
