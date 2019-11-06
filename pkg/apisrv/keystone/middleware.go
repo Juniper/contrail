@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/go-cleanhttp"
-
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
@@ -20,6 +18,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	auth2 "github.com/Juniper/contrail/pkg/auth"
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
 // GetAuthSkipPaths returns the list of paths which need not be authenticated.
