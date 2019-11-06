@@ -1575,6 +1575,52 @@ func (d *Data) GetAllNodesInfo() []*models.Node {
 	return uniqueNodes
 }
 
+// GetAppformixMonitoredNodes gets appformix monitored nodes
+func (d *Data) GetAppformixMonitoredNodes() []*models.Node {
+
+	// Get all unique contrail+flows nodes.
+	nodes := d.NodesInfo
+	if d.GetXflowData() != nil {
+		nodes = append(nodes, d.GetXflowData().getNodes()...)
+	}
+
+	var uniqueNodes []*models.Node
+	m := make(map[string]bool)
+
+	for _, node := range nodes {
+		if _, ok := m[node.UUID]; !ok {
+			m[node.UUID] = true
+			uniqueNodes = append(uniqueNodes, node)
+		}
+	}
+	// At this point uniqueNodes has all contrail+flows nodes.
+
+	// For all contrail and flows nodes which donot have appformix role,
+	// add appformix barehost role
+	// This makes appformix playbook install appformix-manager and monitor the node
+	var monitoredNodes []*models.Node
+	monitoredNodes = nil
+	for _, uniqueNode := range uniqueNodes {
+		isFound := false
+		if d.getAppformixClusterData() != nil {
+			for _, node := range d.getAppformixClusterData().nodesInfo {
+				if uniqueNode.UUID == node.UUID {
+					isFound = true
+					break
+				}
+			}
+		}
+
+		if isFound == false {
+			// add barehost role to this node
+			// ie add it to AppformixCluser bare-host list
+			monitoredNodes = append(monitoredNodes, uniqueNode)
+		}
+	}
+
+	return monitoredNodes
+}
+
 func (d *Data) getConfigNodeIPs() (nodeIPs []string) {
 	for _, configNode := range d.ClusterInfo.ContrailConfigNodes {
 		for _, nodeRef := range configNode.NodeRefs {

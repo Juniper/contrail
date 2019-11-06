@@ -88,6 +88,14 @@ instances:
           {%if appformix_network_agents_node.AnsibleConnection %} connection: {{ appformix_network_agents_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {%endif%}
+      {% if appformixCluster %}
+      {% if monitoredNodes %}
+      {% for monitoredNode in monitoredNodes %} 
+      {%if monitoredNode.UUID == node.UUID %}appformix_bare_host:
+      {%endif%}
+      {%endfor%}
+      {%endif%}
+      {%endif%}
 {% for xflow_node in xflowCluster.ClusterInfo.AppformixFlowsNodes %}{% for node_ref in xflow_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}
       appformix_flows:
 {%if xflow_node.TelemetryInBandInterfaceName != "" %}
