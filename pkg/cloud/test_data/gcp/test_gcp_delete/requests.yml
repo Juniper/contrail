@@ -6,6 +6,7 @@ test_data:
     name: cloud
     uuid: cloud_uuid_gcp
     organization: unit_test
+    gcp_modified: true
     cloud_user_refs:
       - uuid: cloud_user_uuid
     provisioning_action: DELETE_CLOUD

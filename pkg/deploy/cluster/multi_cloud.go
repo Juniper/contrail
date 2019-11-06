@@ -228,18 +228,13 @@ func appendFile(src, dest string) error {
 }
 
 func (m *multiCloudProvisioner) createClusterSecretFile() error {
-	pubCloudProviders, err := m.providers()
-	if err != nil {
-		return errors.Wrap(err, "failed to to get public Cloud providers")
-	}
-
 	pubCloudKeyPair, err := m.getPublicCloudKeyPair()
 	if err != nil {
 		return errors.Wrap(err, "failed to to get public Cloud keypair")
 	}
 
 	sfc := cloud.SecretFileConfig{}
-	if err = sfc.Update(pubCloudProviders, pubCloudKeyPair); err != nil {
+	if err = sfc.Update(pubCloudKeyPair); err != nil {
 		return errors.Wrap(err, "failed to to update secret file config")
 	}
 
@@ -390,28 +385,6 @@ func (m *multiCloudProvisioner) publicCloudID() (string, error) {
 		}
 	}
 	return "", errors.New("no public cloud in Cluster")
-}
-
-func (m *multiCloudProvisioner) providers() ([]string, error) {
-	pubCloudID, err := m.publicCloudID()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to to get public Cloud ID")
-	}
-
-	cloudObj, err := cloud.GetCloud(context.Background(), m.cluster.APIServer, pubCloudID)
-	if err != nil {
-		return nil, err
-	}
-
-	return providerNames(cloudObj.GetCloudProviders()), nil
-}
-
-func providerNames(providers []*models.CloudProvider) []string {
-	result := []string{}
-	for _, provider := range providers {
-		result = append(result, provider.Type)
-	}
-	return result
 }
 
 func (m *multiCloudProvisioner) provision() error {
