@@ -56,6 +56,27 @@ schema:
       view:
         - create
         - detail
+    aws_modified:
+      description: Boolean value that checks if aws resources were modified
+      permission:
+        - create
+        - update
+      type: boolean
+      default: false
+    azure_modified:
+      description: Boolean value that checks if azure resources were modified
+      permission:
+        - create
+        - update
+      type: boolean
+      default: false
+    gcp_modified:
+      description: Boolean value that checks if gcp resources were modified
+      permission:
+        - create
+        - update
+      type: boolean
+      default: false
   type: object
 singular: cloud
 title: Cloud

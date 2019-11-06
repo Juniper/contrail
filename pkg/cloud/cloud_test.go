@@ -61,7 +61,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/aws/create_cloud_resources.yml",
+				"./test_data/aws/test_aws_create/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/aws/test_aws_create/expected_topology.yml",
 			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
@@ -83,7 +83,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/gcp/create_cloud_resources.yml",
+				"./test_data/gcp/test_gcp_create/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/gcp/test_gcp_create/expected_topology.yml",
 			expectedSecretFile:   "./test_data/gcp/expected_secret.yml",
@@ -121,7 +121,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/azure/create_cloud_resources.yml",
+				"./test_data/azure/test_azure_create/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/azure/test_azure_create/expected_topology.yml",
 			expectedSecretFile:   "./test_data/azure/expected_secret.yml",
@@ -155,7 +155,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/aws/create_cloud_resources.yml",
+				"./test_data/aws/test_aws_update/prerequisites.yml",
 				"./test_data/aws/test_aws_update/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/aws/test_aws_update/expected_topology.yml",
@@ -182,7 +182,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/gcp/create_cloud_resources.yml",
+				"./test_data/gcp/test_gcp_update/prerequisites.yml",
 				"./test_data/gcp/test_gcp_update/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/gcp/test_gcp_update/expected_topology.yml",
@@ -225,7 +225,7 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/azure/create_cloud_resources.yml",
+				"./test_data/azure/test_azure_update/prerequisites.yml",
 				"./test_data/azure/test_azure_update/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/azure/test_azure_update/expected_topology.yml",
@@ -495,7 +495,7 @@ func TestDeletingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/aws/create_cloud_resources.yml",
+				"./test_data/aws/test_aws_delete/prerequisites.yml",
 				"./test_data/aws/test_aws_delete/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/aws/test_aws_delete/expected_topology.yml",
@@ -521,7 +521,7 @@ func TestDeletingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/gcp/create_cloud_resources.yml",
+				"./test_data/gcp/test_gcp_delete/prerequisites.yml",
 				"./test_data/gcp/test_gcp_delete/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/gcp/test_gcp_delete/expected_topology.yml",
@@ -563,7 +563,7 @@ func TestDeletingPublicClouds(t *testing.T) {
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
-				"./test_data/azure/create_cloud_resources.yml",
+				"./test_data/azure/test_azure_delete/prerequisites.yml",
 				"./test_data/azure/test_azure_delete/requests.yml",
 			},
 			expectedTopologyFile: "./test_data/azure/test_azure_delete/expected_topology.yml",

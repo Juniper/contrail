@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/models"
+
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -241,7 +243,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		err = updateTopology(c)
+		err = updateTopology(c, data.modifiedProviders())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -256,12 +258,42 @@ func (c *Cloud) create() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
+		err = c.removeModifiedStatus()
+		if err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
 	}
 
 	status[statusField] = statusCreated
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 
 	return nil
+}
+
+func (d *Data) modifiedProviders() []string {
+	s := []string{}
+	if d.info.AwsModified {
+		s = append(s, "aws")
+	}
+	if d.info.AzureModified {
+		s = append(s, "azure")
+	}
+	if d.info.GCPModified {
+		s = append(s, "gcp")
+	}
+	return s
+}
+
+func (c *Cloud) removeModifiedStatus() error {
+	_, err := c.APIServer.UpdateCloud(c.ctx, &services.UpdateCloudRequest{
+		Cloud: &models.Cloud{
+			AwsModified:   false,
+			AzureModified: false,
+			GCPModified:   false,
+		},
+	})
+	return err
 }
 
 // nolint: gocyclo
@@ -319,7 +351,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		err = updateTopology(c)
+		err = updateTopology(c, data.modifiedProviders())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -401,7 +433,7 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		if err = destroyTopology(c); err != nil {
+		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
