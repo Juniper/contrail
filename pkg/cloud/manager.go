@@ -7,6 +7,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gogo/protobuf/types"
+
+	"github.com/Juniper/contrail/pkg/models"
+
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -143,7 +147,11 @@ func (c *Cloud) Manage() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get Cloud data")
 	}
-	manageErr := c.manage()
+	var manageErr error
+
+	if data.info.ProvisioningState == statusNoState {
+		manageErr = c.manage()
+	}
 
 	if err := c.removeVulnerableFiles(data); err != nil {
 		return errors.Errorf(
@@ -194,12 +202,7 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 		return false, err
 	}
 
-	if c.config.Action == updateAction &&
-		cloudObj.ProvisioningAction == deleteCloudAction &&
-		cloudObj.ProvisioningState == statusNoState {
-		return true, nil
-	}
-	return false, nil
+	return c.config.Action == updateAction && cloudObj.ProvisioningAction == deleteCloudAction, nil
 }
 
 // nolint: gocyclo
@@ -241,7 +244,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		err = updateTopology(c)
+		err = updateTopology(c, data.modifiedProviders())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -258,10 +261,50 @@ func (c *Cloud) create() error {
 		}
 	}
 
+	if !data.isCloudPrivate() {
+		if err = c.removeModifiedStatus(); err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+	}
+
 	status[statusField] = statusCreated
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 
 	return nil
+}
+
+func (d *Data) modifiedProviders() []string {
+	s := []string{}
+	if d.info.AwsModified {
+		s = append(s, "aws")
+	}
+	if d.info.AzureModified {
+		s = append(s, "azure")
+	}
+	if d.info.GCPModified {
+		s = append(s, "gcp")
+	}
+	return s
+}
+
+func (c *Cloud) removeModifiedStatus() error {
+	_, err := c.APIServer.UpdateCloud(c.ctx, &services.UpdateCloudRequest{
+		Cloud: &models.Cloud{
+			UUID:          c.config.CloudID,
+			AwsModified:   false,
+			AzureModified: false,
+			GCPModified:   false,
+		},
+		FieldMask: types.FieldMask{
+			Paths: []string{
+				models.CloudFieldAwsModified,
+				models.CloudFieldAzureModified,
+				models.CloudFieldGCPModified,
+			},
+		},
+	})
+	return err
 }
 
 // nolint: gocyclo
@@ -319,7 +362,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		err = updateTopology(c)
+		err = updateTopology(c, data.modifiedProviders())
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -330,6 +373,13 @@ func (c *Cloud) update() error {
 	if !data.isCloudPrivate() && (!c.config.Test) {
 		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+	}
+
+	if !data.isCloudPrivate() {
+		if err = c.removeModifiedStatus(); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
@@ -398,7 +448,7 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		if err = destroyTopology(c); err != nil {
+		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
