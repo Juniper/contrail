@@ -3,17 +3,17 @@ package apisrv
 import (
 	"context"
 	"net/http"
-	"net/http/httputil"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/proxy"
+
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/labstack/echo"
@@ -32,8 +32,7 @@ const (
 )
 
 // proxyService provides dynamic HTTP and WebSockets proxy capabilities.
-// TODO(Daniel): move to subpackage to improve design
-// TODO(Daniel): proxy to other targets when 502/503 received from target
+// TODO(dfurman): move to subpackage to improve design
 type proxyService struct {
 	endpointStore    *endpoint.Store
 	dbService        services.Service
@@ -54,25 +53,31 @@ func newProxyService(es *endpoint.Store, dbService services.Service, dynamicProx
 	}
 }
 
-func dynamicProxyMiddleware(
-	es *endpoint.Store, dynamicProxyPath string,
-) func(next echo.HandlerFunc) echo.HandlerFunc {
+func dynamicProxyMiddleware(es *endpoint.Store, dynamicProxyPath string) func(next echo.HandlerFunc) echo.HandlerFunc {
+	log := logutil.NewLogger("dynamic-proxy-mw")
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			r := c.Request()
-			pp := proxyPrefix(r.URL.Path, scope(r.URL.Path))
-			rp, err := reverseProxy(es, r.URL.Path, pp)
+		return func(ctx echo.Context) error {
+			r := ctx.Request()
+
+			r, err := withClusterIDKeyHeader(r, dynamicProxyPath)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
-			if err = setClusterIDKeyHeader(r, dynamicProxyPath); err != nil {
+			pp := proxyPrefix(r.URL.Path, urlScope(r.URL.Path))
+			scope := urlScope(r.URL.Path)
+			r.URL.Path = withNoProxyPrefix(r.URL.Path, pp)
+
+			t, err := readTargets(es, scope, pp)
+			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
 
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, strings.TrimSuffix(pp, endpoint.PublicURLScope))
+			if err = proxy.HandleRequest(ctx, rawTargetURLs(t), log); err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err)
+			}
 
-			rp.ServeHTTP(c.Response(), r)
 			return nil
 		}
 	}
@@ -83,23 +88,25 @@ func proxyPrefix(urlPath string, scope string) string {
 	return strings.Join(append(prefixes, scope), pathSeparator)
 }
 
-func reverseProxy(
-	es *endpoint.Store, urlPath string, proxyPrefix string,
-) (*httputil.ReverseProxy, error) {
+func withNoProxyPrefix(path, pp string) string {
+	return strings.TrimPrefix(path, strings.TrimSuffix(pp, endpoint.PublicURLScope))
+}
+
+func readTargets(es *endpoint.Store, scope string, proxyPrefix string) ([]*endpoint.Endpoint, error) {
 	ts := es.Read(proxyPrefix)
 	if ts == nil {
 		return nil, errors.Errorf("target store not found for given proxy prefix: %v", proxyPrefix)
 	}
 
-	targets := ts.ReadAll(scope(urlPath))
-	if targets == nil {
+	targets := ts.ReadAll(scope)
+	if len(targets) == 0 {
 		return nil, errors.New("no targets in proxy target store")
 	}
 
-	return proxy.NewReverseProxy(rawTargetURLs(targets))
+	return targets, nil
 }
 
-func scope(urlPath string) string {
+func urlScope(urlPath string) string {
 	if strings.Contains(urlPath, endpoint.PrivateURLScope) {
 		return endpoint.PrivateURLScope
 	}
@@ -114,16 +121,14 @@ func rawTargetURLs(targets []*endpoint.Endpoint) []string {
 	return u
 }
 
-// setClusterIDKeyHeader Sets cluster ID in proxy request, so that the proxy endpoints can use it
-// to get server's Keystone token.
-func setClusterIDKeyHeader(r *http.Request, dynamicProxyPath string) error {
+func withClusterIDKeyHeader(r *http.Request, dynamicProxyPath string) (*http.Request, error) {
 	cid := clusterID(r.URL.Path, dynamicProxyPath)
 	if cid == "" {
-		return errors.Errorf("cluster ID not found in proxy URL: %v", r.URL.Path)
+		return nil, errors.Errorf("cluster ID not found in proxy URL: %v", r.URL.Path)
 	}
 
 	r.Header.Set(XClusterIDKey, cid)
-	return nil
+	return r, nil
 }
 
 func clusterID(url, dynamicProxyPath string) (clusterID string) {
