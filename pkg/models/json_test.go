@@ -107,8 +107,7 @@ func TestJSONUnmarshal(t *testing.T) {
 
 func BenchmarkJSONUnmarshal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		err := json.Unmarshal([]byte(testResource), &testVN)
-		if err != nil {
+		if err := json.Unmarshal([]byte(testResource), &testVN); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -117,11 +116,12 @@ func BenchmarkJSONUnmarshal(b *testing.B) {
 func BenchmarkUnmarshalAndApplyMap(b *testing.B) {
 	var m map[string]interface{}
 	for i := 0; i < b.N; i++ {
-		err := json.Unmarshal([]byte(testResource), &m)
-		if err != nil {
+		if err := json.Unmarshal([]byte(testResource), &m); err != nil {
 			b.Fatal(err)
 		}
-		testVN.ApplyMap(m)
+		if err := testVN.ApplyMap(m); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 

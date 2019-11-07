@@ -270,6 +270,7 @@ func TestApplyMap(t *testing.T) {
 				},
 			},
 			expected: &SomeStruct{},
+			fails:    true,
 		},
 		{
 			name: "apply_invalid value to string field",
@@ -280,6 +281,7 @@ func TestApplyMap(t *testing.T) {
 				},
 			},
 			expected: &SomeStruct{},
+			fails:    true,
 		},
 		{
 			name: "apply []A to []A",
