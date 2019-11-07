@@ -27,7 +27,6 @@ const (
 	defaultContrailCommonTemplate = "contrail_common.tmpl"
 	defaultGatewayCommonTemplate  = "gateway_common.tmpl"
 	defaultTORCommonTemplate      = "tor_common.tmpl"
-	defaultAuthRegistryTemplate   = "authorized_registries.tmpl"
 
 	mcWorkDir                 = "multi-cloud"
 	mcAnsibleRepo             = "contrail-multi-cloud"
@@ -244,31 +243,16 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 		return errors.Wrap(err, "failed to to update secret file config")
 	}
 
-	if err = template.ApplyToFile(
-		m.secretTemplatePath(),
-		m.getClusterSecretFile(),
+	err = template.ApplyToFile(
+		m.secretTemplatePath(), m.getClusterSecretFile(),
 		pongo2.Context{
-			"secret": sfc,
+			"secret":  sfc,
+			"cluster": m.clusterData.ClusterInfo,
+			"tag":     m.clusterData.ClusterInfo.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
 		},
 		defaultFilePermRWOnly,
-	); err != nil {
-		return errors.Wrap(err, "failed to to create secret file")
-	}
-
-	authRegContent, err := m.getAuthRegistryContent(m.clusterData.ClusterInfo)
-	if err != nil {
-		return err
-	}
-	return fileutil.AppendToFile(m.getClusterSecretFile(), authRegContent, defaultFilePermRWOnly)
-}
-
-func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailCluster) ([]byte, error) {
-	pContext := pongo2.Context{
-		"cluster": cluster,
-		"tag":     cluster.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
-	}
-
-	return template.Apply(m.authRegistryTemplatePath(), pContext)
+	)
+	return errors.Wrap(err, "failed to to create secret file")
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
@@ -659,10 +643,6 @@ func (m *multiCloudProvisioner) secretTemplatePath() string {
 
 func (m *multiCloudProvisioner) contrailCommonTemplatePath() string {
 	return filepath.Join(m.getTemplateRoot(), defaultContrailCommonTemplate)
-}
-
-func (m *multiCloudProvisioner) authRegistryTemplatePath() string {
-	return filepath.Join(m.getTemplateRoot(), defaultAuthRegistryTemplate)
 }
 
 func (m *multiCloudProvisioner) gatewayCommonTemplatePath() string {
