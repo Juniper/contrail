@@ -70,45 +70,63 @@ var numericTests = []struct {
 }
 
 func TestInterfaceToInt(t *testing.T) {
-	assert.Equal(t, 0, InterfaceToInt(nil))
+	var i, err = InterfaceToIntE(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, i)
 	for _, tt := range numericTests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, InterfaceToInt(tt.input))
+			i, err = InterfaceToIntE(tt.input)
+			assert.Equal(t, tt.expected, i)
 		})
 	}
 }
 
 func TestInterfaceToInt64(t *testing.T) {
-	assert.Equal(t, int64(0), InterfaceToInt64(nil))
+	var i, err = InterfaceToInt64E(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), i)
 
 	var jsonN json.Number
 	jsonN = "9223372036854775807"
-	assert.Equal(t, int64(9223372036854775807), InterfaceToInt64(jsonN))
+	i, err = InterfaceToInt64E(jsonN)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(9223372036854775807), i)
 	jsonN = "-9223372036854775808"
-	assert.Equal(t, int64(-9223372036854775808), InterfaceToInt64(jsonN))
+	i, err = InterfaceToInt64E(jsonN)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(-9223372036854775808), i)
 
 	for _, tt := range numericTests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, int64(tt.expected), InterfaceToInt64(tt.input))
+			i, err = InterfaceToInt64E(tt.input)
+			assert.Equal(t, int64(tt.expected), i)
 		})
 	}
 }
 
 func TestInterfaceToUint64(t *testing.T) {
-	assert.Equal(t, uint64(0), InterfaceToUint64(nil))
+	var u, err = InterfaceToUint64E(nil)
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(0), u)
 
 	var jsonN json.Number
 	jsonN = "9223372036854775807"
-	assert.Equal(t, uint64(9223372036854775807), InterfaceToUint64(jsonN))
+	u, err = InterfaceToUint64E(jsonN)
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(9223372036854775807), u)
 	jsonN = "-9223372036854775808"
-	assert.Equal(t, uint64(0), InterfaceToUint64(jsonN))
+	u, err = InterfaceToUint64E(jsonN)
+	assert.NotNil(t, err)
+	assert.Equal(t, uint64(0), u)
 
 	for _, tt := range numericTests {
 		t.Run(tt.name, func(t *testing.T) {
+			u, err = InterfaceToUint64E(tt.input)
 			if tt.expected < 0 {
-				assert.Equal(t, uint64(0), InterfaceToUint64(tt.input))
+				assert.NotNil(t, err)
+				assert.Equal(t, uint64(0), u)
 			} else {
-				assert.Equal(t, uint64(tt.expected), InterfaceToUint64(tt.input))
+				assert.Equal(t, uint64(tt.expected), u)
 			}
 		})
 	}

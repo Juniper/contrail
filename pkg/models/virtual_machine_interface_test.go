@@ -117,7 +117,8 @@ func TestVirtualMachineInterfaceApplyMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.obj.ApplyMap(tt.input)
+			var err = tt.obj.ApplyMap(tt.input)
+			assert.NoError(t, err)
 			assert.Equal(t, tt.want, tt.obj)
 		})
 	}

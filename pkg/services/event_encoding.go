@@ -403,11 +403,11 @@ func newCreateEvent(option EventOption) (*Event, error) {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
 	r := er.GetRequest()
-	r.GetResource().ApplyMap(option.Data)
+	err = r.GetResource().ApplyMap(option.Data)
 	r.SetFieldMask(option.getFieldMask())
 	return &Event{
 		Request: er,
-	}, nil
+	}, err
 }
 
 func newUpdateEvent(option EventOption) (*Event, error) {
@@ -416,12 +416,12 @@ func newUpdateEvent(option EventOption) (*Event, error) {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
 	r := er.GetRequest()
-	r.GetResource().ApplyMap(option.Data)
+	err = r.GetResource().ApplyMap(option.Data)
 	r.GetResource().SetUUID(option.UUID)
 	r.SetFieldMask(option.getFieldMask())
 	return &Event{
 		Request: er,
-	}, nil
+	}, err
 }
 
 func newDeleteEvent(option EventOption) (*Event, error) {
@@ -636,17 +636,30 @@ func (e *Event) ApplyMap(m map[string]interface{}) error {
 	if !ok {
 		return errors.Errorf("got invalid data %v", m["data"])
 	}
-	fm := basemodels.MapToFieldMask(data)
-	event, err := NewEvent(EventOption{
-		UUID:      format.InterfaceToString(data["uuid"]),
-		Operation: format.InterfaceToString(m["operation"]),
-		Kind:      format.InterfaceToString(m["kind"]),
-		Data:      data,
-		FieldMask: &fm,
-	})
+	var uuid, operation, kind string
+	var err error
+	uuid, err = format.InterfaceToStringE(data["uuid"])
 	if err != nil {
 		return err
 	}
-	*e = *event
-	return nil
+	operation, err = format.InterfaceToStringE(m["operation"])
+	if err != nil {
+		return err
+	}
+	kind, err = format.InterfaceToStringE(m["kind"])
+	if err != nil {
+		return err
+	}
+	fm := basemodels.MapToFieldMask(data)
+	event, err := NewEvent(EventOption{
+		UUID:      uuid,
+		Operation: operation,
+		Kind:      kind,
+		Data:      data,
+		FieldMask: &fm,
+	})
+	if event != nil && e != nil {
+		*e = *event
+	}
+	return err
 }
