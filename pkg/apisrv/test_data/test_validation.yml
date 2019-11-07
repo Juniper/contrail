@@ -2,9 +2,10 @@ name: Resource Validation test
 description:  validation test
 
 cleanup:
-- path: /virtual-network/vn_validation_test_uuid
-- path: /network-ipam/test_ipam_validation_uuid
-- path: /project/admin_project_validation_test_uuid
+  - path: /virtual-network/vn_validation_test_uuid
+  - path: /network-ipam/test_ipam_validation_uuid
+  - path: /project/admin_project_validation_test_uuid
+  - path: /contrail-cluster/version_string_test_cluster_uuid
 
 test_data:
   admin_project: &admin_project_validation_test
@@ -69,6 +70,20 @@ test_data:
     parent_type: hogehoge
     parent_uuid: admin_project_validation_test_uuid
     mac_limit_control: *mac_limit_control_missing_mac_limit
+
+  version_string_cluster: &version_string_cluster
+    name: version_string_cluster
+    uuid: version_string_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    contrail_version: "1911.10"
+
+  version_float_cluster: &version_float_cluster
+    name: version_float_cluster
+    uuid: version_float_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    contrail_version: 1911.10
 
 clients:
   default:
@@ -170,3 +185,26 @@ workflow:
     data:
       virtual-network: *vn_validation_test_fail_missing_required_integer
   expect: null
+
+- name: create cluster with a version specified as a string
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+      - 200
+    data:
+      contrail-cluster: *version_string_cluster
+  expect:
+    contrail-cluster: *version_string_cluster
+
+- name: create cluster with a version specified as a float
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+      - 400
+    data:
+      contrail-cluster: *version_float_cluster
+  expect:
+    message:
+      $contains: 'invalid JSON format: json: cannot unmarshal number into Go struct field CreateContrailClusterRequest.contrail-cluster of type string'
