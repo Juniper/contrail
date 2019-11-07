@@ -133,57 +133,70 @@ func Make{{ schema.JSONSchema.GoName }}() *{{ schema.JSONSchema.GoName }}{
 
 // InterfaceTo{{ schema.JSONSchema.GoName }} converts interface to {{ schema.JSONSchema.GoName }}
 func InterfaceTo{{ schema.JSONSchema.GoName }}(i interface{}) *{{ schema.JSONSchema.GoName }}{
+	var ret, _ = InterfaceTo{{ schema.JSONSchema.GoName }}E(i)
+	return ret
+}
+
+// InterfaceTo{{ schema.JSONSchema.GoName }}E converts interface to {{ schema.JSONSchema.GoName }} with error reporting
+func InterfaceTo{{ schema.JSONSchema.GoName }}E(i interface{}) (*{{ schema.JSONSchema.GoName }}, error){
+	var err error
+
 	switch o := i.(type) {
 	case *{{ schema.JSONSchema.GoName }}:
-		return o
+		return o, err
 	case {{ schema.JSONSchema.GoName }}:
-		return &o
+		return &o, err
 	case map[string]interface{}:
 		result := &{{ schema.JSONSchema.GoName }}{}
-		result.ApplyMap(o)
-		return result
+		err = result.ApplyMap(o)
+		return result, err
 	{% if schema.JSONSchema.CollectionType %}
 	{% set subtype = schema.JSONSchema.OrderedProperties | first %}
 	case []interface{}:
-		return &{{ schema.JSONSchema.GoName }}{
 		{% if subtype.Items.Type == "string" %}
-			{{ subtype.GoName }}: format.InterfaceToStringList(o),
+		var stringList, err = format.InterfaceToStringListE(o)
+		return &{{ schema.JSONSchema.GoName }}{
+			{{ subtype.GoName }}: stringList,
+		}, err
 		{% elif subtype.Items.GoType %}
-			{{ subtype.GoName }}: InterfaceTo{{ subtype.Items.GoType }}Slice(o),
+		var slice, err = InterfaceTo{{ subtype.Items.GoType }}SliceE(o)
+		return &{{ schema.JSONSchema.GoName }}{
+			{{ subtype.GoName }}: slice,
+		}, err
 		{% endif %}
-		}
 	{% endif %}
 	default:
-		return nil
+		return nil, err
 	}
 }
 
-// ApplyMap updates object with values from map.
-func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
+// ApplyMap updates object with values from map with error reporting.
+func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) error {
+	var err error
 	if len(o) == 0 || m == nil {
-		return
+		return nil
 	}
 	{% for property in schema.JSONSchema.OrderedProperties %}
 	if val, ok := o["{{ property.ID }}"]; ok && val != nil {
-		{% if property.GoType == "string" %}m.{{ property.GoName }} = format.InterfaceToString(val)
-		{% elif property.GoType == "[]string" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
-		{% elif property.GoType == "[]interface" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
-		{% elif property.GoType == "map[string]string" %}m.{{ property.GoName }} = format.InterfaceToStringMap(val)
-		{% elif property.GoType == "map[string]interface{}" %}m.{{ property.GoName }} = format.InterfaceToInterfaceMap(val)
-		{% elif property.GoType == "bool" %}m.{{ property.GoName }} = format.InterfaceToBool(val)
-		{% elif property.GoType == "int64" %}m.{{ property.GoName }} = format.InterfaceToInt64(val)
-		{% elif property.GoType == "uint64" %}m.{{ property.GoName }} = format.InterfaceToUint64(val)
-		{% elif property.GoType == "float" %}m.{{ property.GoName }} = format.InterfaceToFloat(val)
+		{% if property.GoType == "string" %}m.{{ property.GoName }}, err = format.InterfaceToStringE(val)
+		{% elif property.GoType == "[]string" %}m.{{ property.GoName }}, err = format.InterfaceToStringListE(val)
+		{% elif property.GoType == "[]interface" %}m.{{ property.GoName }}, err = format.InterfaceToStringListE(val)
+		{% elif property.GoType == "map[string]string" %}m.{{ property.GoName }}, err = format.InterfaceToStringMapE(val)
+		{% elif property.GoType == "map[string]interface{}" %}m.{{ property.GoName }}, err = format.InterfaceToInterfaceMapE(val)
+		{% elif property.GoType == "bool" %}m.{{ property.GoName }}, err = format.InterfaceToBoolE(val)
+		{% elif property.GoType == "int64" %}m.{{ property.GoName }}, err = format.InterfaceToInt64E(val)
+		{% elif property.GoType == "uint64" %}m.{{ property.GoName }}, err = format.InterfaceToUint64E(val)
+		{% elif property.GoType == "float" %}m.{{ property.GoName }} , err= format.InterfaceToFloatE(val)
 		{% elif property.Type == "array" %}
 			{% if property.Items.Type == "string" %}
 			// string
-				m.{{ property.GoName }} = format.InterfaceToStringList(val)
+				m.{{ property.GoName }}, err = format.InterfaceToStringListE(val)
 			{% elif property.Items.GoType == "int64" %}
-				m.{{ property.GoName }} = format.InterfaceToInt64List(val)
+				m.{{ property.GoName }}, err = format.InterfaceToInt64ListE(val)
 			{% elif property.Items.GoType == "uint64" %}
-				m.{{ property.GoName }} = format.InterfaceToUint64List(val)
+				m.{{ property.GoName }}, err = format.InterfaceToUint64ListE(val)
 			{% elif property.Items.GoType %}
-				m.{{ property.GoName }} = InterfaceTo{{ property.Items.GoType }}Slice(val)
+				m.{{ property.GoName }}, err = InterfaceTo{{ property.Items.GoType }}SliceE(val)
 			{% endif %}
 		{% else %}type toMapper interface {ToMap() map[string]interface{}}
 		if m.{{ property.GoName }} == nil {
@@ -191,19 +204,21 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 		}
 		switch v := val.(type) {
 		case toMapper:
-			m.{{ property.GoName }}.ApplyMap(v.ToMap())
+			err = m.{{ property.GoName }}.ApplyMap(v.ToMap())
 		case map[string]interface{}:
-			m.{{ property.GoName }}.ApplyMap(v)
+			err = m.{{ property.GoName }}.ApplyMap(v)
 		case []interface{}:
-			m.{{ property.GoName }} = InterfaceTo{{ property.GoType }}(v)
+			m.{{ property.GoName }}, err = InterfaceTo{{ property.GoType }}E(v)
 		}
 		{%- endif -%}
 	}
 	{%- endfor %}
 	{% for linkTo, reference in schema.References %}
 	if val, ok := o["{{ linkTo }}_refs"]; ok {
-		m.{{ reference.GoName }}Refs = InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(val)
+		m.{{ reference.GoName }}Refs, err = InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(val)
 	}{% endfor %}
+
+	return err
 }
 
 // ToMap makes map representation of a resource.
@@ -597,17 +612,37 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) ToMap() map[st
 }
 
 func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i interface{}) []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
+	var ret, _ = InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(i)
+	return ret
+}
+
+func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(i interface{}) ([]*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref, error) {
+	var err error
+
 	result := []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
 	if ok := basemodels.ForEach(i, func(elem interface{}){
 		switch e := elem.(type) {
 			case map[string]interface{}:
+				var uuid, uuidError = format.InterfaceToStringE(e["uuid"])
+				var strings, stringsError = format.InterfaceToStringListE(e["to"])
+				{% if reference.RefType %}
+				var attr, attrError = InterfaceTo{{ reference.RefType }}E(e["attr"])
+				{% endif %}
 				result = append(result, &{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
-					UUID: format.InterfaceToString(e["uuid"]),
-					To: format.InterfaceToStringList(e["to"]),
+					UUID: uuid,
+					To: strings,
 					{% if reference.RefType %}
-					Attr: InterfaceTo{{ reference.RefType }}(e["attr"]),
+					Attr: attr,
 					{% endif %}
 				})
+				if (uuidError != nil) {
+					err = uuidError
+				} else if (stringsError != nil) {
+					err = stringsError
+				{% if reference.RefType %} } else if (attrError != nil) {
+					err = attrError
+				{% endif %}
+				}
 			case {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
 				result = append(result, &e)
 			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
@@ -619,10 +654,10 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i inter
 				)
 		}
 	}); !ok {
-		return nil
+		return nil, err
 	}
 
-	return result
+	return result, err
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) Add{{ reference.GoName }}Ref(to *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
@@ -669,20 +704,33 @@ func Make{{ schema.JSONSchema.GoName }}Slice() []{% if schema.JSONSchema.Propert
 {% else %}
 {% set itemType = schema.JSONSchema.GoName %}
 {% endif %}
+
 // InterfaceTo{{ schema.JSONSchema.GoName }}Slice() makes a slice of {{ schema.JSONSchema.GoName }}
 func InterfaceTo{{ schema.JSONSchema.GoName }}Slice(s interface{}) []{{ itemType }} {
+	var ret, _ = InterfaceTo{{ schema.JSONSchema.GoName }}SliceE(s)
+	return ret
+}
+
+// InterfaceTo{{ schema.JSONSchema.GoName }}SliceE() makes a slice of {{ schema.JSONSchema.GoName }} with error reporting
+func InterfaceTo{{ schema.JSONSchema.GoName }}SliceE(s interface{}) ([]{{ itemType }}, error) {
+	var err error
+
 	if list, ok := s.([]{{ itemType }}); ok {
-		return list
+		return list, err
 	}
-	list := format.InterfaceToInterfaceList(s)
+	list, err := format.InterfaceToInterfaceListE(s)
 	if list == nil {
-		return nil
+		return nil, err
 	}
 	result := make([]{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }}, len(list))
 	for i, item := range list {
-		result[i] = InterfaceTo{{ schema.JSONSchema.GoName }}(item)
+		var lastError error
+		result[i], lastError = InterfaceTo{{ schema.JSONSchema.GoName }}E(item)
+		if (lastError != nil) {
+			err = lastError
+		}
 	}
-	return result
+	return result, err
 }
 
 {% endif %}
