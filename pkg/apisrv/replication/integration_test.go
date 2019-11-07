@@ -65,8 +65,8 @@ func TestReplicateAlreadyCreatedResources(t *testing.T) {
 	// Update node* objects to force replication to the new endpoints.
 	ts, err = integration.LoadTest(updateReplicationTestFile, nil)
 	require.NoError(t, err, "failed to load update data")
-	integration.RunDirtyTestScenario(t, ts, server)
-
+	cleanupUpdate := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanupUpdate()
 	server.ForceProxyUpdate()
 
 	assertCloses(t, doneA)

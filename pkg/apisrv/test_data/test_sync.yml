@@ -2,10 +2,12 @@ name: Sync test
 description: sync test
 
 cleanup:
-- path: /network-ipam/test_ipam_blue_uuid_test_sync
-- path: /network-policy/network_policy_uuid_test_sync
-- path: /virtual-network/vn_blue_test_sync
-- path: /project/admin_project_uuid_test_sync
+  - path: /network-ipam/test_ipam_blue_uuid_test_sync
+  - path: /network-policy/network_policy_uuid_test_sync
+  - path: /virtual-network/vn_blue_test_sync
+  - path: /project/admin_project_uuid_test_sync
+  - path: /contrail-cluster/version_string_test_cluster_uuid
+  - path: /contrail-cluster/version_float_test_cluster_uuid
 
 test_data:
   admin_project: &admin_project
@@ -85,6 +87,11 @@ test_data:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
     - uuid: test_ipam_blue_uuid_test_sync
+  test_contrail_cluster: &test_contrail_cluster
+    name: version_string_cluster
+    uuid: version_string_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
 clients:
   default:
@@ -336,3 +343,39 @@ workflow:
     method: GET
     expected: [ 404 ]
   expect: null
+
+- name: create cluster with a version specified as a string
+  request:
+    path: /sync
+    method: POST
+    expected:
+      - 200
+    data:
+      resources:
+        - kind: contrail_cluster
+          data:
+            <<: *test_contrail_cluster
+            contrail_version: "1911.10"
+          operation: CREATE
+  expect:
+  - kind: contrail_cluster
+    data:
+      <<: *test_contrail_cluster
+      contrail_version: "1911.10"
+
+- name: create cluster with a version specified as a float
+  request:
+    path: /sync
+    method: POST
+    expected:
+      - 400
+    data:
+      resources:
+        - kind: contrail_cluster
+          data:
+            <<: *test_contrail_cluster
+            contrail_version: 1911.10
+          operation: CREATE
+  expect:
+    message:
+      $contains: "could not convert 1911.1 to string"

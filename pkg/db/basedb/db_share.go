@@ -35,9 +35,15 @@ func (db *BaseDB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []
 		return err
 	}
 	for _, share := range shares {
-		err = db.createSharingEntry(tx, table, uuid, format.InterfaceToString(
-			share.(map[string]interface{})["tenant"]), //nolint: errcheck
-			format.InterfaceToInt(share.(map[string]interface{})["tenant_access"])) //nolint: errcheck
+		tenant, err := format.InterfaceToStringE(share.(map[string]interface{})["tenant"])
+		if err != nil {
+			return err
+		}
+		tenantAccess, err := format.InterfaceToIntE(share.(map[string]interface{})["tenant_access"])
+		if err != nil {
+			return err
+		}
+		err = db.createSharingEntry(tx, table, uuid, tenant, tenantAccess)
 		if err != nil {
 			return err
 		}
