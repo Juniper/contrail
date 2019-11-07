@@ -624,8 +624,8 @@ func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 //ScanResourceList scan list.
 func (qb *QueryBuilder) ScanResourceList(value interface{}) []interface{} {
 	var resources []interface{}
-	stringValue := format.InterfaceToString(value)
-	if stringValue == "" {
+	var stringValue, err = format.InterfaceToStringE(value)
+	if stringValue == "" || err != nil {
 		return nil
 	}
 
