@@ -121,7 +121,10 @@ func BenchmarkUnmarshalAndApplyMap(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		testVN.ApplyMap(m)
+		err = testVN.ApplyMap(m)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
