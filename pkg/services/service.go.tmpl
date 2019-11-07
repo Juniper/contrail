@@ -177,7 +177,10 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 
 	req := c.Request()
 	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
-	model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
+	model, err := models.InterfaceTo{{ schema.JSONSchema.GoName }}E(request.{{ schema.JSONSchema.GoName }})
+	if err != nil {
+		return err
+	}
 	model.UUID = c.Param("id")
 	response, err := service.Update{{ schema.JSONSchema.GoName }}(
 		ctx,

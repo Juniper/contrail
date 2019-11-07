@@ -62,6 +62,7 @@ func getSettableStructValue(o interface{}) (reflect.Value, error) {
 
 // nolint: gocyclo
 func applyValue(v reflect.Value, i interface{}) error {
+	var err error
 	if !isSettable(v) {
 		return errors.Errorf("cannot set value of %s", v.Type().Name())
 	}
@@ -75,15 +76,30 @@ func applyValue(v reflect.Value, i interface{}) error {
 
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v.SetInt(InterfaceToInt64(i))
+		var val, err = InterfaceToInt64E(i)
+		if err == nil {
+			v.SetInt(val)
+		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		v.SetUint(InterfaceToUint64(i))
+		var val, err = InterfaceToUint64E(i)
+		if err == nil {
+			v.SetUint(val)
+		}
 	case reflect.Bool:
-		v.SetBool(InterfaceToBool(i))
+		var val, err = InterfaceToBoolE(i)
+		if err == nil {
+			v.SetBool(val)
+		}
 	case reflect.String:
-		v.SetString(InterfaceToString(i))
+		var val, err = InterfaceToStringE(i)
+		if err == nil {
+			v.SetString(val)
+		}
 	case reflect.Float32, reflect.Float64:
-		v.SetFloat(InterfaceToFloat(i))
+		var val, err = InterfaceToFloatE(i)
+		if err == nil {
+			v.SetFloat(val)
+		}
 	case reflect.Array, reflect.Slice:
 		return applySlice(v, i)
 	case reflect.Ptr, reflect.Struct:
@@ -95,7 +111,7 @@ func applyValue(v reflect.Value, i interface{}) error {
 	default:
 		return errors.Errorf("applying field of type: '%s' not implemented", v.Kind())
 	}
-	return nil
+	return err
 }
 
 func isSettable(v reflect.Value) bool {

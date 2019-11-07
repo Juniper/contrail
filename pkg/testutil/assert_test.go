@@ -9,6 +9,7 @@ import (
 
 var actualYAML = `
 string: value
+string2: "1.0"
 list:
 - element1
 - element2
@@ -20,10 +21,13 @@ number: 1
 uuid: 770b8ebe-decb-47e8-89a4-33eb0cef28b3
 bool: true
 nilValue: null
+float: 1.0
+uint: 18446744073709551615
 `
 
 var test1YAML = `
 string: value
+string2: "1.0"
 list:
 - element1
 - element2
@@ -32,6 +36,8 @@ map:
   key1: value1
 number: 1
 bool: true
+float: 1.0
+uint: 18446744073709551615
 `
 
 var test2YAML = `
