@@ -75,15 +75,35 @@ func applyValue(v reflect.Value, i interface{}) error {
 
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v.SetInt(InterfaceToInt64(i))
+		var i64 int64
+		i64, err = InterfaceToInt64E(i)
+		if err == nil {
+			v.SetInt(i64)
+		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		v.SetUint(InterfaceToUint64(i))
+		var u64 uint64
+		u64, err = InterfaceToUint64E(i)
+		if err == nil {
+			v.SetUint(u64)
+		}
 	case reflect.Bool:
-		v.SetBool(InterfaceToBool(i))
+		var b bool
+		b, err = InterfaceToBoolE(i)
+		if err == nil {
+			v.SetBool(b)
+		}
 	case reflect.String:
-		v.SetString(InterfaceToString(i))
+		var s string
+		s, err = InterfaceToStringE(i)
+		if err == nil {
+			v.SetString(s)
+		}
 	case reflect.Float32, reflect.Float64:
-		v.SetFloat(InterfaceToFloat(i))
+		var f64 float64
+		f64, err = InterfaceToFloatE(i)
+		if err == nil {
+			v.SetFloat(f64)
+		}
 	case reflect.Array, reflect.Slice:
 		return applySlice(v, i)
 	case reflect.Ptr, reflect.Struct:
@@ -95,7 +115,7 @@ func applyValue(v reflect.Value, i interface{}) error {
 	default:
 		return errors.Errorf("applying field of type: '%s' not implemented", v.Kind())
 	}
-	return nil
+	return err
 }
 
 func isSettable(v reflect.Value) bool {

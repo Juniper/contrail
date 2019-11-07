@@ -88,7 +88,9 @@ func UpdateData(c Codec, oldData []byte, update basemodels.Object, fm types.Fiel
 	if !ok {
 		return nil, errors.Errorf("proto.Clone returned bad object type - %T (library bug)", oldObj)
 	}
-	output.ApplyMap(updateData)
-
+	err := output.ApplyMap(updateData)
+	if err != nil {
+		return nil, err
+	}
 	return c.Encode(output)
 }

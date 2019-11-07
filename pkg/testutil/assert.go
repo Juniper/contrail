@@ -189,12 +189,16 @@ func checkDiff(path string, expected, actual interface{}) error {
 				return fmt.Errorf("%s not found, last err: %v", path+"."+strconv.Itoa(i), mErr)
 			}
 		}
-	case int:
-		if float64(t) != format.InterfaceToFloat(actual) {
+	case int, int64:
+		if format.InterfaceToInt64(t) != format.InterfaceToInt64(actual) {
 			return errorWithFields(t, actual, path)
 		}
 	case uint, uint64:
 		if format.InterfaceToUint64(t) != format.InterfaceToUint64(actual) {
+			return errorWithFields(t, actual, path)
+		}
+	case float32, float64:
+		if format.InterfaceToFloat(t) != format.InterfaceToFloat(actual) {
 			return errorWithFields(t, actual, path)
 		}
 	default:

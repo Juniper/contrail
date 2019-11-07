@@ -4,12 +4,12 @@ run:
   deadline: 20m
   skip-files:
   # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
-  - .*/go/src/crypto/.*
-  - .*/go/src/internal/syscall/unix/.*
-  - .*/go/src/net/.*
-  - .*/go/src/os/.*
-  - .*/go/src/runtime/.*
-  - .*/go/src/syscall/.*
+  - .*/go[0-9\.]*/src/crypto/.*
+  - .*/go[0-9\.]*/src/internal/syscall/unix/.*
+  - .*/go[0-9\.]*/src/net/.*
+  - .*/go[0-9\.]*/src/os/.*
+  - .*/go[0-9\.]*/src/runtime/.*
+  - .*/go[0-9\.]*/src/syscall/.*
 
 issues:
   exclude:
