@@ -75,15 +75,35 @@ func applyValue(v reflect.Value, i interface{}) error {
 
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v.SetInt(InterfaceToInt64(i))
+		i64, err := InterfaceToInt64E(i)
+		if err != nil {
+			return err
+		}
+		v.SetInt(i64)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		v.SetUint(InterfaceToUint64(i))
+		u64, err := InterfaceToUint64E(i)
+		if err != nil {
+			return err
+		}
+		v.SetUint(u64)
 	case reflect.Bool:
-		v.SetBool(InterfaceToBool(i))
+		b, err := InterfaceToBoolE(i)
+		if err != nil {
+			return err
+		}
+		v.SetBool(b)
 	case reflect.String:
-		v.SetString(InterfaceToString(i))
+		s, err := InterfaceToStringE(i)
+		if err != nil {
+			return err
+		}
+		v.SetString(s)
 	case reflect.Float32, reflect.Float64:
-		v.SetFloat(InterfaceToFloat(i))
+		f64, err := InterfaceToFloatE(i)
+		if err != nil {
+			return err
+		}
+		v.SetFloat(f64)
 	case reflect.Array, reflect.Slice:
 		return applySlice(v, i)
 	case reflect.Ptr, reflect.Struct:
