@@ -1,0 +1,73 @@
+name: contrail-clusters contrail_version test
+description: Create contrail clusters with a version string
+
+cleanup:
+  - path: /contrail-cluster/version_string_test_cluster_uuid
+  - path: /contrail-cluster/version_float_test_cluster_uuid
+
+test_data:
+  version_string_cluster: &version_string_cluster
+    name: version_string_cluster
+    uuid: version_string_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    contrail_version: "1911.10"
+  version_float_cluster: &version_float_cluster
+    name: version_float_cluster
+    uuid: version_float_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    contrail_version: 1911.10
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create version_string cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *version_string_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: version_string_test_cluster_uuid
+      name: version_string_cluster
+      contrail_version: "1911.10"
+- name: create version_float cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 400
+    data:
+      contrail-cluster: *version_float_cluster
+  expect: null
+
+- name: delete version_string cluster
+  request:
+    path: /contrail-cluster/version_string_test_cluster_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete version_float cluster
+  request:
+    path: /contrail-cluster/version_float_test_cluster_uuid
+    method: DELETE
+    expected:
+    - 404
+  expect: null

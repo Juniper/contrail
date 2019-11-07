@@ -21,6 +21,7 @@ import (
 
 func TestServer(t *testing.T) {
 	for _, test := range []string{
+		"contrail_version",
 		"auth_skip",
 		"base_config_root_parent",
 		"base_properties",
