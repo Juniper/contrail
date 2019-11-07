@@ -911,7 +911,9 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 	content, err := template.Apply(
 		m.getSecretTemplate(),
 		pongo2.Context{
-			"secret": sfc,
+			"secret":  sfc,
+			"cluster": m.clusterData.ClusterInfo,
+			"tag":     m.clusterData.ClusterInfo.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
 		},
 	)
 	if err != nil {
@@ -922,25 +924,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 	if err != nil {
 		return err
 	}
-
-	authRegcontent, err := m.getAuthRegistryContent(m.clusterData.ClusterInfo)
-	if err != nil {
-		return err
-	}
-	return fileutil.AppendToFile(m.getClusterSecretFile(m.workDir), authRegcontent, defaultFilePermRWOnly)
-}
-
-func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailCluster) ([]byte, error) {
-	context := pongo2.Context{
-		"cluster": cluster,
-		"tag":     cluster.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
-	}
-
-	content, err := template.Apply(m.getAuthRegistryTemplate(), context)
-	if err != nil {
-		return nil, err
-	}
-	return content, nil
+	return nil
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
