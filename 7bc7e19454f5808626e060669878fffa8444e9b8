@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "a1c589a9_09edf40d",
+        "filename": "pkg/apisrv/test_data/test_contrail_version.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-08T12:42:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c014c0fe_22733e78",
+      "revId": "7bc7e19454f5808626e060669878fffa8444e9b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c0c5bbe9_00d2f94a",
         "filename": "pkg/apisrv/test_data/test_contrail_version.yml",
         "patchSetId": 1
@@ -101,6 +119,24 @@
       "side": 1,
       "message": "Ack",
       "parentUuid": "c0c5bbe9_00d2f94a",
+      "revId": "7bc7e19454f5808626e060669878fffa8444e9b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8f65a1a2_85d13034",
+        "filename": "pkg/apisrv/test_data/test_contrail_version.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-08T12:42:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c1534b34_f32f4a21",
       "revId": "7bc7e19454f5808626e060669878fffa8444e9b8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
