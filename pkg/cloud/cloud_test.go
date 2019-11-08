@@ -13,8 +13,10 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type providerConfig struct {
@@ -413,10 +415,19 @@ func verifyNodeType(ctx context.Context, httpClient *client.HTTP, testScenarios 
 }
 
 func compareTopology(t *testing.T, expectedTopologyFile, cloudUUID string) {
-	assert.NoError(t, compareFiles(t,
-		expectedTopologyFile, GetTopoFile(cloudUUID)),
-		"generated topology file is not as expected",
-	)
+	assertYAMLFileEqual(t, expectedTopologyFile, GetTopoFile(cloudUUID),
+		"generated topology file is not as expected")
+}
+
+func assertYAMLFileEqual(t *testing.T, expectedFilePath, actualFilePath string, msg string) {
+	var actualYAML interface{}
+	require.NoErrorf(t, fileutil.LoadFile(actualFilePath, &actualYAML), "Failed read yaml from %s", actualFilePath)
+
+	var expectedYAML interface{}
+	require.NoErrorf(t, fileutil.LoadFile(expectedFilePath, &expectedYAML), "Failed read yaml from %s", expectedFilePath)
+
+	testutil.AssertEqual(t, expectedYAML, actualYAML,
+		fmt.Sprintf("YAML files %s and %s are not equal", expectedFilePath, actualFilePath), msg)
 }
 
 func compareFiles(t *testing.T, expectedFile, generatedFile string) error {
@@ -431,7 +442,7 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) error {
 }
 
 func verifyCommandsExecuted(t *testing.T, expectedCmdFile string, cloudUUID string) {
-	assert.NoError(t, compareFiles(t, expectedCmdFile, executedCommandsPath(cloudUUID)),
+	assertYAMLFileEqual(t, expectedCmdFile, executedCommandsPath(cloudUUID),
 		"Expected list of create commands are not executed")
 }
 
@@ -460,10 +471,8 @@ func testPublicCloudUpdateWithoutRemovingSecret(t *testing.T, pc *providerConfig
 }
 
 func compareSecret(t *testing.T, expectedSecretFile, cloudUUID string) {
-	assert.NoError(t, compareFiles(t,
-		expectedSecretFile, GetSecretFile(cloudUUID)),
-		"generated secret file is not as expected",
-	)
+	assertYAMLFileEqual(t, expectedSecretFile, GetSecretFile(cloudUUID),
+		"generated secret file is not as expected")
 }
 
 func TestDeletingPublicClouds(t *testing.T) {
