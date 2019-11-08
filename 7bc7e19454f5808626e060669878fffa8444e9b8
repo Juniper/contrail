@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d485b82f_40a82544",
+        "filename": "pkg/apisrv/server_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-08T10:42:38Z",
+      "side": 1,
+      "message": "Could you extend \"validation\" test instead of adding new? Returning error on invalid field type seems like basic validation to me.",
+      "revId": "7bc7e19454f5808626e060669878fffa8444e9b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "67d4cbc4_cbd45acd",
+        "filename": "pkg/apisrv/test_data/test_contrail_version.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-08T10:42:38Z",
+      "side": 1,
+      "message": "You can put *version_string_cluster here",
+      "revId": "7bc7e19454f5808626e060669878fffa8444e9b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0c5bbe9_00d2f94a",
+        "filename": "pkg/apisrv/test_data/test_contrail_version.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-08T10:42:38Z",
+      "side": 1,
+      "message": "FYI: \"expect: null\" verifies nothing. \"expect: $null\" verifies that payload is empty. We use testutil.AssertEqual undeneath.\n\nSee:\nhttps://sourcegraph.com/github.com/Juniper/contrail@b4918fd20c5790ac58fef3abcaf370bd8316f941/-/blob/pkg/testutil/integration/common.go#L436:17\nhttps://sourcegraph.com/github.com/Juniper/contrail/-/blob/pkg/testutil/assert.go#L39:3",
+      "revId": "7bc7e19454f5808626e060669878fffa8444e9b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
