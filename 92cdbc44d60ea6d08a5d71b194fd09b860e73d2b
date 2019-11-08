@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d5d9e84f_c44b83c8",
+        "filename": "pkg/apisrv/test_data/test_validation.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-11-08T16:36:47Z",
+      "side": 1,
+      "message": "Can you use /sync API instead of /contrail-clusters. Because the command deployer uses /sync API.",
+      "revId": "92cdbc44d60ea6d08a5d71b194fd09b860e73d2b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
