@@ -13,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 )
@@ -413,10 +414,27 @@ func verifyNodeType(ctx context.Context, httpClient *client.HTTP, testScenarios 
 }
 
 func compareTopology(t *testing.T, expectedTopologyFile, cloudUUID string) {
-	assert.NoError(t, compareFiles(t,
+	assert.Truef(t, assertYamlFileEqual(t,
 		expectedTopologyFile, GetTopoFile(cloudUUID)),
 		"generated topology file is not as expected",
 	)
+}
+
+func assertYamlFileEqual(t *testing.T, expectedFilePath, actualFilePath string) (ret bool) {
+	var actualYaml interface{}
+	err := fileutil.LoadFile(actualFilePath, &actualYaml)
+	if !assert.NoErrorf(t, err, "failed read yaml from %s", actualFilePath) {
+		return false
+	}
+
+	var expectedYaml interface{}
+	err = fileutil.LoadFile(expectedFilePath, &expectedYaml)
+	if !assert.NoErrorf(t, err, "failed read yaml from %s", expectedFilePath) {
+		return false
+	}
+
+	return assert.Truef(t, testutil.AssertEqual(t, expectedYaml, actualYaml),
+		"yaml files %s and %s are not eqal", expectedFilePath, actualFilePath)
 }
 
 func compareFiles(t *testing.T, expectedFile, generatedFile string) error {
@@ -431,7 +449,7 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) error {
 }
 
 func verifyCommandsExecuted(t *testing.T, expectedCmdFile string, cloudUUID string) {
-	assert.NoError(t, compareFiles(t, expectedCmdFile, executedCommandsPath(cloudUUID)),
+	assert.Truef(t, assertYamlFileEqual(t, expectedCmdFile, executedCommandsPath(cloudUUID)),
 		"Expected list of create commands are not executed")
 }
 
@@ -460,7 +478,7 @@ func testPublicCloudUpdateWithoutRemovingSecret(t *testing.T, pc *providerConfig
 }
 
 func compareSecret(t *testing.T, expectedSecretFile, cloudUUID string) {
-	assert.NoError(t, compareFiles(t,
+	assert.Truef(t, assertYamlFileEqual(t,
 		expectedSecretFile, GetSecretFile(cloudUUID)),
 		"generated secret file is not as expected",
 	)
