@@ -22,6 +22,30 @@
       "revId": "a120d6babd7e3099d6bc91b2d733325fc7190a4e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "005c45bc_ca6600a0",
+        "filename": "pkg/apisrv/test_data/test_validation.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-08T13:20:35Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "90453a38_e08870b2",
+      "range": {
+        "startLine": 189,
+        "startChar": 2,
+        "endLine": 189,
+        "endChar": 53
+      },
+      "revId": "a120d6babd7e3099d6bc91b2d733325fc7190a4e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
