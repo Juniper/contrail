@@ -54,7 +54,9 @@ workflow:
     - 400
     data:
       contrail-cluster: *version_float_cluster
-  expect: null
+  expect:
+    message:
+      $contains: 'invalid JSON format: json: cannot unmarshal number into Go struct field CreateContrailClusterRequest.contrail-cluster of type string'
 
 - name: delete version_string cluster
   request:
@@ -64,10 +66,3 @@ workflow:
     - 200
   expect: null
 
-- name: delete version_float cluster
-  request:
-    path: /contrail-cluster/version_float_test_cluster_uuid
-    method: DELETE
-    expected:
-    - 404
-  expect: null
