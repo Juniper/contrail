@@ -16,6 +16,24 @@
       "revId": "92cdbc44d60ea6d08a5d71b194fd09b860e73d2b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "48bc1a29_85d04188",
+        "filename": "pkg/apisrv/test_data/test_validation.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-08T18:56:31Z",
+      "side": 1,
+      "message": "Sure, that\u0027s why I was talking about sync on the call yesterday.  I will see if that exposes a problem.",
+      "parentUuid": "d5d9e84f_c44b83c8",
+      "revId": "92cdbc44d60ea6d08a5d71b194fd09b860e73d2b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
