@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "eaef99c2_1f0c4449",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-12T16:47:23Z",
+      "side": 1,
+      "message": "assert.NoError",
+      "range": {
+        "startLine": 398,
+        "startChar": 1,
+        "endLine": 398,
+        "endChar": 20
+      },
+      "revId": "0f6d91ee7589c264c46346451359e9b7205a5298",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7b2451ee_1cd22e5e",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-12T16:47:23Z",
+      "side": 1,
+      "message": "if !d.isCloudPublic() {\n    return s, nil\n}",
+      "range": {
+        "startLine": 358,
+        "startChar": 1,
+        "endLine": 358,
+        "endChar": 23
+      },
+      "revId": "0f6d91ee7589c264c46346451359e9b7205a5298",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
