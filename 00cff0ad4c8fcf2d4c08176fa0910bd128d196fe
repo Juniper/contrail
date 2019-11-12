@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bf185ddd_8031ef5a",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-12T10:51:14Z",
+      "side": 1,
+      "message": "We could check that response data contains the same *version_string_cluster",
+      "revId": "00cff0ad4c8fcf2d4c08176fa0910bd128d196fe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "174450ae_24240847",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-12T10:51:14Z",
+      "side": 1,
+      "message": "Can we change it to 200 and merge it before implementing the fix?",
+      "revId": "00cff0ad4c8fcf2d4c08176fa0910bd128d196fe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
