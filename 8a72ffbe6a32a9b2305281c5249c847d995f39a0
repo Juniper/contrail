@@ -1,0 +1,198 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0f897de2_a3f43784",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 464,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Log the error instead of adding nolint.",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5acad18c_ce54cfb5",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Is this comment necessary?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b229635e_9ec7b8a6",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "`Vcenter`",
+      "range": {
+        "startLine": 819,
+        "startChar": 8,
+        "endLine": 819,
+        "endChar": 15
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fddc7e1e_31fb0f2d",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "`VcenterVars`",
+      "range": {
+        "startLine": 819,
+        "startChar": 67,
+        "endLine": 819,
+        "endChar": 78
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "20be7cec_60091c09",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 822,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "`Vcenter`",
+      "range": {
+        "startLine": 822,
+        "startChar": 41,
+        "endLine": 822,
+        "endChar": 48
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "988e116d_42d1036b",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 962,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Remove commented-out code.",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5952c543_dad21be2",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 986,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4199925d_8d79baad",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Is this relevant now?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a3601fe9_aecf11f8",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "This would print a different command than the one run above.\nIt would be better to log `cmd` and `args` instead, so that such typos can\u0027t happen.\nI see that this code was just moved from another file, though, so just changing the format string to `%s -d %s` would be acceptable.",
+      "range": {
+        "startLine": 51,
+        "startChar": 39,
+        "endLine": 51,
+        "endChar": 69
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dbe5c956_26b8317c",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Put functions below their usage.",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

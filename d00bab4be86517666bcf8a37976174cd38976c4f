@@ -229,6 +229,40 @@
       "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c41a35eb_72e50287",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Add unit tests for this function.",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f326dc7f_fa55cc10",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-12T14:22:24Z",
+      "side": 1,
+      "message": "Do we need to call Stat on the destination if overwrite \u003d\u003d true?",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
