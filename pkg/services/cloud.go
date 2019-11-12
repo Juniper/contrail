@@ -171,6 +171,10 @@ func decodeAndStoreCloudKey(keyType, keyPath, encodedSecret string, existingKeyP
 		}
 	}
 
+	if len(decodedSecret) == 0 {
+		return nil
+	}
+
 	err = os.MkdirAll(path.Dir(keyPath), 0755)
 	if err != nil {
 		errstrings := []string{fmt.Sprintf("failed to make dir for %s: %v", keyType, err)}

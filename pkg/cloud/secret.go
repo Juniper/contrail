@@ -34,6 +34,7 @@ type SecretFileConfig struct {
 	AzureClientID       string
 	AzureClientSecret   string
 	AzureTenantID       string
+	GoogleAccount       string
 	ProviderType        string
 	Keypair             *models.Keypair
 }
@@ -154,13 +155,13 @@ func (sfc *SecretFileConfig) Update(providers []string, kp *models.Keypair) erro
 	if err := sfc.updateAzureCredentials(kfd); err != nil {
 		return err
 	}
+	if err := sfc.updateGCPCredentials(kfd); err != nil {
+		return err
+	}
 
 	for _, provider := range providers {
 		if provider == AWS && !awsCredentialsPresent {
 			return errors.New("aws credentials are not present, please provide them")
-		}
-		if provider == gcp {
-			sfc.ProviderType = gcp
 		}
 	}
 
@@ -262,14 +263,29 @@ func loadAzureCredentials(kfd *services.KeyFileDefaults) (*SecretFileConfig, err
 	}, nil
 }
 
-func newSecret(c *Cloud) (*secret, error) {
+func (sfc *SecretFileConfig) updateGCPCredentials(kfd *services.KeyFileDefaults) error {
+	bytes, err := ioutil.ReadFile(kfd.GetGoogleAccountPath())
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return errors.Wrap(err, "could not read GCP account file")
+	}
+	if len(bytes) == 0 {
+		return nil
+	}
+	sfc.GoogleAccount = kfd.GetGoogleAccountPath()
+	return nil
+}
+
+func newSecret(c *Cloud) *secret {
 	return &secret{
 		cloud:  c,
 		log:    logutil.NewFileLogger("secret", c.config.LogFile),
 		action: c.config.Action,
 		sfc:    &SecretFileConfig{},
 		ctx:    c.ctx,
-	}, nil
+	}
 }
 
 func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
