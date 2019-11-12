@@ -80,6 +80,10 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 					source:      "./test_data/cloud_keypair.pub",
 					destination: expectedSSHPubKeyPath("cloud_uuid_gcp"),
 				},
+				{
+					source:      "./test_data/gcp/google-account.json",
+					destination: "/var/tmp/contrail/google-account.json",
+				},
 			},
 			requestsToStartWith: []string{
 				"./test_data/cluster_with_credentials_request.yml",
@@ -178,6 +182,10 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 				{
 					source:      "./test_data/gcp/test_gcp_update/topology_before_update.yml",
 					destination: "/var/tmp/cloud/cloud_uuid_gcp/topology.yml",
+				},
+				{
+					source:      "./test_data/gcp/google-account.json",
+					destination: "/var/tmp/contrail/google-account.json",
 				},
 			},
 			requestsToStartWith: []string{
@@ -517,6 +525,10 @@ func TestDeletingPublicClouds(t *testing.T) {
 				{
 					source:      "./test_data/gcp/test_gcp_delete/topology_before_delete.yml",
 					destination: "/var/tmp/cloud/cloud_uuid_gcp/topology.yml",
+				},
+				{
+					source:      "./test_data/gcp/google-account.json",
+					destination: "/var/tmp/contrail/google-account.json",
 				},
 			},
 			requestsToStartWith: []string{
