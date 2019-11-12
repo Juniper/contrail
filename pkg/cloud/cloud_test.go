@@ -154,14 +154,8 @@ func runCloudTest(
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
-	if context[cloudTypeKey] == AWS {
-		createAWSAccessKey(t, awsAccessKeyFile)
-		createAWSSecretKey(t, awsSecretKeyFile)
-		defer removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
-	} else if context[cloudTypeKey] == azure {
-		createAzureCredentials(t)
-		defer removeAzureCredentials(t)
-	}
+	secretCleanup := createSecrets(t, context["CLOUD_TYPE"].(string))
+	defer secretCleanup(t)
 	// We call manage() instead of Manage() to skip removing credential files.
 	// There are a few calls to Manage() in the rest of the test so it will be
 	// checked anyway. Proper testing method of this will be added in the awaiting
@@ -217,12 +211,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
-		if context["CLOUD_TYPE"] == AWS {
-			createAWSAccessKey(t, awsAccessKeyFile)
-			createAWSSecretKey(t, awsSecretKeyFile)
-		} else if context["CLOUD_TYPE"] == azure {
-			createAzureCredentials(t)
-		}
+		createSecrets(t, context["CLOUD_TYPE"].(string))
 		err = cloud.Manage()
 		assert.NoError(t, err, "failed to manage cloud, while updating onprem cloud")
 
@@ -259,12 +248,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for update action")
 
-		if context["CLOUD_TYPE"] == AWS {
-			createAWSAccessKey(t, awsAccessKeyFile)
-			createAWSSecretKey(t, awsSecretKeyFile)
-		} else if context["CLOUD_TYPE"] == azure {
-			createAzureCredentials(t)
-		}
+		createSecrets(t, context["CLOUD_TYPE"].(string))
 		err = cloud.Manage()
 		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
 
@@ -295,12 +279,7 @@ func runCloudTest(
 	cloud, err = NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct for delete action")
 
-	if context["CLOUD_TYPE"] == AWS {
-		createAWSAccessKey(t, awsAccessKeyFile)
-		createAWSSecretKey(t, awsSecretKeyFile)
-	} else if context["CLOUD_TYPE"] == azure {
-		createAzureCredentials(t)
-	}
+	createSecrets(t, context["CLOUD_TYPE"].(string))
 	err = cloud.Manage()
 	ok := isCloudSecretFilesDeleted()
 	require.NoError(t, ok, "failed to delete cloud secrets during delete")
@@ -318,10 +297,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
-		if context["CLOUD_TYPE"] == AWS {
-			createAWSAccessKey(t, awsAccessKeyFile)
-			createAWSSecretKey(t, awsSecretKeyFile)
-		}
+		createSecrets(t, context["CLOUD_TYPE"].(string))
 		err = cloud.Manage()
 		assert.Error(t, err,
 			"delete cloud should fail because cluster p_a is not set to DELETE_CLOUD but p_s is UPDATE_FAILED")
@@ -339,10 +315,7 @@ func runCloudTest(
 		cloud, err = NewCloud(config)
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
-		if context["CLOUD_TYPE"] == AWS {
-			createAWSAccessKey(t, awsAccessKeyFile)
-			createAWSSecretKey(t, awsSecretKeyFile)
-		}
+		createSecrets(t, context["CLOUD_TYPE"].(string))
 		err = cloud.Manage()
 
 		ok := isCloudSecretFilesDeleted()
@@ -396,6 +369,42 @@ func verifyGeneratedSSHKeyFiles(t *testing.T) bool {
 	pubKeyPath := getCloudSSHKeyPath(cloudID, "cloud_keypair.pub")
 	return compareFiles(t, expectedPvtKey,
 		pvtKeyPath) && compareFiles(t, expectedPubKey, pubKeyPath)
+}
+
+func createSecrets(t *testing.T, p string) func(t *testing.T) {
+	switch p {
+	case AWS:
+		createAWSAccessKey(t, awsAccessKeyFile)
+		createAWSSecretKey(t, awsSecretKeyFile)
+		return func(t *testing.T) {
+			removeAWSCredentials(t, awsAccessKeyFile, awsSecretKeyFile)
+		}
+	case azure:
+		createAzureCredentials(t)
+		return func(t *testing.T) {
+			removeAzureCredentials(t)
+		}
+	case gcp:
+		createGCPAccount(t)
+		return func(t *testing.T) {
+			removeGCPAccount(t)
+		}
+	}
+	return func(t *testing.T) {}
+}
+
+func removeGCPAccount(t *testing.T) {
+	path := services.NewKeyFileDefaults().GetGoogleAccountPath()
+	assert.NoError(t, os.Remove(path))
+	_, err := ioutil.ReadFile(path)
+	assert.True(t, os.IsNotExist(err), "File %s was not removed!", path)
+
+}
+
+func createGCPAccount(t *testing.T) {
+	path := services.NewKeyFileDefaults().GetGoogleAccountPath()
+	err := fileutil.WriteToFile(path, []byte("{\"type\": \"service_account\"}"), defaultRWOnlyPerm)
+	assert.NoErrorf(t, err, "Unable to write file: %s", path)
 }
 
 func createAWSAccessKey(t *testing.T, path string) {
