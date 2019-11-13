@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "c2ea1854_5ab5bbc9",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-13T16:49:56Z",
+      "side": 1,
+      "message": "Remove that as `filepath.Join` according to documentation adds path separator if it is needed.",
+      "parentUuid": "1df8220d_3be2c75e",
+      "range": {
+        "startLine": 159,
+        "startChar": 50,
+        "endLine": 159,
+        "endChar": 54
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0f897de2_a3f43784",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
