@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/services"
@@ -327,10 +329,26 @@ func runClusterCreateUpdateTest(
 }
 
 func manageCluster(t *testing.T, c *Config) {
-	clusterDeployer, err := NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
+	cluster, err := NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
-	deployer, err := clusterDeployer.GetDeployer()
+
+	deployer, err := cluster.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
+
+	// Need to calculate cData again here
+	cData, err := data(cluster)
+	assert.NoError(t, err, "failed to retrieve data from cluster")
+
+	// MockContainerPlayer injection
+	switch deployerType(cData, cluster.config.Action) {
+	case "ansible", "tripleo":
+		d := newDeployCluster(cluster, cData, "contrail-ansible-deployer")
+		deployer.(*contrailAnsibleDeployer).containerPlayer = newMockContainerPlayer(d.getWorkingDir())
+	case mCProvisioner:
+		d := newDeployCluster(cluster, cData, "multi-cloud-provisioner")
+		deployer.(*multiCloudProvisioner).contrailAnsibleDeployer.containerPlayer = newMockContainerPlayer(d.getWorkingDir())
+	}
+
 	err = deployer.Deploy()
 	assert.NoErrorf(t, err, "failed to manage(%s) cluster", c.Action)
 }
@@ -1098,4 +1116,39 @@ func TestTripleoClusterImport(t *testing.T) {
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to delete triple0 cluster")
+}
+
+// TODO(dji): move to testing code and inject as dependency
+type mockContainerPlayer struct {
+	workingDirectory string
+}
+
+func newMockContainerPlayer(workingDirectory string) *mockContainerPlayer {
+	return &mockContainerPlayer{workingDirectory: workingDirectory}
+}
+
+func (m *mockContainerPlayer) Play(
+	ctx context.Context,
+	imageRef string,
+	imageRefUsername string,
+	imageRefPassword string,
+	workRoot string,
+	ansibleBinaryRepo string,
+	ansibleArgs []string,
+	keepContainerAlive bool,
+) error {
+	playBookIndex := len(ansibleArgs) - 1
+	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", pongo2.Context{
+		"playBook":    ansibleArgs[playBookIndex],
+		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.workingDirectory, "executed_ansible_playbook.yml"),
+		content,
+		0600,
+	)
 }
