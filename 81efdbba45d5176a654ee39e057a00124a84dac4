@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "827a9cd5_d53ace06",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T15:38:09Z",
+      "side": 1,
+      "message": "Would skipping adding X-Service-Token to the request if the cluster has BasicAuth be useful?\nI don\u0027t think a cluster without Keystone would have a an endpoint configured to have X-Service-Token added to requests sent to it.",
+      "range": {
+        "startLine": 175,
+        "startChar": 1,
+        "endLine": 176,
+        "endChar": 94
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e7840fd3_16fa1b57",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T15:38:09Z",
+      "side": 1,
+      "message": "Would using a different fake keystone server for the publicURL be useful?",
+      "range": {
+        "startLine": 236,
+        "startChar": 2,
+        "endLine": 237,
+        "endChar": 33
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0effd479_4049b980",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T15:38:09Z",
+      "side": 1,
+      "message": "What would be a better name for this option?",
+      "range": {
+        "startLine": 48,
+        "startChar": 2,
+        "endLine": 49,
+        "endChar": 54
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bab9d2e6_85289058",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T15:38:09Z",
+      "side": 1,
+      "message": "Service users are usually created with a project_id of \"service\". Do we need to request the token with the same project_id?",
+      "range": {
+        "startLine": 114,
+        "startChar": 4,
+        "endLine": 115,
+        "endChar": 21
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
