@@ -61,14 +61,12 @@ func TestUploadCloudKeys(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			err := os.RemoveAll(outputDirectory)
-			require.NoError(t, err)
+			require.NoError(t, os.RemoveAll(outputDirectory))
 
-			err = os.MkdirAll(outputDirectory, 0755)
-			require.NoError(t, err)
+			require.NoError(t, os.MkdirAll(outputDirectory, 0755))
 
 			defer func() {
-				if err = os.RemoveAll(outputDirectory); err != nil {
+				if err := os.RemoveAll(outputDirectory); err != nil {
 					fmt.Println("Failed to clean up", outputDirectory, ":", err)
 				}
 			}()
@@ -88,8 +86,7 @@ func TestUploadCloudKeys(t *testing.T) {
 			}
 
 			cs := services.ContrailService{}
-			err = cs.UploadCloudKeys(request, defaults)
-			require.NoError(t, err)
+			require.NoError(t, cs.UploadCloudKeys(request, defaults))
 
 			for keyPath, content := range map[string]string{
 				defaults.GetAWSSecretPath():           tt.awsSecretKey,
@@ -100,9 +97,17 @@ func TestUploadCloudKeys(t *testing.T) {
 				defaults.GetAzureTenantIDPath():       tt.azureTenantID,
 				defaults.GetGoogleAccountPath():       tt.googleAccount,
 			} {
-				b, err := ioutil.ReadFile(keyPath)
-				assert.NoError(t, err)
-				assert.Equal(t, content, string(b))
+				if content == "" {
+					if _, err := os.Stat(keyPath); err != nil {
+						assert.Truef(t, os.IsNotExist(err), "could not open %s, err: %v", keyPath, err)
+					} else {
+						assert.Failf(t, "File should not be created but it is.", "File: %s", keyPath)
+					}
+				} else {
+					b, err := ioutil.ReadFile(keyPath)
+					assert.NoError(t, err)
+					assert.Equal(t, content, string(b))
+				}
 			}
 		})
 	}

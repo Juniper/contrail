@@ -354,11 +354,8 @@ func (c *Cloud) initialize(d *Data) (*topology, *secret, error) {
 }
 
 func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
-	s, err := newSecret(c)
-	if d.isCloudPublic() {
-		if err != nil {
-			return nil, err
-		}
+	s := newSecret(c)
+	if !d.isCloudPrivate() {
 		kp, err := s.getKeypair(d)
 		if err != nil {
 			return nil, err
