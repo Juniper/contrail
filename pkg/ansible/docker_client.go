@@ -66,7 +66,7 @@ func (c *DockerClient) Play(
 	imageRef string,
 	imageRefUsername string,
 	imageRefPassword string,
-	repositoryPath string,
+	ansibleBinaryRepo string,
 	ansibleArgs []string,
 	keepContainerAlive bool,
 ) error {
@@ -109,7 +109,7 @@ func (c *DockerClient) Play(
 		return err
 	}
 
-	cmd := c.prepareDockerCmd(repositoryPath, ansibleArgs)
+	cmd := c.prepareDockerCmd(ansibleBinaryRepo, ansibleArgs)
 
 	c.log.WithFields(logrus.Fields{
 		"container-name": containerName,
@@ -197,6 +197,7 @@ func (c *DockerClient) startExistingContainer(ctx context.Context, containerInst
 	return strings.Join(containerInstance.Names, ""), nil
 }
 
+// TODO: mount to workroot
 func (c *DockerClient) createRunningContainer(ctx context.Context, imageRef string) (string, error) {
 	containerName := "ansible-deployer_" + time.Now().Format("20060102150405")
 

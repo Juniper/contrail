@@ -1174,6 +1174,7 @@ func (m *multiCloudProvisioner) isOrchestratorOpenstack() bool {
 	return false
 }
 
+// TODO: modify this function
 func (m *multiCloudProvisioner) play(ansibleArgs []string) error {
 	return m.playFromDirectory(m.getMCDeployerRepoDir(), ansibleArgs)
 }
