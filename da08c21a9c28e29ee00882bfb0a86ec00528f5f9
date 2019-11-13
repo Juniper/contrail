@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "472a33f6_6054038e",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-13T16:08:32Z",
+      "side": 1,
+      "message": "Why is that changed?",
+      "revId": "da08c21a9c28e29ee00882bfb0a86ec00528f5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1b3c2e80_81f97cfe",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-13T16:08:32Z",
+      "side": 1,
+      "message": "AFAIK ioutil.ReadFile also returns os.NotExists if the file does not exist, so we can move this handling to L275.",
+      "revId": "da08c21a9c28e29ee00882bfb0a86ec00528f5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "93cb488f_656d5cb0",
+        "filename": "pkg/services/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-13T16:08:32Z",
+      "side": 1,
+      "message": "I think that instead of using `else` you could invert the condition and handle the case where content \u003d\u003d \"\". That is better because we handle error that is empty content.",
+      "revId": "da08c21a9c28e29ee00882bfb0a86ec00528f5f9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
