@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "1df8220d_3be2c75e",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-13T15:47:41Z",
+      "side": 1,
+      "message": "Why?",
+      "range": {
+        "startLine": 159,
+        "startChar": 50,
+        "endLine": 159,
+        "endChar": 54
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0f897de2_a3f43784",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
