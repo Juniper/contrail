@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/contrail/pkg/logutil/report"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
@@ -36,21 +37,21 @@ type apiClient interface {
 	ContainerRemove(ctx context.Context, containerID string, options types.ContainerRemoveOptions) error
 }
 
-// DockerClient allows to play Ansible playbooks via docker exec.
-type DockerClient struct {
+// ContainerPlayer plays Ansible playbooks via docker exec.
+type ContainerPlayer struct {
 	reporter *report.Reporter
 	log      *logrus.Entry
 	client   apiClient
 }
 
-// NewDockerClient returns DockerClient.
-func NewDockerClient(reporter *report.Reporter, logFilePath string) (*DockerClient, error) {
+// NewContainerPlayer returns *ContainerPlayer.
+func NewContainerPlayer(reporter *report.Reporter, logFilePath string) (*ContainerPlayer, error) {
 	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
-	return &DockerClient{
+	return &ContainerPlayer{
 		reporter: reporter,
 		log:      logutil.NewFileLogger("ansible-deployer-container", logFilePath),
 		client:   cli,
@@ -61,24 +62,25 @@ func NewDockerClient(reporter *report.Reporter, logFilePath string) (*DockerClie
 // It runs playbook from in docker container.
 // Notice that imageRepo should already be added to docker daemon's insecure registry list by contrail-command-deployer,
 // so private insecure registries don't need extra care when getting pulled.
-func (c *DockerClient) Play(
+func (p *ContainerPlayer) Play(
 	ctx context.Context,
 	imageRef string,
 	imageRefUsername string,
 	imageRefPassword string,
-	repositoryPath string,
+	workRoot string,
+	ansibleBinaryRepo string,
 	ansibleArgs []string,
 	keepContainerAlive bool,
 ) error {
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"ansible-args": ansibleArgs,
 	}).Info("Running playbook in container")
 
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"image-registry": imageRef,
 	}).Debug("Pulling images")
 
-	err := c.pullImage(ctx, imageRef, imageRefUsername, imageRefPassword)
+	err := p.pullImage(ctx, imageRef, imageRefUsername, imageRefPassword)
 	if err != nil {
 		return err
 	}
@@ -86,59 +88,59 @@ func (c *DockerClient) Play(
 	// Because we don't use fixed name ansible deployer container, and the user might choose to not remove the
 	// container after finishing ansible deployment, we need to search for existing container created from specified
 	// image registry first to use it.
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"image-registry": imageRef,
 	}).Debug("Searching for existing container created from specified image registry")
 
-	containerInstance, isFound, err := c.searchContainer(ctx, imageRef)
+	containerInstance, isFound, err := p.searchContainer(ctx, imageRef)
 	if err != nil {
 		return err
 	}
 
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"image-registry": imageRef,
 	}).Debug("Starting container created from specified image registry")
 
 	var containerName string
 	if isFound {
-		containerName, err = c.startExistingContainer(ctx, containerInstance)
+		containerName, err = p.startExistingContainer(ctx, containerInstance)
 	} else {
-		containerName, err = c.createRunningContainer(ctx, imageRef)
+		containerName, err = p.createRunningContainer(ctx, imageRef, workRoot)
 	}
 	if err != nil {
 		return err
 	}
 
-	cmd := c.prepareDockerCmd(repositoryPath, ansibleArgs)
+	cmd := p.prepareDockerCmd(ansibleBinaryRepo, ansibleArgs)
 
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"container-name": containerName,
 		"command":        cmd,
 	}).Debug("Executing command")
 
-	err = c.execCmd(ctx, containerName, cmd)
+	err = p.execCmd(ctx, containerName, cmd)
 	if err != nil {
 		return err
 	}
 
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"container-name": containerName,
 		"remove":         keepContainerAlive,
 	}).Debug("Cleaning up container")
 
-	err = c.cleanContainer(ctx, containerName, keepContainerAlive)
+	err = p.cleanContainer(ctx, containerName, keepContainerAlive)
 	if err != nil {
 		return err
 	}
 
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"ansible-args": ansibleArgs,
 	}).Info("Finished running playbook in container")
 
 	return nil
 }
 
-func (c *DockerClient) pullImage(ctx context.Context, imageRef string, username string, password string) error {
+func (p *ContainerPlayer) pullImage(ctx context.Context, imageRef string, username string, password string) error {
 	authConfig := types.AuthConfig{
 		Username: username,
 		Password: password,
@@ -151,7 +153,7 @@ func (c *DockerClient) pullImage(ctx context.Context, imageRef string, username 
 
 	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 
-	reader, err := c.client.ImagePull(ctx, imageRef, types.ImagePullOptions{RegistryAuth: authStr})
+	reader, err := p.client.ImagePull(ctx, imageRef, types.ImagePullOptions{RegistryAuth: authStr})
 	if err != nil {
 		return err
 	}
@@ -171,8 +173,8 @@ func (c *DockerClient) pullImage(ctx context.Context, imageRef string, username 
 	return err
 }
 
-func (c *DockerClient) searchContainer(ctx context.Context, imageRef string) (*types.Container, bool, error) {
-	containerInstances, err := c.client.ContainerList(ctx, types.ContainerListOptions{All: true})
+func (p *ContainerPlayer) searchContainer(ctx context.Context, imageRef string) (*types.Container, bool, error) {
+	containerInstances, err := p.client.ContainerList(ctx, types.ContainerListOptions{All: true})
 	if err != nil {
 		return nil, false, err
 	}
@@ -186,9 +188,10 @@ func (c *DockerClient) searchContainer(ctx context.Context, imageRef string) (*t
 	return nil, false, nil
 }
 
-func (c *DockerClient) startExistingContainer(ctx context.Context, containerInstance *types.Container) (string, error) {
+func (p *ContainerPlayer) startExistingContainer(
+	ctx context.Context, containerInstance *types.Container) (string, error) {
 	if containerInstance.State != "running" {
-		err := c.client.ContainerStart(ctx, containerInstance.ID, types.ContainerStartOptions{})
+		err := p.client.ContainerStart(ctx, containerInstance.ID, types.ContainerStartOptions{})
 		if err != nil {
 			return "", err
 		}
@@ -197,13 +200,22 @@ func (c *DockerClient) startExistingContainer(ctx context.Context, containerInst
 	return strings.Join(containerInstance.Names, ""), nil
 }
 
-func (c *DockerClient) createRunningContainer(ctx context.Context, imageRef string) (string, error) {
+// TODO: mount to workroot
+func (p *ContainerPlayer) createRunningContainer(ctx context.Context, imageRef, workRoot string) (string, error) {
 	containerName := "ansible-deployer_" + time.Now().Format("20060102150405")
 
-	resp, err := c.client.ContainerCreate(
+	resp, err := p.client.ContainerCreate(
 		ctx,
 		&container.Config{Tty: true, Image: imageRef},
-		nil,
+		&container.HostConfig{
+			Mounts: []mount.Mount{
+				{
+					Type:   mount.TypeBind,
+					Source: workRoot,
+					Target: workRoot,
+				},
+			},
+		},
 		nil,
 		containerName,
 	)
@@ -211,7 +223,7 @@ func (c *DockerClient) createRunningContainer(ctx context.Context, imageRef stri
 		return "", err
 	}
 
-	err = c.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
+	err = p.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -219,15 +231,16 @@ func (c *DockerClient) createRunningContainer(ctx context.Context, imageRef stri
 	return containerName, nil
 }
 
-func (c *DockerClient) prepareDockerCmd(repositoryPath string, ansibleArgs []string) *exec.Cmd {
+// TODO: ansible binary repo doesn't seem to be the same one in contrail-kolla-ansible-deployer
+func (p *ContainerPlayer) prepareDockerCmd(ansibleBinaryRepo string, ansibleArgs []string) *exec.Cmd {
 	cmd := exec.Command(playbookCmd, ansibleArgs...)
-	cmd.Dir = repositoryPath
+	cmd.Dir = ansibleBinaryRepo
 
 	return cmd
 }
 
-func (c *DockerClient) execCmd(ctx context.Context, containerName string, cmd *exec.Cmd) error {
-	resp, err := c.client.ContainerExecCreate(
+func (p *ContainerPlayer) execCmd(ctx context.Context, containerName string, cmd *exec.Cmd) error {
+	resp, err := p.client.ContainerExecCreate(
 		ctx,
 		containerName,
 		types.ExecConfig{
@@ -241,7 +254,7 @@ func (c *DockerClient) execCmd(ctx context.Context, containerName string, cmd *e
 		return err
 	}
 
-	hijack, err := c.client.ContainerExecAttach(ctx, resp.ID, types.ExecStartCheck{})
+	hijack, err := p.client.ContainerExecAttach(ctx, resp.ID, types.ExecStartCheck{})
 	if err != nil {
 		return err
 	}
@@ -251,21 +264,21 @@ func (c *DockerClient) execCmd(ctx context.Context, containerName string, cmd *e
 	if err != nil {
 		return err
 	}
-	c.log.WithFields(logrus.Fields{
+	p.log.WithFields(logrus.Fields{
 		"content": bytes,
 	}).Debug("ansible deployment log")
 
 	return nil
 }
 
-func (c *DockerClient) cleanContainer(ctx context.Context, containerName string, keepContainerAlive bool) error {
+func (p *ContainerPlayer) cleanContainer(ctx context.Context, containerName string, keepContainerAlive bool) error {
 	if !keepContainerAlive {
-		err := c.client.ContainerStop(ctx, containerName, new(time.Duration))
+		err := p.client.ContainerStop(ctx, containerName, new(time.Duration))
 		if err != nil {
 			return err
 		}
 
-		err = c.client.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{})
+		err = p.client.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{})
 
 		return err
 	}

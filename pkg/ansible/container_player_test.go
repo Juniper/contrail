@@ -69,13 +69,13 @@ func TestPullImageAuthentication(t *testing.T) {
 	for name, pullCase := range pullCases {
 		t.Run(name, func(t *testing.T) {
 			mockRC := &mockReadCloser{Reader: strings.NewReader("Success")}
-			dockerClient := &DockerClient{
+			containerPlayer := ContainerPlayer{
 				client: &mockAPIClient{
 					expectedAuth: pullCase.expectedAuth,
 					imageReader:  mockRC,
 				},
 			}
-			err := dockerClient.pullImage(
+			err := containerPlayer.pullImage(
 				context.Background(),
 				pullCase.imageRegistry,
 				pullCase.username,
@@ -162,12 +162,12 @@ func TestSearchContainer(t *testing.T) {
 	}
 	for name, searchCase := range searchCases {
 		t.Run(name, func(t *testing.T) {
-			dockerClient := &DockerClient{
+			containerPlayer := ContainerPlayer{
 				client: &mockAPIClient{
 					containerInstances: searchCase.containerInstances,
 				},
 			}
-			containerInstance, found, err := dockerClient.searchContainer(
+			containerInstance, found, err := containerPlayer.searchContainer(
 				context.Background(),
 				searchCase.imageName,
 			)
@@ -207,13 +207,13 @@ func TestStartExistingContainer(t *testing.T) {
 	}
 	for name, startCase := range startCases {
 		t.Run(name, func(t *testing.T) {
-			dockerClient := &DockerClient{
+			containerPlayer := ContainerPlayer{
 				client: &mockAPIClient{
 					containerInstance:     startCase.containerInstance,
 					expectedContainerName: startCase.expectedContainerName,
 				},
 			}
-			containerName, err := dockerClient.startExistingContainer(
+			containerName, err := containerPlayer.startExistingContainer(
 				context.Background(),
 				startCase.containerInstance,
 			)
@@ -239,14 +239,15 @@ func TestCreatRunningContainer(t *testing.T) {
 	}
 	for name, createCase := range createCases {
 		t.Run(name, func(t *testing.T) {
-			dockerClient := &DockerClient{
+			containerPlayer := ContainerPlayer{
 				client: &mockAPIClient{
 					expectedContainerNamePrefix: createCase.expectedContainerNamePrefix,
 				},
 			}
-			containerName, err := dockerClient.createRunningContainer(
+			containerName, err := containerPlayer.createRunningContainer(
 				context.Background(),
 				createCase.imageName,
+				"/var/tmp/contrail_cluster",
 			)
 			if err != nil {
 				t.Errorf("%v when starting container", err)
@@ -278,11 +279,11 @@ func TestExecCmd(t *testing.T) {
 	}
 	for name, execCase := range execCases {
 		t.Run(name, func(t *testing.T) {
-			dockerClient := &DockerClient{
+			containerPlayer := ContainerPlayer{
 				log:    logrus.NewEntry(logrus.New()),
 				client: &mockAPIClient{},
 			}
-			err := dockerClient.execCmd(context.Background(), execCase.containerID, execCase.command)
+			err := containerPlayer.execCmd(context.Background(), execCase.containerID, execCase.command)
 			if err != nil {
 				t.Errorf("%v when executing command in container", err)
 			}
@@ -306,10 +307,10 @@ func TestCleanContainer(t *testing.T) {
 	}
 	for name, cleanCase := range cleanCases {
 		t.Run(name, func(t *testing.T) {
-			dockerClient := &DockerClient{
+			containerPlayer := ContainerPlayer{
 				client: &mockAPIClient{},
 			}
-			err := dockerClient.cleanContainer(context.Background(), cleanCase.containerID, cleanCase.removeContainer)
+			err := containerPlayer.cleanContainer(context.Background(), cleanCase.containerID, cleanCase.removeContainer)
 			if err != nil {
 				t.Errorf("%v when cleaning container", err)
 			}
