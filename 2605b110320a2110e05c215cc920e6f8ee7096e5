@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e7ca677f_b4f26706",
+        "filename": "pkg/proxy/middleware.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-13T18:45:22Z",
+      "side": 1,
+      "message": "This is feature implemented in Go 1.13 and CI uses 1.12\nSo we need to bump Go version\n\nSee: https://golang.org/pkg/net/http/#Request.Clone",
+      "revId": "2605b110320a2110e05c215cc920e6f8ee7096e5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
