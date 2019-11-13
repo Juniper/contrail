@@ -14,6 +14,7 @@ const (
 	defaultDeployer                       = "ansible"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
+	defaultAnsibleRepoInContainer         = "/root/contrail-ansible-deployer"
 	defaultvCenterProvPlay                = "playbooks/vcenter.yml"
 	defaultContrailProvPlay               = "playbooks/install_contrail.yml"
 	defaultContrailDestoryPlay            = "playbooks/contrail_destroy.yml"
