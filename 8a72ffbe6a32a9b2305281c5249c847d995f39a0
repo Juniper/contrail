@@ -240,6 +240,80 @@
       "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "554d7023_e9e79996",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T17:39:46Z",
+      "side": 1,
+      "message": "Why was the defer from https://review.opencontrail.org/c/Juniper/contrail/+/53650/11/pkg/deploy/cluster/multi_cloud.go#b316 removed?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1b82bc1e_138c0daf",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T17:39:46Z",
+      "side": 1,
+      "message": "This comment looks misplaced. Change it to `Overwrite old topology file` and move it to L208 (or just remove it)?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e85e99c3_afe937c8",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T17:39:46Z",
+      "side": 1,
+      "message": "ReadFile should return an error if the file doesn\u0027t exist, so calling Stat shouldn\u0027t be necessary.",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ebfb6bee_71600a22",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-13T17:39:46Z",
+      "side": 1,
+      "message": "Changing the name from `publicAndPrivateCloudIDs` makes the purpose of the function harder to understand for me.",
+      "range": {
+        "startLine": 380,
+        "startChar": 32,
+        "endLine": 380,
+        "endChar": 45
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
