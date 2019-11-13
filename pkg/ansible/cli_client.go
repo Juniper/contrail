@@ -20,11 +20,6 @@ const (
 	filePermRWOnly = 0600
 )
 
-// Player runs Ansible playbooks.
-type Player interface {
-	Play()
-}
-
 // CLIClient allows to play Ansible playbooks via ansible-playbook CLI.
 type CLIClient struct {
 	reporter *report.Reporter
