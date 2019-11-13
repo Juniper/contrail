@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/ansible"
@@ -40,13 +41,28 @@ const (
 	disable = "no"
 )
 
+// Player runs ansible playbook in a container
+type Player interface {
+	Play(
+		ctx context.Context,
+		imageRef string,
+		imageRefUsername string,
+		imageRefPassword string,
+		workRoot string,
+		ansibleBinaryRepo string,
+		ansibleArgs []string,
+		keepContainerAlive bool,
+	) error
+}
+
 type openstackVariables struct {
 	enableHaproxy string
 }
 
 type contrailAnsibleDeployer struct {
 	deployCluster
-	ansibleClient *ansible.CLIClient
+	ansibleClient   *ansible.CLIClient
+	containerPlayer Player
 }
 
 // nolint: gocyclo
@@ -152,6 +168,10 @@ func (a *contrailAnsibleDeployer) getInventoryFile() (inventoryFile string) {
 
 func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir string) {
 	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleRepo)
+}
+
+func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoInContainer() (ansibleRepoDirInContainer string) {
+	return defaultAnsibleRepoInContainer
 }
 
 func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
@@ -361,8 +381,20 @@ func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) play(ansibleArgs []string) error {
-	return a.playFromDirectory(a.getAnsibleDeployerRepoDir(), ansibleArgs)
+func (a *contrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
+	a.Log.WithField("directory", a.getAnsibleDeployerRepoInContainer()).Info("Running playbook in container")
+	return a.containerPlayer.Play(
+		context.Background(),
+		a.clusterData.ClusterInfo.ContainerRegistry+
+			"/contrail-kolla-ansible-deployer:"+
+			a.clusterData.ClusterInfo.ContrailVersion,
+		a.clusterData.ClusterInfo.ContainerRegistryUsername,
+		a.clusterData.ClusterInfo.ContainerRegistryPassword,
+		a.getWorkRoot(),
+		a.getAnsibleDeployerRepoInContainer(),
+		ansibleArgs,
+		true,
+	)
 }
 
 func (a *contrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
@@ -371,13 +403,11 @@ func (a *contrailAnsibleDeployer) playFromDirectory(directory string, ansibleArg
 }
 
 func (a *contrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {
-	ansibleArgs = append(ansibleArgs, defaultInstanceProvPlay)
-	return a.play(ansibleArgs)
+	return a.playInContainer(append(ansibleArgs, defaultInstanceProvPlay))
 }
 
 func (a *contrailAnsibleDeployer) playInstancesConfig(ansibleArgs []string) error {
-	ansibleArgs = append(ansibleArgs, defaultInstanceConfPlay)
-	return a.play(ansibleArgs)
+	return a.playInContainer(append(ansibleArgs, defaultInstanceConfPlay))
 }
 
 func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string) error {
@@ -395,7 +425,7 @@ func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string
 		ansibleArgs = append(ansibleArgs, defaultvCenterProvPlay)
 	}
 
-	return a.play(ansibleArgs)
+	return a.playInContainer(ansibleArgs)
 }
 
 func (a *contrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) error {
@@ -404,20 +434,19 @@ func (a *contrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) 
 	case orchestratorOpenstack:
 		destroyAnsibleArgs = append(destroyAnsibleArgs, defaultOpenstackDestoryPlay)
 	}
-	return a.play(destroyAnsibleArgs)
+
+	return a.playInContainer(destroyAnsibleArgs)
 }
 
 func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
-	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
-	return a.play(ansibleArgs)
+	return a.playInContainer(append(ansibleArgs, defaultContrailProvPlay))
 }
 
 func (a *contrailAnsibleDeployer) playContrailDestroy(ansibleArgs []string) error {
-	destroyAnsibleArgs := ansibleArgs[:2]
-	destroyAnsibleArgs = append(destroyAnsibleArgs, defaultContrailDestoryPlay)
-	return a.play(destroyAnsibleArgs)
+	return a.playInContainer(append(ansibleArgs[:2], defaultContrailDestoryPlay))
 }
 
+// TODO(dji): use ansible.container_deployer in the future
 func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
 	if a.clusterData.ClusterInfo.DatapathEncryption {
 		inventory := filepath.Join(a.getWorkingDir(), "inventory.yml")
@@ -441,6 +470,7 @@ type AppformixConfig struct {
 	AppformixVersion string `yaml:"appformix_version"`
 }
 
+// TODO(dji): use ansible.container_deployer in the future
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
 		repoDir := a.getAppformixAnsibleDeployerRepoDir()
@@ -470,6 +500,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	return nil
 }
 
+// TODO(dji): use ansible.container_deployer in the future
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
 		venvDir := a.xflowVenvDir()
@@ -753,4 +784,39 @@ func (a *contrailAnsibleDeployer) Deploy() error {
 		return a.handleDelete()
 	}
 	return nil
+}
+
+// TODO(dji): move to testing code and inject as dependency
+type mockContainerPlayer struct {
+	workingDirectory string
+}
+
+func newMockContainerPlayer(workingDirectory string) (*mockContainerPlayer, error) {
+	return &mockContainerPlayer{workingDirectory: workingDirectory}, nil
+}
+
+func (m *mockContainerPlayer) Play(
+	ctx context.Context,
+	imageRef string,
+	imageRefUsername string,
+	imageRefPassword string,
+	workRoot string,
+	ansibleBinaryRepo string,
+	ansibleArgs []string,
+	keepContainerAlive bool,
+) error {
+	playBookIndex := len(ansibleArgs) - 1
+	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", pongo2.Context{
+		"playBook":    ansibleArgs[playBookIndex],
+		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.workingDirectory, "executed_ansible_playbook.yml"),
+		content,
+		0600,
+	)
 }
