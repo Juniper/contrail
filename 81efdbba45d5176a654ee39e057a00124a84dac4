@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "2ceabcb7_02a6204f",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T10:58:00Z",
+      "side": 1,
+      "message": "This config string is to long. How about service_token_endpoints",
+      "range": {
+        "startLine": 156,
+        "startChar": 49,
+        "endLine": 156,
+        "endChar": 101
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "827a9cd5_d53ace06",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 11
@@ -19,6 +42,23 @@
         "endLine": 176,
         "endChar": 94
       },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98a97c5a_ab6fa5bb",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T10:58:00Z",
+      "side": 1,
+      "message": "Optional: IMO defined assertions in mocks are really hard to read. They break the test flow (Arrange-Act-Assert) and it requires more focus to remember that the assertion is planned at the beginning. How about hijacking the request here and moving the assertion to the end of the test? The request could be stored as a closure.",
       "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -71,6 +111,30 @@
     },
     {
       "key": {
+        "uuid": "ce8cdf81_8d7b0455",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T10:58:00Z",
+      "side": 1,
+      "message": "service_token_endpoints",
+      "parentUuid": "0effd479_4049b980",
+      "range": {
+        "startLine": 48,
+        "startChar": 2,
+        "endLine": 49,
+        "endChar": 54
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bab9d2e6_85289058",
         "filename": "sample/test_config.yml",
         "patchSetId": 11
@@ -82,6 +146,30 @@
       "writtenOn": "2019-11-13T15:38:09Z",
       "side": 1,
       "message": "Service users are usually created with a project_id of \"service\". Do we need to request the token with the same project_id?",
+      "range": {
+        "startLine": 114,
+        "startChar": 4,
+        "endLine": 115,
+        "endChar": 21
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0406c3bc_698d039b",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T10:58:00Z",
+      "side": 1,
+      "message": "Service users must be created in service project to be a service user. Additionally they are not linked to admin project, so this config is invalid. Was this tested with real openstack?",
+      "parentUuid": "bab9d2e6_85289058",
       "range": {
         "startLine": 114,
         "startChar": 4,
