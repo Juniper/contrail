@@ -498,6 +498,7 @@ func (n *Network) listAssociatedFloatingIPs(
 		Spec: &baseservices.ListSpec{
 			ObjectUUIDs: uuids,
 			Fields: []string{
+				models.FloatingIPFieldUUID,
 				models.FloatingIPFieldVirtualMachineInterfaceRefs,
 			},
 		},
