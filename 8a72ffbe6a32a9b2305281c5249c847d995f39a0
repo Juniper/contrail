@@ -49,6 +49,115 @@
     },
     {
       "key": {
+        "uuid": "69937557_881d1f7c",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "Maybe we want to ad os.IsNotExist here also",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7b47e538_2576f4dd",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "Because they are all constant, why not declare them as a constant. You wouldn\u0027t be able to use filepath.Join, but you would avoid declaring unnecessary funcs.",
+      "range": {
+        "startLine": 179,
+        "startChar": 0,
+        "endLine": 213,
+        "endChar": 1
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "139324ba_3fe265a5",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "Please extract function",
+      "range": {
+        "startLine": 313,
+        "startChar": 1,
+        "endLine": 332,
+        "endChar": 24
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4689ecac_8eac33a7",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 435,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "Please add newline here, this argument should be in the same level as []string.",
+      "range": {
+        "startLine": 435,
+        "startChar": 4,
+        "endLine": 435,
+        "endChar": 5
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "573af6ca_c3b2d3fa",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 452,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "Newline before )",
+      "range": {
+        "startLine": 452,
+        "startChar": 4,
+        "endLine": 452,
+        "endChar": 5
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "08b96dce_6f3f3bcc",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -266,6 +375,29 @@
     },
     {
       "key": {
+        "uuid": "71dc4a79_43f52805",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "How about storing them as variables and then adding pub suffix in second call?",
+      "range": {
+        "startLine": 246,
+        "startChar": 2,
+        "endLine": 246,
+        "endChar": 77
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "554d7023_e9e79996",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 11
@@ -333,6 +465,29 @@
         "startChar": 32,
         "endLine": 380,
         "endChar": 45
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ab098668_fb401675",
+        "filename": "pkg/fileutil/template/template.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T12:03:03Z",
+      "side": 1,
+      "message": "ctx is usually used for context.Context, please change it to something more explicit.",
+      "range": {
+        "startLine": 39,
+        "startChar": 47,
+        "endLine": 39,
+        "endChar": 50
       },
       "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
