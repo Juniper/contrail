@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "8122c1e4_0d41f317",
+        "filename": "pkg/apisrv/keystone/client.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "Yes, it has to be if we want to avoid to creating new logger on each request. And I wanto to avoid that.\n\nBTW, If i copied HandleRequest() implementation to proxyRequestToRemoteKeystone() body, would it be inside Client? ;)",
+      "parentUuid": "8c957610_ea54987d",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "75eb9318_de36d582",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 7
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "3210fbfa_35e7fab2",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "I don\u0027t see how to simplify it. We need pp. And we need r.URL.Path withNoProxyPrefix().",
+      "parentUuid": "75eb9318_de36d582",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "77e216bc_681c5915",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 7
@@ -47,6 +83,24 @@
       "writtenOn": "2019-11-14T13:36:47Z",
       "side": 1,
       "message": "Why is this changed? From signature, this function looks like it\u0027s pure, but it\u0027s not. Please make it either a pure function or remove the request from return values.",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f23d6f8f_0c4974e6",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "77e216bc_681c5915",
       "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -76,6 +130,30 @@
     },
     {
       "key": {
+        "uuid": "16f6256e_ec5e8390",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 633,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "It is good enough for now. Added TODO.",
+      "parentUuid": "b4a9397c_b066f513",
+      "range": {
+        "startLine": 586,
+        "startChar": 1,
+        "endLine": 633,
+        "endChar": 2
+      },
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "72837506_13d53f8c",
         "filename": "pkg/proxy/middleware.go",
         "patchSetId": 7
@@ -87,6 +165,24 @@
       "writtenOn": "2019-11-14T13:36:47Z",
       "side": 1,
       "message": "We could have use ReverseProxy\u0027s ModifyResponse and ErrorHandler to solve this. The ModifyResponse function should return error if response status is 502 or 503 and ErrorHandler should be changed to handle those errors by notifying this for instead of the user.",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5cf6b19d_d7330419",
+        "filename": "pkg/proxy/middleware.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "Added TODO.",
+      "parentUuid": "72837506_13d53f8c",
       "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -110,6 +206,24 @@
     },
     {
       "key": {
+        "uuid": "abbfb6fa_309ea241",
+        "filename": "pkg/proxy/middleware.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e12ccc4c_28c96b76",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "262847b8_c3887521",
         "filename": "pkg/proxy/middleware_test.go",
         "patchSetId": 7
@@ -121,6 +235,24 @@
       "writtenOn": "2019-11-14T13:36:47Z",
       "side": 1,
       "message": "I have troubles understanding what this test tests",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e912f75c_1367f129",
+        "filename": "pkg/proxy/middleware_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "It tests Header method.",
+      "parentUuid": "262847b8_c3887521",
       "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -150,6 +282,30 @@
     },
     {
       "key": {
+        "uuid": "bcc12d43_6ebaf264",
+        "filename": "pkg/proxy/middleware_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "I\u0027d prefer not.",
+      "parentUuid": "c0dea947_cc7b38c2",
+      "range": {
+        "startLine": 17,
+        "startChar": 1,
+        "endLine": 17,
+        "endChar": 3
+      },
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "038f3154_b9778323",
         "filename": "pkg/proxy/middleware_test.go",
         "patchSetId": 7
@@ -167,6 +323,24 @@
     },
     {
       "key": {
+        "uuid": "48c4d4ba_a3ecf13b",
+        "filename": "pkg/proxy/middleware_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "Let\u0027s take it offline.",
+      "parentUuid": "038f3154_b9778323",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "72879875_89191536",
         "filename": "pkg/proxy/middleware_test.go",
         "patchSetId": 7
@@ -178,6 +352,24 @@
       "writtenOn": "2019-11-14T13:36:47Z",
       "side": 1,
       "message": "What is a purpose of this mutation?",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "55135ffd_3e73b182",
+        "filename": "pkg/proxy/middleware_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:11:42Z",
+      "side": 1,
+      "message": "To test that mutating rbh does not mutate rw.header (i.e. rbh is copy of rw.header - secode subtest)",
+      "parentUuid": "72879875_89191536",
       "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
