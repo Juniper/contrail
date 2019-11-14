@@ -265,19 +265,76 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				name: "with parent UUID and fields",
+				name: "with object UUID and fields",
 				lp: &client.ListParameters{
-					ParentUUIDs: projectUUID,
+					ObjectUUIDs: vnRedUUID,
 					Fields:      "name,uuid",
 				},
-				expected: resources(vnRedFiltered(t), vnBlueFiltered(t)),
+				expected: resources(vnRedFiltered(t)),
 				assert: func(t *testing.T, response string) {
 					assert.Equal(
 						t,
-						resources(vnRedFiltered(t), vnBlueFiltered(t)),
+						resources(vnRedFiltered(t)),
 						unmarshalData(t, response),
 					)
 				},
+			},
+			{
+				name: "with object UUID and invalid field",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "name,uuid,invalid_field123",
+				},
+				expected: resources(vnRedFiltered(t)),
+				assert: func(t *testing.T, response string) {
+					assert.Equal(
+						t,
+						resources(vnRedFiltered(t)),
+						unmarshalData(t, response),
+					)
+				},
+			},
+			{
+				name: "with object UUID and no valid field",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "invalid_field123",
+				},
+				expected: vnEmptyResource(),
+				assert: func(t *testing.T, response string) {
+					assert.Equal(
+						t,
+						vnEmptyResource(),
+						unmarshalData(t, response),
+					)
+				},
+			},
+			{
+				name: "with object UUID, fields and detail",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "name,uuid",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t)),
+			},
+			{
+				name: "with object UUID, invalid fields and detail",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "name,uuid,invalidfield123",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t)),
+			},
+			{
+				name: "with object UUID, no valid field and detail",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "invalidfield123",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t)),
 			},
 		}
 		for _, tt := range tests {
@@ -409,6 +466,14 @@ func vnRedFiltered(t *testing.T) map[interface{}]interface{} {
 
 func vnGreen(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnGreenYAML())
+}
+
+func vnEmptyResource() map[interface{}]interface{} {
+	return map[interface{}]interface{}{
+		"resources": []interface{}{
+			map[interface{}]interface{}{
+				"data": map[interface{}]interface{}{},
+				"kind": "virtual_network"}}}
 }
 
 func vnBlueYAML() string {
