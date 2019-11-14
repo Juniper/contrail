@@ -279,6 +279,54 @@ func testList(cli *client.CLI) func(t *testing.T) {
 					)
 				},
 			},
+			{
+				name: "with parent UUID and invalid field",
+				lp: &client.ListParameters{
+					ParentUUIDs: projectUUID,
+					Fields:      "name,uuid,invalid_field123",
+				},
+				expected: resources(vnRedFiltered(t), vnBlueFiltered(t)),
+				assert: func(t *testing.T, response string) {
+					assert.Equal(
+						t,
+						resources(vnRedFiltered(t), vnBlueFiltered(t)),
+						unmarshalData(t, response),
+					)
+				},
+			},
+			{
+				name: "with parent UUID and no valid field",
+				lp: &client.ListParameters{
+					ParentUUIDs: projectUUID,
+					Fields:      "invalid_field123",
+				},
+				expected: vnEmptyResource(t),
+				assert: func(t *testing.T, response string) {
+					assert.Equal(
+						t,
+						vnEmptyResource(t),
+						unmarshalData(t, response),
+					)
+				},
+			},
+			{
+				name: "with parent UUID, field, and detail",
+				lp: &client.ListParameters{
+					ParentUUIDs: projectUUID,
+					Fields:      "name,uuid",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t), vnBlue(t)),
+			},
+			{
+				name: "with parent UUID, invalid field, and detail",
+				lp: &client.ListParameters{
+					ParentUUIDs: projectUUID,
+					Fields:      "name,uuid,invalidfield123",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t), vnBlue(t)),
+			},
 		}
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
@@ -409,6 +457,17 @@ func vnRedFiltered(t *testing.T) map[interface{}]interface{} {
 
 func vnGreen(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnGreenYAML())
+}
+
+func vnEmptyResource(t *testing.T) map[interface{}]interface{} {
+	return map[interface{}]interface{}{
+		"resources": []interface{}{
+			map[interface{}]interface{}{
+				"data": map[interface{}]interface{}{},
+				"kind": "virtual_network"},
+			map[interface{}]interface{}{
+				"data": map[interface{}]interface{}{},
+				"kind": "virtual_network"}}}
 }
 
 func vnBlueYAML() string {

@@ -466,22 +466,26 @@ func (qb *QueryBuilder) isValidField(requestedField string) bool {
 	return false
 }
 
-func (qb *QueryBuilder) checkRequestedFields(ctx *queryContext) bool {
+func (qb *QueryBuilder) sanitizeFields(ctx *queryContext) []string {
+	var newlist []string
 	spec := ctx.spec
 	for _, requestedField := range spec.Fields {
-		if !qb.isValidField(requestedField) {
-			return false
+		if qb.isValidField(requestedField) {
+			newlist = append(newlist, requestedField)
 		}
 	}
-	return true
+	return newlist
 }
 
 func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 	spec := ctx.spec
 	fields := qb.Fields
 
-	if len(spec.Fields) > 0 && qb.checkRequestedFields(ctx) {
-		fields = spec.Fields
+	if len(spec.Fields) > 0 && spec.Detail == false {
+		sanitizedFields := qb.sanitizeFields(ctx)
+		if len(sanitizedFields) > 0 {
+			fields = sanitizedFields
+		}
 	}
 
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {

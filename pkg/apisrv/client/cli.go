@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -166,12 +165,6 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 		return "", err
 	}
 
-	// TODO(Daniel): remove client-side filtering when server-side filtering is fixed
-	r, err = filterFieldsIfNeeded(r, lp.Fields)
-	if err != nil {
-		return "", err
-	}
-
 	return encodeToYAML(r)
 }
 
@@ -257,36 +250,6 @@ func makeOutputResources(schemaID string, response map[string]interface{}) (Reso
 		}
 	}
 	return r, nil
-}
-
-func filterFieldsIfNeeded(r Resources, rawFields string) (Resources, error) {
-	if rawFields == "" {
-		return r, nil
-	}
-
-	f := fields(rawFields)
-	for _, resource := range r[ResourcesKey] {
-		data, ok := resource[DataKey].(map[string]interface{})
-		if !ok {
-			return nil, errors.Errorf("output made from response contains invalid data: %v", resource[DataKey])
-		}
-
-		for k := range data {
-			_, ok := f[k]
-			if !ok {
-				delete(data, k)
-			}
-		}
-	}
-	return r, nil
-}
-
-func fields(rawFields string) map[string]struct{} {
-	fm := map[string]struct{}{}
-	for _, f := range strings.Split(rawFields, ",") {
-		fm[f] = struct{}{}
-	}
-	return fm
 }
 
 // SyncResources synchronizes state of resources specified in given file.
