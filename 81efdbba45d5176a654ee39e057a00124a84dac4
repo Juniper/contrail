@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "dcbcfb4e_d9e40ab6",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-14T16:42:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2ceabcb7_02a6204f",
+      "range": {
+        "startLine": 156,
+        "startChar": 49,
+        "endLine": 156,
+        "endChar": 101
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "827a9cd5_d53ace06",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 11
@@ -249,6 +273,30 @@
     },
     {
       "key": {
+        "uuid": "5b05bda2_469da2c1",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-14T16:42:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b90b6bee_e38e339b",
+      "range": {
+        "startLine": 48,
+        "startChar": 2,
+        "endLine": 49,
+        "endChar": 54
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bab9d2e6_85289058",
         "filename": "sample/test_config.yml",
         "patchSetId": 11
@@ -308,6 +356,30 @@
       "side": 1,
       "message": "I see that https://docs.openstack.org/glance/train/admin/authentication.html#configuring-glance-api-to-use-keystone uses `service_admins`, so I\u0027ve changed this to `service`.\n\nAs discussed offline, this should be tested with a real openstack right after the change is merged.",
       "parentUuid": "0406c3bc_698d039b",
+      "range": {
+        "startLine": 114,
+        "startChar": 4,
+        "endLine": 115,
+        "endChar": 21
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "791cc3f5_313d0e72",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-14T16:42:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e7f2f4ac_2952c129",
       "range": {
         "startLine": 114,
         "startChar": 4,
