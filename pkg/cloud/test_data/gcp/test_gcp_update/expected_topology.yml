@@ -36,7 +36,7 @@
             - name: cloud_node_comp_vpc2
               roles:
                 - bare_node
-              provision: true
+              provision: True
               username: redhat
               os: rhel7
               instance_type: n1-standard-1
@@ -44,7 +44,7 @@
             - name: cloud_node_gw_vpc2
               roles:
                 - gateway
-              provision: true
+              provision: True
               username: redhat
               os: rhel7
               instance_type: n1-standard-1
@@ -80,7 +80,7 @@
             - name: cloud_node_compute
               roles:
                 - compute_node
-              provision: true
+              provision: True
               username: redhat
               os: rhel7
               instance_type: n1-standard-1
@@ -88,7 +88,7 @@
             - name: cloud_node_gw
               roles:
                 - gateway
-              provision: true
+              provision: True
               username: redhat
               os: rhel7
               instance_type: n1-standard-1

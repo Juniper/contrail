@@ -22,7 +22,7 @@
             - name: cloud_node_compute
               roles:
                 - compute_node
-              provision: true
+              provision: True
               username: redhat
               os: rhel7
               instance_type: F16sv2
@@ -30,7 +30,7 @@
             - name: cloud_node_gw
               roles:
                 - gateway
-              provision: true
+              provision: True
               username: redhat
               os: rhel7
               instance_type: F16sv2

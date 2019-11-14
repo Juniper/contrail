@@ -68,12 +68,23 @@ type virtualCloudData struct {
 	apiServer
 }
 
+type instanceRole string
+
+const (
+	computeNodeInstanceRole instanceRole = "compute_node"
+	vRouterInstanceRole     instanceRole = "vrouter"
+	controllerInstanceRole  instanceRole = "controller"
+	k8sMasterInstanceRole   instanceRole = "k8s_master"
+	gatewayInstanceRole     instanceRole = "gateway"
+	bareInstanceRole        instanceRole = "bare_node"
+)
+
 type instanceData struct {
 	parentVC      *virtualCloudData
 	info          *models.Node
-	roles         []string
+	roles         []instanceRole
 	protocolsMode []string
-	provision     string
+	provision     bool
 	pvtIntf       *models.Port
 	gateway       string
 	services      []string
@@ -84,7 +95,7 @@ type instanceData struct {
 type torData struct {
 	parentVC               *virtualCloudData
 	info                   *models.PhysicalRouter
-	provision              string
+	provision              bool
 	autonomousSystemNumber int
 	interfaceNames         []string
 	privateSubnets         []string
@@ -104,8 +115,7 @@ type sgData struct {
 }
 
 func (s *subnetData) getPvtSubnetObject() (*models.CloudPrivateSubnet, error) {
-	request := new(services.GetCloudPrivateSubnetRequest)
-	request.ID = s.info.UUID
+	request := &services.GetCloudPrivateSubnetRequest{ID: s.info.UUID}
 
 	subnetResp, err := s.client.GetCloudPrivateSubnet(s.ctx, request)
 	if err != nil {
@@ -162,8 +172,7 @@ func (v *virtualCloudData) updateSubnets() error {
 }
 
 func (i *instanceData) getNodeObject() (*models.Node, error) {
-	request := new(services.GetNodeRequest)
-	request.ID = i.info.UUID
+	request := &services.GetNodeRequest{ID: i.info.UUID}
 
 	instResp, err := i.client.GetNode(i.ctx, request)
 	if err != nil {
@@ -186,8 +195,7 @@ func (i *instanceData) updateInstType(instance *models.Node) error {
 }
 
 func (i *torData) getTorObject() (*models.PhysicalRouter, error) {
-	request := new(services.GetPhysicalRouterRequest)
-	request.ID = i.info.UUID
+	request := &services.GetPhysicalRouterRequest{ID: i.info.UUID}
 
 	torResp, err := i.client.GetPhysicalRouter(i.ctx, request)
 	if err != nil {
@@ -201,7 +209,7 @@ func (i *torData) hasInfo() bool {
 }
 
 func (d *Data) providerNames() []string {
-	names := []string{}
+	names := make([]string, len(d.providers))
 	for _, provider := range d.providers {
 		names = append(names, provider.info.Type)
 	}
@@ -211,8 +219,9 @@ func (d *Data) providerNames() []string {
 // nolint: gocyclo
 func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool) (*instanceData, error) {
 	inst := &instanceData{
-		parentVC: v,
-		info:     instance,
+		parentVC:  v,
+		info:      instance,
+		provision: true,
 		apiServer: apiServer{
 			client: v.client,
 			ctx:    v.ctx,
@@ -229,31 +238,27 @@ func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool)
 	if data.isCloudPrivate() {
 		i := inst
 		if i.info.ContrailVrouterNodeBackRefs != nil && i.info.KubernetesNodeBackRefs != nil {
-			i.roles = append(i.roles, "compute_node")
+			i.roles = append(i.roles, computeNodeInstanceRole)
 		} else if i.info.ContrailVrouterNodeBackRefs != nil {
-			i.roles = append(i.roles, "vrouter")
+			i.roles = append(i.roles, vRouterInstanceRole)
 		}
 		if i.info.ContrailConfigNodeBackRefs != nil || i.info.ContrailControlNodeBackRefs != nil {
-			i.roles = append(i.roles, "controller")
-			i.provision = strconv.FormatBool(false)
+			i.roles = append(i.roles, controllerInstanceRole)
+			i.provision = false
 		}
 		if i.info.KubernetesMasterNodeBackRefs != nil {
-			i.roles = append(i.roles, "k8s_master")
+			i.roles = append(i.roles, k8sMasterInstanceRole)
 		}
 		if i.info.ContrailMulticloudGWNodeBackRefs != nil {
-			i.roles = append(i.roles, "gateway")
+			i.roles = append(i.roles, gatewayInstanceRole)
 		}
 		err = inst.updatePvtIntf(isDelRequest)
 		if err != nil {
 			return nil, err
 		}
 		if inst.info.OpenstackComputeNodeBackRefs != nil {
-			inst.provision = strconv.FormatBool(false)
+			inst.provision = false
 		}
-	}
-
-	if inst.provision == "" {
-		inst.provision = strconv.FormatBool(true)
 	}
 
 	if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
@@ -284,8 +289,8 @@ func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool)
 			return nil, err
 		}
 
-		if hasCloudRole(inst.info.CloudInfo.Roles, "bare_node") {
-			inst.roles = []string{"bare_node"}
+		if hasCloudRole(inst.info.CloudInfo.Roles, bareInstanceRole) {
+			inst.roles = []instanceRole{bareInstanceRole}
 		}
 	}
 
@@ -300,9 +305,9 @@ func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool)
 	return inst, nil
 }
 
-func hasCloudRole(roles []string, nodeRole string) bool {
+func hasCloudRole(roles []string, nodeRole instanceRole) bool {
 	for _, role := range roles {
-		if role == nodeRole {
+		if role == string(nodeRole) {
 			return true
 		}
 	}
@@ -338,8 +343,9 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 		return nil, nil
 	}
 	tor = &torData{
-		parentVC: v,
-		info:     p,
+		parentVC:  v,
+		info:      p,
+		provision: true,
 		apiServer: apiServer{
 			client: v.client,
 			ctx:    v.ctx,
@@ -364,9 +370,6 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 		}
 	}
 
-	if tor.provision == "" {
-		tor.provision = strconv.FormatBool(true)
-	}
 	return tor, nil
 }
 
@@ -419,8 +422,7 @@ func (v *virtualCloudData) updateTorInstances() error {
 }
 
 func (sg *sgData) getSGObject() (*models.CloudSecurityGroup, error) {
-	request := new(services.GetCloudSecurityGroupRequest)
-	request.ID = sg.info.UUID
+	request := &services.GetCloudSecurityGroupRequest{ID: sg.info.UUID}
 
 	sgResp, err := sg.client.GetCloudSecurityGroup(sg.ctx, request)
 	if err != nil {
@@ -521,8 +523,7 @@ func (v *virtualCloudData) updateSGs() error {
 }
 
 func (v *virtualCloudData) getVCloudObject() (*models.VirtualCloud, error) {
-	request := new(services.GetVirtualCloudRequest)
-	request.ID = v.info.UUID
+	request := &services.GetVirtualCloudRequest{ID: v.info.UUID}
 
 	vCloudResp, err := v.client.GetVirtualCloud(v.ctx, request)
 	if err != nil {
@@ -570,11 +571,7 @@ func (v *virtualCloudData) updateControlNodeWithTag(controlNodes []*models.Contr
 		for _, nodeRef := range getControlResp.ContrailControlNode.NodeRefs {
 			var nodeTagRefs []*models.NodeTagRef
 			for _, vTagRef := range v.info.TagRefs {
-				nodeTagRef := new(models.NodeTagRef)
-				nodeTagRef.UUID = vTagRef.UUID
-				nodeTagRef.To = vTagRef.To
-				nodeTagRef.Href = vTagRef.Href
-				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+				nodeTagRefs = append(nodeTagRefs, newNodeTagRef(vTagRef))
 			}
 			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
 			if err != nil {
@@ -602,11 +599,7 @@ func (v *virtualCloudData) updateConfigNodeWithTag(configNodes []*models.Contrai
 		for _, nodeRef := range getConfigResp.ContrailConfigNode.NodeRefs {
 			var nodeTagRefs []*models.NodeTagRef
 			for _, vTagRef := range v.info.TagRefs {
-				nodeTagRef := new(models.NodeTagRef)
-				nodeTagRef.UUID = vTagRef.UUID
-				nodeTagRef.To = vTagRef.To
-				nodeTagRef.Href = vTagRef.Href
-				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+				nodeTagRefs = append(nodeTagRefs, newNodeTagRef(vTagRef))
 			}
 			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
 			if err != nil {
@@ -652,11 +645,7 @@ func (v *virtualCloudData) updateK8sMasterNodeWithTag(k8sMasterNodes []*models.K
 		for _, nodeRef := range getK8sMasterNodeResp.KubernetesMasterNode.NodeRefs {
 			var nodeTagRefs []*models.NodeTagRef
 			for _, vTagRef := range v.info.TagRefs {
-				nodeTagRef := new(models.NodeTagRef)
-				nodeTagRef.UUID = vTagRef.UUID
-				nodeTagRef.To = vTagRef.To
-				nodeTagRef.Href = vTagRef.Href
-				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+				nodeTagRefs = append(nodeTagRefs, newNodeTagRef(vTagRef))
 			}
 			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
 			if err != nil {
@@ -684,11 +673,7 @@ func (v *virtualCloudData) updateVrouterNodeWithTag(vrouterNodes []*models.Contr
 		for _, nodeRef := range getVrouterResp.ContrailVrouterNode.NodeRefs {
 			var nodeTagRefs []*models.NodeTagRef
 			for _, vTagRef := range v.info.TagRefs {
-				nodeTagRef := new(models.NodeTagRef)
-				nodeTagRef.UUID = vTagRef.UUID
-				nodeTagRef.To = vTagRef.To
-				nodeTagRef.Href = vTagRef.Href
-				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+				nodeTagRefs = append(nodeTagRefs, newNodeTagRef(vTagRef))
 			}
 			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
 			if err != nil {
@@ -847,8 +832,7 @@ func (r *regionData) updateVClouds() error {
 }
 
 func (r *regionData) getRegionObject() (*models.CloudRegion, error) {
-	request := new(services.GetCloudRegionRequest)
-	request.ID = r.info.UUID
+	request := &services.GetCloudRegionRequest{ID: r.info.UUID}
 
 	regResp, err := r.client.GetCloudRegion(r.ctx, request)
 	if err != nil {
@@ -882,8 +866,7 @@ func (p *providerData) newRegion(region *models.CloudRegion) (*regionData, error
 }
 
 func (p *providerData) getProviderObject() (*models.CloudProvider, error) {
-	request := new(services.GetCloudProviderRequest)
-	request.ID = p.info.UUID
+	request := &services.GetCloudProviderRequest{ID: p.info.UUID}
 
 	provResp, err := p.client.GetCloudProvider(p.ctx, request)
 	if err != nil {
@@ -962,8 +945,7 @@ func (d *Data) updateProviders() error {
 }
 
 func getUserObject(ctx context.Context, uuid string, apiClient *client.HTTP) (*models.CloudUser, error) {
-	request := new(services.GetCloudUserRequest)
-	request.ID = uuid
+	request := &services.GetCloudUserRequest{ID: uuid}
 
 	userResp, err := apiClient.GetCloudUser(ctx, request)
 	if err != nil {
@@ -1144,11 +1126,7 @@ func (d *Data) update(isDelRequest bool) error {
 
 func (d *Data) isCloudCreated() bool {
 	status := d.info.ProvisioningState
-	if d.cloud.config.Action == createAction && (status == statusNoState || status == "") {
-		return false
-	}
-	d.cloud.log.Infof("Cloud %s already provisioned, STATE: %s", d.info.UUID, status)
-	return true
+	return !(d.cloud.config.Action == createAction && (status == statusNoState || status == ""))
 }
 
 func (d *Data) isCloudPrivate() bool {
@@ -1161,10 +1139,7 @@ func (d *Data) isCloudPrivate() bool {
 }
 
 func (d *Data) isCloudPublic() bool {
-	if !d.isCloudPrivate() {
-		return true
-	}
-	return false
+	return !d.isCloudPrivate()
 }
 
 func (d *Data) getGatewayNodes() []*instanceData {
@@ -1175,6 +1150,10 @@ func (d *Data) getGatewayNodes() []*instanceData {
 		}
 	}
 	return gwNodes
+}
+
+func newNodeTagRef(v *models.VirtualCloudTagRef) *models.NodeTagRef {
+	return &models.NodeTagRef{UUID: v.UUID, To: v.To, Href: v.Href}
 }
 
 func (l dataList) Swap(i, j int) {

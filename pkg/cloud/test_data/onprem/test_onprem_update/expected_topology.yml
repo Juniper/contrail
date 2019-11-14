@@ -6,7 +6,7 @@
       public_ip:
       private_ip: 10.10.10.12
       interface: cloud_node_compute_pvt_port
-      provision: true
+      provision: True
       username: centos
       password:
       roles:
@@ -16,7 +16,7 @@
       public_ip:
       private_ip: 10.10.10.11
       interface: cloud_node_controller_pvt_port
-      provision: false
+      provision: False
       username: centos
       password:
       roles:
@@ -25,7 +25,7 @@
       public_ip:
       private_ip: 10.10.10.10
       interface: cloud_node_gw_pvt_port
-      provision: true
+      provision: True
       username: centos
       password:
       services:
@@ -41,7 +41,7 @@
       public_ip: 5.5.5.5
       private_ip: 10.10.10.13
       interface: k8s_node_port
-      provision: true
+      provision: True
       username: centos
       password:
       roles:
@@ -54,7 +54,7 @@
         - 30.10.10.0/24
       roles:
         - tor
-      provision: true
+      provision: True
       username: test
       password: test123
       interface:
