@@ -219,6 +219,7 @@ func (c *Cloud) create() error {
 	}
 
 	if data.isCloudCreated() {
+		c.log.Infof("Cloud %s already provisioned, STATE: %s", data.info.UUID, data.info.ProvisioningState)
 		return nil
 	}
 
