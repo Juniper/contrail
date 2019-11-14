@@ -2,38 +2,34 @@ run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
   deadline: 20m
-  skip-files:
-  # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
-  - .*/go/src/crypto/.*
-  - .*/go/src/internal/syscall/unix/.*
-  - .*/go/src/net/.*
-  - .*/go/src/os/.*
-  - .*/go/src/runtime/.*
-  - .*/go/src/syscall/.*
 
 issues:
   exclude:
-  - .* is always .* # unparam issue
-  - ^should have a package comment, unless it's in another file for this package$ # golint issue
+  - .* is always .* # unparam check
+  - ^should have a package comment, unless it's in another file for this package$ # golint check
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
 
-# Intentionally disabled linters:
-# - dupl consumes too much RAM and CPU cycles
-# - gosec consumes too much RAM and CPU cycles
-# - megacheck uses staticcheck which consumes too much RAM and CPU cycles
-# - prealloc issues are considered premature optimization
-# - staticcheck consumes too much RAM and CPU cycles
 linters:
   enable-all: true
   disable:
-  - dupl
-  - gosec
-  - megacheck
-  - prealloc
-  - staticcheck
-  - unparam
+  - bodyclose # TODO(dfurman): fix code to pass
+  - godox # TODO(dfurman): fix code to pass
+  - dogsled # TODO(dfurman): fix code to pass
+  - dupl # consumes too much RAM and CPU cycles
+  - funlen # TODO(dfurman): fix code to pass
+  - gochecknoglobals # incompatible with current conventions
+  - gochecknoinits # incompatible with current conventions
+  - gocritic # TODO(dfurman): fix code to pass
+  - gosec # consumes too much RAM and CPU cycles
+  - megacheck # uses staticcheck, which consumes too much RAM and CPU cycles
+  - prealloc # premature optimization
+  - scopelint # TODO(dfurman): fix code to pass
+  - staticcheck # consumes too much RAM and CPU cycles
+  - stylecheck # TODO(dfurman): fix code to pass
+  - unparam # TODO(dfurman): fix code to pass
+  - whitespace # TODO(dfurman): fix code to pass
 
 linters-settings:
   errcheck:
