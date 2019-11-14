@@ -219,6 +219,7 @@ func (c *Cloud) create() error {
 	}
 
 	if data.isCloudCreated() {
+		c.log.Infof("Cloud %s already provisioned, STATE: %s", data.info.UUID, data.info.ProvisioningState)
 		return nil
 	}
 
@@ -288,7 +289,7 @@ func (c *Cloud) update() error {
 
 	status := map[string]interface{}{statusField: statusUpdateProgress}
 	var secret *secret
-	if data.isCloudPublic() {
+	if !data.isCloudPrivate() {
 		secret, err = c.initializeSecret(data)
 		if err != nil {
 			status[statusField] = statusUpdateFailed
@@ -343,7 +344,7 @@ func (c *Cloud) update() error {
 func (c *Cloud) initialize(d *Data) (*topology, *secret, error) {
 	var secret *secret
 	var err error
-	if d.isCloudPublic() {
+	if !d.isCloudPrivate() {
 		secret, err = c.initializeSecret(d)
 		if err != nil {
 			return nil, nil, err
@@ -383,9 +384,7 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-	}
-
-	if data.isCloudPublic() {
+	} else {
 		var secret *secret
 		secret, err = c.initializeSecret(data)
 		if err != nil {
@@ -525,7 +524,7 @@ func (c *Cloud) getTemplateRoot() string {
 }
 
 func (c *Cloud) removeVulnerableFiles(data *Data) error {
-	if !data.isCloudPublic() {
+	if data.isCloudPrivate() {
 		return nil
 	}
 
