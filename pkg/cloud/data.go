@@ -284,9 +284,8 @@ func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool)
 			return nil, err
 		}
 
-		if hasCloudRole(inst.info.CloudInfo.Roles, "none") {
-			inst.roles = []string{"compute_node"}
-			inst.provision = strconv.FormatBool(false)
+		if hasCloudRole(inst.info.CloudInfo.Roles, "bare_node") {
+			inst.roles = []string{"bare_node"}
 		}
 	}
 

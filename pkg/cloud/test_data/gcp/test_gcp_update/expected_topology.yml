@@ -32,8 +32,8 @@
           instances:
             - name: cloud_node_comp_vpc2
               roles:
-                - compute_node
-              provision: false
+                - bare_node
+              provision: true
               username: redhat
               os: rhel7
               instance_type: n1-standard-1
