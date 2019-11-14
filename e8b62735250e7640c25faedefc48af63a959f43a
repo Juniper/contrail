@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "83a5cbdc_bad1d636",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:29:04Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3210fbfa_35e7fab2",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "77e216bc_681c5915",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 7
@@ -104,6 +122,24 @@
       "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7ef3b8c8_98824614",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:29:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f23d6f8f_0c4974e6",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -154,6 +190,30 @@
     },
     {
       "key": {
+        "uuid": "d471350b_39f40a8c",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 633,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:29:04Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "16f6256e_ec5e8390",
+      "range": {
+        "startLine": 586,
+        "startChar": 1,
+        "endLine": 633,
+        "endChar": 2
+      },
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "72837506_13d53f8c",
         "filename": "pkg/proxy/middleware.go",
         "patchSetId": 7
@@ -186,6 +246,24 @@
       "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "32ca6a47_3293a105",
+        "filename": "pkg/proxy/middleware.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:29:04Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5cf6b19d_d7330419",
+      "revId": "e8b62735250e7640c25faedefc48af63a959f43a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
