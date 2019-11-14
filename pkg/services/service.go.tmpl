@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	types "github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -23,6 +24,7 @@ const xRequestIDHeader = "X-Request-Id"
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 	{{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
+	FieldMask types.FieldMask `json:"field_mask"`
 }
 
 // RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
@@ -93,7 +95,8 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 			parentFQName := model.FQName[:l-1]
 			metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{Type: model.ParentType, FQName: parentFQName})
 			if err != nil {
-				return nil, errutil.ErrorBadRequestf("no parent for {{ schema.JSONSchema.GoName }} found by FQName=(%v): %v", parentFQName, err)			}
+				return nil, errutil.ErrorBadRequestf("no parent for {{ schema.JSONSchema.GoName }} found by FQName=(%v): %v", parentFQName, err)
+			}
 			model.ParentUUID = metadata.UUID
 		}
 	}
@@ -179,11 +182,18 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
 	model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
 	model.UUID = c.Param("id")
+	var fm types.FieldMask
+	if request.FieldMask.Paths != nil {
+		fm = request.FieldMask
+	} else {
+		fm = basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }})
+	}
+
 	response, err := service.Update{{ schema.JSONSchema.GoName }}(
 		ctx,
 		&Update{{ schema.JSONSchema.GoName }}Request{
 			{{ schema.JSONSchema.GoName }}: model,
-			FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+			FieldMask: fm,
 		},
 	)
 	if err != nil {
