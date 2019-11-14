@@ -16,6 +16,24 @@
       "revId": "2605b110320a2110e05c215cc920e6f8ee7096e5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0b089a10_673bea6e",
+        "filename": "pkg/proxy/middleware.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-14T15:13:18Z",
+      "side": 1,
+      "message": "Removed usage of Clone() method",
+      "parentUuid": "e7ca677f_b4f26706",
+      "revId": "2605b110320a2110e05c215cc920e6f8ee7096e5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
