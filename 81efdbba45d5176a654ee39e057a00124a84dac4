@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "23c72f95_0b5eaa9b",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-14T16:38:35Z",
+      "side": 1,
+      "message": "As discussed with Michal offline, there shouldn\u0027t be any clusters with a swift endpoint AND non-keystone authentication, so no change is necessary here.",
+      "parentUuid": "827a9cd5_d53ace06",
+      "range": {
+        "startLine": 175,
+        "startChar": 1,
+        "endLine": 176,
+        "endChar": 94
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "98a97c5a_ab6fa5bb",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 11
