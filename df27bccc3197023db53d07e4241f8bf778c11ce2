@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0569ca60_d3d0dfeb",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:07:15Z",
+      "side": 1,
+      "message": "That\u0027s nice",
+      "revId": "df27bccc3197023db53d07e4241f8bf778c11ce2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "37b1858d_630f2562",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 12
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:07:15Z",
+      "side": 1,
+      "message": "You can merge L47-48 with this.",
+      "revId": "df27bccc3197023db53d07e4241f8bf778c11ce2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

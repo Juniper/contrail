@@ -201,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "b90b6bee_e38e339b",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 11
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-14T15:07:15Z",
+      "side": 1,
+      "message": "If you want to have a common suffix then introduce the subobject like dynamic_proxy (or proxy, I think dynamic is implicit here because we have no other proxy). That way we could keep the yaml keys shorter at least.",
+      "parentUuid": "bcff6f3c_c9ebbf52",
+      "range": {
+        "startLine": 48,
+        "startChar": 2,
+        "endLine": 49,
+        "endChar": 54
+      },
+      "revId": "81efdbba45d5176a654ee39e057a00124a84dac4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bab9d2e6_85289058",
         "filename": "sample/test_config.yml",
         "patchSetId": 11
