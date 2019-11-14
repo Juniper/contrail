@@ -16,6 +16,24 @@
       "revId": "65ea274694efb4ae75fb257da040b63c680fed24",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5efc339_ab93a631",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 699,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-14T14:31:11Z",
+      "side": 0,
+      "message": "Yes, this role isn\u0027t used anymore. I will add explanation to the commit message.",
+      "parentUuid": "b59268c7_7b0e045a",
+      "revId": "65ea274694efb4ae75fb257da040b63c680fed24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
