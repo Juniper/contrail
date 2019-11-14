@@ -326,6 +326,13 @@ workflow:
     expected:
     - 404
 
+- name: check that the VN has been deleted
+  request:
+    path: /virtual-network/27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+    method: GET
+    expected:
+    - 404
+
 - name: check that the "unrelated" floating IP is not deleted
   request:
     path: /floating-ip/3539dc03-7f66-448e-960c-7b8b86928006
