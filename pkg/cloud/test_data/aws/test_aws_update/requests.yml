@@ -87,7 +87,7 @@ test_data:
       operating_system: rhel7
       instance_type: t2.xlarge
       roles:
-        - none
+        - bare_node
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_vpc2_uuid
     cloud_security_group_refs:
