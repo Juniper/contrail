@@ -5,8 +5,10 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -76,6 +78,17 @@ func (r List{{ name }}Response) Detailed() *List{{ name }}DetailedResponse {
 		}
 	}
 	return &res
+}
+
+func (r List{{ name }}Response) FieldsApplied(fm types.FieldMask) interface{} {
+	m := map[string][]map[string]interface{}{
+		"{{ plural }}":[]map[string]interface{}{},
+	}
+	for _, val := range r.Get{{ name }}s() {
+		obj := basemodels.ApplyFieldMask(val.ToMap(), fm)
+		m["{{ plural }}"] = append(m["{{ plural }}"], obj)
+	}
+	return m
 }
 
 func (r List{{ name}}Response) Count() interface{} {
