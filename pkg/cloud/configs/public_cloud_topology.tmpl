@@ -117,7 +117,7 @@
                 - {{ role }}
                 {% endif %}
               {% endfor %}
-              provision: {{ instance.provision|default:true }}
+              provision: {{ instance.provision }}
               username: {{ instance.username }}
               os: {{ instance.info.CloudInfo.OperatingSystem }}
               instance_type: {{ instance.info.CloudInfo.InstanceType }}
