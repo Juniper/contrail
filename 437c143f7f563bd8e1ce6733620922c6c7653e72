@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6192c14f_fb36e9bc",
+        "filename": "pkg/cloud/configs/authorized_registries.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-15T15:27:28Z",
+      "side": 1,
+      "message": "There is also authorized.registries.tmpl within cluster package. It should be removed as well.",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a03510c_42aacc3f",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-15T15:27:28Z",
+      "side": 1,
+      "message": "Unfortunately there is a second secret.tmpl in repository which belongs to cluster package.\npkg/deploy/cluster/templates/secret.tmpl\nThis change should appear there too.",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b628a4ad_73060c17",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-15T15:27:28Z",
+      "side": 1,
+      "message": "Remove redundant space.",
+      "range": {
+        "startLine": 11,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 44
+      },
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
