@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "83df0c68_92209ff1",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 438,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-15T15:17:07Z",
+      "side": 1,
+      "message": "There is no need for asserting this twice. Instead of returning boolean you can just return error and then wrap the errors. For example:\n\nif err :\u003d fileutil.LoadFile(actualFilePath, \u0026actualYaml); err !\u003d nil) {\n\treturn errors.Wrapf(err, \"failed read yaml from %s\", actualFilePath)\n}\n\nAnd then instead of performing assert.Truef you can assert.NoErrorf\nassert.NoErrorf(t, assertYamlFileEqual(t, expectedCmdFile, executedCommandsPath(cloudUUID)),\n\t\t\"Expected list of create commands are not executed\")\n\nThat way you won\u0027t lose your msg about \u0027failed read yaml\u0027 and you won\u0027t perform double assertion.",
+      "range": {
+        "startLine": 423,
+        "startChar": 0,
+        "endLine": 438,
+        "endChar": 1
+      },
+      "revId": "b545aa63f64459a8a06d06e27bd734212eb3faaa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
