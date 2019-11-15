@@ -449,6 +449,29 @@
     },
     {
       "key": {
+        "uuid": "df4a58f2_9b33411a",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 326,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-15T17:09:35Z",
+      "side": 1,
+      "message": "What about moving this to deploy() so that reporting the status is consistently done only there?",
+      "range": {
+        "startLine": 322,
+        "startChar": 1,
+        "endLine": 326,
+        "endChar": 2
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ebfb6bee_71600a22",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 11
