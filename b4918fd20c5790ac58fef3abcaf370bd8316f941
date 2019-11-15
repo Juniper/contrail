@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1bd75ced_c507fc05",
+        "filename": "pkg/cloud/test_data/aws/expected_secret.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-15T14:09:18Z",
+      "side": 0,
+      "message": "This change will be removed after https://review.opencontrail.org/c/Juniper/contrail/+/55300",
+      "revId": "b4918fd20c5790ac58fef3abcaf370bd8316f941",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7800f7de_ae474c2d",
+        "filename": "pkg/cloud/test_data/azure/expected_secret.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-15T14:09:18Z",
+      "side": 0,
+      "message": "This change will be removed after https://review.opencontrail.org/c/Juniper/contrail/+/55300",
+      "revId": "b4918fd20c5790ac58fef3abcaf370bd8316f941",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8a4c9c25_00bbe3d0",
+        "filename": "pkg/cloud/test_data/gcp/expected_secret.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-15T14:09:18Z",
+      "side": 0,
+      "message": "This change will be removed after https://review.opencontrail.org/c/Juniper/contrail/+/55300\nonly to pass UT.",
+      "revId": "b4918fd20c5790ac58fef3abcaf370bd8316f941",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
