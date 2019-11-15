@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "99dff3f4_c4e8a4c2",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-15T17:29:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bf185ddd_8031ef5a",
+      "revId": "00cff0ad4c8fcf2d4c08176fa0910bd128d196fe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "174450ae_24240847",
         "filename": "pkg/apisrv/test_data/test_sync.yml",
         "patchSetId": 5
@@ -33,6 +51,24 @@
       "revId": "00cff0ad4c8fcf2d4c08176fa0910bd128d196fe",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2aeb8864_ba02ef0f",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 5
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-15T17:29:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "174450ae_24240847",
+      "revId": "00cff0ad4c8fcf2d4c08176fa0910bd128d196fe",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
