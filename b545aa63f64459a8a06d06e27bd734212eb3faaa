@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "309b6d2a_c843c5f1",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 423,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-15T16:15:40Z",
+      "side": 1,
+      "message": "Why use named return value?",
+      "range": {
+        "startLine": 423,
+        "startChar": 81,
+        "endLine": 423,
+        "endChar": 84
+      },
+      "revId": "b545aa63f64459a8a06d06e27bd734212eb3faaa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "83df0c68_92209ff1",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 1
