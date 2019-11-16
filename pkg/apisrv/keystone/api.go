@@ -74,11 +74,11 @@ func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
 	e.GET("/keystone/v3/auth/projects", keystone.ListProjectsAPI)
-	e.GET("/keystone/v3/auth/domains", keystone.listDomainsAPI)
+	e.GET("/keystone/v3/auth/domains", keystone.ListDomainsAPI)
 
 	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
 	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
-	e.GET("/keystone/v3/domains", keystone.listDomainsAPI)
+	e.GET("/keystone/v3/domains", keystone.ListDomainsAPI)
 
 	return keystone, nil
 }
@@ -107,8 +107,8 @@ func (k *Keystone) GetProjectAPI(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, nil)
 }
 
-//listDomainsAPI is an API handler to list domains.
-func (k *Keystone) listDomainsAPI(c echo.Context) error {
+//ListDomainsAPI is an API handler to list domains.
+func (k *Keystone) ListDomainsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	ke := getKeystoneEndpoints(clusterID, k.endpointStore)
 	if len(ke) > 0 {

@@ -30,6 +30,7 @@ func GetAuthSkipPaths() ([]string, error) {
 		"/proxy/",
 		"/keystone/v3/projects",
 		"/keystone/v3/auth/projects", // TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
+		"/keystone/v3/auth/domains", // TODO: Remove this after UI change, since "/keystone/v3/domains" is a keystone endpoint
 		"/v3/auth/tokens",
 	}
 	// skip auth for all the static fileutil
