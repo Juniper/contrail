@@ -83,6 +83,30 @@
     },
     {
       "key": {
+        "uuid": "615a34d3_5fc26093",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-18T10:08:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3242f1f7_2abc7686",
+      "range": {
+        "startLine": 11,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 44
+      },
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9c9b7fbf_39a1eec0",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -94,6 +118,30 @@
       "writtenOn": "2019-11-15T15:44:55Z",
       "side": 1,
       "message": "Please change name of the variable to go along https://github.com/golang/go/wiki/CodeReviewComments#variable-names, usual naming convention for context is ctx.\nIn this case name of variable additionally shadows name of imported package.",
+      "range": {
+        "startLine": 56,
+        "startChar": 1,
+        "endLine": 56,
+        "endChar": 8
+      },
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f316e042_f16c111d",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-18T10:08:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9c9b7fbf_39a1eec0",
       "range": {
         "startLine": 56,
         "startChar": 1,
@@ -123,6 +171,24 @@
     },
     {
       "key": {
+        "uuid": "c6a4a57c_ffd99a37",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-18T10:08:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "29cd0cd0_bcfb779b",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8cb87346_cf680301",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -134,6 +200,24 @@
       "writtenOn": "2019-11-15T15:44:55Z",
       "side": 1,
       "message": "Redundant variable",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6311927c_dbfa5cd5",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-18T10:08:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8cb87346_cf680301",
       "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
