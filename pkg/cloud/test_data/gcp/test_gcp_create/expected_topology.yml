@@ -22,6 +22,9 @@
                 ports:
                   - 22
                   - 443
+            - name: default-wan-vrrp-virtual_cloud_uuid
+              allow:
+                protocol: 112
           firewalls_internal:
             - name: cloud_security_group_rule
               allow:
