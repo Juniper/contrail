@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "77681f48_e3059882",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 426,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-18T14:18:36Z",
+      "side": 1,
+      "message": "use:\nif err :\u003d fileutil.LoadFile(actualFilePath, \u0026actualYAML); err !\u003d nil {",
+      "range": {
+        "startLine": 423,
+        "startChar": 1,
+        "endLine": 426,
+        "endChar": 2
+      },
+      "revId": "70b648b6d866680924b333b8d8b0bd6e0e5d01bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "56ab59b3_95251528",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 430,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-18T14:18:36Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 429,
+        "startChar": 1,
+        "endLine": 430,
+        "endChar": 16
+      },
+      "revId": "70b648b6d866680924b333b8d8b0bd6e0e5d01bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c77a1bc8_ec7ea6d9",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 437,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-18T14:18:36Z",
+      "side": 1,
+      "message": "Why do we return boolean value if we\u0027re not checking this later?",
+      "range": {
+        "startLine": 437,
+        "startChar": 1,
+        "endLine": 437,
+        "endChar": 12
+      },
+      "revId": "70b648b6d866680924b333b8d8b0bd6e0e5d01bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
