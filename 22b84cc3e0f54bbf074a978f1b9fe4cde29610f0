@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f3ea5ee7_3454656a",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:24:38Z",
+      "side": 1,
+      "message": "Nit: add spaces so style is consistent with whole file:\n {% if cluster.... Password %}",
+      "revId": "22b84cc3e0f54bbf074a978f1b9fe4cde29610f0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f7181cd_1d5b8177",
+        "filename": "pkg/deploy/cluster/templates/secret.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:24:38Z",
+      "side": 1,
+      "message": "Nit: add spaces so style is consistent with whole file:\n {% if cluster.... Password %}",
+      "revId": "22b84cc3e0f54bbf074a978f1b9fe4cde29610f0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
