@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "dd804b42_ad9621d2",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c2ea1854_5ab5bbc9",
+      "range": {
+        "startLine": 159,
+        "startChar": 50,
+        "endLine": 159,
+        "endChar": 54
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "69937557_881d1f7c",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -66,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "4a4a8378_49a56959",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "69937557_881d1f7c",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7b47e538_2576f4dd",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -77,6 +119,30 @@
       "writtenOn": "2019-11-14T12:03:03Z",
       "side": 1,
       "message": "Because they are all constant, why not declare them as a constant. You wouldn\u0027t be able to use filepath.Join, but you would avoid declaring unnecessary funcs.",
+      "range": {
+        "startLine": 179,
+        "startChar": 0,
+        "endLine": 213,
+        "endChar": 1
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "71549c03_74b97caa",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7b47e538_2576f4dd",
       "range": {
         "startLine": 179,
         "startChar": 0,
@@ -112,6 +178,30 @@
     },
     {
       "key": {
+        "uuid": "88adb5f7_6e21c1d1",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 332,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "139324ba_3fe265a5",
+      "range": {
+        "startLine": 313,
+        "startChar": 1,
+        "endLine": 332,
+        "endChar": 24
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4689ecac_8eac33a7",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -123,6 +213,30 @@
       "writtenOn": "2019-11-14T12:03:03Z",
       "side": 1,
       "message": "Please add newline here, this argument should be in the same level as []string.",
+      "range": {
+        "startLine": 435,
+        "startChar": 4,
+        "endLine": 435,
+        "endChar": 5
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "688475f9_57e92a53",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 435,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4689ecac_8eac33a7",
       "range": {
         "startLine": 435,
         "startChar": 4,
@@ -158,6 +272,30 @@
     },
     {
       "key": {
+        "uuid": "5599d579_e8629bd5",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 452,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "573af6ca_c3b2d3fa",
+      "range": {
+        "startLine": 452,
+        "startChar": 4,
+        "endLine": 452,
+        "endChar": 5
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "08b96dce_6f3f3bcc",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -169,6 +307,30 @@
       "writtenOn": "2019-11-14T09:20:29Z",
       "side": 1,
       "message": "Nitpick: If new lines are not important use `` raw string.",
+      "range": {
+        "startLine": 459,
+        "startChar": 23,
+        "endLine": 459,
+        "endChar": 62
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7c013563_3529bba8",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "08b96dce_6f3f3bcc",
       "range": {
         "startLine": 459,
         "startChar": 23,
@@ -198,6 +360,24 @@
     },
     {
       "key": {
+        "uuid": "dfed2354_1f7243c3",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 464,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0f897de2_a3f43784",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5acad18c_ce54cfb5",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -209,6 +389,24 @@
       "writtenOn": "2019-11-12T14:22:24Z",
       "side": 1,
       "message": "Is this comment necessary?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "366a911e_9793d5b6",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5acad18c_ce54cfb5",
       "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -261,6 +459,54 @@
     },
     {
       "key": {
+        "uuid": "b15aa9a2_be156b1f",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fddc7e1e_31fb0f2d",
+      "range": {
+        "startLine": 819,
+        "startChar": 67,
+        "endLine": 819,
+        "endChar": 78
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c2622fa_b7a6e40b",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b229635e_9ec7b8a6",
+      "range": {
+        "startLine": 819,
+        "startChar": 8,
+        "endLine": 819,
+        "endChar": 15
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "20be7cec_60091c09",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -272,6 +518,30 @@
       "writtenOn": "2019-11-12T14:22:24Z",
       "side": 1,
       "message": "`Vcenter`",
+      "range": {
+        "startLine": 822,
+        "startChar": 41,
+        "endLine": 822,
+        "endChar": 48
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7b55f31_e79c6b1c",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 822,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "20be7cec_60091c09",
       "range": {
         "startLine": 822,
         "startChar": 41,
@@ -301,6 +571,24 @@
     },
     {
       "key": {
+        "uuid": "36ed2bea_9bfa91fc",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 962,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "988e116d_42d1036b",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5952c543_dad21be2",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 11
@@ -318,6 +606,24 @@
     },
     {
       "key": {
+        "uuid": "12bf687d_df64fc5b",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 986,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5952c543_dad21be2",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4199925d_8d79baad",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 11
@@ -329,6 +635,24 @@
       "writtenOn": "2019-11-12T14:22:24Z",
       "side": 1,
       "message": "Is this relevant now?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f59b438_e07105ee",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4199925d_8d79baad",
       "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -358,6 +682,30 @@
     },
     {
       "key": {
+        "uuid": "f2aee018_c51b82fb",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a3601fe9_aecf11f8",
+      "range": {
+        "startLine": 51,
+        "startChar": 39,
+        "endLine": 51,
+        "endChar": 69
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dbe5c956_26b8317c",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 11
@@ -369,6 +717,24 @@
       "writtenOn": "2019-11-12T14:22:24Z",
       "side": 1,
       "message": "Put functions below their usage.",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d3fb4471_647e9713",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dbe5c956_26b8317c",
       "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -398,6 +764,30 @@
     },
     {
       "key": {
+        "uuid": "57fcf675_3af3c321",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "71dc4a79_43f52805",
+      "range": {
+        "startLine": 246,
+        "startChar": 2,
+        "endLine": 246,
+        "endChar": 77
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "554d7023_e9e79996",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 11
@@ -409,6 +799,24 @@
       "writtenOn": "2019-11-13T17:39:46Z",
       "side": 1,
       "message": "Why was the defer from https://review.opencontrail.org/c/Juniper/contrail/+/53650/11/pkg/deploy/cluster/multi_cloud.go#b316 removed?",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e48198bb_693f74d7",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Because it is called in main deploy function anyway for all actions performed on cluster. https://review.opencontrail.org/c/Juniper/contrail/+/53650/11/pkg/deploy/cluster/multi_cloud.go#78",
+      "parentUuid": "554d7023_e9e79996",
       "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -432,6 +840,24 @@
     },
     {
       "key": {
+        "uuid": "1936fddf_bbe68228",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1b82bc1e_138c0daf",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e85e99c3_afe937c8",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 11
@@ -449,6 +875,24 @@
     },
     {
       "key": {
+        "uuid": "9eb2104d_d713f37c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e85e99c3_afe937c8",
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "df4a58f2_9b33411a",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 11
@@ -460,6 +904,30 @@
       "writtenOn": "2019-11-15T17:09:35Z",
       "side": 1,
       "message": "What about moving this to deploy() so that reporting the status is consistently done only there?",
+      "range": {
+        "startLine": 322,
+        "startChar": 1,
+        "endLine": 326,
+        "endChar": 2
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "efc3446c_767a5edc",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 326,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "df4a58f2_9b33411a",
       "range": {
         "startLine": 322,
         "startChar": 1,
@@ -495,6 +963,30 @@
     },
     {
       "key": {
+        "uuid": "c5145362_8af08ddc",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ebfb6bee_71600a22",
+      "range": {
+        "startLine": 380,
+        "startChar": 32,
+        "endLine": 380,
+        "endChar": 45
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ab098668_fb401675",
         "filename": "pkg/fileutil/template/template.go",
         "patchSetId": 11
@@ -506,6 +998,30 @@
       "writtenOn": "2019-11-14T12:03:03Z",
       "side": 1,
       "message": "ctx is usually used for context.Context, please change it to something more explicit.",
+      "range": {
+        "startLine": 39,
+        "startChar": 47,
+        "endLine": 39,
+        "endChar": 50
+      },
+      "revId": "8a72ffbe6a32a9b2305281c5249c847d995f39a0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c07ba63e_3efa14af",
+        "filename": "pkg/fileutil/template/template.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ab098668_fb401675",
       "range": {
         "startLine": 39,
         "startChar": 47,

@@ -16,6 +16,24 @@
       "revId": "b4918fd20c5790ac58fef3abcaf370bd8316f941",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11ddb588_27e60b0c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 490,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T14:06:17Z",
+      "side": 0,
+      "message": "Yes, it was left after some changes regarding generation of secret.yml. Cloud secret file is always deleted before cloud operations making append this unnecessary.",
+      "parentUuid": "00b1c0ca_91201982",
+      "revId": "b4918fd20c5790ac58fef3abcaf370bd8316f941",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
