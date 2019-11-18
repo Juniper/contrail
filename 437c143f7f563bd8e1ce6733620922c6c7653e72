@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "f2896ae0_5d372e9f",
+        "filename": "pkg/cloud/configs/authorized_registries.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-18T14:03:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f0da1b77_e85bf0d6",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6a03510c_42aacc3f",
         "filename": "pkg/cloud/configs/secret.tmpl",
         "patchSetId": 1
@@ -69,6 +87,24 @@
       "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87a6046b_eb5ae8bb",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-18T14:03:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "fda4ad96_fc8b64ac",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
