@@ -107,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "b1efef05_95619a5f",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T11:38:10Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "615a34d3_5fc26093",
+      "range": {
+        "startLine": 11,
+        "startChar": 43,
+        "endLine": 11,
+        "endChar": 44
+      },
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9c9b7fbf_39a1eec0",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -154,6 +178,30 @@
     },
     {
       "key": {
+        "uuid": "3a11eb5a_f007dc24",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T11:38:10Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f316e042_f16c111d",
+      "range": {
+        "startLine": 56,
+        "startChar": 1,
+        "endLine": 56,
+        "endChar": 8
+      },
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "29cd0cd0_bcfb779b",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -189,6 +237,24 @@
     },
     {
       "key": {
+        "uuid": "afa2963f_25a8dda0",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T11:38:10Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c6a4a57c_ffd99a37",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8cb87346_cf680301",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -221,6 +287,24 @@
       "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a152c570_3f5d3613",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-18T11:38:10Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6311927c_dbfa5cd5",
+      "revId": "437c143f7f563bd8e1ce6733620922c6c7653e72",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
