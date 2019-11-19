@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a6ab6369_fa14824f",
+        "filename": "pkg/services/test_data/test_fieldmask.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-19T17:23:17Z",
+      "side": 1,
+      "message": "I\u0027m afraid that this hurts readability a bit. It isn\u0027t clear instantly what is the expected result. Also changing one test case is harder if we do this that way.",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 19
+      },
+      "revId": "1b815f6f730f8abe884b6c7a4a322f3c18525109",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5db9e937_54f6548a",
+        "filename": "pkg/services/test_data/test_fieldmask.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-19T17:23:17Z",
+      "side": 1,
+      "message": "Isn\u0027t display_name `nil` in this case? If we want to pass empty value I think we should pass `\"\"` explicitly.",
+      "revId": "1b815f6f730f8abe884b6c7a4a322f3c18525109",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
