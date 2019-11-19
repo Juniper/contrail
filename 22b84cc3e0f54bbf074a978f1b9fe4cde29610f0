@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "f3f62c4d_8c67c36c",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-19T16:28:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7b2c2df7_967068a0",
+      "revId": "22b84cc3e0f54bbf074a978f1b9fe4cde29610f0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3f7181cd_1d5b8177",
         "filename": "pkg/deploy/cluster/templates/secret.tmpl",
         "patchSetId": 5
@@ -69,6 +87,24 @@
       "revId": "22b84cc3e0f54bbf074a978f1b9fe4cde29610f0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "584f1e19_0f984247",
+        "filename": "pkg/deploy/cluster/templates/secret.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-19T16:28:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70c580ac_771f5918",
+      "revId": "22b84cc3e0f54bbf074a978f1b9fe4cde29610f0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
