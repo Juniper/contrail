@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "23cde06b_e0de5990",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-19T12:25:58Z",
+      "side": 1,
+      "message": "I\u0027d keep it close to its usage.",
+      "revId": "0eb88b4b48ef22afc253f26743260c8a3d099ca0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f51f5a3_f6bc4957",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-19T12:25:58Z",
+      "side": 1,
+      "message": "IMO, shortening `run` to `r` in a function name is not worth it.",
+      "range": {
+        "startLine": 302,
+        "startChar": 5,
+        "endLine": 302,
+        "endChar": 6
+      },
+      "revId": "0eb88b4b48ef22afc253f26743260c8a3d099ca0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
