@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1e0ec445_6d50ed93",
+        "filename": "Makefile",
+        "patchSetId": 4
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-19T11:43:17Z",
+      "side": 1,
+      "message": "Could you add dependency to install_contrailutil target instead of adding that line?",
+      "revId": "bcc2b0115f3024f85eeafb08132bdc834d725a0f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7f34118b_92868a12",
+        "filename": "Makefile",
+        "patchSetId": 4
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-19T11:43:17Z",
+      "side": 1,
+      "message": "Could you get rid of \"go run\" here. It saves 4 seconds on my machine",
+      "revId": "bcc2b0115f3024f85eeafb08132bdc834d725a0f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
