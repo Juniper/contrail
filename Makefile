@@ -34,8 +34,9 @@ lint: ## Run linters on the source code
 nocovtest: COVERPROFILE = none
 nocovtest: test
 
-test: ## Run tests with coverage
-	./tools/test.sh $(COVERPROFILE)
+test: FILTER ?= ""
+test: ## Run tests with coverage. To run tests only form selected packages set FILTER variable with comma-separated packages names ex: FILTER="foo,bar"
+	./tools/test.sh "$(FILTER)" $(COVERPROFILE)
 
 build: ## Build all binaries without producing output
 	go build ./cmd/...

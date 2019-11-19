@@ -6,7 +6,8 @@ set -o pipefail
 
 TOP=$(cd "$(dirname "$0")" && cd ../ && pwd)
 
-COVERPROFILE=${1:--coverprofile=profile.tmp}
+FILTER="$1"
+COVERPROFILE=${2:--coverprofile=profile.tmp}
 COVERMODE='-covermode=atomic'
 [ "$COVERPROFILE" = "none" ] && { COVERPROFILE=''; COVERMODE=''; }
 [ ! -z "$COVERPROFILE" ] && echo "mode: count" > "$TOP/profile.cov"
@@ -15,7 +16,16 @@ COVERMODE='-covermode=atomic'
 # either inside Go package (.TestGoFiles) or outside Go package (.XTestGoFiles, e.g. in "foo_test" package).
 function test_directories {
 	cd "$TOP"
-	go list -f '{{if (or .TestGoFiles .XTestGoFiles)}}{{.Dir}}{{end}}' ./...
+	go list -f '{{if (or .TestGoFiles .XTestGoFiles)}}{{.Dir}} {{.Name}}{{end}}' ./... | awk '
+	BEGIN{
+		split("'$FILTER'", tmp, ",")
+		for(i in tmp)
+			filter[tmp[i]]=1
+	}
+	{
+		if(!length(filter) || $2 in filter)
+			print $1
+	}'
 }
 
 for dir in $(test_directories)
