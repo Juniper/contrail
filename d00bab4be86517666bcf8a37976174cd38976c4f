@@ -371,6 +371,24 @@
       "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f25bac8_f116ce77",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T17:22:57Z",
+      "side": 1,
+      "message": "OK, then the change is fine.",
+      "parentUuid": "cf1ea454_1b82eef8",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
