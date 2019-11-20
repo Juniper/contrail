@@ -39,6 +39,24 @@
       "revId": "1b815f6f730f8abe884b6c7a4a322f3c18525109",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "be3c0da6_da9e9c2a",
+        "filename": "pkg/services/test_data/test_fieldmask.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:27:12Z",
+      "side": 1,
+      "message": "Please respond.",
+      "parentUuid": "5db9e937_54f6548a",
+      "revId": "1b815f6f730f8abe884b6c7a4a322f3c18525109",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
