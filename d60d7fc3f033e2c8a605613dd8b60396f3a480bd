@@ -383,6 +383,24 @@
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4208fa56_73a0cdbe",
+        "filename": "pkg/services/event_encoding.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 408,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T15:06:39Z",
+      "side": 1,
+      "message": "After talking with Witaut, I understood what he meant and I agree that constructing an object (`\u0026Event{...}`) even if we receive error can be troublesome.",
+      "parentUuid": "c97571d5_63353852",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
