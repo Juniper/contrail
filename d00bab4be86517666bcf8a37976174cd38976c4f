@@ -285,6 +285,24 @@
     },
     {
       "key": {
+        "uuid": "70d8907b_29c5ee35",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T14:33:59Z",
+      "side": 1,
+      "message": "Indeed, my bad.",
+      "parentUuid": "19cc3913_4f191f50",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f326dc7f_fa55cc10",
         "filename": "pkg/fileutil/fileutil.go",
         "patchSetId": 7
@@ -314,6 +332,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "f326dc7f_fa55cc10",
+      "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "63e2f700_9084db30",
+        "filename": "pkg/fileutil/fileutil.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T14:33:59Z",
+      "side": 1,
+      "message": "Now I see that this was originally done to preserve the destination file\u0027s permissions. Is that functionality important to keep?",
+      "parentUuid": "29c5abb9_ef966087",
       "revId": "d00bab4be86517666bcf8a37976174cd38976c4f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
