@@ -1,0 +1,208 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ae6c72e_4aff6f10",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "I guess this is redundant.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "443b4847_0ef555fa",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "I think it would be nice to move the `contrail_version` definition in the test step. That would make it clearly visible in the test step. You can use yaml extend notation for that (`\u003c\u003c`).\nExample:\n\n resources:\n  - kind: contrail_cluster\n    data:\n     \u003c\u003c: *version_string_cluster\n     contrail_version: \"1911.10\"\n    operation: CREATE\n\nAfter that we could merge version_string_cluster and version_float_cluster objects, simplifying the test setup.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "60b9dd0d_25817094",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Optional: This step fails, so it does not produce any side effects. Because of this, we could reorder those test steps to use only one object uuid.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b1d3ebbd_c8e8d393",
+        "filename": "pkg/apisrv/test_data/test_validation.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Ditto, please take a look at test_sync.yaml comments.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "993013f0_b7dadc72",
+        "filename": "pkg/db/basedb/db_share.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Please use `:\u003d` notation instead of `var x \u003d`",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26c9635e_b02cff9f",
+        "filename": "pkg/db/basedb/db_share.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "You can use `:\u003d` notation here. That way you could remove L42 because it allows err redeclaration.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f4181c7_124279fc",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 627,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Why not `stringValue, err :\u003d`? Our codebase mostly sticks to rules:\n\n\u003e - When declaring a variable without initialisation, use the var syntax.\n\u003e - When declaring and explicitly initialising a variable, use :\u003d.\n\nPlease refer to https://dave.cheney.net/practical-go/presentations/qcon-china.html#_use_a_consistent_declaration_style for explanation.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6811abe3_5879570b",
+        "filename": "pkg/format/cast.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Please don\u0027t use `var x \u003d` notation. Please keep the `:\u003d`, that way we avoid unnecessary `var` block at the beginning of each function.\nMore info in pkg/db/basedb/query_builder.go:L627 comment.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "058ec9e3_db101fd3",
+        "filename": "pkg/format/cast.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Ditto, pkg/db/basedb/query_builder.go:L627",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "25a55519_c2c7be72",
+        "filename": "pkg/models/codec.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "You can use if+initialization notation:\n\n if err :\u003d output.ApplyMap(updateData); err !\u003d nil {",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd32905a_719dfde3",
+        "filename": "pkg/models/json_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Ditto, pkg/models/codec.go:L92",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a72cbfea_c9191f67",
+        "filename": "pkg/models/virtual_machine_interface_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:51:36Z",
+      "side": 1,
+      "message": "Please use `:\u003d`",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
