@@ -235,6 +235,24 @@
     },
     {
       "key": {
+        "uuid": "cf1dc090_001cd03f",
+        "filename": "pkg/format/map.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T14:02:47Z",
+      "side": 1,
+      "message": "I think this should be rewritten as:\n\n if i64, err :\u003d InterfaceToInt64E(i); err \u003d\u003d nil {\n  v.SetInt(i64)\n }\n\nThe indent-error-flow makes the code more complex here and for me it isn\u0027t clear if it applies here.",
+      "parentUuid": "92fbe348_94057c66",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "25a55519_c2c7be72",
         "filename": "pkg/models/codec.go",
         "patchSetId": 13
@@ -292,6 +310,30 @@
     },
     {
       "key": {
+        "uuid": "037a34d4_b501e071",
+        "filename": "pkg/models/model.go.tmpl",
+        "patchSetId": 13
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T14:02:47Z",
+      "side": 1,
+      "message": "+1, IMO the err is declared too early. It can be initialized using `:\u003d` whenever it\u0027s required.",
+      "parentUuid": "41cfc1b4_478498be",
+      "range": {
+        "startLine": 146,
+        "startChar": 12,
+        "endLine": 146,
+        "endChar": 15
+      },
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a72cbfea_c9191f67",
         "filename": "pkg/models/virtual_machine_interface_test.go",
         "patchSetId": 13
@@ -320,6 +362,24 @@
       "writtenOn": "2019-11-20T13:14:41Z",
       "side": 1,
       "message": "Returning a result AND an error makes code hard to understand and is usually avoided.\nI understand that you\u0027re trying to preserve the current behavior (e.g. of usages that don\u0027t check the error), so add a TODO to `return nil, err` on error instead.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c97571d5_63353852",
+        "filename": "pkg/services/event_encoding.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 408,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T14:02:47Z",
+      "side": 1,
+      "message": "\u003e Returning a result AND an error makes code hard to understand and is usually avoided.\n\nI disagree with this statement. If the only possible flow after getting the error is return, then we could return err immediately. However I agree that we should add if statement here, because we will call r.SetFielMask on an object, even if we got an error.",
+      "parentUuid": "d9564baf_05d9c0cc",
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
