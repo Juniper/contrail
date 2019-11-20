@@ -105,6 +105,24 @@
       "revId": "9baff621b5f7ccf0a952c0491855eb6444e7c4ff",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02edd9e2_211ae5f7",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 435,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-20T13:05:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "997f400c_1d6996dd",
+      "revId": "9baff621b5f7ccf0a952c0491855eb6444e7c4ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
