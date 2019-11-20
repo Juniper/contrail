@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "37d26ac8_4872205c",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T13:14:41Z",
+      "side": 1,
+      "message": "Keep the current formatting convention: lists should not be indented more than necessary (\"- \" counts as indentation in YAML).",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9ae6c72e_4aff6f10",
         "filename": "pkg/apisrv/test_data/test_sync.yml",
         "patchSetId": 13
@@ -87,6 +104,29 @@
     },
     {
       "key": {
+        "uuid": "a5e34dbb_cbdcd566",
+        "filename": "pkg/db/basedb/db_share.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T13:14:41Z",
+      "side": 1,
+      "message": "`tenant`",
+      "range": {
+        "startLine": 38,
+        "startChar": 6,
+        "endLine": 38,
+        "endChar": 9
+      },
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "26c9635e_b02cff9f",
         "filename": "pkg/db/basedb/db_share.go",
         "patchSetId": 13
@@ -98,6 +138,29 @@
       "writtenOn": "2019-11-20T11:51:36Z",
       "side": 1,
       "message": "You can use `:\u003d` notation here. That way you could remove L42 because it allows err redeclaration.",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef878ec0_3831b517",
+        "filename": "pkg/db/basedb/db_share.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T13:14:41Z",
+      "side": 1,
+      "message": "`tenantAccess`",
+      "range": {
+        "startLine": 43,
+        "startChar": 2,
+        "endLine": 43,
+        "endChar": 3
+      },
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -155,6 +218,23 @@
     },
     {
       "key": {
+        "uuid": "92fbe348_94057c66",
+        "filename": "pkg/format/map.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T13:14:41Z",
+      "side": 1,
+      "message": "The convention is to have the error flow indented: https://github.com/golang/go/wiki/CodeReviewComments#indent-error-flow\nI\u0027d make this\n\nif err !\u003d nil {\n        return err\n}\nv.SetInt(i64)\n\n\u003cat the end of the function:\u003e\nreturn nil",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "25a55519_c2c7be72",
         "filename": "pkg/models/codec.go",
         "patchSetId": 13
@@ -189,6 +269,29 @@
     },
     {
       "key": {
+        "uuid": "41cfc1b4_478498be",
+        "filename": "pkg/models/model.go.tmpl",
+        "patchSetId": 13
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T13:14:41Z",
+      "side": 1,
+      "message": "Returning `nil` explicitly would be clearer.",
+      "range": {
+        "startLine": 146,
+        "startChar": 12,
+        "endLine": 146,
+        "endChar": 15
+      },
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a72cbfea_c9191f67",
         "filename": "pkg/models/virtual_machine_interface_test.go",
         "patchSetId": 13
@@ -200,6 +303,23 @@
       "writtenOn": "2019-11-20T11:51:36Z",
       "side": 1,
       "message": "Please use `:\u003d`",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9564baf_05d9c0cc",
+        "filename": "pkg/services/event_encoding.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 408,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-20T13:14:41Z",
+      "side": 1,
+      "message": "Returning a result AND an error makes code hard to understand and is usually avoided.\nI understand that you\u0027re trying to preserve the current behavior (e.g. of usages that don\u0027t check the error), so add a TODO to `return nil, err` on error instead.",
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
