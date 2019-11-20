@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "35ec998e_61659c61",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 430,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:26:27Z",
+      "side": 1,
+      "message": "Optional: there is a require package that does the same as assert, but also stops the test from executing. You can replace this if with:\n\n err :\u003d fileutil.LoadFile(...)\n require.NoError(err)\n\nOr even\n\n require.NoError(fileutil.LoadFile(...))",
+      "revId": "9baff621b5f7ccf0a952c0491855eb6444e7c4ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f261aa87_044354e2",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 435,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T11:26:27Z",
+      "side": 1,
+      "message": "testutil.AssertEqual already does the assertion - there is no need this Fail.",
+      "revId": "9baff621b5f7ccf0a952c0491855eb6444e7c4ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
