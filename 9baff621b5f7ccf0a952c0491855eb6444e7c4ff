@@ -51,6 +51,24 @@
       "revId": "9baff621b5f7ccf0a952c0491855eb6444e7c4ff",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7cea30b4_d1f2ea72",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 435,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-20T12:40:49Z",
+      "side": 1,
+      "message": "AFAIK \"information that compared yaml files are not equal\" is already in testutil.AssertEqual (https://github.com/Juniper/contrail/blob/master/pkg/testutil/assert.go#L120). If you feel that is not sufficient for any reason then please fix it there.\n\n\"add message provided by the caller of that assertYAMLFileEqual to add context\" is also supported by testutil.AssertEqual because it accepts final msg parameter. This should be used for caller provided message.\n\nIn my opinion, if you wanted to make this look like testify func, you shouldn\u0027t rely on testutil.AssertEqual. Above code causes 2 assertion fails that describe the same problem. I don\u0027t see a point for such redundancy.",
+      "parentUuid": "7cd880ab_4e34a3c7",
+      "revId": "9baff621b5f7ccf0a952c0491855eb6444e7c4ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
