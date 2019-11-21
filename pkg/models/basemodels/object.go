@@ -26,6 +26,6 @@ type Object interface {
 	RemoveChild(interface{})
 	RemoveReferences()
 	ToMap() map[string]interface{}
-	ApplyMap(map[string]interface{})
+	ApplyMap(map[string]interface{}) error
 	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
 }
