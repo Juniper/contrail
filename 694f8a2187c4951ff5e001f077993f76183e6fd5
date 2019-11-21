@@ -1,0 +1,1297 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e2e6a8b7_ec0528bf",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "You don\u0027t need to specify all those types above. They will be based on the last const type.\n\nconst (\n    x \u003d \"a\"\n    y \u003d \"b\"\n    z string \u003d \"c\"\n)",
+      "range": {
+        "startLine": 79,
+        "startChar": 25,
+        "endLine": 79,
+        "endChar": 37
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4066ca37_c02ad48b",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "you can just return subnetResp.GetCloudPrivateSubnet(), err",
+      "range": {
+        "startLine": 121,
+        "startChar": 1,
+        "endLine": 124,
+        "endChar": 47
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8e0d3f1c_b408bc80",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "???",
+      "range": {
+        "startLine": 158,
+        "startChar": 2,
+        "endLine": 160,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7900625_85b6b349",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "return instResp.GetNode(), err",
+      "range": {
+        "startLine": 178,
+        "startChar": 1,
+        "endLine": 181,
+        "endChar": 31
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a1151e7b_5ea0a94d",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "To decrease indentation I would go with:\n\nif instance.Type !\u003d \"\" {\n\treturn nil\n}\ninstance.Type \u003d \"private\"\n_, err :\u003d i.client.UpdateNode(i.ctx,\n\t\u0026services.UpdateNodeRequest{\n\t\tNode: instance,\n\t},\n)\nreturn err",
+      "range": {
+        "startLine": 185,
+        "startChar": 1,
+        "endLine": 194,
+        "endChar": 11
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2e3c178_3fc5fe7b",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Same as line 181",
+      "range": {
+        "startLine": 201,
+        "startChar": 1,
+        "endLine": 204,
+        "endChar": 40
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a026d8c3_75723599",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "This function seems pretty big. Try to extract some code out of it.",
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b6a6a07d_2aec7472",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant variable",
+      "range": {
+        "startLine": 237,
+        "startChar": 1,
+        "endLine": 237,
+        "endChar": 5
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "db0a0c24_364f746f",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 255,
+        "startChar": 2,
+        "endLine": 258,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da1f5cb8_8c8a8b29",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 265,
+        "startChar": 2,
+        "endLine": 268,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6cb1dff8_646e2e04",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 269,
+        "startChar": 2,
+        "endLine": 272,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f2af38af_f16de792",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 274,
+        "startChar": 3,
+        "endLine": 277,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac3c2636_3ca66024",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 282,
+        "startChar": 2,
+        "endLine": 285,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "46a5f6fd_fa47ed1d",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 287,
+        "startChar": 2,
+        "endLine": 290,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d26b9e51_8fc8aa17",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 299,
+        "startChar": 3,
+        "endLine": 302,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35a9bb31_ce5e9735",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Just above you have a part of code which runs only if v.parentRegion.parentProvider.parentCloud.isCloudPrivate().\n\nMove this check inside that part of the code so you won\u0027t have to check this statement once again:\n\nif inst.info.ContrailVrouterNodeBackRefs !\u003d nil {\n\terr \u003d inst.updateVrouterGW(computeRole, isDelRequest)\n\tif err !\u003d nil {\n\t\treturn nil, err\n\t}\n}",
+      "range": {
+        "startLine": 297,
+        "startChar": 1,
+        "endLine": 304,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "399486f7_23d3defe",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Default can be removed and instead of this the error message can be passed at return.\n\nreturn fmt.Errorf(\"instance %s operating system %s is not valid\",\n\t\t\ti.info.UUID, i.info.CloudInfo.OperatingSystem)",
+      "range": {
+        "startLine": 329,
+        "startChar": 1,
+        "endLine": 333,
+        "endChar": 11
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b3bc2c25_86c2cc31",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 341,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant variable.",
+      "range": {
+        "startLine": 341,
+        "startChar": 1,
+        "endLine": 341,
+        "endChar": 5
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4da45b72_4acb7e68",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 354,
+        "startChar": 1,
+        "endLine": 357,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a4c01b2_5ea10b6c",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "This error is not handled.",
+      "range": {
+        "startLine": 365,
+        "startChar": 31,
+        "endLine": 365,
+        "endChar": 34
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24e8114a_40d9ef35",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 373,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "I would start with\n\nif tor.info.GetAnnotations() \u003d\u003d nil {\n\treturn tor, nil\n}",
+      "range": {
+        "startLine": 358,
+        "startChar": 1,
+        "endLine": 373,
+        "endChar": 16
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e688077_5dda694e",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 395,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant variable",
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd1fceda_1ba35aca",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 419,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant variable",
+      "range": {
+        "startLine": 419,
+        "startChar": 1,
+        "endLine": 419,
+        "endChar": 5
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da233288_d3d3ce3d",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 431,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "same as line 181.",
+      "range": {
+        "startLine": 428,
+        "startChar": 1,
+        "endLine": 431,
+        "endChar": 43
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e566d1a3_eb0f15b9",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 512,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "???",
+      "range": {
+        "startLine": 510,
+        "startChar": 2,
+        "endLine": 512,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4ecdaff5_7b84ad5e",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 520,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant variable",
+      "range": {
+        "startLine": 520,
+        "startChar": 1,
+        "endLine": 520,
+        "endChar": 5
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e9f3df4e_59b0deaf",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 532,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Same as line 181.",
+      "range": {
+        "startLine": 529,
+        "startChar": 1,
+        "endLine": 532,
+        "endChar": 41
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "67105c60_05eab1e0",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 558,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "len(controlNodes) !\u003d 0\nOtherwise it won\u0027t catch situation with allocated slice that has no members.\n[]string{} !\u003d nil",
+      "range": {
+        "startLine": 558,
+        "startChar": 3,
+        "endLine": 558,
+        "endChar": 23
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e49b90a2_0ea74ae8",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 579,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 576,
+        "startChar": 3,
+        "endLine": 579,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a262d1d_b4329bb0",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 588,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "same as line 558",
+      "range": {
+        "startLine": 586,
+        "startChar": 1,
+        "endLine": 588,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "99a65b6a_e09dd18d",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 607,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 604,
+        "startChar": 3,
+        "endLine": 607,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f691cbd8_96cb8a45",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 625,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "This check is not required as updateK8sMasterNodeWithTag iterates over a slice so it won\u0027t do anything if this field is empty.\n\nreturn v.updateK8sMasterNodeWithTag(k8sCluster.GetKubernetesMasterNodes())",
+      "range": {
+        "startLine": 625,
+        "startChar": 1,
+        "endLine": 625,
+        "endChar": 45
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03555003_6423a655",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 653,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 650,
+        "startChar": 3,
+        "endLine": 653,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5054e543_e78c97f4",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 662,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "same as line 558",
+      "range": {
+        "startLine": 660,
+        "startChar": 1,
+        "endLine": 662,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "398cef64_63677b20",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 681,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 678,
+        "startChar": 3,
+        "endLine": 681,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bde18c72_6291a1ad",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 700,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant check",
+      "range": {
+        "startLine": 700,
+        "startChar": 4,
+        "endLine": 700,
+        "endChar": 49
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2d11733b_86a9ac95",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 706,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "redundant check",
+      "range": {
+        "startLine": 706,
+        "startChar": 4,
+        "endLine": 706,
+        "endChar": 48
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e9fb399_4536c367",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 713,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "See if length is equal to 0",
+      "range": {
+        "startLine": 712,
+        "startChar": 4,
+        "endLine": 713,
+        "endChar": 47
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8f76eb81_e3c3f3e8",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 723,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 720,
+        "startChar": 3,
+        "endLine": 723,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aef5cd05_d9f6a4e4",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 777,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "remove that line",
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0bd0956f_16bfd49a",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 780,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Check error right under the method that returned it.",
+      "range": {
+        "startLine": 778,
+        "startChar": 1,
+        "endLine": 780,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cb327cb3_e7155288",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 797,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 794,
+        "startChar": 2,
+        "endLine": 797,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e0c7451_7b12faa7",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 805,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 802,
+        "startChar": 3,
+        "endLine": 805,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "312dff5f_fdc122b3",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 811,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 808,
+        "startChar": 2,
+        "endLine": 811,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a50f2945_2dda5a5b",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 814,
+        "startChar": 3,
+        "endLine": 817,
+        "endChar": 4
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "becfd9c2_43f07429",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 820,
+        "startChar": 2,
+        "endLine": 823,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d47ddaf8_16b4c1b2",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 865,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "return reg, err",
+      "range": {
+        "startLine": 862,
+        "startChar": 1,
+        "endLine": 865,
+        "endChar": 16
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "990042ab_62efdd8e",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 876,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Same as line 118",
+      "range": {
+        "startLine": 871,
+        "startChar": 1,
+        "endLine": 876,
+        "endChar": 40
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ff16c8b1_e607df22",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 900,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "return prov, err",
+      "range": {
+        "startLine": 896,
+        "startChar": 1,
+        "endLine": 900,
+        "endChar": 17
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b9fe5dc1_8018c5ce",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 914,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 911,
+        "startChar": 2,
+        "endLine": 914,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0849160b_517b6fd4",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 936,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if err \u003d something; err !\u003d nil {\n   return nil, err\n}",
+      "range": {
+        "startLine": 933,
+        "startChar": 2,
+        "endLine": 936,
+        "endChar": 3
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f0cd8ae_11b8da55",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 954,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Same as line 118",
+      "range": {
+        "startLine": 951,
+        "startChar": 1,
+        "endLine": 954,
+        "endChar": 36
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e90dc0b2_2d45f7c4",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 965,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "This is redundant",
+      "range": {
+        "startLine": 965,
+        "startChar": 2,
+        "endLine": 965,
+        "endChar": 36
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b56f37e5_d9f2b95a",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1049,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "if response \u003d\u003d nil {\n   continue\n}",
+      "range": {
+        "startLine": 1049,
+        "startChar": 2,
+        "endLine": 1049,
+        "endChar": 22
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "212c2e28_ca9166a1",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1086,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "It should be more clear that we are currently taking only the first port if exist.",
+      "range": {
+        "startLine": 1083,
+        "startChar": 1,
+        "endLine": 1086,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aad5ba93_4a99423d",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1124,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "remove d.updateUsers()",
+      "range": {
+        "startLine": 1120,
+        "startChar": 1,
+        "endLine": 1124,
+        "endChar": 11
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "77ebf01e_d56ae2c0",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 1143,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-21T13:47:35Z",
+      "side": 1,
+      "message": "Please remove that function.",
+      "range": {
+        "startLine": 1141,
+        "startChar": 0,
+        "endLine": 1143,
+        "endChar": 1
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
