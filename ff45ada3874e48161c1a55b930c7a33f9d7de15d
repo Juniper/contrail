@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7beee8f3_677258b3",
+        "filename": "pkg/models/model.go.tmpl",
+        "patchSetId": 15
+      },
+      "lineNbr": 618,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-21T09:35:06Z",
+      "side": 1,
+      "message": "That\u0027s one place where we don\u0027t want to use `:\u003d`. Because what we are initializing here is error\u0027s zero value, then we can rely on `var err error`, because it will do similar. Using var for zero value (aka declaring but not initializing) is more idiomatic.\n\nAs previously more explanation is here: https://dave.cheney.net/practical-go/presentations/qcon-china.html#_use_a_consistent_declaration_style",
+      "revId": "ff45ada3874e48161c1a55b930c7a33f9d7de15d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "245ce025_a6a6e464",
+        "filename": "pkg/models/model.go.tmpl",
+        "patchSetId": 15
+      },
+      "lineNbr": 714,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-21T09:35:06Z",
+      "side": 1,
+      "message": "Ditto, L618",
+      "revId": "ff45ada3874e48161c1a55b930c7a33f9d7de15d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c2d3cc1_c200748f",
+        "filename": "pkg/models/model.go.tmpl",
+        "patchSetId": 15
+      },
+      "lineNbr": 725,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-21T09:35:06Z",
+      "side": 1,
+      "message": "Ditto, L618",
+      "revId": "ff45ada3874e48161c1a55b930c7a33f9d7de15d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

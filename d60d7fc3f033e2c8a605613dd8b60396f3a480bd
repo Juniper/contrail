@@ -90,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "90121298_9eff0608",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-21T09:35:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2ac71fce_a2bf23d2",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "443b4847_0ef555fa",
         "filename": "pkg/apisrv/test_data/test_sync.yml",
         "patchSetId": 13
@@ -565,6 +583,24 @@
       "side": 1,
       "message": "I will follow Witaut\u0027s suggestion.  If I use Michal\u0027s suggestion, I have to declare the err in a wider scope so I can return it later.  Then I have to declare the i64 at a wider scope.  I\u0027m required to chose whether I want my variables at a wider scope which feels more complex, or to have everything close by with simple redundant logic... or to abstract further to avoid repetition, which can also add complexity.  Witaut\u0027s suggestion seems simpler.",
       "parentUuid": "cf1dc090_001cd03f",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "efe18213_53b66200",
+        "filename": "pkg/format/map.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-21T09:35:06Z",
+      "side": 1,
+      "message": "After all this also looks nice so I\u0027m happy with it too.",
+      "parentUuid": "31aa636c_68d50e09",
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
