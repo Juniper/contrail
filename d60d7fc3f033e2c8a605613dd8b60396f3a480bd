@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ce749fad_8c54037a",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-21T00:20:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "37d26ac8_4872205c",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9ae6c72e_4aff6f10",
         "filename": "pkg/apisrv/test_data/test_sync.yml",
         "patchSetId": 13
@@ -48,6 +66,24 @@
       "side": 1,
       "message": "I don\u0027t trust the cleanup logic.  I should be able to remove this whole cleanup block, but if I do, I get test errors.  For now, I think it\u0027s safer to follow the convention I see in this test code.",
       "parentUuid": "9ae6c72e_4aff6f10",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2ac71fce_a2bf23d2",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-21T00:20:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2eb70f8c_73fdd6c7",
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -89,6 +125,24 @@
     },
     {
       "key": {
+        "uuid": "8d075ac4_0758ac05",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-21T00:20:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ff7e9ead_0450921d",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "60b9dd0d_25817094",
         "filename": "pkg/apisrv/test_data/test_sync.yml",
         "patchSetId": 13
@@ -124,6 +178,24 @@
     },
     {
       "key": {
+        "uuid": "d9f7c67e_862f6baf",
+        "filename": "pkg/apisrv/test_data/test_sync.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-21T00:20:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f4b75ec5_653bd277",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b1d3ebbd_c8e8d393",
         "filename": "pkg/apisrv/test_data/test_validation.yml",
         "patchSetId": 13
@@ -156,6 +228,24 @@
       "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f10b0eab_052cbe87",
+        "filename": "pkg/apisrv/test_data/test_validation.yml",
+        "patchSetId": 13
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-11-21T00:20:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "26c2db8b_b09391a2",
+      "revId": "d60d7fc3f033e2c8a605613dd8b60396f3a480bd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
