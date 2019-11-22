@@ -201,6 +201,29 @@
     },
     {
       "key": {
+        "uuid": "6154316a_f16aeb61",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-22T16:48:31Z",
+      "side": 1,
+      "message": "Nit: Any chance for `enum` rather than string for providers?",
+      "range": {
+        "startLine": 278,
+        "startChar": 0,
+        "endLine": 287,
+        "endChar": 2
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bbefdd0e_5f243dd2",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 2

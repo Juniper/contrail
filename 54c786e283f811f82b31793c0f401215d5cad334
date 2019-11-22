@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "31b90c83_74913a82",
+        "filename": "schemas/contrail/fabric/cloud.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-22T16:48:31Z",
+      "side": 1,
+      "message": "Nit: s/checks/indicates/g",
+      "range": {
+        "startLine": 59,
+        "startChar": 4,
+        "endLine": 82,
+        "endChar": 20
+      },
+      "revId": "54c786e283f811f82b31793c0f401215d5cad334",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
