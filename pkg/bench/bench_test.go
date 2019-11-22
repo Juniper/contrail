@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	apisrvkeystone "github.com/Juniper/contrail/pkg/apisrv/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 // We haven't used standard Go benchmark because we need more
@@ -38,8 +38,8 @@ func TestBenchAPI(t *testing.T) {
 		ID:       testName,
 		Password: testName,
 		Endpoint: host,
-		AuthURL:  host + apisrvkeystone.LocalAuthPath,
-		Scope:    keystone.NewScope("", "default", "", testName),
+		AuthURL:  host + keystone.LocalAuthPath,
+		Scope:    kstypes.NewScope("", "default", "", testName),
 		Insecure: true,
 	})
 

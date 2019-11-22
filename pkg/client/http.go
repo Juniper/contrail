@@ -12,8 +12,8 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"

@@ -10,15 +10,14 @@ import (
 	"path"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
+	"github.com/Juniper/asf/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/config"
+	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
 // Keystone constants.
@@ -146,7 +145,7 @@ func (k *Keystone) ListProjectsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	userProjects := []*kscommon.Project{}
+	userProjects := []*keystone.Project{}
 	user := token.User
 	projects := k.Assignment.ListProjects()
 	if configEndpoint == "" {
@@ -166,7 +165,7 @@ func (k *Keystone) ListProjectsAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, projectsResponse)
 }
 
-func (k *Keystone) validateToken(r *http.Request) (*kscommon.Token, error) {
+func (k *Keystone) validateToken(r *http.Request) (*keystone.Token, error) {
 	tokenID := r.Header.Get(xAuthTokenKey)
 	if tokenID == "" {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
@@ -228,7 +227,7 @@ func (k *Keystone) GetAuthType(clusterID string) (authType string, err error) {
 
 // CreateTokenAPI is an API handler for issuing new authentication token.
 func (k *Keystone) CreateTokenAPI(c echo.Context) error {
-	sar := kscommon.ScopedAuthRequest{}
+	sar := keystone.ScopedAuthRequest{}
 	if err := c.Bind(&sar); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
@@ -249,7 +248,7 @@ func (k *Keystone) CreateTokenAPI(c echo.Context) error {
 }
 
 func (k *Keystone) fetchServerTokenWithClusterToken(
-	ctx echo.Context, i *kscommon.Identity, ke []*endpoint.Endpoint,
+	ctx echo.Context, i *keystone.Identity, ke []*endpoint.Endpoint,
 ) error {
 	if i.Cluster.Token != nil {
 		ctx.Request().Header.Set(xAuthTokenKey, i.Cluster.Token.ID)
@@ -259,19 +258,19 @@ func (k *Keystone) fetchServerTokenWithClusterToken(
 	return k.client.ValidateToken(ctx, rawAuthURLs(ke))
 }
 
-func (k *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
-	scope := kscommon.NewScope(
+func (k *Keystone) newLocalAuthRequest() keystone.AuthRequest {
+	scope := keystone.NewScope(
 		viper.GetString("client.domain_id"),
 		viper.GetString("client.domain_name"),
 		viper.GetString("client.project_id"),
 		viper.GetString("client.project_name"),
 	)
-	authRequest := kscommon.ScopedAuthRequest{
-		Auth: &kscommon.ScopedAuth{
-			Identity: &kscommon.Identity{
+	authRequest := keystone.ScopedAuthRequest{
+		Auth: &keystone.ScopedAuth{
+			Identity: &keystone.Identity{
 				Methods: []string{"password"},
-				Password: &kscommon.Password{
-					User: &kscommon.User{
+				Password: &keystone.Password{
+					User: &keystone.User{
 						Name:     viper.GetString("client.id"),
 						Password: viper.GetString("client.password"),
 						Domain:   scope.GetDomain(),
@@ -284,12 +283,12 @@ func (k *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
 	return authRequest
 }
 
-func (k *Keystone) fetchClusterToken(ctx echo.Context, sar kscommon.AuthRequest, ke []*endpoint.Endpoint) error {
+func (k *Keystone) fetchClusterToken(ctx echo.Context, sar keystone.AuthRequest, ke []*endpoint.Endpoint) error {
 	// TODO(dfurman): prevent panic: use fields without pointers in models and/or provide getters with nil checks
 	if sar.GetIdentity().Password != nil {
 		if sar.GetScope() == nil {
-			sar = kscommon.UnScopedAuthRequest{
-				Auth: &kscommon.UnScopedAuth{
+			sar = keystone.UnScopedAuthRequest{
+				Auth: &keystone.UnScopedAuth{
 					Identity: sar.GetIdentity(),
 				},
 			}
@@ -313,17 +312,17 @@ func (k *Keystone) fetchClusterToken(ctx echo.Context, sar kscommon.AuthRequest,
 	return k.client.CreateToken(ctx, rawAuthURLs(ke))
 }
 
-func withRequestBody(c echo.Context, ar kscommon.AuthRequest) echo.Context {
+func withRequestBody(c echo.Context, ar keystone.AuthRequest) echo.Context {
 	b, _ := json.Marshal(ar) // nolint: errcheck
 	c.Request().Body = ioutil.NopCloser(bytes.NewReader(b))
 	c.Request().ContentLength = int64(len(b))
 	return c
 }
 
-func (k *Keystone) createLocalToken(c echo.Context, authRequest kscommon.AuthRequest) error {
+func (k *Keystone) createLocalToken(c echo.Context, authRequest keystone.AuthRequest) error {
 	var err error
-	var user *kscommon.User
-	var token *kscommon.Token
+	var user *keystone.User
+	var token *keystone.Token
 	tokenID := ""
 	// TODO(dfurman): prevent panic: use fields without pointers in models and/or provide getters with nil checks
 	identity := authRequest.GetIdentity()
@@ -351,7 +350,7 @@ func (k *Keystone) createLocalToken(c echo.Context, authRequest kscommon.AuthReq
 			return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 		}
 	}
-	var project *kscommon.Project
+	var project *keystone.Project
 	project, err = filterProject(user, authRequest.GetScope())
 	if err != nil {
 		logrus.WithField("err", err).Debug("filter project error")
@@ -359,13 +358,13 @@ func (k *Keystone) createLocalToken(c echo.Context, authRequest kscommon.AuthReq
 	}
 	tokenID, token = k.store.CreateToken(user, project)
 	c.Response().Header().Set(xSubjectTokenKey, tokenID)
-	authResponse := &kscommon.AuthResponse{
+	authResponse := &keystone.AuthResponse{
 		Token: token,
 	}
 	return c.JSON(http.StatusOK, authResponse)
 }
 
-func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Project, error) {
+func filterProject(user *keystone.User, scope *keystone.Scope) (*keystone.Project, error) {
 	if scope == nil {
 		return nil, nil
 	}
@@ -408,7 +407,7 @@ func (k *Keystone) ValidateTokenAPI(c echo.Context) error {
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
-	validateTokenResponse := &kscommon.ValidateTokenResponse{
+	validateTokenResponse := &keystone.ValidateTokenResponse{
 		Token: token,
 	}
 	return c.JSON(http.StatusOK, validateTokenResponse)

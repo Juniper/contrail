@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 )

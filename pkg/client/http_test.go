@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/stretchr/testify/assert"
 )
 

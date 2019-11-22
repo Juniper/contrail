@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	apisrvkeystone "github.com/Juniper/contrail/pkg/apisrv/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 // Resource constants
@@ -78,8 +78,8 @@ func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
 		ID:       AdminUserID,
 		Password: AdminUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + apisrvkeystone.LocalAuthPath,
-		Scope: keystone.NewScope(
+		AuthURL:  apiServerURL + keystone.LocalAuthPath,
+		Scope: kstypes.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			AdminProjectID,
@@ -95,8 +95,8 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		ID:       BobUserID,
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + apisrvkeystone.LocalAuthPath,
-		Scope: keystone.NewScope(
+		AuthURL:  apiServerURL + keystone.LocalAuthPath,
+		Scope: kstypes.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			DemoProjectID,

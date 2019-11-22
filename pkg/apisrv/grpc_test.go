@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -26,8 +26,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
-	pkgkeystone "github.com/Juniper/contrail/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 	protocodec "github.com/gogo/protobuf/codec"
 	uuid "github.com/satori/go.uuid"
 )
@@ -434,18 +433,18 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 // TODO: Use pre-created Server's keystone assignment.
 func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
-	assignment.Projects[testID] = &kscommon.Project{
+	assignment.Projects[testID] = &kstypes.Project{
 		Domain: assignment.Domains[integration.DefaultDomainID],
 		ID:     testID,
 		Name:   testID,
 	}
 
-	assignment.Users[testID] = &kscommon.User{
+	assignment.Users[testID] = &kstypes.User{
 		Domain:   assignment.Domains[integration.DefaultDomainID],
 		ID:       testID,
 		Name:     testID,
 		Password: testID,
-		Roles: []*kscommon.Role{
+		Roles: []*kstypes.Role{
 			{
 				ID:      "member",
 				Name:    "Member",
@@ -461,7 +460,7 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 		Password: projectName,
 		Endpoint: server.URL(),
 		AuthURL:  server.URL() + keystone.LocalAuthPath,
-		Scope:    pkgkeystone.NewScope("", "default", "", projectName),
+		Scope:    kstypes.NewScope("", "default", "", projectName),
 		Insecure: true,
 	})
 

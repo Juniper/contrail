@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ const (
 
 func TestCLI(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		RepoRootPath: "../../..",
+		RepoRootPath: "../..",
 	})
 	defer func() { assert.NoError(t, s.Close()) }()
 
