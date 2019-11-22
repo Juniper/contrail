@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "68ba6df8_1899c09e",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bc4c397c_74da0bd3",
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baeb1a3d_27f9f640",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 7
@@ -69,6 +87,24 @@
       "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6750a028_81b113e5",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fd51f4a4_019a325e",
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -119,6 +155,30 @@
     },
     {
       "key": {
+        "uuid": "bd3750d8_d9dbf601",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "02ad2ebb_40035e46",
+      "range": {
+        "startLine": 212,
+        "startChar": 16,
+        "endLine": 212,
+        "endChar": 34
+      },
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7281219c_972117e7",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 7
@@ -163,6 +223,30 @@
       "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "600e7a03_8a1f0766",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "06752780_2abea49d",
+      "range": {
+        "startLine": 267,
+        "startChar": 2,
+        "endLine": 270,
+        "endChar": 3
+      },
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -213,6 +297,30 @@
     },
     {
       "key": {
+        "uuid": "7c05d7fe_7a0458e8",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7821a6ba_0a5cc889",
+      "range": {
+        "startLine": 272,
+        "startChar": 2,
+        "endLine": 276,
+        "endChar": 2
+      },
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d1a9eb54_ccdb4d77",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 7
@@ -260,6 +368,53 @@
     },
     {
       "key": {
+        "uuid": "2ad83f9a_56dfc005",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 284,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "388bc96d_396e5134",
+      "range": {
+        "startLine": 281,
+        "startChar": 2,
+        "endLine": 284,
+        "endChar": 3
+      },
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cb58f4f7_be8bf247",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Why this check was removed?",
+      "range": {
+        "startLine": 120,
+        "startChar": 1,
+        "endLine": 122,
+        "endChar": 2
+      },
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "476689b1_1cd29b49",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -277,6 +432,24 @@
     },
     {
       "key": {
+        "uuid": "12f40d84_62f9366c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "476689b1_1cd29b49",
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "be270a14_2f6c3bfd",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -288,6 +461,24 @@
       "writtenOn": "2019-11-21T17:02:47Z",
       "side": 1,
       "message": "If @L120 check passes (i.e. ProvisioningState \u003d\u003d NOSTATE) then this function isn\u0027t valid anymore (cause it should always return false, nil).",
+      "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b8c80a2_4435cc5c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 366,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T16:05:43Z",
+      "side": 1,
+      "message": "Both the check and the function were removed",
+      "parentUuid": "be270a14_2f6c3bfd",
       "revId": "562e7bb0f61b0d28e13f68629f9693952a0d2aed",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
