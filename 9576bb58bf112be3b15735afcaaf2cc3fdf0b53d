@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8ad8f714_35a13cbe",
+        "filename": ".zuul.yaml",
+        "patchSetId": 9
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-22T15:33:49Z",
+      "side": 1,
+      "message": "How about separate CR?",
+      "revId": "9576bb58bf112be3b15735afcaaf2cc3fdf0b53d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "77f61bc3_3b151eb9",
+        "filename": "Gopkg.lock",
+        "patchSetId": 9
+      },
+      "lineNbr": 377,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-22T15:33:49Z",
+      "side": 0,
+      "message": "On my machine \"go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/\" fails with \"cannot find package github.com/go-openapi/spec\". Maybe we could add this package to `required` section of gopkg.toml?",
+      "revId": "67499e21ac954c2b706fbe466c121fc30a51f50b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
