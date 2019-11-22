@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/schema"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/config"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -65,7 +65,7 @@ type Config struct {
 type Agent struct {
 	config    *Config
 	backend   backend
-	APIServer *client.HTTP
+	APIServer *apiclient.HTTP
 	serverAPI *schema.API
 	// schemas map schema IDs to API Server schemas.
 	schemas map[string]*schema.Schema
@@ -99,7 +99,7 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
+	s := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.Endpoint,
@@ -137,7 +137,7 @@ func NewAgent(c *Config) (*Agent, error) {
 	}, nil
 }
 
-func fetchServerAPI(ctx context.Context, server *client.HTTP, serverSchema string) (*schema.API, error) {
+func fetchServerAPI(ctx context.Context, server *apiclient.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
 	for {
 		_, err := server.Read(ctx, serverSchema, &api)

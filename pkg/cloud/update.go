@@ -6,7 +6,7 @@ import (
 
 	tf "github.com/hashicorp/terraform/terraform"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -66,7 +66,7 @@ func gwRoleExists(instance *instanceData) bool {
 }
 
 func createPort(ctx context.Context, portName string, ip string,
-	instance *models.Node, client *client.HTTP) (*models.Port, error) {
+	instance *models.Node, client *apiclient.HTTP) (*models.Port, error) {
 
 	if len(instance.Ports) != 0 {
 		for _, p := range instance.Ports {
@@ -102,7 +102,7 @@ func createPort(ctx context.Context, portName string, ip string,
 }
 
 func addPortToNode(ctx context.Context, port *models.Port,
-	instance *models.Node, client *client.HTTP) error {
+	instance *models.Node, client *apiclient.HTTP) error {
 
 	request := new(services.UpdateNodeRequest)
 	request.Node = instance
@@ -112,7 +112,7 @@ func addPortToNode(ctx context.Context, port *models.Port,
 }
 
 func addIPToNode(ctx context.Context, ip string,
-	instance *models.Node, client *client.HTTP) error {
+	instance *models.Node, client *apiclient.HTTP) error {
 
 	request := new(services.UpdateNodeRequest)
 	request.Node = instance

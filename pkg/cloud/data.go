@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -40,7 +40,7 @@ type Data struct {
 }
 
 type apiServer struct {
-	client *client.HTTP
+	client *apiclient.HTTP
 	ctx    context.Context
 }
 
@@ -961,7 +961,7 @@ func (d *Data) updateProviders() error {
 	return nil
 }
 
-func getUserObject(ctx context.Context, uuid string, apiClient *client.HTTP) (*models.CloudUser, error) {
+func getUserObject(ctx context.Context, uuid string, apiClient *apiclient.HTTP) (*models.CloudUser, error) {
 	request := new(services.GetCloudUserRequest)
 	request.ID = uuid
 

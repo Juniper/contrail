@@ -11,17 +11,17 @@ import (
 
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/apisrv/replication"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/endpoint"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
+	"github.com/Juniper/contrail/pkg/replication"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 	"github.com/labstack/echo"
@@ -250,7 +250,7 @@ func (s *Server) Init() (err error) {
 				s.log.WithError(err).Error("Malformed JSON response")
 			}
 			task := &recorderTask{
-				Request: &client.Request{
+				Request: &apiclient.Request{
 					Method:   c.Request().Method,
 					Path:     c.Request().URL.Path,
 					Expected: []int{c.Response().Status},
@@ -313,7 +313,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		serviceChain = append(serviceChain, &neutron.Service{
-			Keystone: &client.Keystone{
+			Keystone: &apiclient.Keystone{
 				URL: viper.GetString("keystone.authurl"),
 				HTTPClient: &http.Client{
 					Transport: &http.Transport{
@@ -493,8 +493,8 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 }
 
 type recorderTask struct {
-	Request *client.Request `yaml:"request,omitempty"`
-	Expect  interface{}     `yaml:"expect,omitempty"`
+	Request *apiclient.Request `yaml:"request,omitempty"`
+	Expect  interface{}        `yaml:"expect,omitempty"`
 }
 
 // Run runs Server.

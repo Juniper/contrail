@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -65,7 +65,7 @@ type Config struct { // nolint: maligned
 type Deploy struct {
 	managerType  string
 	config       *Config
-	APIServer    *client.HTTP
+	APIServer    *apiclient.HTTP
 	log          *logrus.Entry
 	streamServer *logutil.StreamServer
 }
@@ -92,7 +92,7 @@ func NewDeploy(c *Config) (*Deploy, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
+	s := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.Endpoint,

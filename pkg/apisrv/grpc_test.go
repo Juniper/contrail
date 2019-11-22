@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -26,8 +26,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
-	pkgkeystone "github.com/Juniper/contrail/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 	protocodec "github.com/gogo/protobuf/codec"
 	uuid "github.com/satori/go.uuid"
 )
@@ -64,7 +63,7 @@ func TestIDToFQNameGRPC(t *testing.T) {
 func TestChownGRPC(t *testing.T) {
 	firstProjectName := uuid.NewV4().String()
 	testGRPCServer(t, firstProjectName, func(firstProjectCTX context.Context, conn *grpc.ClientConn) {
-		c := client.NewGRPC(services.NewContrailServiceClient(conn))
+		c := apiclient.NewGRPC(services.NewContrailServiceClient(conn))
 
 		project, cleanup := createProjectWithName(firstProjectCTX, t, c, firstProjectName)
 		defer cleanup(t)
@@ -176,7 +175,7 @@ func TestIPAMGRPC(t *testing.T) {
 
 func TestRefRelaxGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := client.NewGRPC(services.NewContrailServiceClient(conn))
+		c := apiclient.NewGRPC(services.NewContrailServiceClient(conn))
 
 		project, cleanup := createProject(ctx, t, c)
 		defer cleanup(t)
@@ -244,7 +243,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 
 func TestPropCollectionUpdateGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		gc := client.NewGRPC(services.NewContrailServiceClient(conn))
+		gc := apiclient.NewGRPC(services.NewContrailServiceClient(conn))
 		project, cleanup := createProject(ctx, t, gc)
 		defer cleanup(t)
 
@@ -298,13 +297,13 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 }
 
 func createProject(
-	ctx context.Context, t *testing.T, c *client.GRPC,
+	ctx context.Context, t *testing.T, c *apiclient.GRPC,
 ) (project *models.Project, cleanup func(t *testing.T)) {
 	return createProjectWithName(ctx, t, c, fmt.Sprintf("%s_project", t.Name()))
 }
 
 func createProjectWithName(
-	ctx context.Context, t *testing.T, c *client.GRPC, name string,
+	ctx context.Context, t *testing.T, c *apiclient.GRPC, name string,
 ) (project *models.Project, cleanup func(t *testing.T)) {
 	r, err := c.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: &models.Project{
@@ -434,18 +433,18 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 // TODO: Use pre-created Server's keystone assignment.
 func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
-	assignment.Projects[testID] = &kscommon.Project{
+	assignment.Projects[testID] = &kstypes.Project{
 		Domain: assignment.Domains[integration.DefaultDomainID],
 		ID:     testID,
 		Name:   testID,
 	}
 
-	assignment.Users[testID] = &kscommon.User{
+	assignment.Users[testID] = &kstypes.User{
 		Domain:   assignment.Domains[integration.DefaultDomainID],
 		ID:       testID,
 		Name:     testID,
 		Password: testID,
-		Roles: []*kscommon.Role{
+		Roles: []*kstypes.Role{
 			{
 				ID:      "member",
 				Name:    "Member",
@@ -456,12 +455,12 @@ func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 }
 
 func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
-	c := client.NewHTTP(&client.HTTPConfig{
+	c := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       projectName,
 		Password: projectName,
 		Endpoint: server.URL(),
 		AuthURL:  server.URL() + keystone.LocalAuthPath,
-		Scope:    pkgkeystone.NewScope("", "default", "", projectName),
+		Scope:    kstypes.NewScope("", "default", "", projectName),
 		Insecure: true,
 	})
 

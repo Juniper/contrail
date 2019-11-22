@@ -16,8 +16,8 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apiclient"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/sync"
@@ -152,12 +152,12 @@ type Waiters map[string][]Event
 
 //Task has API request and expected response.
 type Task struct {
-	Name     string          `yaml:"name,omitempty"`
-	Client   string          `yaml:"client,omitempty"`
-	Request  *client.Request `yaml:"request,omitempty"`
-	Expect   interface{}     `yaml:"expect,omitempty"`
-	Watchers Watchers        `yaml:"watchers,omitempty"`
-	Waiters  Waiters         `yaml:"await,omitempty"`
+	Name     string             `yaml:"name,omitempty"`
+	Client   string             `yaml:"client,omitempty"`
+	Request  *apiclient.Request `yaml:"request,omitempty"`
+	Expect   interface{}        `yaml:"expect,omitempty"`
+	Watchers Watchers           `yaml:"watchers,omitempty"`
+	Waiters  Waiters            `yaml:"await,omitempty"`
 }
 
 // CleanTask defines clean task
@@ -170,20 +170,20 @@ type CleanTask struct {
 
 // TestScenario defines integration test scenario.
 type TestScenario struct {
-	Name                  string                        `yaml:"name,omitempty"`
-	Description           string                        `yaml:"description,omitempty"`
-	IntentCompilerEnabled bool                          `yaml:"intent_compiler_enabled,omitempty"`
-	Tables                []string                      `yaml:"tables,omitempty"`
-	ClientConfigs         map[string]*client.HTTPConfig `yaml:"clients,omitempty"`
-	Clients               ClientsList                   `yaml:"-"`
-	CleanTasks            []CleanTask                   `yaml:"cleanup,omitempty"`
-	Workflow              []*Task                       `yaml:"workflow,omitempty"`
-	Watchers              Watchers                      `yaml:"watchers,omitempty"`
-	TestData              interface{}                   `yaml:"test_data,omitempty"`
+	Name                  string                           `yaml:"name,omitempty"`
+	Description           string                           `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                             `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                         `yaml:"tables,omitempty"`
+	ClientConfigs         map[string]*apiclient.HTTPConfig `yaml:"clients,omitempty"`
+	Clients               ClientsList                      `yaml:"-"`
+	CleanTasks            []CleanTask                      `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                          `yaml:"workflow,omitempty"`
+	Watchers              Watchers                         `yaml:"watchers,omitempty"`
+	TestData              interface{}                      `yaml:"test_data,omitempty"`
 }
 
 // ClientsList is the list of clients used in test
-type ClientsList map[string]*client.HTTP
+type ClientsList map[string]*apiclient.HTTP
 
 // LoadTest loads test scenario from given file.
 func LoadTest(file string, ctx map[string]interface{}) (*TestScenario, error) {
@@ -241,7 +241,7 @@ func RunDirtyTestScenario(t *testing.T, ts *TestScenario, server *APIServer) fun
 	return cleanupFunc
 }
 
-func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, clients map[string]*client.HTTP) {
+func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, clients map[string]*apiclient.HTTP) {
 	for _, tr := range tracked {
 		response, err := clients[tr.Client].EnsureDeleted(ctx, tr.Path, nil)
 		if err != nil {
@@ -369,7 +369,7 @@ func startIntentCompiler(
 // It assigns created clients to given test scenario.
 func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server *APIServer) ClientsList {
 	for k, c := range ts.ClientConfigs {
-		ts.Clients[k] = client.NewHTTP(&client.HTTPConfig{
+		ts.Clients[k] = apiclient.NewHTTP(&apiclient.HTTPConfig{
 			ID:       c.ID,
 			Password: c.Password,
 			Endpoint: server.URL(),
@@ -456,7 +456,7 @@ func runTestScenario(
 func performCleanup(
 	ctx context.Context,
 	cleanTask CleanTask,
-	client *client.HTTP,
+	client *apiclient.HTTP,
 	m baseservices.MetadataGetter,
 ) error {
 	switch {
@@ -471,14 +471,14 @@ func performCleanup(
 	}
 }
 
-func getClientByID(clientID string, clients ClientsList) *client.HTTP {
+func getClientByID(clientID string, clients ClientsList) *apiclient.HTTP {
 	if clientID == "" {
 		clientID = DefaultClientID
 	}
 	return clients[clientID]
 }
 
-func cleanPath(ctx context.Context, path string, client *client.HTTP) error {
+func cleanPath(ctx context.Context, path string, client *apiclient.HTTP) error {
 	response, err := client.EnsureDeleted(ctx, path, nil)
 	if err != nil && response.StatusCode != http.StatusNotFound {
 		return errors.Wrapf(err, "failed to delete resource, got status code %v", response.StatusCode)
@@ -490,7 +490,7 @@ func cleanByFQNameAndKind(
 	ctx context.Context,
 	fqName []string,
 	kind string,
-	client *client.HTTP,
+	client *apiclient.HTTP,
 	m baseservices.MetadataGetter,
 ) error {
 	metadata, err := m.GetMetadata(ctx, basemodels.Metadata{

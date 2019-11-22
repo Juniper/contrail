@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,7 @@ var deleteCmd = &cobra.Command{
 	Long:  "Use resource format just like in 'schema' command output",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		cli, err := client.NewCLIByViper()
+		cli, err := apiclient.NewCLIByViper()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}

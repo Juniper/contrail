@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/endpoint"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/websocket"
 
-	pkgkeystone "github.com/Juniper/contrail/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -403,14 +403,14 @@ func TestKeystoneRequestsProxying(t *testing.T) {
 	clusterCName, clusterDName := contrailClusterName(t, "C"), contrailClusterName(t, "D")
 	authURL := server.URL() + keystone.LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
-	hcUserC := client.NewHTTP(&client.HTTPConfig{
+	hcUserC := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       usernameC,
 		Password: passwordC,
 		Endpoint: server.URL(),
 		AuthURL:  authURL,
 		Insecure: true,
 	})
-	hcUserD := client.NewHTTP(&client.HTTPConfig{
+	hcUserD := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       usernameD,
 		Password: passwordD,
 		Endpoint: server.URL(),
@@ -481,7 +481,7 @@ func TestKeystoneRequestsProxyingWithClosedRemoteKeystoneServers(t *testing.T) {
 	clusterName := contrailClusterName(t, "")
 	authURL := server.URL() + keystone.LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
-	hcTest := client.NewHTTP(&client.HTTPConfig{
+	hcTest := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       username,
 		Password: password,
 		Endpoint: server.URL(),
@@ -555,7 +555,7 @@ func TestKeystoneRequestsProxyingWithUnavailableRemoteKeystoneServers(t *testing
 	clusterName := contrailClusterName(t, "")
 	authURL := server.URL() + keystone.LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
-	hcTest := client.NewHTTP(&client.HTTPConfig{
+	hcTest := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       username,
 		Password: password,
 		Endpoint: server.URL(),
@@ -645,36 +645,36 @@ func ctxWithXClusterID(clusterName string) context.Context {
 	return auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterName))
 }
 
-func verifyFiveCreateTokenRequests(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyFiveCreateTokenRequests(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	for i := 0; i < 5; i++ {
 		verifyCreateTokenRequest(ctx, t, hc, msg)
 	}
 }
 
-func verifyCreateTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyCreateTokenRequest(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	_, err := hc.Login(ctx)
 	assert.NoError(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 
-func verifyFiveCreateTokenRequestsFail(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyFiveCreateTokenRequestsFail(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	for i := 0; i < 5; i++ {
 		verifyCreateTokenRequestFails(ctx, t, hc, msg)
 	}
 }
 
-func verifyCreateTokenRequestFails(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyCreateTokenRequestFails(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	_, err := hc.Login(ctx)
 	assert.Error(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 
-func verifyFiveReadTokenRequests(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyFiveReadTokenRequests(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	for i := 0; i < 5; i++ {
 		verifyReadTokenRequest(ctx, t, hc, msg)
 	}
 }
 
-func verifyReadTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
-	var response pkgkeystone.ValidateTokenResponse
+func verifyReadTokenRequest(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
+	var response kstypes.ValidateTokenResponse
 	_, err := hc.Read(ctx, path.Join(keystone.LocalAuthPath, "auth/tokens"), &response)
 
 	msg = fmt.Sprintf("%s, HTTP client ID: %s", msg, hc.ID)
@@ -686,13 +686,13 @@ func verifyReadTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, 
 	}
 }
 
-func verifyFiveReadTokenRequestsFail(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyFiveReadTokenRequestsFail(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	for i := 0; i < 5; i++ {
 		verifyReadTokenRequestFails(ctx, t, hc, msg)
 	}
 }
 
-func verifyReadTokenRequestFails(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
+func verifyReadTokenRequestFails(ctx context.Context, t *testing.T, hc *apiclient.HTTP, msg string) {
 	var response interface{}
 	_, err := hc.Read(ctx, path.Join(keystone.LocalAuthPath, "auth/tokens"), &response)
 
