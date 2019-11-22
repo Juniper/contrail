@@ -14,15 +14,15 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/compilation/config"
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
 )
@@ -69,7 +69,7 @@ type IntentCompilationService struct {
 	config    *config.Config
 	Store     Store
 	service   services.Service
-	apiClient *client.HTTP
+	apiClient *apiclient.HTTP
 
 	log logrus.FieldLogger
 }
@@ -99,8 +99,8 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 	}, nil
 }
 
-func newAPIClient(c *config.APIClientConfig) *client.HTTP {
-	client := client.NewHTTP(&client.HTTPConfig{
+func newAPIClient(c *config.APIClientConfig) *apiclient.HTTP {
+	client := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.URL,

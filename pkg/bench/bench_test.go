@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
-	apisrvkeystone "github.com/Juniper/contrail/pkg/apisrv/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 // We haven't used standard Go benchmark because we need more
@@ -34,12 +34,12 @@ func TestBenchAPI(t *testing.T) {
 		return
 	}
 
-	c := client.NewHTTP(&client.HTTPConfig{
+	c := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       testName,
 		Password: testName,
 		Endpoint: host,
-		AuthURL:  host + apisrvkeystone.LocalAuthPath,
-		Scope:    keystone.NewScope("", "default", "", testName),
+		AuthURL:  host + keystone.LocalAuthPath,
+		Scope:    kstypes.NewScope("", "default", "", testName),
 		Insecure: true,
 	})
 
@@ -73,7 +73,7 @@ func TestBenchAPI(t *testing.T) {
 	cleanup(ctx, t, c)
 }
 
-func cleanup(ctx context.Context, t *testing.T, restClient *client.HTTP) {
+func cleanup(ctx context.Context, t *testing.T, restClient *apiclient.HTTP) {
 	//cleanup
 	for i := 0; i < 10000; i++ {
 		projects, err := restClient.ListProject(ctx, &services.ListProjectRequest{

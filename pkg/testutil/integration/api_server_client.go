@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	apisrvkeystone "github.com/Juniper/contrail/pkg/apisrv/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 // Resource constants
@@ -36,7 +36,7 @@ const (
 
 // HTTPAPIClient is API Server client for testing purposes.
 type HTTPAPIClient struct {
-	*client.HTTP
+	*apiclient.HTTP
 	log *logrus.Entry
 }
 
@@ -46,7 +46,7 @@ func NewTestingHTTPClient(t *testing.T, apiServerURL string, userID string) *HTT
 	l := logutil.NewLogger("http-api-client")
 	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
 
-	var c *client.HTTP
+	var c *apiclient.HTTP
 	var err error
 	switch userID {
 	case AdminUserID:
@@ -65,21 +65,21 @@ func NewTestingHTTPClient(t *testing.T, apiServerURL string, userID string) *HTT
 }
 
 // NewAdminHTTPClient creates HTTP client of API Server using Alice user (admin) credentials.
-func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	c := client.NewHTTP(AdminHTTPConfig(apiServerURL))
+func NewAdminHTTPClient(apiServerURL string) (*apiclient.HTTP, error) {
+	c := apiclient.NewHTTP(AdminHTTPConfig(apiServerURL))
 
 	_, err := c.Login(context.Background())
 	return c, err
 }
 
 // AdminHTTPConfig returns HTTP client config containing admin credentials.
-func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
-	return &client.HTTPConfig{
+func AdminHTTPConfig(apiServerURL string) *apiclient.HTTPConfig {
+	return &apiclient.HTTPConfig{
 		ID:       AdminUserID,
 		Password: AdminUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + apisrvkeystone.LocalAuthPath,
-		Scope: keystone.NewScope(
+		AuthURL:  apiServerURL + keystone.LocalAuthPath,
+		Scope: kstypes.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			AdminProjectID,
@@ -90,13 +90,13 @@ func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
 }
 
 // NewHTTPClient creates HTTP client of API Server using Bob user credentials.
-func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	c := client.NewHTTP(&client.HTTPConfig{
+func NewHTTPClient(apiServerURL string) (*apiclient.HTTP, error) {
+	c := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       BobUserID,
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + apisrvkeystone.LocalAuthPath,
-		Scope: keystone.NewScope(
+		AuthURL:  apiServerURL + keystone.LocalAuthPath,
+		Scope: kstypes.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			DemoProjectID,

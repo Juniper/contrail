@@ -1,10 +1,10 @@
 package client
 
 import (
-    "context"
+	"context"
 
-    "github.com/Juniper/contrail/pkg/models"
-    "github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

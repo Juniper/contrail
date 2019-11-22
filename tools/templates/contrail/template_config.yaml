@@ -43,7 +43,6 @@
 - type: all
   template_path: proto/github.com/Juniper/contrail/pkg/services/service.proto.tmpl
 - type: all
-  template_path: pkg/apisrv/client/client_http.go.tmpl
+  template_path: pkg/apiclient/client_http.go.tmpl
 - type: all
-  template_path: pkg/apisrv/client/client_grpc.go.tmpl
-
+  template_path: pkg/apiclient/client_grpc.go.tmpl

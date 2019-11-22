@@ -15,7 +15,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -83,7 +83,7 @@ func (s *secret) createSecretTemplateContext(clusterUUID string) (pongo2.Context
 	}, nil
 }
 
-func getCredObject(ctx context.Context, client *client.HTTP,
+func getCredObject(ctx context.Context, client *apiclient.HTTP,
 	uuid string) (*models.Credential, error) {
 
 	request := new(services.GetCredentialRequest)

@@ -1,4 +1,4 @@
-package client
+package apiclient
 
 import (
 	"github.com/Juniper/contrail/pkg/services"
