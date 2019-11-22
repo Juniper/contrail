@@ -3,7 +3,6 @@ package endpoint_test
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,7 +29,7 @@ func TestTargetStoreWriteRead(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := endpoint.NewTargetStore()
+			ts := NewTargetStore()
 			ts.Write(fooID, fooE)
 
 			e := ts.Read(tt.id)
@@ -46,7 +45,7 @@ func TestTargetStoreReadAll(t *testing.T) {
 	for _, tt := range []struct {
 		name     string
 		scope    string
-		expected []*endpoint.Endpoint
+		expected []*Endpoint
 	}{
 		{
 			name:  "invalid URL scope",
@@ -54,8 +53,8 @@ func TestTargetStoreReadAll(t *testing.T) {
 		},
 		{
 			name:  "private URL scope",
-			scope: endpoint.PrivateURLScope,
-			expected: []*endpoint.Endpoint{
+			scope: PrivateURLScope,
+			expected: []*Endpoint{
 				{
 					URL:      fooE.PrivateURL,
 					Username: fooE.Username,
@@ -75,8 +74,8 @@ func TestTargetStoreReadAll(t *testing.T) {
 		},
 		{
 			name:  "public URL scope",
-			scope: endpoint.PublicURLScope,
-			expected: []*endpoint.Endpoint{
+			scope: PublicURLScope,
+			expected: []*Endpoint{
 				{
 					URL:      fooE.PublicURL,
 					Username: fooE.Username,
@@ -96,7 +95,7 @@ func TestTargetStoreReadAll(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			ts := endpoint.NewTargetStore()
+			ts := NewTargetStore()
 			ts.Write("foo", fooE)
 			ts.Write("bar", barE)
 			ts.Write("spock", spockE)

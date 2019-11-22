@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/config"
+	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
