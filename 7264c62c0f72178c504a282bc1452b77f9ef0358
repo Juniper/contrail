@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c16a347a_4e7ae26b",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-22T11:53:19Z",
+      "side": 1,
+      "message": "You can just return errors.Wrap(...). In case the error is nil errors.Wrap() returns nil as well.\nAnother idea is to place template.ApplyToFile() inside errors.Wrap() function and return it, but I\u0027m not sure if this wouldn\u0027t make the code less readable.",
+      "range": {
+        "startLine": 255,
+        "startChar": 1,
+        "endLine": 259,
+        "endChar": 11
+      },
+      "revId": "7264c62c0f72178c504a282bc1452b77f9ef0358",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
