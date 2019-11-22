@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "36e98105_095f9679",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T16:13:27Z",
+      "side": 1,
+      "message": "Redundant",
+      "range": {
+        "startLine": 287,
+        "startChar": 2,
+        "endLine": 287,
+        "endChar": 14
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1d979480_d4ca463c",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T16:13:27Z",
+      "side": 1,
+      "message": "Sort imports properly",
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "19861407_1367452d",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T16:13:27Z",
+      "side": 1,
+      "message": "Why do you removeVulnerableFiles if you did not run manage function?",
+      "range": {
+        "startLine": 152,
+        "startChar": 1,
+        "endLine": 152,
+        "endChar": 50
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e47d241d_3d996b2a",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T16:13:27Z",
+      "side": 1,
+      "message": "You can combine those two if statements to check if cloud is public only once.",
+      "range": {
+        "startLine": 254,
+        "startChar": 1,
+        "endLine": 269,
+        "endChar": 2
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bbefdd0e_5f243dd2",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T16:13:27Z",
+      "side": 1,
+      "message": "This is actually redundant",
+      "range": {
+        "startLine": 295,
+        "startChar": 3,
+        "endLine": 297,
+        "endChar": 24
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bd94ae9f_b7d2d6cc",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 386,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T16:13:27Z",
+      "side": 1,
+      "message": "Same as line 269",
+      "range": {
+        "startLine": 372,
+        "startChar": 1,
+        "endLine": 386,
+        "endChar": 2
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
