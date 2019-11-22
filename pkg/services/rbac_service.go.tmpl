@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/apisrv/rbac"
+	"github.com/Juniper/contrail/pkg/rbac"
 	"github.com/Juniper/contrail/pkg/auth"
 )
 
@@ -14,7 +14,7 @@ func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionCreate); 
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionCreate);
     if err != nil {
         return nil,err
     }
@@ -32,7 +32,7 @@ func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
 	model := request.{{ schema.JSONSchema.GoName }}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionUpdate); 
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionUpdate);
     if err != nil {
         return nil,err
     }
@@ -56,7 +56,7 @@ func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
 	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionDelete); 
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionDelete);
     if err != nil {
         return nil,err
     }
@@ -80,7 +80,7 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
 	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionRead); 
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionRead);
     if err != nil {
         return nil,err
     }
@@ -105,7 +105,7 @@ func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 ) (*List{{ schema.JSONSchema.GoName }}Response, error) {
 	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode,model.Kind(), rbac.ActionRead); 
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode,model.Kind(), rbac.ActionRead);
 
     if err != nil {
         return nil,err

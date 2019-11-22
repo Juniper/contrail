@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/spf13/cobra"
 )
@@ -135,14 +135,14 @@ var listCmd = &cobra.Command{
 			schemaID = args[0]
 		}
 
-		cli, err := client.NewCLIByViper()
+		cli, err := apiclient.NewCLIByViper()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}
 
 		r, err := cli.ListResources(
 			schemaID,
-			&client.ListParameters{
+			&apiclient.ListParameters{
 				Filters:      filters,
 				PageLimit:    pageLimit,
 				PageMarker:   pageMarker,

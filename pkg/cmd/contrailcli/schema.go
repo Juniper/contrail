@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ var schemaCmd = &cobra.Command{
 			schemaID = args[0]
 		}
 
-		cli, err := client.NewCLIByViper()
+		cli, err := apiclient.NewCLIByViper()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}

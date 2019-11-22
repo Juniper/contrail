@@ -9,10 +9,10 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/retry"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/endpoint"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -20,7 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -34,7 +34,7 @@ const (
 )
 
 type vncAPIHandle struct {
-	APIServer     *client.HTTP
+	APIServer     *apiclient.HTTP
 	clients       map[string]*vncAPI
 	endpointStore *endpoint.Store
 	log           *logrus.Entry
@@ -47,7 +47,7 @@ func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHa
 		endpointStore: epStore,
 		log:           logutil.NewLogger("vnc_replication_client"),
 		auth:          auth,
-		APIServer:     client.NewHTTPFromConfig(),
+		APIServer:     apiclient.NewHTTPFromConfig(),
 	}
 }
 
@@ -57,13 +57,13 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		return
 	}
 
-	config := client.LoadHTTPConfig()
+	config := apiclient.LoadHTTPConfig()
 	authType, err := h.auth.GetAuthType(ep.ParentUUID)
 	if err != nil {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
 	}
 	if authType != basicAuth {
-		config.Scope = &kscommon.Scope{Project: &kscommon.Project{Domain: kscommon.DefaultDomain()}}
+		config.Scope = &kstypes.Scope{Project: &kstypes.Project{Domain: kstypes.DefaultDomain()}}
 		// get keystone endpoint
 		var e *endpoint.Endpoint
 		e, err = h.readAuthEndpoint(ep.ParentUUID)
@@ -73,7 +73,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		config.SetCredentials(e.Username, e.Password)
 	}
 
-	c := client.NewHTTP(config)
+	c := apiclient.NewHTTP(config)
 
 	ctx := auth.NoAuth(context.Background())
 	if viper.GetString("keystone.authurl") != "" {
@@ -123,7 +123,7 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 	return authEndpoint, nil
 }
 
-func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) context.Context {
+func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *apiclient.HTTP) context.Context {
 	var err error
 	var projectID string
 	ctx := auth.WithXClusterID(context.Background(), clusterID)
@@ -132,13 +132,13 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
 			apiClient.Scope.Project.Domain)
 		if err == nil {
-			apiClient.Scope = kscommon.NewScope(
-				kscommon.DefaultDomainID, kscommon.DefaultDomainName,
+			apiClient.Scope = kstypes.NewScope(
+				kstypes.DefaultDomainID, kstypes.DefaultDomainName,
 				projectID, defaultProjectName)
 		}
 	}
 	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(kscommon.DefaultDomainID, projectID,
+	varCtx := auth.NewContext(kstypes.DefaultDomainID, projectID,
 		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
 	var authKey interface{} = "auth"
 	ctx = context.WithValue(ctx, authKey, varCtx)
@@ -213,8 +213,8 @@ func (h *vncAPIHandle) listConfigEndpoints() ([]*models.Endpoint, error) {
 }
 
 type vncAPI struct {
-	targetClient *client.HTTP
-	sourceClient *client.HTTP
+	targetClient *apiclient.HTTP
+	sourceClient *apiclient.HTTP
 	ctx          context.Context
 	clusterID    string
 	endpointID   string

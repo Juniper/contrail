@@ -4,12 +4,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
-	pkgkeystone "github.com/Juniper/contrail/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 // NewKeystoneServerFake creates started Keystone server fake.
@@ -37,13 +37,13 @@ func withKeystoneUser(k *keystone.Keystone, user, password string) (*keystone.Ke
 		return nil, errors.New("failed to add user to Keystone fake: wrong Assignment type")
 	}
 
-	sa.Users = map[string]*pkgkeystone.User{}
-	sa.Users[user] = &pkgkeystone.User{
+	sa.Users = map[string]*kstypes.User{}
+	sa.Users[user] = &kstypes.User{
 		Domain:   sa.Domains[DefaultDomainID],
 		ID:       user,
 		Name:     user,
 		Password: password,
-		Roles: []*pkgkeystone.Role{
+		Roles: []*kstypes.Role{
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,

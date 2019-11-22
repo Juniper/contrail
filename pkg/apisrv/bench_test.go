@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -20,7 +20,7 @@ func BenchmarkVirtualNetworkCreate(b *testing.B) {
 	for _, tt := range tests {
 		testName := fmt.Sprintf("create virtual network with %v previously existing VNs", tt.numberOfExistingVNs)
 		b.Run(testName, func(b *testing.B) {
-			withServerAndClient(b, func(hc *client.HTTP) {
+			withServerAndClient(b, func(hc *apiclient.HTTP) {
 				ctx := context.Background()
 
 				projectUUID := "test_project_uuid"
@@ -76,7 +76,7 @@ func BenchmarkVirtualNetworkCreate(b *testing.B) {
 	}
 }
 
-func withServerAndClient(t testing.TB, test func(*client.HTTP)) {
+func withServerAndClient(t testing.TB, test func(*apiclient.HTTP)) {
 	s, err := integration.NewRunningServer(&integration.APIServerConfig{
 		RepoRootPath:  "../../..",
 		LogLevel:      "warn",
