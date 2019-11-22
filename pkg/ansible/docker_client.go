@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"

@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/apisrv/endpoint"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/labstack/echo"

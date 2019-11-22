@@ -21,3 +21,7 @@ required = [
 [[constraint]]
   name = "github.com/docker/docker"
   revision = "ac7306503d237d548e376a89ab0b899ea1a245b0"
+
+[[constraint]]
+  name = "github.com/Juniper/asf"
+  revision = "88839029b6508874e6a3b2db823786257d4ce99e"
