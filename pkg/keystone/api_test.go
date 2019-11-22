@@ -13,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -57,7 +57,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	server.ForceProxyUpdate()
 
 	// Fetch cluster keystone token
-	k := &client.Keystone{
+	k := &apiclient.Keystone{
 		URL:        ksPrivate.URL + "/v3",
 		HTTPClient: &http.Client{},
 	}
@@ -92,13 +92,13 @@ func TestClusterTokenMethod(t *testing.T) {
 }
 
 func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
-	dataJSON, err := json.Marshal(&kscommon.UnScopedAuthRequest{
-		Auth: &kscommon.UnScopedAuth{
-			Identity: &kscommon.Identity{
+	dataJSON, err := json.Marshal(&kstypes.UnScopedAuthRequest{
+		Auth: &kstypes.UnScopedAuth{
+			Identity: &kstypes.Identity{
 				Methods: []string{"cluster_token"},
-				Cluster: &kscommon.Cluster{
+				Cluster: &kstypes.Cluster{
 					ID: clusterID,
-					Token: &kscommon.UserToken{
+					Token: &kstypes.UserToken{
 						ID: clusterToken,
 					},
 				},
@@ -107,7 +107,7 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 	})
 	assert.NoError(t, err, "failed to marshal cluster_token request")
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	k := &client.Keystone{
+	k := &apiclient.Keystone{
 		URL: keystoneAuthURL,
 		HTTPClient: &http.Client{
 			Transport: &http.Transport{

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testEndpointFile = "../test_data/test_endpoint.tmpl"
+	testEndpointFile = "../apisrv/test_data/test_endpoint.tmpl"
 )
 
 func TestRemoteAuthenticate(t *testing.T) {

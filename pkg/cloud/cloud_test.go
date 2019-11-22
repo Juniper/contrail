@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -395,7 +395,7 @@ func verifyCloudSecretFilesAreDeleted(t *testing.T, cloudUUID string) {
 	}
 }
 
-func verifyNodeType(ctx context.Context, httpClient *client.HTTP, testScenarios []*integration.TestScenario) bool {
+func verifyNodeType(ctx context.Context, httpClient *apiclient.HTTP, testScenarios []*integration.TestScenario) bool {
 	for _, ts := range testScenarios {
 		for _, task := range ts.Workflow {
 			if task.Request.Path == "/nodes" {
@@ -611,7 +611,7 @@ func testPublicCloudDeletion(t *testing.T, pc *providerConfig) {
 	verifyCloudDeleted(cl.ctx, t, cl.APIServer, pc.cloudUUID)
 }
 
-func verifyCloudDeleted(ctx context.Context, t *testing.T, httpClient *client.HTTP, cloudUUID string) {
+func verifyCloudDeleted(ctx context.Context, t *testing.T, httpClient *apiclient.HTTP, cloudUUID string) {
 	_, err := os.Stat(defaultWorkRoot + "/" + cloudUUID)
 	assert.Error(t, err, "The cloud directory exists on host and it shouldn't")
 	httpResp, err := httpClient.Read(ctx, "/cloud/"+cloudUUID, &services.GetCloudResponse{})

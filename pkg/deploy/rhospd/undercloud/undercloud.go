@@ -4,14 +4,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 )
 
 // Config represents Command configuration.
 type Config struct {
 	// http client of api server
-	APIServer *client.HTTP
+	APIServer *apiclient.HTTP
 	// UUID of resource to be managed.
 	ResourceID string
 	// Action to the performed with the resource (values: create, update, delete).
@@ -32,7 +32,7 @@ type Config struct {
 // UnderCloud represents contrail undercloud manager
 type UnderCloud struct {
 	config    *Config
-	APIServer *client.HTTP
+	APIServer *apiclient.HTTP
 	log       *logrus.Entry
 }
 

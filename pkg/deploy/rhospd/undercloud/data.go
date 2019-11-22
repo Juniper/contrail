@@ -3,7 +3,7 @@ package undercloud
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -13,7 +13,7 @@ type Data struct {
 	cloudManagerInfo  *models.RhospdCloudManager
 	overcloudNetworks []*OvercloudNetworkData
 	overcloudNodes    []*models.Node
-	client            *client.HTTP
+	client            *apiclient.HTTP
 }
 
 // OvercloudNetworkData is the representation of overcloud network details.
@@ -21,11 +21,11 @@ type OvercloudNetworkData struct {
 	overcloudNetwork *models.RhospdOvercloudNetwork
 	virtualNetworks  []*models.VirtualNetwork
 	tags             []*models.Tag
-	client           *client.HTTP
+	client           *apiclient.HTTP
 }
 
 // NewData creates a undercloud data
-func NewData(apiClient *client.HTTP) *Data {
+func NewData(apiClient *apiclient.HTTP) *Data {
 	return &Data{
 		client: apiClient,
 	}
@@ -33,7 +33,7 @@ func NewData(apiClient *client.HTTP) *Data {
 
 // NewOvercloudNetworkData creates a undercloud data
 func NewOvercloudNetworkData(overcloudNetwork *models.RhospdOvercloudNetwork,
-	apiClient *client.HTTP) *OvercloudNetworkData {
+	apiClient *apiclient.HTTP) *OvercloudNetworkData {
 	return &OvercloudNetworkData{
 		overcloudNetwork: overcloudNetwork,
 		client:           apiClient,

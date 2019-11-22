@@ -10,7 +10,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -49,9 +49,9 @@ func recordTest() {
 	testScenario, err := integration.LoadTest(inputPath, vars)
 	assertError(err, "failed to load test scenario")
 
-	clients := map[string]*client.HTTP{}
+	clients := map[string]*apiclient.HTTP{}
 	for key := range testScenario.Clients {
-		clients[key] = client.NewHTTP(&client.HTTPConfig{
+		clients[key] = apiclient.NewHTTP(&apiclient.HTTPConfig{
 			Endpoint: endpoint,
 			AuthURL:  authURL,
 			Insecure: true,
