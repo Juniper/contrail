@@ -1,0 +1,187 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b1c29083_d51550c1",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "Optional: you can use ObjectUUIDs to only one object and make the test simpler.",
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "73ebc02f_cb5a0978",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "Redundant argument.",
+      "range": {
+        "startLine": 462,
+        "startChar": 21,
+        "endLine": 462,
+        "endChar": 33
+      },
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cbf17c18_ce28e08e",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 470,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "To minimize the allocation count you can preallocate the slice with:\n\n newlist :\u003d make([]string, 0, len(spec.Fields))\n\nBy specifying the capacity you allocate the underlying memory and then you could use append as usual.",
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d95a8226_4bdc9d00",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 471,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "You can create a variable for fields in L470, no need to access this in steps. Then you could also reuse the variable in `make(..., len(fields))`.",
+      "range": {
+        "startLine": 471,
+        "startChar": 1,
+        "endLine": 471,
+        "endChar": 17
+      },
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e967cd6f_65fa872d",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "Ditto, L485",
+      "range": {
+        "startLine": 472,
+        "startChar": 8,
+        "endLine": 472,
+        "endChar": 22
+      },
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d553b951_d8161f5b",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 485,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "CodeStyle: This variable name is a bit lengthy for it\u0027s scope. Consider using some one letter name like `f`.\n\nSee: https://github.com/golang/go/wiki/CodeReviewComments#variable-names",
+      "range": {
+        "startLine": 485,
+        "startChar": 2,
+        "endLine": 485,
+        "endChar": 17
+      },
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e6e8613a_5d02247d",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 486,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "You can use inline if+initialization notation:\n\n if sanitizedFields :\u003d qb.sanitizeFields(ctx); len(sanitizedFields) \u003e 0 {",
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4cfe2e2b_b72be13c",
+        "filename": "pkg/services/list_response_encoding.go.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "You always return []map[string]interface{} here in this func. You can be more specific about the type you\u0027re returning.\n\nThe rule of thumb is: accept the less specific type (eg. interface{} if possible) and return as specific type as possible (eg. struct type). This is similar to robustness principle. That way your API would be as reusable as it can get.",
+      "range": {
+        "startLine": 83,
+        "startChar": 66,
+        "endLine": 83,
+        "endChar": 75
+      },
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc54172d_00860521",
+        "filename": "pkg/services/list_response_encoding.go.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-22T11:30:11Z",
+      "side": 1,
+      "message": "I think we could avoid map lookups if we used slice here. Then we could construct the map in the return statement.",
+      "revId": "553eba336d050c5e265528db94c028905f72791d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
