@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "90b2b073_8e11e059",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-22T14:49:44Z",
+      "side": 1,
+      "message": "It only works when the first const declaration has type and value specified, and all of the following const declarations have neither type nor value, but then this works as a textual copy of first type and value. So, in this case, I need to specify instanceRole type otherwise, that const will have untyped string type.",
+      "parentUuid": "e2e6a8b7_ec0528bf",
+      "range": {
+        "startLine": 79,
+        "startChar": 25,
+        "endLine": 79,
+        "endChar": 37
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4066ca37_c02ad48b",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 1
