@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "2c2f9e71_1d915d81",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-22T14:56:35Z",
+      "side": 1,
+      "message": "You\u0027re right. My mistake.",
+      "parentUuid": "90b2b073_8e11e059",
+      "range": {
+        "startLine": 79,
+        "startChar": 25,
+        "endLine": 79,
+        "endChar": 37
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4066ca37_c02ad48b",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 1
