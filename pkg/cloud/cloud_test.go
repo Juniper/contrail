@@ -13,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 )
@@ -364,7 +365,7 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c)
+	cl, err := NewCloud(c, testutil.NewTestCommandExecutor())
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl

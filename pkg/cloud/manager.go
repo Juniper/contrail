@@ -57,12 +57,13 @@ type Config struct { // nolint: maligned
 
 // Cloud represents cloud service.
 type Cloud struct {
-	config       *Config
-	APIServer    *client.HTTP
-	log          *logrus.Entry
-	reporter     *report.Reporter
-	streamServer *logutil.StreamServer
-	ctx          context.Context
+	config          *Config
+	APIServer       *client.HTTP
+	commandExecutor osutil.CommandExecutor
+	log             *logrus.Entry
+	reporter        *report.Reporter
+	streamServer    *logutil.StreamServer
+	ctx             context.Context
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -78,11 +79,11 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	return NewCloud(&c)
+	return NewCloud(&c, &osutil.OsCommandExecutor{})
 }
 
 // NewCloud returns a new Cloud instance
-func NewCloud(c *Config) (*Cloud, error) {
+func NewCloud(c *Config, e osutil.CommandExecutor) (*Cloud, error) {
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -132,8 +133,9 @@ func NewCloud(c *Config) (*Cloud, error) {
 			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
 			logutil.NewFileLogger("reporter", c.LogFile),
 		),
-		streamServer: logutil.NewStreamServer(c.LogFile),
-		ctx:          ctx,
+		streamServer:    logutil.NewStreamServer(c.LogFile),
+		ctx:             ctx,
+		commandExecutor: e,
 	}, nil
 }
 

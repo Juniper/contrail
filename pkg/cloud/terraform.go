@@ -2,7 +2,6 @@ package cloud
 
 import (
 	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/osutil"
 )
 
 func destroyTopology(c *Cloud) error {
@@ -26,8 +25,5 @@ func updateTopology(c *Cloud) error {
 		"--secret", GetSecretFile(c.config.CloudID),
 		"--skip_validation",
 	}
-	if c.config.Test {
-		return TestCmdHelper(cmd, args, workDir, testTemplate)
-	}
-	return osutil.ExecCmdAndWait(c.reporter, cmd, args, workDir)
+	return c.commandExecutor.ExecuteAndWait(c.reporter, cmd, args, workDir)
 }

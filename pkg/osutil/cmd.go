@@ -10,6 +10,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type CommandExecutor interface {
+	ExecuteAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+}
+
+type OsCommandExecutor struct {
+}
+
+func (e *OsCommandExecutor) ExecuteAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
+	return ExecCmdAndWait(r, cmd, args, dir, envVars...)
+}
+
 // ExecCmdAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete.
 func ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
 	cmdline := exec.Command(cmd, args...)
