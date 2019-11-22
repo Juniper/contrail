@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -329,7 +329,7 @@ func (m *multiCloudProvisioner) verifyCloudStatus() error {
 }
 
 func waitForCloudStatusToBeUpdated(
-	ctx context.Context, log *logrus.Entry, httpClient *client.HTTP, cloudUUID string,
+	ctx context.Context, log *logrus.Entry, httpClient *apiclient.HTTP, cloudUUID string,
 ) error {
 	return retry.Do(func() (retry bool, err error) {
 		cloudResp, err := httpClient.GetCloud(ctx, &services.GetCloudRequest{ID: cloudUUID})

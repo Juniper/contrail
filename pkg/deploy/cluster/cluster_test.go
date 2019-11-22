@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -114,7 +114,7 @@ func verifyClusterDeleted() bool {
 	return os.IsNotExist(err)
 }
 
-func verifyMCDeleted(httpClient *client.HTTP) bool {
+func verifyMCDeleted(httpClient *apiclient.HTTP) bool {
 	// Make sure mc working dir is deleted
 	if _, err := os.Stat(workRoot + "/" + clusterID + "/" + mcWorkDir); err == nil || !os.IsNotExist(err) {
 		// mc working dir not deleted

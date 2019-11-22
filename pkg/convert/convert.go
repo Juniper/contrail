@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -153,7 +153,7 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 	}
 	events = &services.EventList{Events: e}
 
-	c := client.NewHTTP(&client.HTTPConfig{
+	c := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       "",
 		Password: "",
 		Endpoint: url,

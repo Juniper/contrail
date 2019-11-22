@@ -47,10 +47,10 @@ Sync command creates or updates resources with data defined in given YAML file.
 It creates new resource for every not already existing resource.
 
 ```bash
-contrailcli sync pkg/apisrv/client/testdata/vns.yml
+contrailcli sync pkg/apiclient/testdata/vns.yml
 ```
 
-[Input file content](../pkg/apisrv/client/testdata/vns.yml)
+[Input file content](../pkg/apiclient/testdata/vns.yml)
 
 ## Set command
 
@@ -87,10 +87,10 @@ contrailcli rm
 Delete removes resources specified in given YAML file.
 
 ```bash
-contrailcli delete pkg/apisrv/client/testdata/vns.yml
+contrailcli delete pkg/apiclient/testdata/vns.yml
 ```
 
-[Input file content](../pkg/apisrv/client/testdata/vns.yml)
+[Input file content](../pkg/apiclient/testdata/vns.yml)
 
 Delete command returns no output.
 

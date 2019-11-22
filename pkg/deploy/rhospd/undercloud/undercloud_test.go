@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -76,7 +76,7 @@ func executedPlaybooksPath() string {
 	return workRoot + "/" + cloudManagerID + "/executed_command.yml"
 }
 
-func verifyPorts(t *testing.T, hc *client.HTTP, nodeID string, expectedPorts []string) error {
+func verifyPorts(t *testing.T, hc *apiclient.HTTP, nodeID string, expectedPorts []string) error {
 	resp, err := hc.ListPort(context.Background(), &services.ListPortRequest{
 		Spec: &baseservices.ListSpec{
 			Fields: []string{"name", "uuid"},
@@ -116,7 +116,7 @@ func verifyPorts(t *testing.T, hc *client.HTTP, nodeID string, expectedPorts []s
 // nolint: gocyclo
 func runUnderCloudActionTest(
 	t *testing.T,
-	hc *client.HTTP,
+	hc *apiclient.HTTP,
 	config *Config,
 	action,
 	expectedSite,

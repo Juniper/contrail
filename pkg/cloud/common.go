@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/retry"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/flosch/pongo2"
@@ -59,7 +59,7 @@ func TestCmdHelper(cmd string, args []string, workDir string, testTemplate strin
 }
 
 // GetCloud gets cloud data for a given cloud UUID
-func GetCloud(ctx context.Context, client *client.HTTP, cloudID string) (*models.Cloud, error) {
+func GetCloud(ctx context.Context, client *apiclient.HTTP, cloudID string) (*models.Cloud, error) {
 
 	request := new(services.GetCloudRequest)
 	request.ID = cloudID
@@ -103,7 +103,7 @@ func GetTerraformGCPPlanFile(cloudID string) string {
 }
 
 func deleteNodeObjects(ctx context.Context,
-	client *client.HTTP, nodeList []*instanceData) []string {
+	client *apiclient.HTTP, nodeList []*instanceData) []string {
 
 	var errList []string
 	// Delete Node related dependencies and node itself
@@ -151,7 +151,7 @@ func deleteNodeObjects(ctx context.Context,
 }
 
 func removePvtSubnetRefFromNodes(ctx context.Context,
-	client *client.HTTP, nodeList []*instanceData) error {
+	client *apiclient.HTTP, nodeList []*instanceData) error {
 
 	for _, node := range nodeList {
 		for _, cloudPvtSubnetRef := range node.info.CloudPrivateSubnetRefs {
@@ -170,7 +170,7 @@ func removePvtSubnetRefFromNodes(ctx context.Context,
 }
 
 func deleteContrailMCGWRole(ctx context.Context,
-	client *client.HTTP, nodeList []*instanceData) []string {
+	client *apiclient.HTTP, nodeList []*instanceData) []string {
 
 	var errList []string
 	for _, node := range nodeList {
@@ -193,7 +193,7 @@ func deleteContrailMCGWRole(ctx context.Context,
 }
 
 func deleteSGObjects(ctx context.Context,
-	client *client.HTTP, sgList []*sgData) []string {
+	client *apiclient.HTTP, sgList []*sgData) []string {
 
 	var errList []string
 	// Delete CloudSecurityGroup related dependencies and CloudSecurityGroup itself
@@ -225,7 +225,7 @@ func deleteSGObjects(ctx context.Context,
 }
 
 func deletePvtSubnetObjects(ctx context.Context,
-	client *client.HTTP, subnetList []*subnetData) []string {
+	client *apiclient.HTTP, subnetList []*subnetData) []string {
 
 	var errList []string
 	// Delete CloudPrivateSubnet related dependencies and CloudPrivateSubnet itself
@@ -245,7 +245,7 @@ func deletePvtSubnetObjects(ctx context.Context,
 }
 
 func deleteCloudProviderAndDeps(ctx context.Context,
-	client *client.HTTP, providerList []*providerData) []string {
+	client *apiclient.HTTP, providerList []*providerData) []string {
 
 	var errList []string
 	// Delete Provider dependencies and iteslf
@@ -300,7 +300,7 @@ func deleteCloudProviderAndDeps(ctx context.Context,
 }
 
 func deleteCloudUsers(ctx context.Context,
-	client *client.HTTP, userList []*models.CloudUser) []string {
+	client *apiclient.HTTP, userList []*models.CloudUser) []string {
 
 	var errList []string
 	// Delete user & its dependencies
@@ -318,7 +318,7 @@ func deleteCloudUsers(ctx context.Context,
 }
 
 func deleteCredentialAndDeps(ctx context.Context,
-	client *client.HTTP, credList []*models.Credential) []string {
+	client *apiclient.HTTP, credList []*models.Credential) []string {
 
 	var errList []string
 	// Delete credential & its dependencies
@@ -388,7 +388,7 @@ func tfStateOutputExists(cloudID string) bool {
 }
 
 func waitForClusterStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
-	httpClient *client.HTTP, clusterUUID string) error {
+	httpClient *apiclient.HTTP, clusterUUID string) error {
 
 	return retry.Do(func() (retry bool, err error) {
 

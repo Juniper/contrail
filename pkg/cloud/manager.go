@@ -7,12 +7,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/asf/pkg/osutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -58,7 +58,7 @@ type Config struct { // nolint: maligned
 // Cloud represents cloud service.
 type Cloud struct {
 	config       *Config
-	APIServer    *client.HTTP
+	APIServer    *apiclient.HTTP
 	log          *logrus.Entry
 	reporter     *report.Reporter
 	streamServer *logutil.StreamServer
@@ -87,7 +87,7 @@ func NewCloud(c *Config) (*Cloud, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
+	s := apiclient.NewHTTP(&apiclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.Endpoint,

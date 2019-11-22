@@ -3,7 +3,7 @@ package cluster
 import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/ansible"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/models"
@@ -14,7 +14,7 @@ import (
 // Config represents Command configuration.
 type Config struct {
 	// http client of api server
-	APIServer *client.HTTP
+	APIServer *apiclient.HTTP
 	// UUID of resource to be managed.
 	ClusterID string
 	// Action to the performed with the cluster (values: create, update, delete).
@@ -43,7 +43,7 @@ type Config struct {
 // Cluster represents contrail cluster manager
 type Cluster struct {
 	config    *Config
-	APIServer *client.HTTP
+	APIServer *apiclient.HTTP
 	log       *logrus.Entry
 }
 

@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apiclient"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -19,12 +19,12 @@ import (
 
 // ResourceManager to manage resources
 type ResourceManager struct {
-	APIServer *client.HTTP
+	APIServer *apiclient.HTTP
 	Log       *logrus.Entry
 }
 
 // NewResourceManager creates ResourceManager
-func NewResourceManager(APIServer *client.HTTP, logFile string) *ResourceManager {
+func NewResourceManager(APIServer *apiclient.HTTP, logFile string) *ResourceManager {
 	return &ResourceManager{
 		APIServer: APIServer,
 		Log:       logutil.NewFileLogger("resource-manager", logFile),
