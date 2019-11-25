@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "923ee4a7_a049af37",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:07:52Z",
+      "side": 1,
+      "message": "Please avoid exporting fields.",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "428a42b1_2eb19ec1",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 10
@@ -71,6 +88,23 @@
     },
     {
       "key": {
+        "uuid": "dd37d5ec_b8765332",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:07:52Z",
+      "side": 1,
+      "message": "Prefer log.WithField().Info()",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c905c72a_ecad29e7",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 10
@@ -82,6 +116,40 @@
       "writtenOn": "2019-11-25T15:54:42Z",
       "side": 1,
       "message": "I think old behavior should be preserved, because we are returning invalid object now.",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "618db36b_6c2cc79d",
+        "filename": "pkg/cmd/contrail/cloud.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:07:52Z",
+      "side": 1,
+      "message": "Could you use just global logger here or create a new one?",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f0bab1c1_49a5e23e",
+        "filename": "pkg/cmd/contrail/cloud.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:07:52Z",
+      "side": 1,
+      "message": "Did you remove stack trace deliberately? It might be useful.",
       "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
