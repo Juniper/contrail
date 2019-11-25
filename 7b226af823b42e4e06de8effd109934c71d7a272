@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "30ac4885_31ecb972",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:36:12Z",
+      "side": 1,
+      "message": "This custom assert function duplicates assertEqual() from test body. Please remove that. In all new testcases as well.",
+      "revId": "7b226af823b42e4e06de8effd109934c71d7a272",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24dfa48e_ba1e591c",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 485,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:36:12Z",
+      "side": 1,
+      "message": "len() \u003e 0 is IMO correct check, because there is no need to sanitize empty (but initialized) list",
+      "range": {
+        "startLine": 485,
+        "startChar": 16,
+        "endLine": 485,
+        "endChar": 22
+      },
+      "revId": "7b226af823b42e4e06de8effd109934c71d7a272",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "64b69737_8ad984ee",
+        "filename": "pkg/services/service.go.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 349,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-25T16:36:12Z",
+      "side": 1,
+      "message": "How about \"response.ApplyFieldMask\"?",
+      "range": {
+        "startLine": 349,
+        "startChar": 40,
+        "endLine": 349,
+        "endChar": 53
+      },
+      "revId": "7b226af823b42e4e06de8effd109934c71d7a272",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
