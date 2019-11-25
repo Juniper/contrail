@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "428a42b1_2eb19ec1",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-25T15:54:42Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 235,
+        "startChar": 22,
+        "endLine": 235,
+        "endChar": 28
+      },
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "43bb079c_1e5014cc",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-25T15:54:42Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 239,
+        "startChar": 21,
+        "endLine": 239,
+        "endChar": 27
+      },
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4dd9fdf6_4d7ce649",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 241,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-25T15:54:42Z",
+      "side": 1,
+      "message": "This is quite complicated for a code that sets different statusField depending on input. Please extract function like c.getStatusField(cloudObject). That way c.reporter.ReportStatus(...) can be called once.",
+      "range": {
+        "startLine": 219,
+        "startChar": 1,
+        "endLine": 241,
+        "endChar": 2
+      },
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c905c72a_ecad29e7",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 407,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-25T15:54:42Z",
+      "side": 1,
+      "message": "I think old behavior should be preserved, because we are returning invalid object now.",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
