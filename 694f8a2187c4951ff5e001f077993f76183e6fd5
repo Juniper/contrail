@@ -771,6 +771,30 @@
     },
     {
       "key": {
+        "uuid": "52681884_d471227f",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Yep. That\u0027s right. I don\u0027t know why I posted this.",
+      "parentUuid": "7c77cbe0_a2c6cb35",
+      "range": {
+        "startLine": 329,
+        "startChar": 1,
+        "endLine": 333,
+        "endChar": 11
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b3bc2c25_86c2cc31",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 1
@@ -994,6 +1018,24 @@
     },
     {
       "key": {
+        "uuid": "96315c26_a1f19e37",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 395,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f9e1f9e3_fbb50059",
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dd1fceda_1ba35aca",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 1
@@ -1038,6 +1080,30 @@
       "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b18af48f_0a396add",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 419,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1f80ce1c_118f7942",
+      "range": {
+        "startLine": 419,
+        "startChar": 1,
+        "endLine": 419,
+        "endChar": 5
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -1182,6 +1248,30 @@
     },
     {
       "key": {
+        "uuid": "44040246_d6112588",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 520,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "61f137d3_091c0ae2",
+      "range": {
+        "startLine": 520,
+        "startChar": 1,
+        "endLine": 520,
+        "endChar": 5
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e9f3df4e_59b0deaf",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 1
@@ -1276,6 +1366,30 @@
     },
     {
       "key": {
+        "uuid": "b566858a_89e67169",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 558,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bf58feb5_7d4e7740",
+      "range": {
+        "startLine": 558,
+        "startChar": 3,
+        "endLine": 558,
+        "endChar": 23
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e49b90a2_0ea74ae8",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 1
@@ -1367,6 +1481,30 @@
       "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3002cae3_09fc13cd",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 588,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8decab9_1e230cbc",
+      "range": {
+        "startLine": 586,
+        "startChar": 1,
+        "endLine": 588,
+        "endChar": 2
+      },
+      "revId": "694f8a2187c4951ff5e001f077993f76183e6fd5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "55c1e045_24ca9442",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 338,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "Do not mix return styles",
+      "range": {
+        "startLine": 338,
+        "startChar": 2,
+        "endLine": 338,
+        "endChar": 8
+      },
+      "revId": "3a957e58c3c35eb7484b30d44457b306b9eb3b3f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9e696611_71e92c60",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T14:55:42Z",
+      "side": 1,
+      "message": "redundant variables",
+      "range": {
+        "startLine": 336,
+        "startChar": 1,
+        "endLine": 340,
+        "endChar": 28
+      },
+      "revId": "3a957e58c3c35eb7484b30d44457b306b9eb3b3f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
