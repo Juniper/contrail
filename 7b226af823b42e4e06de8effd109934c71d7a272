@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "418674b9_b5a8801f",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-11-26T08:48:16Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "30ac4885_31ecb972",
+      "revId": "7b226af823b42e4e06de8effd109934c71d7a272",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "24dfa48e_ba1e591c",
         "filename": "pkg/db/basedb/query_builder.go",
         "patchSetId": 5
@@ -84,6 +102,30 @@
     },
     {
       "key": {
+        "uuid": "bfdde332_a01d15aa",
+        "filename": "pkg/db/basedb/query_builder.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 485,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-11-26T08:48:16Z",
+      "side": 1,
+      "message": "Not doing that. Expected behavior is nil list -\u003e no fields specified: set all fields, empty [] list -\u003e fields are present, just not any valid; set no fields",
+      "parentUuid": "24dfa48e_ba1e591c",
+      "range": {
+        "startLine": 485,
+        "startChar": 16,
+        "endLine": 485,
+        "endChar": 22
+      },
+      "revId": "7b226af823b42e4e06de8effd109934c71d7a272",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "64b69737_8ad984ee",
         "filename": "pkg/services/service.go.tmpl",
         "patchSetId": 5
@@ -118,6 +160,30 @@
       "writtenOn": "2019-11-25T17:21:50Z",
       "side": 1,
       "message": "Done",
+      "parentUuid": "64b69737_8ad984ee",
+      "range": {
+        "startLine": 349,
+        "startChar": 40,
+        "endLine": 349,
+        "endChar": 53
+      },
+      "revId": "7b226af823b42e4e06de8effd109934c71d7a272",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "af4ed93c_3753aceb",
+        "filename": "pkg/services/service.go.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 349,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-11-26T08:48:16Z",
+      "side": 1,
+      "message": "Ack",
       "parentUuid": "64b69737_8ad984ee",
       "range": {
         "startLine": 349,
