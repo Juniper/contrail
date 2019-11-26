@@ -224,6 +224,30 @@
     },
     {
       "key": {
+        "uuid": "fd41e6bb_78f16d5c",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-26T13:55:42Z",
+      "side": 1,
+      "message": "Replaced with const to avoid casting to string",
+      "parentUuid": "6154316a_f16aeb61",
+      "range": {
+        "startLine": 278,
+        "startChar": 0,
+        "endLine": 287,
+        "endChar": 2
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bbefdd0e_5f243dd2",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 2
