@@ -201,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "1e21a4bc_9023c828",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T15:03:33Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ff3477ce_7053d142",
+      "range": {
+        "startLine": 254,
+        "startChar": 1,
+        "endLine": 269,
+        "endChar": 2
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6154316a_f16aeb61",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 2
@@ -339,6 +363,30 @@
       "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2feae5a_3e4b9ab2",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 386,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-11-26T15:03:33Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "21342dbf_fe2a57b0",
+      "range": {
+        "startLine": 372,
+        "startChar": 1,
+        "endLine": 386,
+        "endChar": 2
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
