@@ -1,0 +1,222 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "be207d8e_c9532a8e",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "I think we should just fix JSON error message instead of logging. In other places too.\nWe have logging middleware for logging requests if needed. If logging middleware lacks functionality, it might be improved.",
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "43ce8a36_88f65899",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "Shouldn\u0027t it be HTTP 400? This error means request path is invalid, so it is client error. (I know you didn\u0027t change it)",
+      "range": {
+        "startLine": 70,
+        "startChar": 34,
+        "endLine": 70,
+        "endChar": 59
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0717ad30_ae94a705",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "Am I correct that error was not marshaled correctly? Can\u0027t we just use one of:\n\nreturn echo.NewHTTPError(http.Status..., err.Error())\nreturn echo.NewHTTPError(http.Status..., fmt.Sprintf(\"err.Error(): %v\", err))\n\nIn other places too.",
+      "range": {
+        "startLine": 70,
+        "startChar": 16,
+        "endLine": 70,
+        "endChar": 28
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "42a2e349_fe9a2328",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "path.Split() would be simpler.",
+      "range": {
+        "startLine": 154,
+        "startChar": 10,
+        "endLine": 154,
+        "endChar": 23
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3dbb69fa_2dae56cd",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "Please pass it to function and do not use Viper in proxy.go, because we read server configuration in apisrv/server.go (mostly apisrv.Server.Init())",
+      "range": {
+        "startLine": 159,
+        "startChar": 1,
+        "endLine": 159,
+        "endChar": 16
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57985307_a757d052",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "Is there a possibility to reuse HTTP client e.g. for each cluster?",
+      "range": {
+        "startLine": 164,
+        "startChar": 21,
+        "endLine": 164,
+        "endChar": 28
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "669b0c17_0e3fbf6b",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "Please read Viper configuration in apisrv.Server.Init() and pass it here.",
+      "range": {
+        "startLine": 177,
+        "startChar": 5,
+        "endLine": 177,
+        "endChar": 32
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e21b3f18_3a9d14c5",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "Nit: Please keep TestDynamicProxyServiceWithClosedTargetServers TestDynamicProxyServiceWithUnavailableTargetServers next to each other, beacause they are similar conceptually. TestDynamicProxyServiceInjectingServiceToken is quite different.",
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1bb170d2_15d34598",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "\"newCollectingServerStub()\"",
+      "range": {
+        "startLine": 213,
+        "startChar": 10,
+        "endLine": 213,
+        "endChar": 40
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c02d2a7_fd92f89e",
+        "filename": "pkg/apisrv/replication/test_config.yml",
+        "patchSetId": 16
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-26T15:36:13Z",
+      "side": 1,
+      "message": "\"service_token_endpoint_prefixes\" would be more verbose but also more precise, because it corresponds to \"endpoint_prefix\" field of endpoint resources.",
+      "range": {
+        "startLine": 48,
+        "startChar": 2,
+        "endLine": 48,
+        "endChar": 25
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
