@@ -377,6 +377,30 @@
       "revId": "54c786e283f811f82b31793c0f401215d5cad334",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "576e55a5_940cc07f",
+        "filename": "schemas/contrail/fabric/cloud.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-27T12:53:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "31b90c83_74913a82",
+      "range": {
+        "startLine": 59,
+        "startChar": 4,
+        "endLine": 82,
+        "endChar": 20
+      },
+      "revId": "54c786e283f811f82b31793c0f401215d5cad334",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

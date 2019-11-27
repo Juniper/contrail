@@ -96,6 +96,30 @@
     },
     {
       "key": {
+        "uuid": "98935656_27570c35",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-27T12:53:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7f6ad1f5_538860ce",
+      "range": {
+        "startLine": 290,
+        "startChar": 1,
+        "endLine": 290,
+        "endChar": 78
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1d979480_d4ca463c",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 2
@@ -142,6 +166,30 @@
       "writtenOn": "2019-11-22T16:13:27Z",
       "side": 1,
       "message": "Why do you removeVulnerableFiles if you did not run manage function?",
+      "range": {
+        "startLine": 152,
+        "startChar": 1,
+        "endLine": 152,
+        "endChar": 50
+      },
+      "revId": "f9149f4d294f079ee8f2a381169e5dfaba430e76",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f72a6013_197b9c6d",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-11-27T12:53:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "19861407_1367452d",
       "range": {
         "startLine": 152,
         "startChar": 1,
