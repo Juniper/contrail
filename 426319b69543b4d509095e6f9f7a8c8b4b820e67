@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7276eab0_4ed1c9f9",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-27T12:40:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fb7ef83d_672f99d7",
+      "revId": "426319b69543b4d509095e6f9f7a8c8b4b820e67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8c921e6d_66337aeb",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 9
@@ -30,6 +48,24 @@
       "writtenOn": "2019-11-27T11:29:47Z",
       "side": 1,
       "message": "Please consider moving this to updateVrouterGW.",
+      "revId": "426319b69543b4d509095e6f9f7a8c8b4b820e67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "49553f1d_26afa8b0",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-27T12:40:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8c921e6d_66337aeb",
       "revId": "426319b69543b4d509095e6f9f7a8c8b4b820e67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "48985bc0_b81a4e87",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 1043,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-27T12:40:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "84ce5b18_c42b6005",
+      "revId": "426319b69543b4d509095e6f9f7a8c8b4b820e67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "42ed477e_d34b5713",
         "filename": "pkg/cloud/data.go",
         "patchSetId": 9
@@ -64,6 +118,24 @@
       "writtenOn": "2019-11-27T11:29:47Z",
       "side": 1,
       "message": "Please move this closer to usage.",
+      "revId": "426319b69543b4d509095e6f9f7a8c8b4b820e67",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e3c9ab0_4d1a38bf",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 1065,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-27T12:40:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "42ed477e_d34b5713",
       "revId": "426319b69543b4d509095e6f9f7a8c8b4b820e67",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
