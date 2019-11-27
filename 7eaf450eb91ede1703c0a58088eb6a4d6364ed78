@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "697959c0_f6403892",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "My idea was to not make it leak more internal details to the client than it used to.\n\nI see that the original intent was probably to actually show those details to the user, so I\u0027ll make it return the error message properly:\n\n    return echo.NewHTTPError(http.Status..., err.Error())",
+      "parentUuid": "be207d8e_c9532a8e",
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "43ce8a36_88f65899",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 16
@@ -65,6 +83,54 @@
     },
     {
       "key": {
+        "uuid": "6d580ac2_bbd387d4",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0717ad30_ae94a705",
+      "range": {
+        "startLine": 70,
+        "startChar": 16,
+        "endLine": 70,
+        "endChar": 28
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54fba503_c09623dd",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "43ce8a36_88f65899",
+      "range": {
+        "startLine": 70,
+        "startChar": 34,
+        "endLine": 70,
+        "endChar": 59
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "42a2e349_fe9a2328",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 16
@@ -76,6 +142,30 @@
       "writtenOn": "2019-11-26T15:36:13Z",
       "side": 1,
       "message": "path.Split() would be simpler.",
+      "range": {
+        "startLine": 154,
+        "startChar": 10,
+        "endLine": 154,
+        "endChar": 23
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4d744a88_dbd5b748",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "42a2e349_fe9a2328",
       "range": {
         "startLine": 154,
         "startChar": 10,
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "3775edfe_59be2119",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3dbb69fa_2dae56cd",
+      "range": {
+        "startLine": 159,
+        "startChar": 1,
+        "endLine": 159,
+        "endChar": 16
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "57985307_a757d052",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 16
@@ -122,6 +236,30 @@
       "writtenOn": "2019-11-26T15:36:13Z",
       "side": 1,
       "message": "Is there a possibility to reuse HTTP client e.g. for each cluster?",
+      "range": {
+        "startLine": 164,
+        "startChar": 21,
+        "endLine": 164,
+        "endChar": 28
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5f1ce0c_82e3b190",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "It doesn\u0027t look like a simple change. We would need some synchronization so that apiClient.AuthToken is not modified concurrently.",
+      "parentUuid": "57985307_a757d052",
       "range": {
         "startLine": 164,
         "startChar": 21,
@@ -157,6 +295,30 @@
     },
     {
       "key": {
+        "uuid": "144718e2_ffce4115",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "669b0c17_0e3fbf6b",
+      "range": {
+        "startLine": 177,
+        "startChar": 5,
+        "endLine": 177,
+        "endChar": 32
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e21b3f18_3a9d14c5",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 16
@@ -168,6 +330,24 @@
       "writtenOn": "2019-11-26T15:36:13Z",
       "side": 1,
       "message": "Nit: Please keep TestDynamicProxyServiceWithClosedTargetServers TestDynamicProxyServiceWithUnavailableTargetServers next to each other, beacause they are similar conceptually. TestDynamicProxyServiceInjectingServiceToken is quite different.",
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9ae21e12_42dc5d61",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e21b3f18_3a9d14c5",
       "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -197,6 +377,30 @@
     },
     {
       "key": {
+        "uuid": "26ea80fe_9b8fe51a",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1bb170d2_15d34598",
+      "range": {
+        "startLine": 213,
+        "startChar": 10,
+        "endLine": 213,
+        "endChar": 40
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3c02d2a7_fd92f89e",
         "filename": "pkg/apisrv/replication/test_config.yml",
         "patchSetId": 16
@@ -208,6 +412,30 @@
       "writtenOn": "2019-11-26T15:36:13Z",
       "side": 1,
       "message": "\"service_token_endpoint_prefixes\" would be more verbose but also more precise, because it corresponds to \"endpoint_prefix\" field of endpoint resources.",
+      "range": {
+        "startLine": 48,
+        "startChar": 2,
+        "endLine": 48,
+        "endChar": 25
+      },
+      "revId": "7eaf450eb91ede1703c0a58088eb6a4d6364ed78",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f3b160d_e86a20d7",
+        "filename": "pkg/apisrv/replication/test_config.yml",
+        "patchSetId": 16
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-11-27T10:44:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3c02d2a7_fd92f89e",
       "range": {
         "startLine": 48,
         "startChar": 2,
