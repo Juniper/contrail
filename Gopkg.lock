@@ -18,7 +18,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:50d85b355fd5573737a16b7d5674a960ce29e333e969755658c76bd146424960"
+  digest = "1:ef94c16e82f0c04839631fa499a22dd069a2728bad0314437fefb575f18f9f00"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/fileutil",
@@ -33,7 +33,7 @@
     "pkg/schema",
   ]
   pruneopts = ""
-  revision = "88839029b6508874e6a3b2db823786257d4ce99e"
+  revision = "12a59a93e19dac3513135896abd2faacf8828484"
 
 [[projects]]
   branch = "2.x"

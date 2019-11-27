@@ -3,7 +3,7 @@ package apisrv_test
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/Juniper/asf/pkg/testutil/integration"
 )
 
 func TestFieldMask(t *testing.T) {

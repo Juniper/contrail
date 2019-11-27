@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/asf/pkg/testutil/integration"

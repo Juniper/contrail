@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"net/http"
 
-	types "github.com/gogo/protobuf/types"
-	"github.com/labstack/echo"
-	"github.com/sirupsen/logrus"
+	"github.com/gogo/protobuf/types"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/models"
+	"github.com/labstack/echo"
+	"github.com/sirupsen/logrus"
 
 	uuid "github.com/satori/go.uuid"
 	// TODO(buoto): Decouple from below packages
@@ -344,6 +344,10 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 	}
 	if ls.Detail {
 		return c.JSON(http.StatusOK, response.Detailed())
+	}
+	if len(ls.Fields) > 0 {
+		fm := types.FieldMask{Paths: ls.Fields}
+		return c.JSON(http.StatusOK, response.ApplyFieldMask(fm))
 	}
 	return c.JSON(http.StatusOK, response.Data())
 }

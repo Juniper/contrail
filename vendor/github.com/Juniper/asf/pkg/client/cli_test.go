@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/testutil"
 	"github.com/Juniper/asf/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ const (
 
 func TestCLI(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		RepoRootPath: "../../..",
+		RepoRootPath: "../..",
 	})
 	defer func() { assert.NoError(t, s.Close()) }()
 
@@ -265,19 +265,55 @@ func testList(cli *client.CLI) func(t *testing.T) {
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
-				name: "with parent UUID and fields",
+				name: "with object UUID and fields",
 				lp: &client.ListParameters{
-					ParentUUIDs: projectUUID,
+					ObjectUUIDs: vnRedUUID,
 					Fields:      "name,uuid",
 				},
-				expected: resources(vnRedFiltered(t), vnBlueFiltered(t)),
-				assert: func(t *testing.T, response string) {
-					assert.Equal(
-						t,
-						resources(vnRedFiltered(t), vnBlueFiltered(t)),
-						unmarshalData(t, response),
-					)
+				expected: resources(vnRedFiltered(t)),
+			},
+			{
+				name: "with object UUID and invalid field",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "name,uuid,invalid_field123",
 				},
+				expected: resources(vnRedFiltered(t)),
+			},
+			{
+				name: "with object UUID and no valid field",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "invalid_field123",
+				},
+				expected: vnEmptyResource(),
+			},
+			{
+				name: "with object UUID, fields and detail",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "name,uuid",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t)),
+			},
+			{
+				name: "with object UUID, invalid fields and detail",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "name,uuid,invalidfield123",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t)),
+			},
+			{
+				name: "with object UUID, no valid field and detail",
+				lp: &client.ListParameters{
+					ObjectUUIDs: vnRedUUID,
+					Fields:      "invalidfield123",
+					Detail:      true,
+				},
+				expected: resources(vnRed(t)),
 			},
 		}
 		for _, tt := range tests {
@@ -395,10 +431,6 @@ func vnBlue(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnBlueYAML())
 }
 
-func vnBlueFiltered(t *testing.T) map[interface{}]interface{} {
-	return unmarshalResource(t, vnBlueFilteredYAML())
-}
-
 func vnRed(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnRedYAML())
 }
@@ -409,6 +441,14 @@ func vnRedFiltered(t *testing.T) map[interface{}]interface{} {
 
 func vnGreen(t *testing.T) map[interface{}]interface{} {
 	return unmarshalResource(t, vnGreenYAML())
+}
+
+func vnEmptyResource() map[interface{}]interface{} {
+	return map[interface{}]interface{}{
+		"resources": []interface{}{
+			map[interface{}]interface{}{
+				"data": map[interface{}]interface{}{},
+				"kind": "virtual_network"}}}
 }
 
 func vnBlueYAML() string {
@@ -423,14 +463,6 @@ data:
   parent_uuid: project-cli-test-uuid
   perms2:
     owner: TestCLI
-  uuid: efb6aa60-9d8e-11e9-b056-13df9df3688a`
-}
-
-func vnBlueFilteredYAML() string {
-	return `
-kind: virtual_network
-data:
-  name: vn-blue
   uuid: efb6aa60-9d8e-11e9-b056-13df9df3688a`
 }
 

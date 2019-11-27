@@ -14,7 +14,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/keystone"
-
 	// TODO(buoto): Decouple from below packages
 	//"github.com/Juniper/asf/pkg/neutron/logic"
 	"github.com/Juniper/asf/pkg/services"

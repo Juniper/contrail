@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/db/cassandra"
 	"github.com/Juniper/asf/pkg/db/etcd"

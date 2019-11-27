@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Juniper/asf/pkg/apisrv/endpoint"
-	"github.com/Juniper/asf/pkg/apisrv/keystone"
+	"github.com/Juniper/asf/pkg/endpoint"
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services"

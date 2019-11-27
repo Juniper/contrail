@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
-	"github.com/Juniper/asf/pkg/apisrv/keystone"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"

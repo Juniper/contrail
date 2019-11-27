@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
-	"github.com/Juniper/asf/pkg/apisrv/endpoint"
-	"github.com/Juniper/asf/pkg/apisrv/keystone"
 	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/client"
+	"github.com/Juniper/asf/pkg/endpoint"
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/retry"
@@ -20,7 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	kscommon "github.com/Juniper/asf/pkg/keystone"
+	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -63,7 +63,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
 	}
 	if authType != basicAuth {
-		config.Scope = &kscommon.Scope{Project: &kscommon.Project{Domain: kscommon.DefaultDomain()}}
+		config.Scope = &kstypes.Scope{Project: &kstypes.Project{Domain: kstypes.DefaultDomain()}}
 		// get keystone endpoint
 		var e *endpoint.Endpoint
 		e, err = h.readAuthEndpoint(ep.ParentUUID)
@@ -132,13 +132,13 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
 			apiClient.Scope.Project.Domain)
 		if err == nil {
-			apiClient.Scope = kscommon.NewScope(
-				kscommon.DefaultDomainID, kscommon.DefaultDomainName,
+			apiClient.Scope = kstypes.NewScope(
+				kstypes.DefaultDomainID, kstypes.DefaultDomainName,
 				projectID, defaultProjectName)
 		}
 	}
 	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(kscommon.DefaultDomainID, projectID,
+	varCtx := auth.NewContext(kstypes.DefaultDomainID, projectID,
 		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
 	var authKey interface{} = "auth"
 	ctx = context.WithValue(ctx, authKey, varCtx)

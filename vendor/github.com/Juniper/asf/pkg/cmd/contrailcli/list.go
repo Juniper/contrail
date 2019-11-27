@@ -3,7 +3,7 @@ package contrailcli
 import (
 	"fmt"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/spf13/cobra"
