@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f5b4b2bd_5f08bb14",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-11-27T08:35:43Z",
+      "side": 1,
+      "message": "Nit: Maybe it will be more readable to introduce a new test and a new set of assert methods rather than scattering random ifs.",
+      "range": {
+        "startLine": 291,
+        "startChar": 1,
+        "endLine": 297,
+        "endChar": 2
+      },
+      "revId": "7dce646cf95fd53512ee6a914e66c415e8882593",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
