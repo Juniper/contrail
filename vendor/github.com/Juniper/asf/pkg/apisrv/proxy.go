@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/endpoint"
 	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/endpoint"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/proxy"

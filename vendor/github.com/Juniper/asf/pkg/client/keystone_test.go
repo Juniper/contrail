@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/apisrv/client"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/testutil/integration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

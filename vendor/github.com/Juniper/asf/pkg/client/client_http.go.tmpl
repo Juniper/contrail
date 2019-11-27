@@ -1,10 +1,10 @@
 package client
 
 import (
-    "context"
+	"context"
 
-    "github.com/Juniper/asf/pkg/models"
-    "github.com/Juniper/asf/pkg/services"
+	"github.com/Juniper/asf/pkg/models"
+	"github.com/Juniper/asf/pkg/services"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
