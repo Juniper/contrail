@@ -67,8 +67,7 @@ func NewCLIByViper() (*CLI, error) {
 func NewCLI(c *HTTPConfig, schemaRoot string) (*CLI, error) {
 	client := NewHTTP(c)
 
-	_, err := client.Login(context.Background())
-	if err != nil {
+	if err := client.Login(context.Background()); err != nil {
 		return nil, err
 	}
 

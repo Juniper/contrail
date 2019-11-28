@@ -464,7 +464,7 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 		Insecure: true,
 	})
 
-	_, err := c.Login(ctx)
+	err := c.Login(ctx)
 	require.NoError(t, err)
 
 	return c.AuthToken
