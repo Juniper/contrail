@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "22d9a749_2a6444a6",
+        "filename": "pkg/testutil/integration/api_server_client.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-28T15:17:15Z",
+      "side": 1,
+      "message": "No necessarily. @Marcin, see: https://tour.golang.org/basics/3",
+      "parentUuid": "b51582c3_c1289504",
+      "revId": "c8abfea285925665e42caeaa63dc3b5c73adda16",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "076b0580_017f140b",
         "filename": "pkg/testutil/integration/api_server_client.go",
         "patchSetId": 1
