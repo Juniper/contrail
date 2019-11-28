@@ -66,10 +66,16 @@ func NewTestingHTTPClient(t *testing.T, apiServerURL string, userID string) *HTT
 
 // NewAdminHTTPClient creates HTTP client of API Server using Alice user (admin) credentials.
 func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	c := client.NewHTTP(AdminHTTPConfig(apiServerURL))
+	return newLoggedInHTTPClient(AdminHTTPConfig(apiServerURL))
+}
 
-	_, err := c.Login(context.Background())
-	return c, err
+func newLoggedInHTTPClient(c *client.HTTPConfig) (*client.HTTP, error) {
+	cl := client.NewHTTP(c)
+
+	if err := cl.Login(context.Background()); err != nil {
+		return nil, err
+	}
+	return cl, nil
 }
 
 // AdminHTTPConfig returns HTTP client config containing admin credentials.
@@ -91,7 +97,7 @@ func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
 
 // NewHTTPClient creates HTTP client of API Server using Bob user credentials.
 func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	c := client.NewHTTP(&client.HTTPConfig{
+	return newLoggedInHTTPClient(&client.HTTPConfig{
 		ID:       BobUserID,
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
@@ -104,9 +110,6 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		),
 		Insecure: true,
 	})
-
-	_, err := c.Login(context.Background())
-	return c, err
 }
 
 type fqNameToIDLegacyRequest struct {
