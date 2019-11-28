@@ -165,8 +165,7 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 // Watch starts watching for events on API Server resources.
 func (a *Agent) Watch(ctx context.Context) error {
 	a.log.Info("Starting watching for events")
-	_, err := a.APIServer.Login(ctx)
-	if err != nil {
+	if err := a.APIServer.Login(ctx); err != nil {
 		return errors.Wrap(err, "login to API Server failed")
 	}
 

@@ -379,7 +379,7 @@ func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server 
 		})
 
 		if c.ID != "" {
-			_, err := ts.Clients[k].Login(ctx)
+			err := ts.Clients[k].Login(ctx)
 			assert.NoError(t, err, fmt.Sprintf("client %q failed to login", c.ID))
 		}
 	}
