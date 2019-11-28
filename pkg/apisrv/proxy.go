@@ -2,15 +2,18 @@ package apisrv
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -25,6 +28,7 @@ const (
 	DefaultDynamicProxyPath = "proxy"
 	ProxySyncInterval       = 2 * time.Second
 	XClusterIDKey           = "X-Cluster-ID"
+	XServiceTokenKey        = "X-Service-Token"
 
 	limit         = 100
 	pathSeparator = "/"
@@ -42,39 +46,62 @@ type proxyService struct {
 	log              *logrus.Entry
 }
 
-func newProxyService(es *endpoint.Store, dbService services.Service, dynamicProxyPath string) *proxyService {
+// DynamicProxyConfig configures the dynamic proxy service and middleware.
+type DynamicProxyConfig struct {
+	// Path is the path the proxy is served at.
+	Path string
+	// ServiceTokenEndpointPrefixes are prefixes of the endpoints that should have a service token injected into requests.
+	ServiceTokenEndpointPrefixes []string
+	// ServiceUserClientConfig is an HTTP config that allows logging in as the service user.
+	ServiceUserClientConfig *client.HTTPConfig
+}
+
+func newProxyService(es *endpoint.Store, dbService services.Service, config *DynamicProxyConfig) *proxyService {
 	return &proxyService{
 		endpointStore:    es,
 		dbService:        dbService,
-		dynamicProxyPath: dynamicProxyPath,
+		dynamicProxyPath: config.Path,
 		forceUpdateChan:  make(chan chan struct{}),
 		log:              logutil.NewLogger("proxy-service"),
 	}
 }
 
-func dynamicProxyMiddleware(es *endpoint.Store, dynamicProxyPath string) func(next echo.HandlerFunc) echo.HandlerFunc {
+func dynamicProxyMiddleware(
+	es *endpoint.Store, config *DynamicProxyConfig,
+) func(next echo.HandlerFunc) echo.HandlerFunc {
 	log := logutil.NewLogger("dynamic-proxy-mw")
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			r := ctx.Request()
 
-			err := setClusterIDKeyHeader(r, dynamicProxyPath)
+			clusterID, err := clusterID(r.URL.Path, config.Path)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err)
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
+			setClusterIDHeader(r, clusterID)
 
 			pp := proxyPrefix(r.URL.Path, urlScope(r.URL.Path))
 			scope := urlScope(r.URL.Path)
 			r.URL.Path = withNoProxyPrefix(r.URL.Path, pp)
 
+			if shouldInjectServiceToken(pp, config) {
+				var token string
+				token, err = obtainServiceToken(r.Context(), clusterID, config)
+				if err != nil {
+					log.WithError(err).Error("Failed to obtain service token - not adding it to the request")
+				} else {
+					setServiceTokenHeader(r, token)
+				}
+			}
+
 			t, err := readTargets(es, scope, pp)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err)
+				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
 
 			if err = proxy.HandleRequest(ctx, rawTargetURLs(t), log); err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err)
+				return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to handle proxy request: %v", err))
 			}
 
 			return nil
@@ -120,22 +147,44 @@ func rawTargetURLs(targets []*endpoint.Endpoint) []string {
 	return u
 }
 
-func setClusterIDKeyHeader(r *http.Request, dynamicProxyPath string) error {
-	cid := clusterID(r.URL.Path, dynamicProxyPath)
-	if cid == "" {
-		return errors.Errorf("cluster ID not found in proxy URL: %v", r.URL.Path)
-	}
-
-	r.Header.Set(XClusterIDKey, cid)
-	return nil
+func setClusterIDHeader(r *http.Request, clusterID string) {
+	r.Header.Set(XClusterIDKey, clusterID)
 }
 
-func clusterID(url, dynamicProxyPath string) (clusterID string) {
+func clusterID(url, dynamicProxyPath string) (string, error) {
 	paths := strings.Split(url, pathSeparator)
-	if len(paths) > 3 && paths[1] == dynamicProxyPath {
-		return paths[2]
+	if len(paths) <= 3 || paths[1] != dynamicProxyPath {
+		return "", errors.Errorf("cluster ID not found in proxy URL: %v", url)
 	}
-	return ""
+	return paths[2], nil
+}
+
+func shouldInjectServiceToken(proxyPrefix string, config *DynamicProxyConfig) bool {
+	paths := strings.Split(proxyPrefix, pathSeparator)
+	if len(paths) < 4 {
+		return false
+	}
+	endpointPrefix := paths[3]
+	allowedPrefixes := config.ServiceTokenEndpointPrefixes
+	return format.ContainsString(allowedPrefixes, endpointPrefix)
+}
+
+func obtainServiceToken(ctx context.Context, clusterID string, config *DynamicProxyConfig) (string, error) {
+	apiClient := client.NewHTTP(config.ServiceUserClientConfig)
+
+	ctx = auth.WithXClusterID(ctx, clusterID)
+	if _, err := apiClient.Login(ctx); err != nil {
+		return "", errors.Wrap(err, "failed to log in as service user")
+	}
+
+	if apiClient.AuthToken == "" {
+		return "", errors.New("keystone returned no service token for service user")
+	}
+	return apiClient.AuthToken, nil
+}
+
+func setServiceTokenHeader(r *http.Request, token string) {
+	r.Header.Set(XServiceTokenKey, token)
 }
 
 // StartEndpointsSync starts synchronization of proxy endpoints.
