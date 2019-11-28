@@ -130,8 +130,7 @@ func (c *Deploy) Manage() error {
 	defer c.streamServer.Close()
 
 	c.log.Infof("start handling %s", c.config.ResourceType)
-	_, err := c.APIServer.Login(context.Background())
-	if err != nil {
+	if err := c.APIServer.Login(context.Background()); err != nil {
 		return errors.Wrap(err, "login to API Server failed")
 	}
 

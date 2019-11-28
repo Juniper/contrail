@@ -27,9 +27,8 @@ func TestKeystoneClient(t *testing.T) {
 		},
 	}
 
-	resp, err := k.ObtainToken(context.Background(), integration.AdminUserID, integration.AdminUserPassword, nil)
+	token, err := k.ObtainToken(context.Background(), integration.AdminUserID, integration.AdminUserPassword, nil)
 	assert.NoError(t, err)
-	token := resp.Header.Get("X-Subject-Token")
 	assert.NotEmpty(t, token)
 
 	p, err := k.GetProject(context.Background(), token, integration.AdminProjectID)

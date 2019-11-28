@@ -57,7 +57,7 @@ func recordTest() {
 			Insecure: true,
 		})
 
-		_, err = clients[key].Login(ctx)
+		err = clients[key].Login(ctx)
 		assertError(err, "client can't login")
 	}
 

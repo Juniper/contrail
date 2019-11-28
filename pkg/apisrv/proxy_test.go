@@ -753,7 +753,7 @@ func verifyFiveCreateTokenRequests(ctx context.Context, t *testing.T, hc *client
 }
 
 func verifyCreateTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
-	_, err := hc.Login(ctx)
+	err := hc.Login(ctx)
 	assert.NoError(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 
@@ -764,7 +764,7 @@ func verifyFiveCreateTokenRequestsFail(ctx context.Context, t *testing.T, hc *cl
 }
 
 func verifyCreateTokenRequestFails(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
-	_, err := hc.Login(ctx)
+	err := hc.Login(ctx)
 	assert.Error(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 }
 

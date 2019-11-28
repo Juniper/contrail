@@ -61,11 +61,10 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 func (k *Keystone) GetProjectIDByName(
 	ctx context.Context, id, password, projectName string, domain *keystone.Domain) (string, error) {
 	// Fetch unscoped token
-	resp, err := k.obtainUnscopedToken(ctx, id, password, domain)
+	token, err := k.obtainUnscopedToken(ctx, id, password, domain)
 	if err != nil {
-		return "", errorFromResponse(err, resp)
+		return "", err
 	}
-	token := resp.Header.Get("X-Subject-Token")
 	// Get project list with unscoped token
 	request, err := http.NewRequest(echo.GET, k.getURL("/auth/projects"), nil)
 	if err != nil {
@@ -74,7 +73,7 @@ func (k *Keystone) GetProjectIDByName(
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	request.Header.Set("X-Auth-Token", token)
 	var output *projectListResponse
-	resp, err = k.HTTPClient.Do(request)
+	resp, err := k.HTTPClient.Do(request)
 	if err != nil {
 		return "", errors.Wrap(err, "issuing HTTP request failed")
 	}
@@ -102,11 +101,12 @@ func (k *Keystone) getURL(path string) string {
 
 // obtainUnscopedToken gets unscoped authentication token.
 func (k *Keystone) obtainUnscopedToken(
-	ctx context.Context, id, password string, domain *keystone.Domain) (*http.Response, error) {
+	ctx context.Context, id, password string, domain *keystone.Domain,
+) (string, error) {
 	if k.URL == "" {
-		return nil, nil
+		return "", nil
 	}
-	dataJSON, err := json.Marshal(&keystone.UnScopedAuthRequest{
+	return k.fetchToken(ctx, &keystone.UnScopedAuthRequest{
 		Auth: &keystone.UnScopedAuth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
@@ -120,20 +120,14 @@ func (k *Keystone) obtainUnscopedToken(
 			},
 		},
 	})
-	if err != nil {
-		return nil, err
-	}
-	return k.fetchToken(ctx, dataJSON)
 }
 
 // ObtainToken gets authentication token.
-func (k *Keystone) ObtainToken(
-	ctx context.Context, id, password string, scope *keystone.Scope,
-) (*http.Response, error) {
+func (k *Keystone) ObtainToken(ctx context.Context, id, password string, scope *keystone.Scope) (string, error) {
 	if k.URL == "" {
-		return nil, nil
+		return "", nil
 	}
-	dataJSON, err := json.Marshal(&keystone.ScopedAuthRequest{
+	return k.fetchToken(ctx, &keystone.ScopedAuthRequest{
 		Auth: &keystone.ScopedAuth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
@@ -148,17 +142,17 @@ func (k *Keystone) ObtainToken(
 			Scope: scope,
 		},
 	})
-	if err != nil {
-		return nil, err
-	}
-	return k.fetchToken(ctx, dataJSON)
 }
 
 // fetchToken gets scoped/unscoped token.
-func (k *Keystone) fetchToken(ctx context.Context, dataJSON []byte) (*http.Response, error) {
-	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewBuffer(dataJSON))
+func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (string, error) {
+	d, err := json.Marshal(authRequest)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewReader(d))
+	if err != nil {
+		return "", err
 	}
 	request = auth.SetXAuthTokenInHeader(ctx, request)
 	request = auth.SetXClusterIDInHeader(ctx, request)
@@ -168,7 +162,7 @@ func (k *Keystone) fetchToken(ctx context.Context, dataJSON []byte) (*http.Respo
 	startedAt := time.Now()
 	resp, err := k.HTTPClient.Do(request)
 	if err != nil {
-		return nil, errorFromResponse(err, resp)
+		return "", errorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
@@ -178,13 +172,8 @@ func (k *Keystone) fetchToken(ctx context.Context, dataJSON []byte) (*http.Respo
 	}
 
 	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
-		return resp, errorFromResponse(err, resp)
+		return "", errorFromResponse(err, resp)
 	}
 
-	var authResponse keystone.AuthResponse
-	if err = json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
-		return resp, errorFromResponse(err, resp)
-	}
-
-	return resp, nil
+	return resp.Header.Get("X-Subject-Token"), nil
 }
