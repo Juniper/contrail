@@ -8,9 +8,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/Juniper/asf/pkg/keystone"
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/Juniper/contrail/pkg/endpoint"
@@ -41,8 +44,9 @@ type Keystone struct {
 	Assignment       Assignment
 	staticAssignment *StaticAssignment
 	endpointStore    *endpoint.Store
-	client           *Client
 	apiClient        *client.HTTP
+
+	log *logrus.Entry
 }
 
 //Init is used to initialize echo with Keystone capability.
@@ -50,8 +54,8 @@ type Keystone struct {
 func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 	keystone := &Keystone{
 		endpointStore: es,
-		client:        NewClient(),
 		apiClient:     client.NewHTTPFromConfig(),
+		log:           logutil.NewLogger("keystone-api"),
 	}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
@@ -84,9 +88,10 @@ func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 
 //GetProjectAPI is an API handler to list projects.
 func (k *Keystone) GetProjectAPI(c echo.Context) error {
-	ke := getKeystoneEndpoints(c.Request().Header.Get(xClusterIDKey), k.endpointStore)
-	if len(ke) > 0 {
-		return k.client.GetProject(c, rawAuthURLs(ke), c.Param("id"))
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
+		c.Request().URL.Path = path.Join(c.Request().URL.Path, c.Param("id"))
+		return k.proxyRequest(c, ke)
 	}
 
 	token, err := k.validateToken(c.Request())
@@ -106,12 +111,17 @@ func (k *Keystone) GetProjectAPI(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, nil)
 }
 
+func (k *Keystone) proxyRequest(c echo.Context, endpoints []*endpoint.Endpoint) error {
+	r := c.Request()
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, LocalAuthPath)
+	return proxy.HandleRequest(c, rawAuthURLs(endpoints), k.log)
+}
+
 //listDomainsAPI is an API handler to list domains.
 func (k *Keystone) listDomainsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	ke := getKeystoneEndpoints(clusterID, k.endpointStore)
-	if len(ke) > 0 {
-		return k.client.GetDomains(c, rawAuthURLs(ke))
+	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
+		return k.proxyRequest(c, ke)
 	}
 
 	_, err := k.validateToken(c.Request())
@@ -132,9 +142,8 @@ func (k *Keystone) listDomainsAPI(c echo.Context) error {
 //ListProjectsAPI is an API handler to list projects.
 func (k *Keystone) ListProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	ke := getKeystoneEndpoints(clusterID, k.endpointStore)
-	if len(ke) > 0 {
-		return k.client.GetProjects(c, rawAuthURLs(ke))
+	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
+		return k.proxyRequest(c, ke)
 	}
 
 	token, err := k.validateToken(c.Request())
@@ -248,14 +257,14 @@ func (k *Keystone) CreateTokenAPI(c echo.Context) error {
 }
 
 func (k *Keystone) fetchServerTokenWithClusterToken(
-	ctx echo.Context, i *keystone.Identity, ke []*endpoint.Endpoint,
+	c echo.Context, i *keystone.Identity, ke []*endpoint.Endpoint,
 ) error {
 	if i.Cluster.Token != nil {
-		ctx.Request().Header.Set(xAuthTokenKey, i.Cluster.Token.ID)
-		ctx.Request().Header.Set(xSubjectTokenKey, i.Cluster.Token.ID)
+		c.Request().Header.Set(xAuthTokenKey, i.Cluster.Token.ID)
+		c.Request().Header.Set(xSubjectTokenKey, i.Cluster.Token.ID)
 	}
 
-	return k.client.ValidateToken(ctx, rawAuthURLs(ke))
+	return k.proxyRequest(c, ke)
 }
 
 func (k *Keystone) newLocalAuthRequest() keystone.AuthRequest {
@@ -283,7 +292,7 @@ func (k *Keystone) newLocalAuthRequest() keystone.AuthRequest {
 	return authRequest
 }
 
-func (k *Keystone) fetchClusterToken(ctx echo.Context, sar keystone.AuthRequest, ke []*endpoint.Endpoint) error {
+func (k *Keystone) fetchClusterToken(c echo.Context, sar keystone.AuthRequest, ke []*endpoint.Endpoint) error {
 	// TODO(dfurman): prevent panic: use fields without pointers in models and/or provide getters with nil checks
 	if sar.GetIdentity().Password != nil {
 		if sar.GetScope() == nil {
@@ -295,7 +304,7 @@ func (k *Keystone) fetchClusterToken(ctx echo.Context, sar keystone.AuthRequest,
 		}
 		// TODO(dfurman): prevent panic: use fields without pointers in models and/or provide getters with nil checks
 		if !sar.GetIdentity().Password.User.HasCredential() {
-			tokenID := ctx.Request().Header.Get(xAuthTokenKey)
+			tokenID := c.Request().Header.Get(xAuthTokenKey)
 			if tokenID == "" {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 			}
@@ -308,8 +317,8 @@ func (k *Keystone) fetchClusterToken(ctx echo.Context, sar keystone.AuthRequest,
 		}
 	}
 
-	ctx = withRequestBody(ctx, sar)
-	return k.client.CreateToken(ctx, rawAuthURLs(ke))
+	c = withRequestBody(c, sar)
+	return k.proxyRequest(c, ke)
 }
 
 func withRequestBody(c echo.Context, ar keystone.AuthRequest) echo.Context {
@@ -394,9 +403,9 @@ func filterProject(user *keystone.User, scope *keystone.Scope) (*keystone.Projec
 
 //ValidateTokenAPI is an API token for validating Token.
 func (k *Keystone) ValidateTokenAPI(c echo.Context) error {
-	ke := getKeystoneEndpoints(c.Request().Header.Get(xClusterIDKey), k.endpointStore)
-	if ke != nil {
-		return k.client.ValidateToken(c, rawAuthURLs(ke))
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
+		return k.proxyRequest(c, ke)
 	}
 
 	tokenID := c.Request().Header.Get(xAuthTokenKey)
