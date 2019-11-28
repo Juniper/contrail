@@ -194,8 +194,7 @@ func TestClusterLogin(t *testing.T) {
 				client.ID = tt.id
 				client.Password = tt.password
 				client.Scope = nil
-				_, err := client.Login(ctx)
-				if !tt.wantErr {
+				if err := client.Login(ctx); !tt.wantErr {
 					assert.NoError(t, err, "unexpected error")
 				} else {
 					assert.Error(t, err, "got error")
