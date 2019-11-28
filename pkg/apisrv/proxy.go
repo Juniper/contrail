@@ -173,7 +173,7 @@ func obtainServiceToken(ctx context.Context, clusterID string, config *DynamicPr
 	apiClient := client.NewHTTP(config.ServiceUserClientConfig)
 
 	ctx = auth.WithXClusterID(ctx, clusterID)
-	if _, err := apiClient.Login(ctx); err != nil {
+	if err := apiClient.Login(ctx); err != nil {
 		return "", errors.Wrap(err, "failed to log in as service user")
 	}
 

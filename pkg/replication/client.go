@@ -80,8 +80,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		ctx = h.getAuthContext(ep.ParentUUID, c)
 	}
 
-	_, err = c.Login(ctx)
-	if err != nil {
+	if err := c.Login(ctx); err != nil {
 		h.log.Warnf("Login failed for: %s, %v", ep.ParentUUID, err)
 	}
 
@@ -160,8 +159,7 @@ func (h *vncAPIHandle) UpdateClient(ep *models.Endpoint) {
 	h.clients[ep.ParentUUID].targetClient.Password = ep.Password
 	// Login to get fetch auth token
 	vncAPI := h.clients[ep.ParentUUID]
-	_, err := vncAPI.targetClient.Login(vncAPI.ctx)
-	if err != nil {
+	if err := vncAPI.targetClient.Login(vncAPI.ctx); err != nil {
 		h.log.Warnf("Login failed for: %s, %v", ep.ParentUUID, err)
 	}
 	h.log.Debugf("Updated VNC API client for endpoint: %s", ep.UUID)

@@ -222,7 +222,7 @@ func TestCreateRefMethod(t *testing.T) {
 func TestRemoteIntPoolMethods(t *testing.T) {
 	hc := integration.NewTestingHTTPClient(t, server.URL(), integration.AdminUserID)
 
-	_, err := hc.Login(context.Background())
+	err := hc.Login(context.Background())
 	require.NoError(t, err)
 
 	err = hc.CreateIntPool(context.Background(), "test_int_pool_806f099f3", 8000100, 8000200)
