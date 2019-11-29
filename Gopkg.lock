@@ -18,7 +18,8 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:ef94c16e82f0c04839631fa499a22dd069a2728bad0314437fefb575f18f9f00"
+  branch = "asf-templates"
+  digest = "1:693b8b09e42b8d51d3598803b405e7b2b60507eb8f9cc75d4b0acc48b5435ed2"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/fileutil",
@@ -33,7 +34,7 @@
     "pkg/schema",
   ]
   pruneopts = ""
-  revision = "7a40ffba37b9b4180f4d3c9553c0ca5a809c2f40"
+  revision = "7d6a956c8565e442b8d89f8df8cadd59047abc1b"
 
 [[projects]]
   branch = "2.x"

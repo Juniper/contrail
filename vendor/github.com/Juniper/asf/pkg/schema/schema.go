@@ -383,7 +383,7 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 }
 
-//Walk apply one function for json schema recursively.
+//Walk generateFile one function for json schema recursively.
 func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
 	if s == nil {
 		return nil
