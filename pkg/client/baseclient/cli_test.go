@@ -1,4 +1,4 @@
-package client_test
+package baseclient_test
 
 import (
 	"fmt"
@@ -6,13 +6,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	yaml "gopkg.in/yaml.v2"
+
+	. "github.com/Juniper/contrail/pkg/client/baseclient"
 )
 
 const (
@@ -36,7 +37,7 @@ func TestCLI(t *testing.T) {
 	})
 	defer func() { assert.NoError(t, s.Close()) }()
 
-	cli, err := client.NewCLI(
+	cli, err := NewCLI(
 		integration.AdminHTTPConfig(s.URL()),
 		"/public",
 	)
@@ -47,7 +48,7 @@ func TestCLI(t *testing.T) {
 	t.Run("CRUD", testCRUD(cli))
 }
 
-func testCLIShowsSchema(cli *client.CLI) func(t *testing.T) {
+func testCLIShowsSchema(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		s, err := cli.ShowSchema(vnSchemaID)
 		assert.NoError(t, err)
@@ -95,13 +96,13 @@ data:
   id_perms:  #  (object) `
 }
 
-func testHelpMessageIsDisplayedGivenEmptySchemaID(cli *client.CLI) func(t *testing.T) {
+func testHelpMessageIsDisplayedGivenEmptySchemaID(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		o, err := cli.ShowResource("", "")
 		assert.NoError(t, err)
 		assert.Contains(t, o, "contrail show virtual_network $UUID")
 
-		o, err = cli.ListResources("", &client.ListParameters{})
+		o, err = cli.ListResources("", &ListParameters{})
 		assert.NoError(t, err)
 		assert.Contains(t, o, "contrail list virtual_network")
 
@@ -115,7 +116,7 @@ func testHelpMessageIsDisplayedGivenEmptySchemaID(cli *client.CLI) func(t *testi
 	}
 }
 
-func testCRUD(cli *client.CLI) func(t *testing.T) {
+func testCRUD(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("show", testShow(cli))
 		t.Run("list", testList(cli))
@@ -126,7 +127,7 @@ func testCRUD(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func testShow(cli *client.CLI) func(t *testing.T) {
+func testShow(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		createTestResources(t, cli)
 
@@ -137,24 +138,24 @@ func testShow(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func testList(cli *client.CLI) func(t *testing.T) {
+func testList(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		tests := []struct {
 			name     string
-			lp       *client.ListParameters
+			lp       *ListParameters
 			expected interface{}
 			assert   func(t *testing.T, response string)
 		}{
 			{
 				name: "with filters",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					Filters: fmt.Sprintf("uuid==%s", vnBlueUUID),
 				},
 				expected: resources(vnBlue(t)),
 			},
 			{
 				name: "with parent UUID and page limit",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 					PageLimit:   1,
 				},
@@ -162,7 +163,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with parent UUID and page marker",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 					PageMarker:  vnRedUUID,
 				},
@@ -170,7 +171,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with parent UUID and detail",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 					Detail:      true,
 				},
@@ -178,7 +179,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with parent UUID and count",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 					Count:       true,
 				},
@@ -191,7 +192,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			{
 				// TODO(Daniel): improve this test
 				name: "with parent UUID and shared",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 					Shared:      true,
 				},
@@ -199,14 +200,14 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with parent UUID and exclude hrefs",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs:  projectUUID,
 					ExcludeHRefs: true,
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
 				assert: func(t *testing.T, response string) {
-					for _, r := range unmarshalResources(t, response)[client.ResourcesKey] {
-						data, ok := r[client.DataKey].(map[interface{}]interface{})
+					for _, r := range unmarshalResources(t, response)[ResourcesKey] {
+						data, ok := r[DataKey].(map[interface{}]interface{})
 						assert.True(t, ok)
 
 						_, ok = data["href"]
@@ -216,7 +217,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with parent UUID and parent type",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 					ParentType:  "project",
 				},
@@ -224,49 +225,49 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with parent FQ Name",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentFQName: strings.Join([]string{domainName, projectName}, ":"),
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
 				name: "with parent's parent FQ Name",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentFQName: strings.Join([]string{domainName}, ":"),
 				},
 				expected: resources(),
 			},
 			{
 				name: "with different parent FQ Name",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentFQName: strings.Join([]string{domainName, secondProjectName}, ":"),
 				},
 				expected: resources(vnGreen(t)),
 			},
 			{
 				name: "with parent UUID",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ParentUUIDs: projectUUID,
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
 				name: "with backref UUIDs",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					BackrefUUIDs: vmiUUID,
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
 				name: "with object UUIDs",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: strings.Join([]string{vnRedUUID, vnBlueUUID}, ","),
 				},
 				expected: resources(vnRed(t), vnBlue(t)),
 			},
 			{
 				name: "with object UUID and fields",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: vnRedUUID,
 					Fields:      "name,uuid",
 				},
@@ -274,7 +275,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with object UUID and invalid field",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: vnRedUUID,
 					Fields:      "name,uuid,invalid_field123",
 				},
@@ -282,7 +283,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with object UUID and no valid field",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: vnRedUUID,
 					Fields:      "invalid_field123",
 				},
@@ -290,7 +291,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with object UUID, fields and detail",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: vnRedUUID,
 					Fields:      "name,uuid",
 					Detail:      true,
@@ -299,7 +300,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with object UUID, invalid fields and detail",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: vnRedUUID,
 					Fields:      "name,uuid,invalidfield123",
 					Detail:      true,
@@ -308,7 +309,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 			},
 			{
 				name: "with object UUID, no valid field and detail",
-				lp: &client.ListParameters{
+				lp: &ListParameters{
 					ObjectUUIDs: vnRedUUID,
 					Fields:      "invalidfield123",
 					Detail:      true,
@@ -332,7 +333,7 @@ func testList(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
+func testSetBooleanField(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		createTestResources(t, cli)
 
@@ -345,7 +346,7 @@ func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
 		assert.NoError(t, err)
 		assertEqual(t, resources(withExternalIPAM(t, vnBlue(t), true)), o)
 
-		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
+		o, err = cli.ListResources(vnSchemaID, &ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
@@ -353,7 +354,7 @@ func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func testUpdateBooleanFieldsViaSync(cli *client.CLI) func(t *testing.T) {
+func testUpdateBooleanFieldsViaSync(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		createTestResources(t, cli)
 
@@ -362,7 +363,7 @@ func testUpdateBooleanFieldsViaSync(cli *client.CLI) func(t *testing.T) {
 		assert.NoError(t, err)
 		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
 
-		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
+		o, err = cli.ListResources(vnSchemaID, &ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
@@ -370,7 +371,7 @@ func testUpdateBooleanFieldsViaSync(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func testDeleteSingle(cli *client.CLI) func(t *testing.T) {
+func testDeleteSingle(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		createTestResources(t, cli)
 		deleteVMI(t, cli) // avoid DB constraint violation on VN delete
@@ -380,7 +381,7 @@ func testDeleteSingle(cli *client.CLI) func(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "", o)
 
-		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
+		o, err = cli.ListResources(vnSchemaID, &ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
@@ -388,7 +389,7 @@ func testDeleteSingle(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func testDeleteMultiple(cli *client.CLI) func(t *testing.T) {
+func testDeleteMultiple(cli *CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		createTestResources(t, cli)
 		deleteVMI(t, cli) // avoid DB constraint violation on VNs delete
@@ -398,7 +399,7 @@ func testDeleteMultiple(cli *client.CLI) func(t *testing.T) {
 		assert.NoError(t, err)
 		require.Equal(t, "", o)
 
-		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
+		o, err = cli.ListResources(vnSchemaID, &ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
@@ -406,14 +407,14 @@ func testDeleteMultiple(cli *client.CLI) func(t *testing.T) {
 	}
 }
 
-func createTestResources(t *testing.T, cli *client.CLI) {
+func createTestResources(t *testing.T, cli *CLI) {
 	o, err := cli.SyncResources(resourcesPath)
 
 	require.NoError(t, err)
 	assertEqualByFile(t, resourcesPath, o)
 }
 
-func deleteVMI(t *testing.T, cli *client.CLI) {
+func deleteVMI(t *testing.T, cli *CLI) {
 	o, err := cli.DeleteResource(vmiSchemaID, vmiUUID)
 	require.NoError(t, err)
 	require.Equal(t, "", o)
@@ -516,16 +517,16 @@ data:
 func resources(resources ...interface{}) map[interface{}]interface{} {
 	if len(resources) == 0 {
 		return map[interface{}]interface{}{
-			client.ResourcesKey: nil,
+			ResourcesKey: nil,
 		}
 	}
 	return map[interface{}]interface{}{
-		client.ResourcesKey: append([]interface{}{}, resources...),
+		ResourcesKey: append([]interface{}{}, resources...),
 	}
 }
 
-func unmarshalResources(t *testing.T, yamlData string) client.Resources {
-	var r client.Resources
+func unmarshalResources(t *testing.T, yamlData string) Resources {
+	var r Resources
 	err := yaml.Unmarshal([]byte(yamlData), &r)
 	require.NoError(t, err)
 	return r
