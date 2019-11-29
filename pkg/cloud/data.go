@@ -25,7 +25,6 @@ type Data struct {
 	cloud          *Cloud
 	info           *models.Cloud
 	credentials    []*models.Credential
-	users          []*models.CloudUser
 	subnets        []*subnetData
 	securityGroups []*sgData
 	providers      []*providerData
@@ -858,29 +857,13 @@ func (d *Data) updateProviders() error {
 	return nil
 }
 
-func getUserObject(ctx context.Context, uuid string, apiClient *client.HTTP) (*models.CloudUser, error) {
-	request := &services.GetCloudUserRequest{ID: uuid}
-
-	userResp, err := apiClient.GetCloudUser(ctx, request)
-	return userResp.GetCloudUser(), err
-}
-
-func (d *Data) updateUsers() error {
-	for _, user := range d.info.CloudUserRefs {
-		userObj, err := getUserObject(d.cloud.ctx, user.UUID, d.cloud.APIServer)
+func (d *Data) updateCredentials() error {
+	for _, c := range d.info.CredentialRefs {
+		credObj, err := getCredObject(d.cloud.ctx, d.cloud.APIServer, c.UUID)
 		if err != nil {
 			return err
 		}
-
-		// Adding logic to handle a ssh key generation if not added as cred ref
-		for _, cred := range userObj.CredentialRefs {
-			credObj, err := getCredObject(d.cloud.ctx, d.cloud.APIServer, cred.UUID)
-			if err != nil {
-				return err
-			}
-			d.credentials = append(d.credentials, credObj)
-		}
-		d.users = append(d.users, userObj)
+		d.credentials = append(d.credentials, credObj)
 	}
 	return nil
 }
@@ -1031,7 +1014,7 @@ func (d *Data) update(isDelRequest bool) error {
 	if err != nil {
 		return err
 	}
-	return d.updateUsers()
+	return d.updateCredentials()
 }
 
 func (d *Data) isCloudCreated() bool {

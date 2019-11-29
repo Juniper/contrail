@@ -10,8 +10,8 @@ test_data:
     uuid: cloud_uuid_gcp
     prebuild_image_id: test-update-image-id
     organization: unit_test
-    cloud_user_refs:
-      - uuid: cloud_user_uuid
+    credential_refs:
+        - uuid: cloud_credential_uuid
 
   vc_tag_vpc2: &vc_tag_vpc2
     name: public_cloud_tag_vpc2

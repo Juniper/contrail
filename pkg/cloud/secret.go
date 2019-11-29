@@ -126,8 +126,8 @@ func (sfc *SecretFileConfig) Update(providers []string, kp *models.Keypair) erro
 		if err != nil {
 			return err
 		}
-		sfc.AWSAccessKey = awsCreds.AccessKey
-		sfc.AWSSecretKey = awsCreds.SecretKey
+		sfc.AWSAccessKey = awsCreds.AWSAccessKey
+		sfc.AWSSecretKey = awsCreds.AWSSecretKey
 	}
 
 	if err := sfc.updateAzureCredentials(kfd); err != nil {
@@ -157,7 +157,7 @@ func awsCredentialsExist(kfd *services.KeyFileDefaults) bool {
 	return true
 }
 
-func loadAWSCredentials(accessPath, secretPath string) (*models.AWSCredential, error) {
+func loadAWSCredentials(accessPath, secretPath string) (*SecretFileConfig, error) {
 	accessKey, err := ioutil.ReadFile(accessPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not retrieve AWS Access Key")
@@ -169,7 +169,7 @@ func loadAWSCredentials(accessPath, secretPath string) (*models.AWSCredential, e
 	}
 
 	if len(accessKey) == 0 && len(secretKey) == 0 {
-		return &models.AWSCredential{AccessKey: "", SecretKey: ""}, nil
+		return &SecretFileConfig{}, nil
 	}
 
 	if len(accessKey) == 0 {
@@ -180,7 +180,7 @@ func loadAWSCredentials(accessPath, secretPath string) (*models.AWSCredential, e
 		return nil, errors.New("AWS Secret Key not specified")
 	}
 
-	return &models.AWSCredential{AccessKey: string(accessKey), SecretKey: string(secretKey)}, nil
+	return &SecretFileConfig{AWSAccessKey: string(accessKey), AWSSecretKey: string(secretKey)}, nil
 }
 
 func (sfc *SecretFileConfig) updateAzureCredentials(kfd *services.KeyFileDefaults) error {

@@ -1,37 +1,5 @@
 ---
   definitions:
-    AWSCredential:
-      type: "object"
-      properties:
-        access_key:
-          description: Access key for AWS cloud account
-          type: string
-          nullable: false
-          permission:
-          - create
-          - update
-          sql: ""
-          title: AWS Access Key
-          type: string
-          view:
-          - detail
-        secret_key:
-          description: Secret Key for AWS cloud account
-          type: string
-          nullable: false
-          permission:
-          - create
-          - update
-          sql: ""
-          title: AWS Secret Key
-          type: string
-    GCPCredential:
-      type: string
-      permission:
-      - create
-      - update
-      sql: ""
-      title: GCP Access Key
     MCGWClusterInfo:
       type: "object"
       properties:

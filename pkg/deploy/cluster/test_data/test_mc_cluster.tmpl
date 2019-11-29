@@ -23,8 +23,6 @@ cleanup:
 - path: /cloud-provider/public_cloud_provider_uuid
 - path: /cloud/pvt_cloud_uuid
 - path: /cloud/public_cloud_uuid
-- path: /cloud-user/pvt_cloud_user_uuid
-- path: /cloud-user/public_cloud_user_uuid
 - path: /credential/all_in_one_credential_uuid
 - path: /keypair/all_in_one_keypair_uuid
 - path: /tag/pvt_cloud_tag_uuid
@@ -64,29 +62,19 @@ test_data:
       - uuid: all_in_one_credential_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-  pvt_cloud_user: &pvt_cloud_user
-    name: pvt_cloud_user
-    uuid: pvt_cloud_user_uuid
-    credential_refs:
-      - uuid: all_in_one_credential_uuid
-  public_cloud_user: &public_cloud_user
-    name: public_cloud_user
-    uuid: public_cloud_user_uuid
-    credential_refs:
-      - uuid: all_in_one_credential_uuid
   pvt_cloud: &pvt_cloud
     name: pvt_cloud
     uuid: pvt_cloud_uuid
     organization: pvt_unit_test
-    cloud_user_refs:
-      - uuid: pvt_cloud_user_uuid
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
     provisioning_state: CREATE_FAILED
   public_cloud: &public_cloud
     name: public_cloud
     uuid: public_cloud_uuid
     organization: public_unit_test
-    cloud_user_refs:
-      - uuid: public_cloud_user_uuid
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
     provisioning_state: CREATED
   pvt_cloud_provider: &pvt_cloud_provider
     name: pvt_cloud_provider
@@ -315,36 +303,6 @@ workflow:
       ssh_password: test_ssh_password
       keypair_refs:
         - uuid: all_in_one_keypair_uuid
-- name: create pvt cloud user
-  request:
-    path: /cloud-users
-    method: POST
-    expected:
-    - 200
-    data:
-      cloud-user: *pvt_cloud_user
-  expect:
-    cloud-user:
-      name: pvt_cloud_user
-      uuid: pvt_cloud_user_uuid
-      credential_refs:
-        - uuid: all_in_one_credential_uuid
-- name: create public cloud user
-  request:
-    path: /cloud-users
-    method: POST
-    expected:
-    - 200
-    data:
-      cloud-user: *public_cloud_user
-  expect:
-    cloud-user:
-      perms2:
-        owner: admin
-      name: public_cloud_user
-      uuid: public_cloud_user_uuid
-      credential_refs:
-        - uuid: all_in_one_credential_uuid
 - name: create pvt cloud
   request:
     path: /clouds
@@ -360,8 +318,8 @@ workflow:
       name: pvt_cloud
       uuid: pvt_cloud_uuid
       organization: pvt_unit_test
-      cloud_user_refs:
-        - uuid: pvt_cloud_user_uuid
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
 - name: create public cloud
   request:
     path: /clouds
@@ -375,8 +333,8 @@ workflow:
       name: public_cloud
       uuid: public_cloud_uuid
       organization: public_unit_test
-      cloud_user_refs:
-        - uuid: public_cloud_user_uuid
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
 - name: create pvt cloud provider
   request:
     path: /cloud-providers
