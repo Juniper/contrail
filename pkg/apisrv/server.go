@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
@@ -314,7 +315,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		serviceChain = append(serviceChain, &neutron.Service{
-			Keystone: &client.Keystone{
+			Keystone: &baseclient.Keystone{
 				URL: viper.GetString("keystone.authurl"),
 				HTTPDoer: analytics.LatencyReportingDoer{
 					Doer: &http.Client{
