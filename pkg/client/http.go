@@ -78,8 +78,8 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 	return &HTTP{
 		httpClient: hc,
 		Keystone: &Keystone{
-			HTTPClient: hc,
-			URL:        c.AuthURL,
+			HTTPDoer: hc,
+			URL:      c.AuthURL,
 		},
 		HTTPConfig: *c,
 	}
