@@ -10,50 +10,51 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	dictGetJSONSchemaByStringKeyFilter = "dict_get_JSONSchema_by_string_key"
 )
 
-// TemplateConfig contains configuration for template.
+// TemplateConfig contains a configuration for the template.
 type TemplateConfig struct {
 	TemplateType string `yaml:"type"`
 	TemplatePath string `yaml:"template_path"`
 	OutputPath   string `yaml:"output_path"`
 }
 
-// ApplyTemplates writes files with content generated from templates.
-func ApplyTemplates(api *API, config []*TemplateConfig) error {
+// GenerateFiles generates files by applying API data to templates specified in template config.
+func GenerateFiles(api *API, config []*TemplateConfig) error {
 	if api == nil {
 		return errors.New("received API is nil")
 	}
+
 	if err := registerCustomFilters(); err != nil {
-		return err
+		return errors.Wrap(err, "register filters")
 	}
 
 	for _, tc := range config {
-		if err := tc.resolveOutputPath(); err != nil {
-			return err
-		}
+		tc.resolveOutputPath()
 		if !tc.isOutdated(api) {
+			logrus.WithField(
+				"template-config", fmt.Sprintf("%+v", tc),
+			).Debug("Target file is up to date - skipping generation")
 			continue
 		}
-		err := tc.apply(api)
+		err := tc.generateFile(api)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "generate file")
 		}
 	}
 	return nil
 }
 
-func (tc *TemplateConfig) resolveOutputPath() error {
-	if tc.OutputPath != "" {
-		return nil
+func (tc *TemplateConfig) resolveOutputPath() {
+	if tc.OutputPath == "" {
+		tc.OutputPath = generatedFilePath(tc.TemplatePath)
 	}
-
-	tc.OutputPath = generatedFilePath(tc.TemplatePath)
-	return nil
+	return
 }
 
 func (tc *TemplateConfig) isOutdated(api *API) bool {
@@ -72,25 +73,27 @@ func (tc *TemplateConfig) isOutdated(api *API) bool {
 }
 
 // nolint: gocyclo
-func (tc *TemplateConfig) apply(api *API) error {
-	tpl, err := tc.load()
+func (tc *TemplateConfig) generateFile(api *API) error {
+	tpl, err := loadTemplate(tc.TemplatePath)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "load template %q", tc.TemplatePath)
 	}
-	if err = ensureDir(tc.OutputPath); err != nil {
-		return err
+
+	if err = ensureDirectoryExists(tc.OutputPath); err != nil {
+		return errors.Wrapf(err, "ensure the directory exists for output path: %q", tc.OutputPath)
 	}
+
 	if tc.TemplateType == "all" {
-		output, err := tpl.Execute(pongo2.Context{
+		data, err := tpl.Execute(pongo2.Context{
 			"schemas": api.Schemas,
 			"types":   api.Types,
 		})
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "execute template %q", tc.TemplatePath)
 		}
 
-		if err = writeGeneratedFile(tc.OutputPath, output, tc.TemplatePath); err != nil {
-			return err
+		if err = generateFile(tc.OutputPath, data, tc.TemplatePath); err != nil {
+			return errors.Wrapf(err, "generate the file from template %q", tc.TemplatePath)
 		}
 	} else if tc.TemplateType == "alltype" {
 		var schemas []*Schema
@@ -108,30 +111,30 @@ func (tc *TemplateConfig) apply(api *API) error {
 			}
 			schemas = append(schemas, schema)
 		}
-		output, err := tpl.Execute(pongo2.Context{
+		data, err := tpl.Execute(pongo2.Context{
 			"schemas": schemas,
 		})
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "execute template %q", tc.TemplatePath)
 		}
 
-		if err = writeGeneratedFile(tc.OutputPath, output, tc.TemplatePath); err != nil {
-			return err
+		if err = generateFile(tc.OutputPath, data, tc.TemplatePath); err != nil {
+			return errors.Wrapf(err, "generate the file from template %q", tc.TemplatePath)
 		}
 	}
 	return nil
 }
 
-func (tc *TemplateConfig) load() (*pongo2.Template, error) {
-	templateCode, err := fileutil.GetContent(tc.TemplatePath)
+func loadTemplate(templatePath string) (*pongo2.Template, error) {
+	o, err := fileutil.GetContent(templatePath)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "get content of template %q", templatePath)
 	}
-	return pongo2.FromString(string(templateCode))
+	return pongo2.FromString(string(o))
 }
 
-// LoadTemplates loads template configurations from given path.
-func LoadTemplates(path string) ([]*TemplateConfig, error) {
+// LoadTemplateConfig loads template configurations from given path.
+func LoadTemplateConfig(path string) ([]*TemplateConfig, error) {
 	var config []*TemplateConfig
 	err := fileutil.LoadFile(path, &config)
 	return config, err
@@ -146,7 +149,7 @@ func generatedFileName(tmplFile string) string {
 	return "gen_" + strings.TrimSuffix(tmplFile, ".tmpl")
 }
 
-func ensureDir(path string) error {
+func ensureDirectoryExists(path string) error {
 	return os.MkdirAll(filepath.Dir(path), os.ModePerm)
 }
 
@@ -163,16 +166,19 @@ func registerCustomFilters() error {
 				return pongo2.AsValue(m[param.String()]), nil
 			},
 		); err != nil {
-			return err
+			return errors.Wrapf(err, "register filter %q", dictGetJSONSchemaByStringKeyFilter)
 		}
 	}
-
 	return nil
 }
 
-func writeGeneratedFile(path, data, template string) error {
-	if err := ioutil.WriteFile(path, []byte(generationPrefix(path, template)+data), 0644); err != nil {
-		return errors.Wrapf(err, "failed to write generate file to path %q", path)
+func generateFile(outputPath, data, templatePath string) error {
+	logrus.WithFields(logrus.Fields{
+		"output-path":   outputPath,
+		"template-path": templatePath,
+	}).Debug("Generating file")
+	if err := ioutil.WriteFile(outputPath, []byte(generationPrefix(outputPath, templatePath)+data), 0644); err != nil {
+		return errors.Wrapf(err, "write the file to path %q", outputPath)
 	}
 	return nil
 }
