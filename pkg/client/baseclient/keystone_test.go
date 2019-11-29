@@ -1,4 +1,4 @@
-package client_test
+package baseclient_test
 
 import (
 	"context"
@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+
+	. "github.com/Juniper/contrail/pkg/client/baseclient"
 )
 
 func TestKeystoneClient(t *testing.T) {
@@ -18,7 +19,7 @@ func TestKeystoneClient(t *testing.T) {
 	})
 	defer s.CloseT(t)
 
-	k := &client.Keystone{
+	k := &Keystone{
 		URL: viper.GetString("keystone.authurl"),
 		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
