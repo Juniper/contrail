@@ -45,6 +45,30 @@
       "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9aece282_9e1e6213",
+        "filename": "pkg/collector/analytics/http.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-11-29T13:15:26Z",
+      "side": 1,
+      "message": "Inline?",
+      "parentUuid": "0b8b03a9_711165de",
+      "range": {
+        "startLine": 26,
+        "startChar": 1,
+        "endLine": 26,
+        "endChar": 4
+      },
+      "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
