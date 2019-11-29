@@ -64,25 +64,40 @@ func (c *HTTPConfig) SetCredentials(username, password string) {
 // HTTP represents API Server HTTP client.
 type HTTP struct {
 	services.BaseService
-	httpClient *http.Client
-	Keystone   *Keystone
+	httpClient      *http.Client
+	Keystone        *Keystone
+	RequestMutators []func(*http.Request)
 
 	HTTPConfig `yaml:",inline"`
 
 	AuthToken string
 }
 
-// NewHTTP makes API Server HTTP client.
-func NewHTTP(c *HTTPConfig) *HTTP {
-	hc := &http.Client{Transport: transport(c.Endpoint, c.Insecure)}
-	return &HTTP{
-		httpClient: hc,
-		Keystone: &Keystone{
-			HTTPDoer: hc,
-			URL:      c.AuthURL,
-		},
-		HTTPConfig: *c,
+type HTTPOption func(*HTTP)
+
+func WithRequestMutator(mutator func(*http.Request)) HTTPOption {
+	return func(h *HTTP) {
+		h.RequestMutators = append(h.RequestMutators, mutator)
 	}
+}
+
+// NewHTTP makes API Server HTTP client.
+func NewHTTP(config *HTTPConfig, opts ...HTTPOption) *HTTP {
+	hc := &http.Client{Transport: transport(config.Endpoint, config.Insecure)}
+	h := &HTTP{
+		httpClient: hc,
+		HTTPConfig: *config,
+	}
+	for _, o := range opts {
+		o(h)
+	}
+	WithRequestMutator(auth.SetXClusterIDInHeader)(h)
+	h.Keystone = &Keystone{
+		HTTPDoer:        hc,
+		URL:             config.AuthURL,
+		RequestMutators: h.RequestMutators,
+	}
+	return h
 }
 
 // NewHTTPFromConfig makes API Server HTTP client with viper config
@@ -387,16 +402,21 @@ func (h *HTTP) getURL(path string) string {
 }
 
 // nolint: gocyclo
-func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
-	request *http.Request, data interface{}) (*http.Response, error) {
+func (h *HTTP) doHTTPRequestRetryingOn401(
+	ctx context.Context, request *http.Request, data interface{},
+) (*http.Response, error) {
 	logrus.WithFields(logrus.Fields{
 		"method": request.Method,
 		"url":    request.URL,
 		"header": request.Header,
 		"data":   data,
 	}).Debug("Executing API Server request")
+	request = request.WithContext(ctx)
 
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	for _, m := range h.RequestMutators {
+		m(request)
+	}
+
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error

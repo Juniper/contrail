@@ -87,19 +87,22 @@ func NewCloud(c *Config) (*Cloud, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
-		ID:       c.ID,
-		Password: c.Password,
-		Endpoint: c.Endpoint,
-		AuthURL:  c.AuthURL,
-		Scope: keystone.NewScope(
-			c.DomainID,
-			c.DomainName,
-			c.ProjectID,
-			c.ProjectName,
-		),
-		Insecure: c.InSecure,
-	})
+	s := client.NewHTTP(
+		&client.HTTPConfig{
+			ID:       c.ID,
+			Password: c.Password,
+			Endpoint: c.Endpoint,
+			AuthURL:  c.AuthURL,
+			Scope: keystone.NewScope(
+				c.DomainID,
+				c.DomainName,
+				c.ProjectID,
+				c.ProjectName,
+			),
+			Insecure: c.InSecure,
+		},
+		client.WithRequestMutator(auth.SetXClusterIDInHeader),
+	)
 
 	ctx := auth.NoAuth(context.Background())
 	if c.AuthURL != "" {
