@@ -187,8 +187,7 @@ func (ics *IntentCompilationService) putStoredIndex(ctx context.Context, index i
 func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	ics.log.Debug("Running Service")
 
-	_, err := ics.apiClient.Login(ctx)
-	if err != nil {
+	if err := ics.apiClient.Login(ctx); err != nil {
 		return err
 	}
 
@@ -196,8 +195,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.handleEtcdMessage)
 
 	ics.log.Debug("Setting MessageIndex to 0 (if not exists)")
-	err = ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
-	if err != nil {
+	if err := ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0")); err != nil {
 		ics.log.Println("Cannot Set MessageIndex")
 		return err
 	}

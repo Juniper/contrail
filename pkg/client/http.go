@@ -114,17 +114,14 @@ func urlScheme(endpoint string) (string, error) {
 }
 
 // Login refreshes authentication token.
-func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
-	resp, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
+func (h *HTTP) Login(ctx context.Context) error {
+	token, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
 	if err != nil {
-		return resp, err
+		return err
 	}
 
-	if resp != nil {
-		h.AuthToken = resp.Header.Get("X-Subject-Token")
-	}
-
-	return resp, nil
+	h.AuthToken = token
+	return nil
 }
 
 // Batch execution.
@@ -421,7 +418,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 			}
 
 			// refresh token and use the new token in request header
-			if resp, err = h.Login(ctx); err != nil {
+			if err := h.Login(ctx); err != nil {
 				return resp, err
 			}
 			if h.AuthToken != "" {

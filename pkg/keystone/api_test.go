@@ -61,9 +61,8 @@ func TestClusterTokenMethod(t *testing.T) {
 		URL:        ksPrivate.URL + "/v3",
 		HTTPClient: &http.Client{},
 	}
-	resp, err := k.ObtainToken(context.Background(), defaultUser, defaultPassword, nil)
+	token, err := k.ObtainToken(context.Background(), defaultUser, defaultPassword, nil)
 	assert.NoError(t, err)
-	token := resp.Header.Get("X-Subject-Token")
 	assert.NotEmpty(t, token)
 	// Fetch command keystone token with cluster keystone token
 	commandServerToken := fetchCommandServerToken(t, clusterName+"_uuid", token)
@@ -194,8 +193,7 @@ func TestClusterLogin(t *testing.T) {
 				client.ID = tt.id
 				client.Password = tt.password
 				client.Scope = nil
-				_, err := client.Login(ctx)
-				if !tt.wantErr {
+				if err := client.Login(ctx); !tt.wantErr {
 					assert.NoError(t, err, "unexpected error")
 				} else {
 					assert.Error(t, err, "got error")
