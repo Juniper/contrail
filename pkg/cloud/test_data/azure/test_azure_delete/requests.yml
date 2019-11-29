@@ -7,8 +7,8 @@ test_data:
     uuid: cloud_uuid_azure
     organization: unit_test
     azure_modified: true
-    cloud_user_refs:
-      - uuid: cloud_user_uuid
+    credential_refs:
+        - uuid: cloud_credential_uuid
     provisioning_action: DELETE_CLOUD
 
 clients:

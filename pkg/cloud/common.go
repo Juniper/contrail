@@ -279,24 +279,6 @@ func deleteCloudProviderAndDeps(ctx context.Context,
 	return errList
 }
 
-func deleteCloudUsers(ctx context.Context,
-	client *client.HTTP, userList []*models.CloudUser) []string {
-
-	var errList []string
-	// Delete user & its dependencies
-	for _, u := range userList {
-		_, err := client.DeleteCloudUser(ctx,
-			&services.DeleteCloudUserRequest{
-				ID: u.UUID,
-			},
-		)
-		if err != nil {
-			errList = append(errList, err.Error())
-		}
-	}
-	return errList
-}
-
 func deleteCredentialAndDeps(ctx context.Context,
 	client *client.HTTP, credList []*models.Credential) []string {
 

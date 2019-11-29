@@ -11,8 +11,8 @@ test_data:
     name: cloud
     uuid: cloud_uuid_onprem
     organization: unit_test
-    cloud_user_refs:
-      - uuid: cloud_user_uuid
+    credential_refs:
+        - uuid: cloud_credential_uuid
 
 clients:
   default:

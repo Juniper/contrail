@@ -22,7 +22,6 @@ cleanup:
 - path: /cloud-region/cloud_region_uuid
 - path: /cloud-provider/cloud_provider_uuid
 - path: /cloud/cloud_uuid_onprem
-- path: /cloud-user/cloud_user_uuid
 - path: /credential/cloud_credential_uuid
 - path: /keypair/cloud_keypair_uuid
 - path: /tag/public_cloud_tag_uuid
@@ -42,13 +41,6 @@ test_data:
       - uuid: cloud_keypair_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-
-  cloud_user: &cloud_user
-    name: cloud_user
-    uuid: cloud_user_uuid
-    credential_refs:
-      - uuid: cloud_credential_uuid
-
   cloud: &cloud
     provisioning_state: NOSTATE
     prebuild_image_id: nightly
@@ -56,8 +48,8 @@ test_data:
     uuid: cloud_uuid_onprem
     parent_cluster_uuid: cluster_with_authorization_registries_uuid
     organization: unit_test
-    cloud_user_refs:
-      - uuid: cloud_user_uuid
+    credential_refs:
+        - uuid: cloud_credential_uuid
 
   cloud_provider: &cloud_provider
     name: cloud_provider
@@ -299,21 +291,6 @@ workflow:
   expect:
     credential:
       <<: *cloud_credential
-      perms2:
-        owner: admin
-
-
-- name: create cloud user
-  request:
-    path: /cloud-users
-    method: POST
-    expected:
-    - 200
-    data:
-      cloud-user: *cloud_user
-  expect:
-    cloud-user:
-      <<: *cloud_user
       perms2:
         owner: admin
 

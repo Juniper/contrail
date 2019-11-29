@@ -7,9 +7,9 @@ metadata:
   category: cloud
 parent: ""
 references:
-    cloud_user:
+    credential:
       operations: "CRUD"
-      description: "Reference to Cloud User"
+      description: "Reference to SSH credential object."
       presence: "optional"
 plural: clouds
 prefix: /

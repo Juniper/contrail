@@ -583,20 +583,10 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 		return nil, err
 	}
 
-	cloudUserObj, err := m.cluster.APIServer.GetCloudUser(
-		ctx,
-		&services.GetCloudUserRequest{
-			ID: cloudObj.CloudUserRefs[0].UUID,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	credentialObj, err := m.cluster.APIServer.GetCredential(
 		ctx,
 		&services.GetCredentialRequest{
-			ID: cloudUserObj.CloudUser.CredentialRefs[0].UUID,
+			ID: cloudObj.CredentialRefs[0].UUID,
 		},
 	)
 	if err != nil {

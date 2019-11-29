@@ -537,11 +537,6 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 			d.info.UUID, err))
 	}
 
-	cloudUserErrList := deleteCloudUsers(c.ctx, c.APIServer, d.users)
-	if cloudUserErrList != nil {
-		warnList = append(warnList, cloudUserErrList...)
-	}
-
 	if !d.isCloudPrivate() {
 		credErrList := deleteCredentialAndDeps(c.ctx, c.APIServer, d.credentials)
 		warnList = append(warnList, credErrList...)
