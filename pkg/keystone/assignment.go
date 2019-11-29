@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 )
@@ -74,13 +75,7 @@ type VNCAPIAssignment struct {
 //Init the VNCAPI assignment with vnc api-server projects/domains
 func (assignment *VNCAPIAssignment) Init(configEndpoint string, staticUsers map[string]*keystone.User) error {
 	if assignment.vncClient == nil {
-		assignment.vncClient = client.NewHTTP(&client.HTTPConfig{
-			ID:       "",
-			Password: "",
-			Endpoint: "",
-			AuthURL:  "",
-			Insecure: true,
-		})
+		assignment.vncClient = client.NewHTTP(&baseclient.HTTPConfig{Insecure: true})
 	}
 	assignment.vncClient.Endpoint = configEndpoint
 

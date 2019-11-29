@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/schema"
+	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -46,7 +47,7 @@ type CLI struct {
 // NewCLIByViper returns new logged in CLI client using Viper configuration.
 func NewCLIByViper() (*CLI, error) {
 	return NewCLI(
-		&HTTPConfig{
+		&baseclient.HTTPConfig{
 			ID:       viper.GetString("client.id"),
 			Password: viper.GetString("client.password"),
 			Endpoint: viper.GetString("client.endpoint"),
@@ -64,7 +65,7 @@ func NewCLIByViper() (*CLI, error) {
 }
 
 // NewCLI returns new logged in CLI Client.
-func NewCLI(c *HTTPConfig, schemaRoot string) (*CLI, error) {
+func NewCLI(c *baseclient.HTTPConfig, schemaRoot string) (*CLI, error) {
 	client := NewHTTP(c)
 
 	if err := client.Login(context.Background()); err != nil {
