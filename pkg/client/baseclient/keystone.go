@@ -1,4 +1,4 @@
-package client
+package baseclient
 
 import (
 	"bytes"
@@ -164,6 +164,33 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	request = auth.SetXClusterIDInHeader(ctx, request)
 	request.WithContext(ctx)
 	request.Header.Set(contentTypeHeader, "application/json")
+
+	resp, err := k.HTTPDoer.Do(request)
+	if err != nil {
+		return "", errorFromResponse(err, resp)
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
+		return "", errorFromResponse(err, resp)
+	}
+
+	return resp.Header.Get(xSubjectTokenHeader), nil
+}
+
+// fetchToken gets scoped/unscoped token.
+func (k *Keystone) CreateUser(ctx context.Context, authRequest interface{}) (string, error) {
+	d, err := json.Marshal(authRequest)
+	if err != nil {
+		return "", err
+	}
+	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewReader(d))
+	if err != nil {
+		return "", err
+	}
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
+	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
