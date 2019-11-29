@@ -4,24 +4,23 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/schema"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type templateOption struct {
-	SchemasDir        string
-	AddonsDir         string
-	TemplateConfPath  string
-	SchemaOutputPath  string
-	OpenAPIOutputPath string
-	SkipMissingRefs   bool
-	NoRegenerate      bool
-	Verbose           bool
+	SchemasDir         string
+	AddonsDir          string
+	TemplateConfigPath string
+	SchemaOutputPath   string
+	OpenAPIOutputPath  string
+	SkipMissingRefs    bool
+	NoRegenerate       bool
+	Verbose            bool
 }
 
 var option = templateOption{}
@@ -34,7 +33,7 @@ func init() {
 	ContrailSchema.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&option.SchemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&option.AddonsDir, "addons", "a", "", "Addons Directory")
-	generateCmd.Flags().StringVarP(&option.TemplateConfPath, "templates", "t", "", "Template Configuration")
+	generateCmd.Flags().StringVarP(&option.TemplateConfigPath, "templates", "t", "", "Template Configuration")
 	generateCmd.Flags().StringVarP(&option.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
 	generateCmd.Flags().StringVarP(&option.OpenAPIOutputPath, "openapi-output", "", "", "OpenAPI Output path")
 	generateCmd.Flags().BoolVarP(
@@ -46,6 +45,40 @@ func init() {
 		"Skip references that are missing instead of failing",
 	)
 	generateCmd.Flags().BoolVarP(&option.Verbose, "verbose", "v", false, "Enable debug logging")
+}
+
+var generateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "generate code from schema",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := logutil.Configure(getLogLevel()); err != nil {
+			terminate(err)
+		}
+
+		if err := generateCode(); err != nil {
+			terminate(err)
+		}
+	},
+}
+
+func getLogLevel() string {
+	level := viper.GetString("log_level")
+	if option.Verbose {
+		level = logrus.DebugLevel.String()
+	}
+	if level == "" {
+		level = logrus.InfoLevel.String()
+	}
+	return level
+}
+
+func terminate(err error) {
+	if logrus.GetLevel() == logrus.DebugLevel {
+		logutil.FatalWithStackTrace(err)
+	} else {
+		logrus.Fatal(err)
+	}
 }
 
 func generateCode() error {
@@ -63,11 +96,12 @@ func generateCode() error {
 		api.Timestamp = time.Time{}
 	}
 
-	templateConf, err := schema.LoadTemplates(option.TemplateConfPath)
+	tc, err := schema.LoadTemplateConfig(option.TemplateConfigPath)
 	if err != nil {
 		return err
 	}
-	if err = schema.ApplyTemplates(api, templateConf); err != nil {
+
+	if err = schema.GenerateFiles(api, tc); err != nil {
 		return err
 	}
 
@@ -88,37 +122,4 @@ func generateCode() error {
 		}
 	}
 	return nil
-}
-
-var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "generate code from schema",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		if level := getLogLevel(); level != "" {
-			if err := logutil.Configure(level); err != nil {
-				handleError(err)
-			}
-		}
-
-		if err := generateCode(); err != nil {
-			handleError(err)
-		}
-	},
-}
-
-func getLogLevel() string {
-	level := viper.GetString("log_level")
-	if option.Verbose {
-		level = logrus.DebugLevel.String()
-	}
-	return level
-}
-
-func handleError(err error) {
-	if logrus.GetLevel() == logrus.DebugLevel {
-		logutil.FatalWithStackTrace(err)
-	} else {
-		logrus.Fatal(err)
-	}
 }

@@ -1,7 +1,7 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
-DB_FILES := gen_init_psql.sql init_data.yaml
+DB_FILES := gen_init_psql.sql init_psql.sql init_data.yaml
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""
 ANSIBLE_DEPLOYER_BRANCH ?= master
@@ -20,7 +20,7 @@ ifneq ($(filter generate,$(MAKECMDGOALS)),)
 .NOTPARALLEL:
 endif
 
-all: check lint test build
+all: check deps generate install testenv reset_db test lint ## Perform all checks
 
 deps: ## Install development dependencies
 	./tools/deps.sh
@@ -196,7 +196,6 @@ else
 	mkdir -p $(dir $(CONTRAIL_APIDOC_PATH))
 	spectacle -1 -t $(dir $(CONTRAIL_APIDOC_PATH)) $(CONTRAIL_OPENAPI_PATH)
 endif
-
 
 apidoc: $(CONTRAIL_APIDOC_PATH)
 
