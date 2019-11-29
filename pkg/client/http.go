@@ -16,7 +16,6 @@ import (
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -78,8 +77,8 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 	return &HTTP{
 		httpClient: hc,
 		Keystone: &Keystone{
-			HTTPClient: hc,
-			URL:        c.AuthURL,
+			HTTPDoer: hc,
+			URL:      c.AuthURL,
 		},
 		HTTPConfig: *c,
 	}
@@ -154,46 +153,46 @@ type Request struct {
 
 // Create send a create API request.
 func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.POST, path, nil, data, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodPost, path, nil, data, output, []int{http.StatusOK})
 }
 
 // Read send a get API request.
 func (h *HTTP) Read(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.GET, path, nil, nil, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodGet, path, nil, nil, output, []int{http.StatusOK})
 }
 
 // ReadWithQuery send a get API request with a query.
 func (h *HTTP) ReadWithQuery(
 	ctx context.Context, path string, query url.Values, output interface{},
 ) (*http.Response, error) {
-	return h.Do(ctx, echo.GET, path, query, nil, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodGet, path, query, nil, output, []int{http.StatusOK})
 }
 
 // Update send an update API request.
 func (h *HTTP) Update(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.PUT, path, nil, data, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodPut, path, nil, data, output, []int{http.StatusOK})
 }
 
 // Delete send a delete API request.
 func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodDelete, path, nil, nil, output, []int{http.StatusOK})
 }
 
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
+	return h.Do(ctx, http.MethodDelete, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
 }
 
 // RefUpdate sends a create/update API request/
 func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodPost, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
 }
 
 // CreateIntPool sends a create int pool request to remote int-pools.
 func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
 	_, err := h.Do(
 		ctx,
-		echo.POST,
+		http.MethodPost,
 		"/"+services.IntPoolsPath,
 		nil,
 		&services.CreateIntPoolRequest{
@@ -216,7 +215,7 @@ func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (strin
 		Owner string `json:"owner"`
 	}
 
-	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
+	_, err := h.Do(ctx, http.MethodGet, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
 	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
 }
 
@@ -224,7 +223,7 @@ func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (strin
 func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
 	_, err := h.Do(
 		ctx,
-		echo.DELETE,
+		http.MethodDelete,
 		"/"+services.IntPoolsPath,
 		nil,
 		&services.DeleteIntPoolRequest{
@@ -243,7 +242,7 @@ func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, erro
 	}
 	_, err := h.Do(
 		ctx,
-		echo.POST,
+		http.MethodPost,
 		"/"+services.IntPoolPath,
 		nil,
 		&services.IntPoolAllocationBody{
@@ -260,7 +259,7 @@ func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, erro
 func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
 	_, err := h.Do(
 		ctx,
-		echo.POST,
+		http.MethodPost,
 		"/"+services.IntPoolPath,
 		nil,
 		&services.IntPoolAllocationBody{
@@ -278,7 +277,7 @@ func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner strin
 func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) error {
 	_, err := h.Do(
 		ctx,
-		echo.DELETE,
+		http.MethodDelete,
 		"/"+services.IntPoolPath,
 		nil,
 		&services.IntPoolAllocationBody{
@@ -299,7 +298,7 @@ func (h *HTTP) NeutronPost(ctx context.Context, r *logic.Request, expected []int
 	}
 	_, err = h.Do(
 		ctx,
-		echo.POST,
+		http.MethodPost,
 		fmt.Sprintf("/neutron/%s", r.Context.Type),
 		nil,
 		r,

@@ -316,10 +316,15 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		serviceChain = append(serviceChain, &neutron.Service{
 			Keystone: &client.Keystone{
 				URL: viper.GetString("keystone.authurl"),
-				HTTPClient: &http.Client{
-					Transport: &http.Transport{
-						TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+				HTTPDoer: analytics.LatencyReportingDoer{
+					Doer: &http.Client{
+						Transport: &http.Transport{
+							TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+						},
 					},
+					Collector:   s.Collector,
+					Operation:   "VALIDATE",
+					Application: "KEYSTONE",
 				},
 			},
 			ReadService:    s.DBService,
