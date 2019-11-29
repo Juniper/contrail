@@ -20,7 +20,7 @@ func TestKeystoneClient(t *testing.T) {
 
 	k := &client.Keystone{
 		URL: viper.GetString("keystone.authurl"),
-		HTTPClient: &http.Client{
+		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
 			},
