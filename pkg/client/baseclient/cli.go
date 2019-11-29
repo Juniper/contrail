@@ -1,4 +1,4 @@
-package client
+package baseclient
 
 import (
 	"context"
@@ -11,10 +11,9 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/schema"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -98,16 +97,23 @@ func (c *CLI) ShowResource(schemaID, uuid string) (string, error) {
 		)
 	}
 
-	e, err := services.NewEvent(services.EventOption{
-		Kind: schemaID,
-		Data: data,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return encodeToYAML(&services.EventList{Events: []*services.Event{e}})
+	return encodeToYAML(syncListResponse{List: []syncResponse{{Data: data, Kind: schemaID}}})
 }
+
+type syncData struct {
+	Operation string      `json:"operation" yaml:"operation"`
+	Kind      string      `json:"kind" yaml:"kind"`
+	Data      interface{} `json:"data" yaml:"data"`
+}
+
+type syncListData struct {
+	List []syncData `json:"resources" yaml:"resources"`
+}
+
+type syncResponse = syncData
+type syncListResponse = syncListData
+
+type syncListRequest = syncListData
 
 const showHelpTemplate = `Show command possible usages:
 {% for schema in schemas %}contrail show {{ schema.ID }} $UUID
@@ -253,18 +259,20 @@ func makeOutputResources(schemaID string, response map[string]interface{}) (Reso
 
 // SyncResources synchronizes state of resources specified in given file.
 func (c *CLI) SyncResources(filePath string) (string, error) {
-	r, err := readRequestData(filePath)
-	if err != nil {
+	var req syncListRequest
+	if err := fileutil.LoadFile(filePath, &req); err != nil {
+		return "", err
+	}
+	for i := range req.List {
+		req.List[i].Data = fileutil.YAMLtoJSONCompat(req.List[i].Data)
+	}
+
+	var response []syncResponse
+	if _, err := c.Create(context.Background(), "/sync", req, &response); err != nil {
 		return "", err
 	}
 
-	var response []*services.Event
-	_, err = c.Create(context.Background(), "/sync", r, &response)
-	if err != nil {
-		return "", err
-	}
-
-	return encodeToYAML(&services.EventList{Events: response})
+	return encodeToYAML(syncListResponse{List: response})
 }
 
 // SetResourceParameter sets parameter value of resource with given schemaID na UUID.
@@ -320,37 +328,29 @@ const removeHelpTemplate = `Remove command possible usages:
 {% for schema in schemas %}contrail rm {{ schema.ID }} $UUID
 {% endfor %}`
 
+type deleteRequest struct {
+	Kind string
+	Data struct {
+		UUID string `json:"uuid" yaml:"uuid"`
+	}
+}
+
+type deleteListRequest struct {
+	List []deleteRequest `json:"resources" yaml:"resources"`
+}
+
 // DeleteResources deletes multiple resources specified in given file.
 func (c *CLI) DeleteResources(filePath string) (string, error) {
-	request, err := readRequestData(filePath)
-	if err != nil {
+	var request deleteListRequest
+	if err := fileutil.LoadFile(filePath, &request); err != nil {
 		return "", nil
 	}
 
-	for i := len(request.Events) - 1; i >= 0; i-- {
-		r := request.Events[i].GetResource()
-		response, dErr := c.EnsureDeleted(
-			context.Background(),
-			urlPath(r.Kind(), r.GetUUID()),
-			nil,
-		)
-		if dErr != nil {
-			return "", dErr
-		}
-
-		if response.StatusCode == http.StatusNotFound {
-			c.log.WithField("path", urlPath(r.Kind(), r.GetUUID())).Info("Not found")
-		}
+	for _, r := range request.List {
+		c.DeleteResource(r.Kind, r.Data.UUID)
 	}
 
 	return "", nil
-}
-
-// readRequestData decodes single or array of input data from YAML.
-func readRequestData(file string) (*services.EventList, error) {
-	request := &services.EventList{}
-	err := fileutil.LoadFile(file, request)
-	return request, err
 }
 
 func urlPath(schemaID, uuid string) string {

@@ -16,6 +16,11 @@ type Service interface {
     Next() Service
     SetNext(Service)
 
+    ReadWriteService
+}
+
+// ReadWriteService is an object that has both read and write service methods.
+type ReadWriteService interface {
     WriteService
     ReadService
 }
