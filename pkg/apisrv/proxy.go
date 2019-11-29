@@ -170,7 +170,7 @@ func shouldInjectServiceToken(proxyPrefix string, config *DynamicProxyConfig) bo
 }
 
 func obtainServiceToken(ctx context.Context, clusterID string, config *DynamicProxyConfig) (string, error) {
-	apiClient := client.NewHTTP(config.ServiceUserClientConfig)
+	apiClient := client.NewHTTP(config.ServiceUserClientConfig, client.WithRequestMutator(auth.SetXClusterIDInHeader))
 
 	ctx = auth.WithXClusterID(ctx, clusterID)
 	if err := apiClient.Login(ctx); err != nil {

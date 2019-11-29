@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
+	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/pkg/errors"
 )
 
@@ -26,8 +27,9 @@ type doer interface {
 
 // Keystone is a keystone client.
 type Keystone struct {
-	URL      string
-	HTTPDoer doer
+	URL             string
+	HTTPDoer        doer
+	RequestMutators []func(*http.Request)
 }
 
 type projectResponse struct {
@@ -40,12 +42,11 @@ type projectListResponse struct {
 
 // GetProject gets project.
 func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/projects/"+id), nil)
+	request, err := k.newRequest(ctx, http.MethodGet, k.getURL("/projects/"+id), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
-	request.Header.Set("X-Auth-Token", token)
+	request.Header.Set(XAuthTokenHeader, token)
 	var output projectResponse
 
 	resp, err := k.HTTPDoer.Do(request)
@@ -65,6 +66,17 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 	return &output.Project, nil
 }
 
+func (k *Keystone) newRequest(ctx context.Context, method, url string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if req == nil || err != nil {
+		return nil, err
+	}
+	for _, m := range k.RequestMutators {
+		m(req)
+	}
+	return req, err
+}
+
 // GetProjectIDByName finds project id using project name.
 func (k *Keystone) GetProjectIDByName(
 	ctx context.Context, id, password, projectName string, domain *keystone.Domain) (string, error) {
@@ -74,12 +86,11 @@ func (k *Keystone) GetProjectIDByName(
 		return "", err
 	}
 	// Get project list with unscoped token
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/auth/projects"), nil)
+	request, err := k.newRequest(ctx, http.MethodGet, k.getURL("/auth/projects"), nil)
 	if err != nil {
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
-	request.Header.Set("X-Auth-Token", token)
+	request.Header.Set(XAuthTokenHeader, token)
 	var output *projectListResponse
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
@@ -158,14 +169,12 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	if err != nil {
 		return "", err
 	}
-	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewReader(d))
+	request, err := k.newRequest(ctx, "POST", k.URL+"/auth/tokens", bytes.NewReader(d))
 	if err != nil {
 		return "", err
 	}
-	request = auth.SetXAuthTokenInHeader(ctx, request)
-	request = auth.SetXClusterIDInHeader(ctx, request)
-	request.WithContext(ctx)
-	request.Header.Set("Content-Type", "application/json")
+	SetXAuthTokenInHeader(request)
+	request.Header.Set(ContentTypeHeader, "application/json")
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
@@ -173,9 +182,24 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
+	if err := checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
 		return "", errorFromResponse(err, resp)
 	}
 
 	return resp.Header.Get("X-Subject-Token"), nil
+}
+
+// WithXAuthToken creates child context with Auth Token
+func WithXAuthToken(ctx context.Context, token string) context.Context {
+	if v := ctx.Value(xAuthTokenKey); v == nil {
+		return context.WithValue(ctx, xAuthTokenKey, token)
+	}
+	return ctx
+}
+
+// SetXAuthTokenInHeader sets X-Auth-Token in the HEADER.
+func SetXAuthTokenInHeader(request *http.Request) {
+	if v := request.Context().Value(xAuthTokenKey); v != nil {
+		request.Header.Set(XAuthTokenHeader, format.InterfaceToString(v))
+	}
 }

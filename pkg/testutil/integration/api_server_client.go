@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
@@ -70,7 +71,7 @@ func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
 }
 
 func newLoggedInHTTPClient(c *client.HTTPConfig) (*client.HTTP, error) {
-	cl := client.NewHTTP(c)
+	cl := client.NewHTTP(c, client.WithRequestMutator(auth.SetXClusterIDInHeader))
 
 	if err := cl.Login(context.Background()); err != nil {
 		return nil, err

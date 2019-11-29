@@ -11,6 +11,7 @@ import (
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/schema"
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/pkg/errors"
@@ -99,19 +100,22 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
-		ID:       c.ID,
-		Password: c.Password,
-		Endpoint: c.Endpoint,
-		AuthURL:  c.AuthURL,
-		Scope: keystone.NewScope(
-			c.DomainID,
-			c.DomainName,
-			c.ProjectID,
-			c.ProjectName,
-		),
-		Insecure: c.InSecure,
-	})
+	s := client.NewHTTP(
+		&client.HTTPConfig{
+			ID:       c.ID,
+			Password: c.Password,
+			Endpoint: c.Endpoint,
+			AuthURL:  c.AuthURL,
+			Scope: keystone.NewScope(
+				c.DomainID,
+				c.DomainName,
+				c.ProjectID,
+				c.ProjectName,
+			),
+			Insecure: c.InSecure,
+		},
+		client.WithRequestMutator(auth.SetXClusterIDInHeader),
+	)
 
 	serverSchema := filepath.Join(serverSchemaRoot, serverSchemaFile)
 	if c.SchemaRoot != "" {
