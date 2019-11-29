@@ -48,7 +48,7 @@ func TestApplyTemplatesAddsGenerationPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ApplyTemplates(makeAPI(t), loadTemplates(t))
+			err := GenerateFiles(makeAPI(t), loadTemplates(t))
 
 			assert.Nil(t, err)
 			assert.Regexp(t, tt.expectedPrefix, loadString(t, tt.filePath))
@@ -82,7 +82,7 @@ func makeAPI(t *testing.T) *API {
 }
 
 func loadTemplates(t *testing.T) []*TemplateConfig {
-	c, err := LoadTemplates(templateConfigPath)
+	c, err := LoadTemplateConfig(templateConfigPath)
 	assert.Nil(t, err)
 
 	return c
