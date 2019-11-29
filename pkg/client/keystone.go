@@ -6,20 +6,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/collector"
-	"github.com/Juniper/contrail/pkg/collector/analytics"
-	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 )
 
+const (
+	xAuthTokenHeader    = "X-Auth-Token"
+	xSubjectTokenHeader = "X-Subject-Token"
+	contentTypeHeader   = "Content-Type"
+)
+
+type doer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // Keystone is a keystone client.
 type Keystone struct {
-	URL        string
-	HTTPClient *http.Client
+	URL      string
+	HTTPDoer doer
 }
 
 type projectResponse struct {
@@ -32,15 +38,15 @@ type projectListResponse struct {
 
 // GetProject gets project.
 func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
-	request, err := http.NewRequest(echo.GET, k.getURL("/projects/"+id), nil)
+	request, err := http.NewRequest(http.MethodGet, k.getURL("/projects/"+id), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
-	request.Header.Set("X-Auth-Token", token)
+	request.Header.Set(xAuthTokenHeader, token)
 	var output projectResponse
 
-	resp, err := k.HTTPClient.Do(request)
+	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "issuing HTTP request failed")
 	}
@@ -66,14 +72,14 @@ func (k *Keystone) GetProjectIDByName(
 		return "", err
 	}
 	// Get project list with unscoped token
-	request, err := http.NewRequest(echo.GET, k.getURL("/auth/projects"), nil)
+	request, err := http.NewRequest(http.MethodGet, k.getURL("/auth/projects"), nil)
 	if err != nil {
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
-	request.Header.Set("X-Auth-Token", token)
+	request.Header.Set(xAuthTokenHeader, token)
 	var output *projectListResponse
-	resp, err := k.HTTPClient.Do(request)
+	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
 		return "", errors.Wrap(err, "issuing HTTP request failed")
 	}
@@ -157,23 +163,17 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	request = auth.SetXAuthTokenInHeader(ctx, request)
 	request = auth.SetXClusterIDInHeader(ctx, request)
 	request.WithContext(ctx)
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set(contentTypeHeader, "application/json")
 
-	startedAt := time.Now()
-	resp, err := k.HTTPClient.Do(request)
+	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
 		return "", errorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if c := collector.FromContext(ctx); c != nil {
-		c.Send(analytics.VncAPILatencyStatsLog(
-			ctx, "VALIDATE", "KEYSTONE", int64(time.Since(startedAt)/time.Microsecond)))
-	}
-
 	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
 		return "", errorFromResponse(err, resp)
 	}
 
-	return resp.Header.Get("X-Subject-Token"), nil
+	return resp.Header.Get(xSubjectTokenHeader), nil
 }

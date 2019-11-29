@@ -58,8 +58,8 @@ func TestClusterTokenMethod(t *testing.T) {
 
 	// Fetch cluster keystone token
 	k := &client.Keystone{
-		URL:        ksPrivate.URL + "/v3",
-		HTTPClient: &http.Client{},
+		URL:      ksPrivate.URL + "/v3",
+		HTTPDoer: &http.Client{},
 	}
 	token, err := k.ObtainToken(context.Background(), defaultUser, defaultPassword, nil)
 	assert.NoError(t, err)
@@ -108,7 +108,7 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	k := &client.Keystone{
 		URL: keystoneAuthURL,
-		HTTPClient: &http.Client{
+		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: viper.GetBool("keystone.insecure")},
@@ -119,7 +119,7 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 	assert.NoError(t, err, "failed to create new http request")
 	request.Header.Set("Content-Type", "application/json")
 
-	resp, err := k.HTTPClient.Do(request)
+	resp, err := k.HTTPDoer.Do(request)
 	assert.NoError(t, err, "failed to create new http request")
 	defer resp.Body.Close() // nolint: errcheck
 
