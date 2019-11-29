@@ -44,27 +44,8 @@ func WithXClusterID(ctx context.Context, clusterID string) context.Context {
 }
 
 // SetXClusterIDInHeader sets X-Cluster-ID in the HEADER.
-func SetXClusterIDInHeader(
-	ctx context.Context, request *http.Request) *http.Request {
-	if v := ctx.Value(xClusterID); v != nil {
+func SetXClusterIDInHeader(request *http.Request) {
+	if v := request.Context().Value(xClusterID); v != nil {
 		request.Header.Set(string(xClusterID), format.InterfaceToString(v))
 	}
-	return request
-}
-
-// WithXAuthToken creates child context with Auth Token
-func WithXAuthToken(ctx context.Context, token string) context.Context {
-	if v := ctx.Value(xAuthToken); v == nil {
-		return context.WithValue(ctx, xAuthToken, token)
-	}
-	return ctx
-}
-
-// SetXAuthTokenInHeader sets X-Auth-Token in the HEADER.
-func SetXAuthTokenInHeader(
-	ctx context.Context, request *http.Request) *http.Request {
-	if v := ctx.Value(xAuthToken); v != nil {
-		request.Header.Set(string(xAuthToken), format.InterfaceToString(v))
-	}
-	return request
 }
