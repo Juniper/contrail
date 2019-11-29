@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "390260f7_8f144e2d",
+        "filename": "pkg/collector/analytics/http.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-29T13:57:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4d50df2a_b6b1ea18",
+      "range": {
+        "startLine": 14,
+        "startChar": 5,
+        "endLine": 14,
+        "endChar": 23
+      },
+      "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0b8b03a9_711165de",
         "filename": "pkg/collector/analytics/http.go",
         "patchSetId": 2
@@ -69,6 +93,30 @@
       "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "05d56a1d_9e927ce3",
+        "filename": "pkg/collector/analytics/http.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-29T13:57:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9aece282_9e1e6213",
+      "range": {
+        "startLine": 26,
+        "startChar": 1,
+        "endLine": 26,
+        "endChar": 4
+      },
+      "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
