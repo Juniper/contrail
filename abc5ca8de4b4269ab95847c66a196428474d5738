@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4d50df2a_b6b1ea18",
+        "filename": "pkg/collector/analytics/http.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-29T10:30:10Z",
+      "side": 1,
+      "message": "How about \"LatecyReportingDoer\"? When I see \"Logging\" I think of logging text to stdout instead of reporting metrics to external services.",
+      "range": {
+        "startLine": 14,
+        "startChar": 5,
+        "endLine": 14,
+        "endChar": 23
+      },
+      "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0b8b03a9_711165de",
+        "filename": "pkg/collector/analytics/http.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-11-29T10:30:10Z",
+      "side": 1,
+      "message": "You know what to do.",
+      "range": {
+        "startLine": 26,
+        "startChar": 1,
+        "endLine": 26,
+        "endChar": 4
+      },
+      "revId": "abc5ca8de4b4269ab95847c66a196428474d5738",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
