@@ -21,16 +21,19 @@
   digest = "1:ef94c16e82f0c04839631fa499a22dd069a2728bad0314437fefb575f18f9f00"
   name = "github.com/Juniper/asf"
   packages = [
+    "pkg/constants",
     "pkg/fileutil",
     "pkg/fileutil/template",
     "pkg/format",
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
+    "pkg/models/basemodels",
     "pkg/osutil",
     "pkg/proxy",
     "pkg/retry",
     "pkg/schema",
+    "pkg/services/baseservices",
   ]
   pruneopts = ""
   revision = "7a40ffba37b9b4180f4d3c9553c0ca5a809c2f40"
@@ -1365,10 +1368,12 @@
     "github.com/Juniper/asf/pkg/keystone",
     "github.com/Juniper/asf/pkg/logutil",
     "github.com/Juniper/asf/pkg/logutil/report",
+    "github.com/Juniper/asf/pkg/models/basemodels",
     "github.com/Juniper/asf/pkg/osutil",
     "github.com/Juniper/asf/pkg/proxy",
     "github.com/Juniper/asf/pkg/retry",
     "github.com/Juniper/asf/pkg/schema",
+    "github.com/Juniper/asf/pkg/services/baseservices",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
     "github.com/coreos/etcd/clientv3/concurrency",
