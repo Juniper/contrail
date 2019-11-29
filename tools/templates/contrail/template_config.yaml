@@ -3,9 +3,11 @@
 - type: all
   template_path: pkg/models/type_validation.go.tmpl
 - type: all
-  template_path: tools/init_psql.sql.tmpl
+  template_path: vendor/github.com/Juniper/asf/tools/init_psql.sql.tmpl
+  output_path: tools/gen_init_psql.sql
 - type: all
-  template_path: tools/cleanup_psql.sql.tmpl
+  template_path: vendor/github.com/Juniper/asf/tools/cleanup_psql.sql.tmpl
+  output_path: tools/gen_cleanup_psql.sql
 - type: all
   template_path: pkg/db/db.go.tmpl
 - type: alltype

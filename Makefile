@@ -2,7 +2,7 @@ ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH=public/doc/index.html
 CONTRAIL_OPENAPI_PATH=public/openapi.json
-DB_FILES := gen_init_psql.sql init_data.yaml
+DB_FILES := gen_init_psql.sql init_psql.sql init_data.yaml
 SRC_DIRS := cmd pkg vendor
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""

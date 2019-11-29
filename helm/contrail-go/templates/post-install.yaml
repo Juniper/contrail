@@ -24,7 +24,7 @@ spec:
       restartPolicy: Never
       containers:
       - name: post-install-job
-        image: "{{ .Values.image }}" 
+        image: "{{ .Values.image }}"
         env:
         - name: PGPASSWORD
           value: {{ .Values.postgresql.postgresPassword }}
@@ -39,5 +39,5 @@ spec:
         - "-U"
         - {{ .Values.postgresql.postgresUser }}
         - "-f"
-        - /usr/share/contrail/init_psql.sql
+        - /usr/share/contrail/init_psql.sql # TODO(dfurman): handle gen_init_psql.sql too
         - {{ .Values.postgresql.postgresDatabase }}
