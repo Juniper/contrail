@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*models.APIAccessList {

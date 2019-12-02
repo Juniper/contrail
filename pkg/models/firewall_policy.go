@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // CheckAssociatedRefsInSameScope checks scope of Firewall Policy references.

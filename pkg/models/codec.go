@@ -11,7 +11,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/constants"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // Codec can encode objects and update encoded data with new data object.
