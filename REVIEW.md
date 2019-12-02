@@ -39,7 +39,7 @@ Additionally, each of the groups should be sorted alphabetically -
 -
 -	"net/http"
 -	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
--	"github.com/Juniper/contrail/pkg/models/basemodels"
+-	"github.com/Juniper/asf/pkg/models/basemodels"
 -	"github.com/labstack/echo"
 -	_ "github.com/Juniper/contrail/pkg/keystone"
 -)
@@ -49,7 +49,7 @@ Additionally, each of the groups should be sorted alphabetically -
 +	"net/http"
 +
 +	"github.com/labstack/echo"
-+	"github.com/Juniper/contrail/pkg/models/basemodels"
++	"github.com/Juniper/asf/pkg/models/basemodels"
 +
 +	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 +

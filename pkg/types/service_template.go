@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
