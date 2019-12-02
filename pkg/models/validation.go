@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 //NewTypeValidatorWithFormat creates new TypeValidator with format validators

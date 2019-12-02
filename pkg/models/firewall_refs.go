@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // checkAssociatedRefsInSameScope checks scope of firewall resources references

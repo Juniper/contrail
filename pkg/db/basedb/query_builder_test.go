@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/services/baseservices"
 )
 
 type queryBuilderParams struct {

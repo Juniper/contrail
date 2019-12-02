@@ -1,6 +1,6 @@
 package logic
 
-import "github.com/Juniper/contrail/pkg/models/basemodels"
+import "github.com/Juniper/asf/pkg/models/basemodels"
 
 func buildDataResourcePath(fields ...string) string {
 	fieldPath := basemodels.JoinPath(fields...)
