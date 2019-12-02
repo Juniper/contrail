@@ -2,7 +2,7 @@ syntax = "proto3";
 package github.com.Juniper.contrail.pkg.services;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/Juniper/contrail/pkg/services/baseservices/base.proto";
+import "github.com/Juniper/asf/pkg/services/baseservices/base.proto";
 import "github.com/Juniper/contrail/pkg/models/gen_model.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/wrappers.proto";
@@ -68,7 +68,7 @@ message Delete{{ schema.JSONSchema.GoName }}Response {
 }
 
 message List{{ schema.JSONSchema.GoName }}Request {
-	github.com.Juniper.contrail.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
+	github.com.Juniper.asf.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
 }
 
 message List{{ schema.JSONSchema.GoName }}Response {

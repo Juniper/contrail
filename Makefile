@@ -1,7 +1,9 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
-SRC_DIRS := cmd pkg vendor
+CONTRAIL_APIDOC_PATH=public/doc/index.html
+CONTRAIL_OPENAPI_PATH=public/openapi.json
 DB_FILES := gen_init_psql.sql init_data.yaml
+SRC_DIRS := cmd pkg vendor
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""
 ANSIBLE_DEPLOYER_BRANCH ?= master
@@ -20,46 +22,21 @@ ifneq ($(filter generate,$(MAKECMDGOALS)),)
 .NOTPARALLEL:
 endif
 
-all: check lint test build
-
-deps: ## Install development dependencies
-	./tools/deps.sh
+all: check deps generate install testenv reset_db test lint ## Perform all checks
 
 check: ## Check vendored dependencies
 	./tools/check.sh
 
-lint: ## Run linters on the source code
-	./tools/lint.sh
+deps: ## Install development dependencies
+	./tools/deps.sh
 
-nocovtest: COVERPROFILE = none
-nocovtest: test
+generate: fast_generate format_gen ## Generate source code and documentation
 
-test: ## Run tests with coverage
-	./tools/test.sh $(COVERPROFILE)
+fast_generate: generate_pb_go generate_mocks doc/proto.md ## Generate source code and documentation without formatting
 
-build: ## Build all binaries without producing output
-	go build ./cmd/...
+generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/gen_service.pb.go ## Generate *pb.go files from *.proto definitions
 
-format:
-	./tools/fmt.sh
-
-format_gen:
-	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
-
-fast_generate: generate_pb_go generate_mocks doc/proto.md
-
-generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/baseservices/base.pb.go pkg/services/gen_service.pb.go
-
-generate: fast_generate format_gen
-
-CONTRAIL_OPENAPI_PATH=public/openapi.json
-CONTRAIL_APIDOC_PATH=public/doc/index.html
-
-install_contrailschema:
-	# `go install` does nothing if the binary is unchanged, so it's cheap to call
-	go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/
-
-generate_go: install_contrailschema
+generate_go: install_contrailschema ## Generate source code from templates and schema
 	# Generate for contrail resources.
 	@mkdir -p public/
 	contrailschema generate --no-regenerate \
@@ -70,6 +47,16 @@ generate_go: install_contrailschema
 	contrailschema generate --no-regenerate \
 		--schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
+
+PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
+PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
+
+pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
+	$(PROTO) --gogofaster_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
+plugins=grpc:$(GOPATH)/src/ $<
+	go tool fix $@
 
 MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/gen_service_interface.go \
@@ -88,61 +75,82 @@ endef
 
 $(foreach mock,$(MOCKS),$(eval $(call create-generate-mock-target,$(mock))))
 
-generate_mocks: $(MOCKS)
+generate_mocks: $(MOCKS) ## Generate source code of mocks
 
-PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
-PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
-
-pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
-	$(PROTO) --gogofaster_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types,\
-Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-plugins=grpc:$(GOPATH)/src/ $<
-	go tool fix $@
-
-doc/proto.md: $(PROTO_PKG_PATH)/models/gen_model.proto $(PROTO_PKG_PATH)/services/gen_service.proto
+doc/proto.md: $(PROTO_PKG_PATH)/models/gen_model.proto $(PROTO_PKG_PATH)/services/gen_service.proto ## Generate Protobuf definitions documentation
 	$(PROTO) --doc_out=./doc --doc_opt=markdown,proto.md $^
 
-clean_gen:
-	rm -rf public/[^watch.html]*
+format_gen: ## Format generated source code
+	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
+
+clean_gen: ## Remove generated source code and documentation
+	rm -rf public/[^watch.html]* doc/proto.md
 	find tools/ proto/ pkg/ -name gen_* -delete
 	find pkg -name 'mock' -type d -exec rm -rf '{}' +
 
-package: ## Generate the packages
-	go run cmd/contrailutil/main.go package
+build: ## Build all binaries without producing output
+	go build ./cmd/...
 
-install: install_contrail install_contrailcli install_contrailutil
+install: install_contrail install_contrailcli install_contrailschema install_contrailutil ## Install all binaries
 
-install_contrail:
+install_contrail: ## Install Contrail binary
 	go install ./cmd/contrail
 
-install_contrailcli:
+install_contrailcli:  ## Install Contrailcli binary
 	go install ./cmd/contrailcli
 
-install_contrailutil:
+install_contrailschema: ## Install Contrailschema binary
+	go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/
+
+install_contrailutil: ## Install Contrailutil binary
 	go install ./cmd/contrailutil
 
-testenv: ## Setup docker based test environment
+testenv: ## Setup Docker based test environment
 	./tools/patroni/build_patroni.sh
 	./tools/testenv.sh
 
-reset_db: zero_db init_db ## Reset database with latest schema and load initial data
+reset_db: zero_db init_db ## Reset database with the latest schema and load initial data
 
-zero_db:
+zero_db: ## Drop and recreate test database
 	./tools/reset_db_psql.sh
-
-clean_db: truncate_db init_db ## Truncate all database tables and load initial data
-
-truncate_db:
-	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/gen_cleanup_psql.sql
 
 init_db: install_contrailutil ## Load initial data to databases
 	contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 
-binaries: ## Generate the contrail and contrailutil binaries
-	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
-	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
-	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
+clean_db: truncate_db init_db ## Truncate all database tables and load initial data
+
+truncate_db: ## Remove test database data
+	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/gen_cleanup_psql.sql
+
+nocovtest: COVERPROFILE = none
+nocovtest: test
+
+test: ## Run tests with coverage
+	./tools/test.sh $(COVERPROFILE)
+
+lint: ## Run linters on the source code
+	./tools/lint.sh
+
+format: ## Format source code
+	./tools/fmt.sh
+
+docker: apidoc docker_prepare docker_build ## Build contrail-go Docker image
+
+$(CONTRAIL_OPENAPI_PATH):
+	$(MAKE) generate_go
+
+DOCKER_GO_SRC_DIR := /go/src/github.com/Juniper/contrail
+$(CONTRAIL_APIDOC_PATH): $(CONTRAIL_OPENAPI_PATH)
+ifeq (, $(shell which spectacle))
+	$(info No spectacle in $(PATH) consider installing it. Running in docker.)
+	docker run --rm -v $(SOURCEDIR):/go node:10.15.3-alpine sh -c \
+		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(DOCKER_GO_SRC_DIR)/$(dir $(CONTRAIL_APIDOC_PATH)) $(DOCKER_GO_SRC_DIR)/$(CONTRAIL_OPENAPI_PATH)"
+else
+	mkdir -p $(dir $(CONTRAIL_APIDOC_PATH))
+	spectacle -1 -t $(dir $(CONTRAIL_APIDOC_PATH)) $(CONTRAIL_OPENAPI_PATH)
+endif
+
+apidoc: $(CONTRAIL_APIDOC_PATH) ## Generate OpenAPI html documentation
 
 docker_prepare: ## Prepare common data to generate Docker files (use target `docker` or `docker_config_api` instead)
 	rm -rf $(BUILD_DIR)
@@ -166,9 +174,7 @@ else
 		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
 endif
 
-docker: apidoc docker_prepare docker_build ## Build contrail-go Docker image
-
-docker_build:
+docker_build: ## Build Docker image with Contrail binary
 	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)
 	sed -e '/FROM/,$$!d' \
 	   	-e 's/FROM $${BASE_IMAGE_REGISTRY}\/$${BASE_IMAGE_REPOSITORY}:$${BASE_IMAGE_TAG}/FROM ${BASE_IMAGE_REGISTRY}\/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}/' ${DOCKER_FILE} > ${DOCKER_FILE}.patched
@@ -180,27 +186,17 @@ docker_build:
 		--file ${DOCKER_FILE}.patched \
 		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
+package: ## Generate the packages
+	go run cmd/contrailutil/main.go package
+
+binaries: ## Generate the contrail and contrailutil binaries
+	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
+	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
+	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
+
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-$(CONTRAIL_OPENAPI_PATH):
-	$(MAKE) generate_go
-
-DOCKER_GO_SRC_DIR := /go/src/github.com/Juniper/contrail
-$(CONTRAIL_APIDOC_PATH): $(CONTRAIL_OPENAPI_PATH)
-ifeq (, $(shell which spectacle))
-	$(info No spectacle in $(PATH) consider installing it. Running in docker.)
-	docker run --rm -v $(SOURCEDIR):/go node:10.15.3-alpine sh -c \
-		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(DOCKER_GO_SRC_DIR)/$(dir $(CONTRAIL_APIDOC_PATH)) $(DOCKER_GO_SRC_DIR)/$(CONTRAIL_OPENAPI_PATH)"
-else
-	mkdir -p $(dir $(CONTRAIL_APIDOC_PATH))
-	spectacle -1 -t $(dir $(CONTRAIL_APIDOC_PATH)) $(CONTRAIL_OPENAPI_PATH)
-endif
-
-
-apidoc: $(CONTRAIL_APIDOC_PATH)
-
 .DEFAULT_GOAL := help
-
 .PHONY: docker_prepare docker generate_go
 .SUFFIXES: .go .proto
