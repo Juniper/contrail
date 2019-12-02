@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client/baseclient"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/spf13/cobra"
 )
 
