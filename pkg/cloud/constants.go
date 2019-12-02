@@ -16,7 +16,6 @@ const (
 	defaultPublicCloudTopoTemplate = "public_cloud_topology.tmpl"
 	defaultOnPremTopoTemplate      = "onprem_cloud_topology.tmpl"
 	defaultSecretFile              = "secret.yml"
-	defaultSecretTemplate          = "secret.tmpl"
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
 

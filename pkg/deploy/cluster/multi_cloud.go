@@ -21,6 +21,8 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -36,7 +38,6 @@ const (
 	defaultMCInventoryFile    = "inventories/inventory.yml"
 	defaultTopologyFile       = "topology.yml"
 	defaultSecretFile         = "secret.yml"
-	defaultSecretTemplate     = "secret.tmpl"
 
 	defaultContrailUser       = "admin"
 	defaultContrailPassword   = "c0ntrail123"
@@ -238,16 +239,18 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 		return errors.Wrap(err, "failed to to update secret file config")
 	}
 
-	err = template.ApplyToFile(
-		m.secretTemplatePath(), m.getClusterSecretFile(),
-		pongo2.Context{
-			"secret":  sfc,
-			"cluster": m.clusterData.ClusterInfo,
-			"tag":     m.clusterData.ClusterInfo.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
-		},
-		defaultFilePermRWOnly,
-	)
-	return errors.Wrap(err, "failed to to create secret file")
+	reg, err := cloud.NewAuthorizedRegistry(m.clusterData.ClusterInfo)
+	if err != nil {
+		return err
+	}
+	sfc.AuthorizedRegistries = []*cloud.AuthorizedRegistry{reg}
+
+	marshaled, err := yaml.Marshal(sfc)
+	if err != nil {
+		return errors.Wrapf(err, "couldn't marshal secret to yaml for cluster %s", m.cluster.config.ClusterID)
+	}
+	err = ioutil.WriteFile(m.getClusterSecretFile(), marshaled, defaultFilePermRWOnly)
+	return errors.Wrapf(err, "couldn't create secret.yml file for cluster %s", m.cluster.config.ClusterID)
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
@@ -608,10 +611,6 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 	}
 
 	return keypairObj.Keypair, nil
-}
-
-func (m *multiCloudProvisioner) secretTemplatePath() string {
-	return filepath.Join(m.getTemplateRoot(), defaultSecretTemplate)
 }
 
 func (m *multiCloudProvisioner) contrailCommonTemplatePath() string {
