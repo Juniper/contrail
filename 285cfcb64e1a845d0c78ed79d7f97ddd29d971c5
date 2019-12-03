@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "521838c9_7ea4c288",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "7f00318a_436442e0",
+      "range": {
+        "startLine": 110,
+        "startChar": 1,
+        "endLine": 110,
+        "endChar": 5
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "585f4f1a_373e0eb1",
         "filename": "pkg/client/baseclient/cli.go",
         "patchSetId": 9
@@ -36,6 +60,30 @@
       "writtenOn": "2019-12-03T15:11:47Z",
       "side": 1,
       "message": "Can this be made a new type instead (without the `\u003d`)?",
+      "range": {
+        "startLine": 113,
+        "startChar": 18,
+        "endLine": 113,
+        "endChar": 20
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac1c4eb7_00edbe98",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "But I want the type to be the same, because syncLitResponse would contain list of syncData, not syncResponse.",
+      "parentUuid": "585f4f1a_373e0eb1",
       "range": {
         "startLine": 113,
         "startChar": 18,
@@ -65,6 +113,24 @@
     },
     {
       "key": {
+        "uuid": "ac32adcb_b9aab93f",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "Because yaml unmarshal type is not compatible with json marshal (json throws error for map[interface{}]interface{})",
+      "parentUuid": "4b5c2bd5_79a18fb6",
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f23ba31b_fe12351a",
         "filename": "pkg/client/baseclient/cli.go",
         "patchSetId": 9
@@ -76,6 +142,30 @@
       "writtenOn": "2019-12-03T15:11:47Z",
       "side": 1,
       "message": "Should there be a JSON tag here (for Data and Kind)?",
+      "range": {
+        "startLine": 335,
+        "startChar": 1,
+        "endLine": 335,
+        "endChar": 2
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "289d94f3_4c9c1f14",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "For request type it\u0027s optional",
+      "parentUuid": "f23ba31b_fe12351a",
       "range": {
         "startLine": 335,
         "startChar": 1,
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "7b34025e_7ff4384e",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "Look closer - it wasn\u0027t changed at all. I just deduplicated the code.",
+      "parentUuid": "f88952cc_b4d19b11",
+      "range": {
+        "startLine": 350,
+        "startChar": 17,
+        "endLine": 350,
+        "endChar": 31
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "9a3fa4c8_5082eea4",
         "filename": "pkg/client/client_http.go.tmpl",
         "patchSetId": 9
@@ -128,6 +242,24 @@
     },
     {
       "key": {
+        "uuid": "a22b941b_d9a7781c",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 9
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "Yes, in every package outside client. I wanted to skip renaming this to make this CR more compact.",
+      "parentUuid": "9a3fa4c8_5082eea4",
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "446ab03f_2c1919c0",
         "filename": "pkg/client/client_http.go.tmpl",
         "patchSetId": 9
@@ -139,6 +271,24 @@
       "writtenOn": "2019-12-03T15:11:47Z",
       "side": 1,
       "message": "Add a doc comment?",
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70fd30fb_678716b9",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 9
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "446ab03f_2c1919c0",
       "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

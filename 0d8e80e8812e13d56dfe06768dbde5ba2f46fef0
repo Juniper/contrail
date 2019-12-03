@@ -16,6 +16,24 @@
       "revId": "0d8e80e8812e13d56dfe06768dbde5ba2f46fef0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8c186d4_49ddd122",
+        "filename": "pkg/client/baseclient/http.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-03T15:19:46Z",
+      "side": 0,
+      "message": "Right now it\u0027s coupled with services and I don\u0027t want to fix this in the scope of this change.",
+      "parentUuid": "504ca40a_7a6455c1",
+      "revId": "0d8e80e8812e13d56dfe06768dbde5ba2f46fef0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
