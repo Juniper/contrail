@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6f4166bb_d58f0173",
+        "filename": "pkg/client/baseclient/context.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-03T15:22:57Z",
+      "side": 1,
+      "message": "2x creates",
+      "revId": "558fa9ad8e8984818deed5aa00afa92fba8f4471",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2311b6f_e64c478f",
+        "filename": "pkg/client/baseclient/context.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-03T15:22:57Z",
+      "side": 1,
+      "message": "I can\u0027t understand this comment.",
+      "revId": "558fa9ad8e8984818deed5aa00afa92fba8f4471",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
