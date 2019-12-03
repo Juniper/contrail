@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/pkg/errors"
 )
 
@@ -16,6 +15,8 @@ const (
 	xAuthTokenHeader    = "X-Auth-Token"
 	xSubjectTokenHeader = "X-Subject-Token"
 	contentTypeHeader   = "Content-Type"
+
+	applicationJSONValue = "application/json"
 )
 
 type doer interface {
@@ -42,7 +43,8 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
 	var output projectResponse
 
@@ -76,8 +78,10 @@ func (k *Keystone) GetProjectIDByName(
 	if err != nil {
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
+
 	var output *projectListResponse
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
@@ -160,10 +164,9 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	if err != nil {
 		return "", err
 	}
-	request = auth.SetXAuthTokenInHeader(ctx, request)
-	request = auth.SetXClusterIDInHeader(ctx, request)
-	request.WithContext(ctx)
-	request.Header.Set(contentTypeHeader, "application/json")
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
+	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
