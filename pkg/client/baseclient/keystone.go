@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/pkg/errors"
 )
 
@@ -16,6 +15,8 @@ const (
 	xAuthTokenHeader    = "X-Auth-Token"
 	xSubjectTokenHeader = "X-Subject-Token"
 	contentTypeHeader   = "Content-Type"
+
+	applicationJSONValue = "application/json"
 )
 
 type doer interface {
@@ -38,11 +39,11 @@ type projectListResponse struct {
 
 // GetProject gets project.
 func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/projects/"+id), nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, k.getURL("/projects/"+id), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
 	var output projectResponse
 
@@ -72,12 +73,13 @@ func (k *Keystone) GetProjectIDByName(
 		return "", err
 	}
 	// Get project list with unscoped token
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/auth/projects"), nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, k.getURL("/auth/projects"), nil)
 	if err != nil {
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
+
 	var output *projectListResponse
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
@@ -156,14 +158,12 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	if err != nil {
 		return "", err
 	}
-	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewReader(d))
+	request, err := http.NewRequestWithContext(ctx, "POST", k.URL+"/auth/tokens", bytes.NewReader(d))
 	if err != nil {
 		return "", err
 	}
-	request = auth.SetXAuthTokenInHeader(ctx, request)
-	request = auth.SetXClusterIDInHeader(ctx, request)
-	request.WithContext(ctx)
-	request.Header.Set(contentTypeHeader, "application/json")
+	SetContextHeaders(request)
+	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
