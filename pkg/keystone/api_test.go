@@ -188,7 +188,7 @@ func TestClusterLogin(t *testing.T) {
 			for _, client := range clients {
 				ctx = auth.WithXClusterID(ctx, clusterID)
 				if tt.token != "" {
-					ctx = auth.WithXAuthToken(ctx, tt.token)
+					ctx = baseclient.WithXAuthToken(ctx, tt.token)
 				}
 				client.ID = tt.id
 				client.Password = tt.password
