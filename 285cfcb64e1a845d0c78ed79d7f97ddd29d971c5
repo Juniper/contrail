@@ -1,0 +1,147 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7f00318a_436442e0",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "I would call this `Resources` to make it more specific and consistent with the JSON name.",
+      "range": {
+        "startLine": 110,
+        "startChar": 1,
+        "endLine": 110,
+        "endChar": 5
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "585f4f1a_373e0eb1",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "Can this be made a new type instead (without the `\u003d`)?",
+      "range": {
+        "startLine": 113,
+        "startChar": 18,
+        "endLine": 113,
+        "endChar": 20
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4b5c2bd5_79a18fb6",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "Why is this done?",
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f23ba31b_fe12351a",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "Should there be a JSON tag here (for Data and Kind)?",
+      "range": {
+        "startLine": 335,
+        "startChar": 1,
+        "endLine": 335,
+        "endChar": 2
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f88952cc_b4d19b11",
+        "filename": "pkg/client/baseclient/cli.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "Why was this changed from `EnsureDeleted`? Also, was making it not return an error on \"StatusNotFound\" intentional?",
+      "range": {
+        "startLine": 350,
+        "startChar": 17,
+        "endLine": 350,
+        "endChar": 31
+      },
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a3fa4c8_5082eea4",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 9
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "Is this used?",
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "446ab03f_2c1919c0",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 9
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-03T15:11:47Z",
+      "side": 1,
+      "message": "Add a doc comment?",
+      "revId": "285cfcb64e1a845d0c78ed79d7f97ddd29d971c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
