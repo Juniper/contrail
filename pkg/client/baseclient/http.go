@@ -12,7 +12,6 @@ import (
 	"net/url"
 
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -182,14 +181,12 @@ func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{
 // Do issues an API request.
 func (h *HTTP) Do(
 	ctx context.Context,
-	method,
-	path string,
+	method, path string,
 	query url.Values,
-	data interface{},
-	output interface{},
+	data, output interface{},
 	expected []int,
 ) (*http.Response, error) {
-	request, err := h.prepareHTTPRequest(method, path, data, query)
+	request, err := h.prepareHTTPRequest(ctx, method, path, data, query)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +218,9 @@ func (h *HTTP) Do(
 	return resp, nil
 }
 
-func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
+func (h *HTTP) prepareHTTPRequest(
+	ctx context.Context, method, path string, data interface{}, query url.Values,
+) (*http.Request, error) {
 	var request *http.Request
 	if data != nil {
 		dataJSON, err := json.Marshal(data)
@@ -232,12 +231,14 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query u
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
+		request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
 	} else {
 		var err error
 		request, err = http.NewRequest(method, h.getURL(path), nil)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
+		request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
 	}
 	if len(query) > 0 {
 		request.URL.RawQuery = query.Encode()
@@ -254,8 +255,9 @@ func (h *HTTP) getURL(path string) string {
 }
 
 // nolint: gocyclo
-func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
-	request *http.Request, data interface{}) (*http.Response, error) {
+func (h *HTTP) doHTTPRequestRetryingOn401(
+	ctx context.Context, request *http.Request, data interface{},
+) (*http.Response, error) {
 	logrus.WithFields(logrus.Fields{
 		"method": request.Method,
 		"url":    request.URL,
@@ -263,7 +265,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 		"data":   data,
 	}).Debug("Executing API Server request")
 
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	SetContextHeaders(request)
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error
