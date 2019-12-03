@@ -8,15 +8,23 @@ import (
 	"net/http"
 
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/pkg/errors"
 )
 
 const (
-	xAuthTokenHeader    = "X-Auth-Token"
+	// xAuthTokenHeader is a header used by keystone to store user auth tokens.
+	xAuthTokenHeader = "X-Auth-Token"
+	// xSubjectTokenHeader is a header used by keystone to return new tokens.
 	xSubjectTokenHeader = "X-Subject-Token"
-	contentTypeHeader   = "Content-Type"
+
+	contentTypeHeader    = "Content-Type"
+	applicationJSONValue = "application/json"
 )
+
+// WithXAuthToken creates child context with Auth Token
+func WithXAuthToken(ctx context.Context, token string) context.Context {
+	return WithHTTPHeader(ctx, xAuthTokenHeader, token)
+}
 
 type doer interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -42,7 +50,8 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
 	var output projectResponse
 
@@ -76,8 +85,10 @@ func (k *Keystone) GetProjectIDByName(
 	if err != nil {
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
+
 	var output *projectListResponse
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
@@ -160,10 +171,9 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 	if err != nil {
 		return "", err
 	}
-	request = auth.SetXAuthTokenInHeader(ctx, request)
-	request = auth.SetXClusterIDInHeader(ctx, request)
-	request.WithContext(ctx)
-	request.Header.Set(contentTypeHeader, "application/json")
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
+	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
