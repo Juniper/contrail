@@ -4,16 +4,14 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/gogo/protobuf/proto"
-	"github.com/gogo/protobuf/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/types"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFieldMaskPaths(t *testing.T) {

@@ -25,10 +25,7 @@ ifneq ($(filter generate,$(MAKECMDGOALS)),)
 .NOTPARALLEL:
 endif
 
-all: check deps generate install testenv reset_db test lint ## Perform all checks
-
-check: ## Check vendored dependencies
-	./tools/check.sh
+all: deps generate install testenv reset_db test lint check ## Perform all checks
 
 deps: ## Install development dependencies
 	./tools/deps.sh
@@ -42,13 +39,15 @@ generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/gen_service.
 generate_go: install_contrailschema ## Generate source code from templates and schema
 	# Generate for contrail resources.
 	@mkdir -p public/
-	$(CONTRAILSCHEMA) generate --no-regenerate \
-		--schemas schemas/contrail --addons schemas/addons --templates tools/templates/contrail/template_config.yaml \
+	$(CONTRAILSCHEMA) generate --no-regenerate --schemas schemas/contrail --addons schemas/addons \
+		--templates-config tools/templates/contrail/template_config.yaml \
+		--models-import-path github.com/Juniper/contrail/pkg/models \
+		--services-import-path github.com/Juniper/contrail/pkg/services \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
-	$(CONTRAILSCHEMA) generate --no-regenerate \
-		--schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
+	$(CONTRAILSCHEMA) generate --no-regenerate --schemas schemas/neutron \
+		--templates-config tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
 PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
@@ -134,6 +133,9 @@ test: ## Run tests with coverage
 
 lint: ## Run linters on the source code
 	./tools/lint.sh
+
+check: ## Check vendored dependencies
+	./tools/check.sh
 
 format: ## Format source code
 	./tools/fmt.sh

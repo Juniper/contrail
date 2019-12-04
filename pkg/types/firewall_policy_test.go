@@ -11,7 +11,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -260,7 +260,7 @@ func setupReadServiceMock(s *ContrailTypeLogicService, databaseFP *models.Firewa
 
 func getContext(isInternalRequest bool) context.Context {
 	if isInternalRequest {
-		return auth.WithInternalRequest(context.Background())
+		return baseservices.WithInternalRequest(context.Background())
 	}
 
 	return context.Background()

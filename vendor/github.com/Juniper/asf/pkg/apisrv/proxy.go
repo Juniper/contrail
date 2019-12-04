@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/endpoint"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
@@ -18,6 +17,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 // Proxy service related constants.
