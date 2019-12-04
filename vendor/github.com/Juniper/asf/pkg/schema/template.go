@@ -17,15 +17,31 @@ const (
 	dictGetJSONSchemaByStringKeyFilter = "dict_get_JSONSchema_by_string_key"
 )
 
+// GenerateConfig holds configuration for template-base files generation.
+type GenerateConfig struct {
+	TemplatesConfig    []TemplateConfig
+	ModelsImportPath   string
+	ServicesImportPath string
+	NoRegenerate       bool
+}
+
 // TemplateConfig contains a configuration for the template.
 type TemplateConfig struct {
 	TemplateType string `yaml:"type"`
 	TemplatePath string `yaml:"template_path"`
-	OutputPath   string `yaml:"output_path"`
+	OutputDir    string `yaml:"output_dir"`
+	OutputPath   string `yaml:"-"`
 }
 
-// GenerateFiles generates files by applying API data to templates specified in template config.
-func GenerateFiles(api *API, config []*TemplateConfig) error {
+// LoadTemplatesConfig loads template configurations from given path.
+func LoadTemplatesConfig(path string) ([]TemplateConfig, error) {
+	var tcs []TemplateConfig
+	err := fileutil.LoadFile(path, &tcs)
+	return tcs, err
+}
+
+// GenerateFiles generates files by applying API data to templates specified in template configs.
+func GenerateFiles(api *API, gc *GenerateConfig) error {
 	if api == nil {
 		return errors.New("received API is nil")
 	}
@@ -34,15 +50,16 @@ func GenerateFiles(api *API, config []*TemplateConfig) error {
 		return errors.Wrap(err, "register filters")
 	}
 
-	for _, tc := range config {
-		tc.resolveOutputPath()
-		if !tc.isOutdated(api) {
+	for _, tc := range gc.TemplatesConfig {
+		resolveOutputPath(&tc)
+		if gc.NoRegenerate && !isOutdated(api, &tc) {
 			logrus.WithField(
 				"template-config", fmt.Sprintf("%+v", tc),
 			).Debug("Target file is up to date - skipping generation")
 			continue
 		}
-		err := tc.generateFile(api)
+
+		err := generateFile(api, gc, &tc)
 		if err != nil {
 			return errors.Wrap(err, "generate file")
 		}
@@ -50,14 +67,21 @@ func GenerateFiles(api *API, config []*TemplateConfig) error {
 	return nil
 }
 
-func (tc *TemplateConfig) resolveOutputPath() {
-	if tc.OutputPath == "" {
-		tc.OutputPath = generatedFilePath(tc.TemplatePath)
+func resolveOutputPath(tc *TemplateConfig) {
+	tDir, tFile := filepath.Split(tc.TemplatePath)
+	if tc.OutputDir != "" {
+		tc.OutputPath = filepath.Join(tc.OutputDir, generatedFileName(tFile))
+	} else {
+		tc.OutputPath = filepath.Join(tDir, generatedFileName(tFile))
 	}
 	return
 }
 
-func (tc *TemplateConfig) isOutdated(api *API) bool {
+func generatedFileName(templateFile string) string {
+	return "gen_" + strings.TrimSuffix(templateFile, ".tmpl")
+}
+
+func isOutdated(api *API, tc *TemplateConfig) bool {
 	if api.Timestamp.IsZero() {
 		return true
 	}
@@ -73,7 +97,13 @@ func (tc *TemplateConfig) isOutdated(api *API) bool {
 }
 
 // nolint: gocyclo
-func (tc *TemplateConfig) generateFile(api *API) error {
+func generateFile(api *API, gc *GenerateConfig, tc *TemplateConfig) error {
+	logrus.WithFields(logrus.Fields{
+		"template-type": tc.TemplateType,
+		"template-path": tc.TemplatePath,
+		"output-path":   tc.OutputPath,
+	}).Debug("Generating file")
+
 	tpl, err := loadTemplate(tc.TemplatePath)
 	if err != nil {
 		return errors.Wrapf(err, "load template %q", tc.TemplatePath)
@@ -85,14 +115,16 @@ func (tc *TemplateConfig) generateFile(api *API) error {
 
 	if tc.TemplateType == "all" {
 		data, err := tpl.Execute(pongo2.Context{
-			"schemas": api.Schemas,
-			"types":   api.Types,
+			"schemas":            api.Schemas,
+			"types":              api.Types,
+			"modelsImportPath":   gc.ModelsImportPath,
+			"servicesImportPath": gc.ServicesImportPath,
 		})
 		if err != nil {
 			return errors.Wrapf(err, "execute template %q", tc.TemplatePath)
 		}
 
-		if err = generateFile(tc.OutputPath, data, tc.TemplatePath); err != nil {
+		if err = writeFile(tc.OutputPath, data, tc.TemplatePath); err != nil {
 			return errors.Wrapf(err, "generate the file from template %q", tc.TemplatePath)
 		}
 	} else if tc.TemplateType == "alltype" {
@@ -112,13 +144,15 @@ func (tc *TemplateConfig) generateFile(api *API) error {
 			schemas = append(schemas, schema)
 		}
 		data, err := tpl.Execute(pongo2.Context{
-			"schemas": schemas,
+			"schemas":            schemas,
+			"modelsImportPath":   gc.ModelsImportPath,
+			"servicesImportPath": gc.ServicesImportPath,
 		})
 		if err != nil {
 			return errors.Wrapf(err, "execute template %q", tc.TemplatePath)
 		}
 
-		if err = generateFile(tc.OutputPath, data, tc.TemplatePath); err != nil {
+		if err = writeFile(tc.OutputPath, data, tc.TemplatePath); err != nil {
 			return errors.Wrapf(err, "generate the file from template %q", tc.TemplatePath)
 		}
 	}
@@ -131,22 +165,6 @@ func loadTemplate(templatePath string) (*pongo2.Template, error) {
 		return nil, errors.Wrapf(err, "get content of template %q", templatePath)
 	}
 	return pongo2.FromString(string(o))
-}
-
-// LoadTemplateConfig loads template configurations from given path.
-func LoadTemplateConfig(path string) ([]*TemplateConfig, error) {
-	var config []*TemplateConfig
-	err := fileutil.LoadFile(path, &config)
-	return config, err
-}
-
-func generatedFilePath(tmplFilePath string) string {
-	dir, file := filepath.Split(tmplFilePath)
-	return filepath.Join(dir, generatedFileName(file))
-}
-
-func generatedFileName(tmplFile string) string {
-	return "gen_" + strings.TrimSuffix(tmplFile, ".tmpl")
 }
 
 func ensureDirectoryExists(path string) error {
@@ -172,23 +190,25 @@ func registerCustomFilters() error {
 	return nil
 }
 
-func generateFile(outputPath, data, templatePath string) error {
-	logrus.WithFields(logrus.Fields{
-		"output-path":   outputPath,
-		"template-path": templatePath,
-	}).Debug("Generating file")
-	if err := ioutil.WriteFile(outputPath, []byte(generationPrefix(outputPath, templatePath)+data), 0644); err != nil {
+func writeFile(outputPath, data, templatePath string) error {
+	if err := ioutil.WriteFile(
+		outputPath,
+		[]byte(generationComment(outputPath, templatePath)+data),
+		0644,
+	); err != nil {
 		return errors.Wrapf(err, "write the file to path %q", outputPath)
 	}
 	return nil
 }
 
-func generationPrefix(path, template string) string {
+func generationComment(path, templatePath string) string {
 	prefix := "# "
 	if strings.HasSuffix(path, ".go") || strings.HasSuffix(path, ".proto") {
 		prefix = "// "
 	} else if strings.HasSuffix(path, ".sql") {
 		prefix = "-- "
 	}
-	return prefix + fmt.Sprintf("Code generated by contrailschema tool from template %s; DO NOT EDIT.\n\n", template)
+	return prefix + fmt.Sprintf(
+		"Code generated by contrailschema tool from template %s; DO NOT EDIT.\n\n", templatePath,
+	)
 }

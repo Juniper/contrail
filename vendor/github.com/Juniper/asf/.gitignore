@@ -14,19 +14,17 @@
 .AppleDouble
 .LSOverride
 
+.idea
+
 # Project specific paths
+*.log
 bin/
-coverage.log
 dist/
+gen_*
 profile.cov
 profile.tmp
 test_output/
-unittests.log
 vendor/
-
-*.log
-
-.idea
 
 # Files patched during the build
 .patched

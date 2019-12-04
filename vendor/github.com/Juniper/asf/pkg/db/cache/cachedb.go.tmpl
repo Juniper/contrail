@@ -3,9 +3,9 @@ package cache
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services"
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
 )
 
 {% macro schemaName(schema) export %}{{ schema.JSONSchema.GoName }}{% endmacro %}
