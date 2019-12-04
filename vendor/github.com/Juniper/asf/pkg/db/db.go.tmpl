@@ -7,15 +7,15 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
-
-	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services"
-	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/schema"
+	
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -297,7 +297,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAt
 // list{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
 	qb := db.QueryBuilders["{{ schema.ID }}"]
-	query, columns, values := qb.ListQuery(auth.GetAuthCTX(ctx), request.Spec)
+	query, columns, values := qb.ListQuery(auth.GetIdentity(ctx), request.Spec)
 
 	tx := basedb.GetTransaction(ctx)
 	rows, err := tx.QueryContext(ctx, query, values...)

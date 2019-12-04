@@ -3,9 +3,10 @@ package services
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services/baseservices"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*models.APIAccessList {

@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
@@ -15,10 +14,11 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
+	//"github.com/Juniper/asf/pkg/collector"
 
 	uuid "github.com/satori/go.uuid"
-	// TODO(buoto): Decouple from below packages
-	//"github.com/Juniper/asf/pkg/collector"
 )
 
 //API Path definitions.
