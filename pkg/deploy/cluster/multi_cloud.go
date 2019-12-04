@@ -168,9 +168,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	if err := m.cleanupProvisioning(); err != nil {
 		return err
 	}
@@ -179,8 +176,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 			return err
 		}
 	}
-	// nolint: errcheck
-	defer m.stopSSHAgent()
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
@@ -311,9 +306,6 @@ func (m *multiCloudProvisioner) manageMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	return m.provision()
 }
 
@@ -426,11 +418,15 @@ func (m *multiCloudProvisioner) provision() error {
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
 	}
-	vars := []string{
-		fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK")),
-		fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID")),
+	// TODO: Add Key
+	publicKey := ""
+	agent, err := StartSSHAgentWithKey(publicKey)
+	// TODO: Error check
+	defer agent.Kill()
+	if err != nil {
+		return errors.Wrap(err, "could not start SSH Agent")
 	}
-	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...)
 }
 
 func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
@@ -459,8 +455,16 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
 	}
+	// TODO: Add Key
+	publicKey := ""
+	agent, err := StartSSHAgentWithKey(publicKey)
+	// TODO: Error check
+	defer agent.Kill()
+	if err != nil {
+		return errors.Wrap(err, "could not start SSH Agent")
+	}
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
