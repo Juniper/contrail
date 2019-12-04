@@ -6,12 +6,12 @@ import (
     "time"
 
     "github.com/gogo/protobuf/types"
-    uuid "github.com/satori/go.uuid"
     "github.com/stretchr/testify/assert"
-
-    "github.com/Juniper/asf/pkg/models"
-    "github.com/Juniper/asf/pkg/services"
     "github.com/Juniper/asf/pkg/services/baseservices"
+
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
+	uuid "github.com/satori/go.uuid"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

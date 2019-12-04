@@ -7,15 +7,16 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
-
-	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/schema"
+	// TODO(dfurman): Decouple from below packages
+	// "github.com/Juniper/asf/pkg/auth"
+
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
