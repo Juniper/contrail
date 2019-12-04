@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "00d0a503_57e98040",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 10
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-04T15:55:43Z",
+      "side": 1,
+      "message": "To be done in ASF",
+      "parentUuid": "1856b250_b1ea417b",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 46
+      },
+      "revId": "5a71c868b9b5a7ae0d18d9f36588e75a4340d8db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c4c9f400_92e168a6",
         "filename": "pkg/client/client_http.go.tmpl",
         "patchSetId": 10
@@ -62,6 +86,24 @@
       "revId": "5a71c868b9b5a7ae0d18d9f36588e75a4340d8db",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9cb792d_b7152297",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 10
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-04T15:55:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c4c9f400_92e168a6",
+      "revId": "5a71c868b9b5a7ae0d18d9f36588e75a4340d8db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
