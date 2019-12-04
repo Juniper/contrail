@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
-	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/rbac"
+	// TODO(dfurman): Decouple from below packages
 	"github.com/Juniper/asf/pkg/auth"
+
+	models "{{ modelsImportPath }}"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

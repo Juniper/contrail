@@ -5,10 +5,11 @@ import (
 
     "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
-
-    "github.com/Juniper/asf/pkg/auth"
-    "github.com/Juniper/asf/pkg/models"
     "github.com/Juniper/asf/pkg/services/baseservices"
+	// TODO(dfurman): Decouple from below packages
+	"github.com/Juniper/asf/pkg/auth"
+
+	models "{{ modelsImportPath }}"
 )
 
 // Service is a generic service that can be placed in chain.

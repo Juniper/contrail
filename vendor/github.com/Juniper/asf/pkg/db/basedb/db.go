@@ -14,9 +14,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
 	// TODO(buoto): Decouple from below packages
-	//"github.com/Juniper/asf/pkg/collector"
-	//"github.com/Juniper/asf/pkg/collector/analytics"
+	// "github.com/Juniper/asf/pkg/collector"
+	// "github.com/Juniper/asf/pkg/collector/analytics"
 )
 
 // Database driver
