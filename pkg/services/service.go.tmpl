@@ -7,7 +7,6 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/services/baseservices"
@@ -18,7 +17,6 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 )
-
 const xRequestIDHeader = "X-Request-Id"
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -49,15 +47,17 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	model := request.{{ schema.JSONSchema.GoName }}
 	if model == nil {
 		return nil, errutil.ErrorBadRequest("create body is empty")
 	}
+
+	ctx = WithRequestID(ctx, "")
 	authCTX := auth.GetAuthCTX(ctx)
 	if authCTX == nil {
 		return nil, errutil.ErrorUnauthenticated
 	}
+
 	if model.UUID == "" {
 		model.UUID = uuid.NewV4().String()
 	}
@@ -212,12 +212,12 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	model := request.{{ schema.JSONSchema.GoName }}
 	if model == nil {
 		return nil, errutil.ErrorBadRequest("update request body is empty")
 	}
 
+	ctx = WithRequestID(ctx, "")
 	storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", model.UUID)
 	if err != nil {
 		return nil, err
@@ -259,7 +259,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
+	ctx = WithRequestID(ctx, "")
 	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if err != nil {
@@ -293,7 +293,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
+	ctx = WithRequestID(ctx, "")
 	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if errutil.IsNotFound(err) {

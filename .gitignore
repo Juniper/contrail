@@ -14,27 +14,24 @@
 .AppleDouble
 .LSOverride
 
+.idea
+
 # Project specific paths
+*.log
 base.pb.go
 bin/
-coverage.log
 dist/
 doc/proto.md
 docker/contrail_go/etc/
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
-**/gen_*
+gen_*
 pkg/**/mock/*
 profile.cov
 profile.tmp
 public/
 test_output/
-unittests.log
-
 !vendor/**
-*.log
-
-.idea
 
 # Files patched during the build
 .patched

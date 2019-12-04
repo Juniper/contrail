@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/schema"
@@ -32,8 +31,22 @@ type QueryBuilder struct {
 	BackRefFields map[string][]string
 }
 
+type authContext interface {
+	IsAdmin() bool
+	ProjectID() string
+	DomainID() string
+}
+
+type defaultAuthContext struct{}
+
+func (defaultAuthContext) IsAdmin() bool { return true }
+
+func (defaultAuthContext) ProjectID() string { return "project" }
+
+func (defaultAuthContext) DomainID() string { return "domain" }
+
 type queryContext struct {
-	auth        *auth.Context
+	auth        authContext
 	values      []interface{}
 	columns     Columns
 	columnParts []string
@@ -43,7 +56,10 @@ type queryContext struct {
 	spec        *baseservices.ListSpec
 }
 
-func newQueryContext(auth *auth.Context, spec *baseservices.ListSpec) *queryContext {
+func newQueryContext(auth authContext, spec *baseservices.ListSpec) *queryContext {
+	if auth == nil {
+		auth = defaultAuthContext{}
+	}
 	return &queryContext{
 		auth:        auth,
 		query:       &bytes.Buffer{},
@@ -500,9 +516,7 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 }
 
 //ListQuery makes sql query.
-func (qb *QueryBuilder) ListQuery(
-	auth *auth.Context,
-	spec *baseservices.ListSpec) (string, Columns, []interface{}) {
+func (qb *QueryBuilder) ListQuery(auth authContext, spec *baseservices.ListSpec) (string, Columns, []interface{}) {
 	ctx := newQueryContext(auth, spec)
 	qb.buildColumns(ctx)
 	qb.buildFilterQuery(ctx)
@@ -515,7 +529,7 @@ func (qb *QueryBuilder) ListQuery(
 }
 
 // CountQuery makes an SQL query which counts the number of specified resources.
-func (qb *QueryBuilder) CountQuery(auth *auth.Context, spec *baseservices.ListSpec) (string, []interface{}) {
+func (qb *QueryBuilder) CountQuery(auth authContext, spec *baseservices.ListSpec) (string, []interface{}) {
 	ctx := newQueryContext(auth, spec)
 
 	qb.buildFilterQuery(ctx)
