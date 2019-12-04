@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/schema"
-	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
@@ -296,7 +296,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAt
 // list{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
 	qb := db.QueryBuilders["{{ schema.ID }}"]
-	query, columns, values := qb.ListQuery(auth.GetAuthCTX(ctx), request.Spec)
+	query, columns, values := qb.ListQuery(auth.GetIdentity(ctx), request.Spec)
 
 	tx := basedb.GetTransaction(ctx)
 	rows, err := tx.QueryContext(ctx, query, values...)

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/client"
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/collector"
@@ -109,10 +110,11 @@ func (s *Server) Init() (err error) {
 	s.Echo.Use(middleware.Recover())
 	s.Echo.Binder = &customBinder{}
 
-	s.DBService, err = db.NewServiceFromConfig()
+	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(s.Collector))
 	if err != nil {
 		return err
 	}
+	s.DBService = db.NewService(sqlDB)
 
 	if err = s.setupCollector(); err != nil {
 		return err

@@ -5,10 +5,9 @@ import (
 
     "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
-
-    "github.com/Juniper/asf/pkg/auth"
-    "github.com/Juniper/asf/pkg/models"
     "github.com/Juniper/asf/pkg/services/baseservices"
+
+	models "{{ modelsImportPath }}"
 )
 
 // Service is a generic service that can be placed in chain.
@@ -16,6 +15,11 @@ type Service interface {
     Next() Service
     SetNext(Service)
 
+    ReadWriteService
+}
+
+// ReadWriteService is an object that has both read and write service methods.
+type ReadWriteService interface {
     WriteService
     ReadService
 }
@@ -43,25 +47,25 @@ type ReadService interface {
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 func (w *InternalContextWriteServiceWrapper) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-    return w.WriteService.Create{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+    return w.WriteService.Create{{ schema.JSONSchema.GoName }}(baseservices.WithInternalRequest(ctx), request)
 }
 
 func (w *InternalContextWriteServiceWrapper) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-    return w.WriteService.Update{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+    return w.WriteService.Update{{ schema.JSONSchema.GoName }}(baseservices.WithInternalRequest(ctx), request)
 }
 
 func (w *InternalContextWriteServiceWrapper) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    return w.WriteService.Delete{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+    return w.WriteService.Delete{{ schema.JSONSchema.GoName }}(baseservices.WithInternalRequest(ctx), request)
 }
 
 {% for _, reference in schema.References %}
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
 func (w *InternalContextWriteServiceWrapper) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
-    return w.WriteService.Create{{ refType }}(auth.WithInternalRequest(ctx), request)
+    return w.WriteService.Create{{ refType }}(baseservices.WithInternalRequest(ctx), request)
 }
 
 func (w *InternalContextWriteServiceWrapper) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
-    return w.WriteService.Delete{{ refType }}(auth.WithInternalRequest(ctx), request)
+    return w.WriteService.Delete{{ refType }}(baseservices.WithInternalRequest(ctx), request)
 }
 {% endfor %}
 {% endif%}{% endfor %}
