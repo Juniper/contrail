@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a30d562d_7441b905",
+        "filename": "pkg/client/client_grpc.go.tmpl",
+        "patchSetId": 10
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-04T14:40:36Z",
+      "side": 1,
+      "message": "IMO it pollutes implementation. How about doing that in test_grpc.go?",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 37
+      },
+      "revId": "5a71c868b9b5a7ae0d18d9f36588e75a4340d8db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1856b250_b1ea417b",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 10
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-04T14:40:36Z",
+      "side": 1,
+      "message": "Please remove that",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 46
+      },
+      "revId": "5a71c868b9b5a7ae0d18d9f36588e75a4340d8db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c4c9f400_92e168a6",
+        "filename": "pkg/client/client_http.go.tmpl",
+        "patchSetId": 10
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-04T14:40:36Z",
+      "side": 1,
+      "message": "Please add a TODO when this code is planned to be moved out of template file (where applicable).",
+      "revId": "5a71c868b9b5a7ae0d18d9f36588e75a4340d8db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
