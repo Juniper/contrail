@@ -12,9 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/labstack/echo"
 	"google.golang.org/grpc"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
