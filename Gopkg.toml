@@ -25,4 +25,5 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
-  revision = "7f1849325dfd10c12da9301c039b10adb24bd13a"
+  branch = "asf-templates-more" # TODO(dfurman): update revision when merged
+#  revision = "7f1849325dfd10c12da9301c039b10adb24bd13a"
