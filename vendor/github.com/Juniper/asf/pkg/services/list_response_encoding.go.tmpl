@@ -5,9 +5,10 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/pkg/errors"
+
+	models "{{ modelsImportPath }}"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db/basedb"
 )
 
 func listSpecForGet(uuid string, fields []string) *baseservices.ListSpec {

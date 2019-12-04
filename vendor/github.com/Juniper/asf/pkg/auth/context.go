@@ -2,69 +2,49 @@ package auth
 
 import (
 	"context"
-	"net/http"
-
-	"github.com/Juniper/asf/pkg/format"
 )
 
-type key string
+type Identity interface {
+	GetObjPerms() interface{}
+	IsAdmin() bool
+	IsGlobalRORole() bool
+	IsCloudAdminRole() bool
+	ProjectID() string
+	DomainID() string
+	UserID() string
+	AuthToken() string
+	Roles() []string
+}
+
+type defaultIdentity struct{}
+
+// TODO(mblotniak): do not assume admin
+func (d defaultIdentity) GetObjPerms() interface{} { return nil }
+func (d defaultIdentity) IsAdmin() bool            { return true }
+func (d defaultIdentity) IsGlobalRORole() bool     { return true }
+func (d defaultIdentity) IsCloudAdminRole() bool   { return true }
+func (d defaultIdentity) ProjectID() string        { return "admin" }
+func (d defaultIdentity) DomainID() string         { return "admin" } // TODO(mblotniak): Verify correctness
+func (d defaultIdentity) UserID() string           { return "admin" }
+func (d defaultIdentity) AuthToken() string        { return "" }
+func (d defaultIdentity) Roles() []string          { return nil }
+
+type authContextKey string
 
 const (
-	// internalRequestKey used in context as additional propetry
-	internalRequestKey key = "isInternal"
-	// xClusterID used in context, which will be set in HEADER
-	// to select cluster specific keystone for auth
-	xClusterID key = "X-Cluster-ID"
-	// xAuthToktn used in context, which will be set in HEADER
-	// to fetch cluster keystone token with infra(superuser) token
-	xAuthToken key = "X-Auth-Token"
+	authIdentityContextKey authContextKey = "auth"
 )
 
-// WithInternalRequest creates child context with additional information
-// that this context is for internal requests
-func WithInternalRequest(ctx context.Context) context.Context {
-	return context.WithValue(ctx, internalRequestKey, true)
+// WithIdentity returns context with auth.Context stored.
+func WithIdentity(ctx context.Context, auth Identity) context.Context {
+	return context.WithValue(ctx, authIdentityContextKey, auth)
 }
 
-// IsInternalRequest checks if context is for internal request
-func IsInternalRequest(ctx context.Context) bool {
-	if v := ctx.Value(internalRequestKey); v != nil {
-		return v.(bool)
+// GetIdentity is used to get an authentication from ctx.Context.
+func GetIdentity(ctx context.Context) Identity {
+	c, ok := ctx.Value(authIdentityContextKey).(Identity)
+	if !ok || c == nil {
+		return defaultIdentity{}
 	}
-
-	return false
-}
-
-// WithXClusterID creates child context with cluster ID
-func WithXClusterID(ctx context.Context, clusterID string) context.Context {
-	if v := ctx.Value(xClusterID); v == nil {
-		return context.WithValue(ctx, xClusterID, clusterID)
-	}
-	return ctx
-}
-
-// SetXClusterIDInHeader sets X-Cluster-ID in the HEADER.
-func SetXClusterIDInHeader(
-	ctx context.Context, request *http.Request) *http.Request {
-	if v := ctx.Value(xClusterID); v != nil {
-		request.Header.Set(string(xClusterID), format.InterfaceToString(v))
-	}
-	return request
-}
-
-// WithXAuthToken creates child context with Auth Token
-func WithXAuthToken(ctx context.Context, token string) context.Context {
-	if v := ctx.Value(xAuthToken); v == nil {
-		return context.WithValue(ctx, xAuthToken, token)
-	}
-	return ctx
-}
-
-// SetXAuthTokenInHeader sets X-Auth-Token in the HEADER.
-func SetXAuthTokenInHeader(
-	ctx context.Context, request *http.Request) *http.Request {
-	if v := ctx.Value(xAuthToken); v != nil {
-		request.Header.Set(string(xAuthToken), format.InterfaceToString(v))
-	}
-	return request
+	return c
 }

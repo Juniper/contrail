@@ -3,9 +3,9 @@ package services
 import (
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
-
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/asf/pkg/models"
+
+	models "{{ modelsImportPath }}"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

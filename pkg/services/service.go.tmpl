@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -49,15 +48,17 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	model := request.{{ schema.JSONSchema.GoName }}
 	if model == nil {
 		return nil, errutil.ErrorBadRequest("create body is empty")
 	}
-	authCTX := auth.GetAuthCTX(ctx)
+
+	ctx = WithRequestID(ctx, "")
+	authCTX := auth.GetIdentity(ctx)
 	if authCTX == nil {
 		return nil, errutil.ErrorUnauthenticated
 	}
+
 	if model.UUID == "" {
 		model.UUID = uuid.NewV4().String()
 	}
@@ -112,7 +113,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 		model.Perms2.Share = []*models.ShareType{}
 	}
 
-	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
+	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
 		if err := isVisibleObject(ctx, model.IDPerms); err != nil {
 			return nil, errutil.ErrorBadRequestf("%v", err)
 		}
@@ -164,7 +165,7 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
 	}
 	if model.ParentType != "" {
 		// assign default fqName
-		authCTX := auth.GetAuthCTX(ctx)
+		authCTX := auth.GetIdentity(ctx)
 		model.FQName = []string{authCTX.DomainID(), fmt.Sprintf("default-%s", model.ParentType), model.Name}
 	}
 {% endif %}
@@ -212,18 +213,18 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	model := request.{{ schema.JSONSchema.GoName }}
 	if model == nil {
 		return nil, errutil.ErrorBadRequest("update request body is empty")
 	}
 
+	ctx = WithRequestID(ctx, "")
 	storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", model.UUID)
 	if err != nil {
 		return nil, err
 	}
 
-	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
+	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
 		if err := isVisibleObject(ctx, storedIDPerms); err != nil {
 			return nil, errutil.ErrorNotFoundf("%v", err)
 		}
@@ -259,8 +260,8 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
-	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
+	ctx = WithRequestID(ctx, "")
+	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if err != nil {
 			return nil, errutil.ErrorNotFoundf("%v", err)
@@ -293,8 +294,8 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
-	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
+	ctx = WithRequestID(ctx, "")
+	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if errutil.IsNotFound(err) {
 			// Resources may be created on get by resource plugins (Neutron)

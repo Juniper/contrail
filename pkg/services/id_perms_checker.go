@@ -3,12 +3,11 @@ package services
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/models"
 )
 
 // isVisibleObject verifies that the object is visible to a user without administrator rights
@@ -17,7 +16,7 @@ func isVisibleObject(ctx context.Context, idPerms *models.IdPermsType) error {
 		logrus.Errorf("user unauthenticated: context is nil")
 		return nil
 	}
-	auth := auth.GetAuthCTX(ctx)
+	auth := auth.GetIdentity(ctx)
 	if auth == nil {
 		logrus.Errorf("user unauthenticated: non authorized context")
 		return nil
