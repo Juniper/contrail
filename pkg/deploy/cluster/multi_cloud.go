@@ -169,9 +169,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	if err := m.cleanupProvisioning(); err != nil {
 		return err
 	}
@@ -180,8 +177,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 			return err
 		}
 	}
-	// nolint: errcheck
-	defer m.stopSSHAgent()
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
@@ -309,9 +304,6 @@ func (m *multiCloudProvisioner) manageMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	return m.provision()
 }
 
@@ -402,11 +394,12 @@ func (m *multiCloudProvisioner) provision() error {
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
 	}
-	vars := []string{
-		fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK")),
-		fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID")),
+	agent, stopAgent, err := m.startSSHAgent()
+	defer stopAgent()
+	if err != nil {
+		return errors.Wrap(err, "cannot start SSH Agent")
 	}
-	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.getExportVars()...)
 }
 
 func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
@@ -435,8 +428,33 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
 		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
 	}
+	agent, stopAgent, err := m.startSSHAgent()
+	if err != nil {
+		return err
+	}
+	defer stopAgent()
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
+	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.getExportVars()...)
+}
+
+func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
+	kp, err := m.getPublicCloudKeyPair()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "cannot resolve public cloud keypair")
+	}
+
+	agent := &sshAgent{}
+	stopAgent := func() {
+		if err = agent.stop(); err != nil {
+			m.Log.Errorf("cannot stop SSH Agent: %v", err)
+		}
+	}
+
+	if err = agent.runSSHAgent(filepath.Join(kp.GetSSHKeyDirPath(), kp.GetName())); err != nil {
+		stopAgent()
+		return nil, nil, err
+	}
+	return agent, stopAgent, nil
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
