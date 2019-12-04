@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	asfauth "github.com/Juniper/asf/pkg/auth"
 	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
@@ -140,9 +141,7 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 	// as auth is enabled, create ctx with auth
 	varCtx := auth.NewContext(kstypes.DefaultDomainID, projectID,
 		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
-	var authKey interface{} = "auth"
-	ctx = context.WithValue(ctx, authKey, varCtx)
-	return ctx
+	return asfauth.WithIdentity(ctx, varCtx)
 }
 
 // UpdateClient updates client for given endpoint.

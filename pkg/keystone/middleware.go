@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	auth2 "github.com/Juniper/contrail/pkg/auth"
+	asfauth "github.com/Juniper/asf/pkg/auth"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
@@ -136,11 +137,11 @@ func httpTransport(insecure bool) *http.Transport {
 	return t
 }
 
-func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
+func authenticate(ctx context.Context, ka *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
 		return nil, errors.Wrap(errutil.ErrorUnauthenticated, "no auth token in request")
 	}
-	validatedToken, err := auth.Validate(tokenString)
+	validatedToken, err := ka.Validate(tokenString)
 	if err != nil {
 		logrus.Errorf("Invalid Token: %s", err)
 		return nil, errutil.ErrorUnauthenticated
@@ -157,10 +158,8 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	domain := validatedToken.Project.Domain.ID
 	user := validatedToken.User
 
-	objPerms := auth2.NewObjPerms(validatedToken)
-	authContext := auth2.NewContext(domain, project.ID, user.ID, roles, tokenString, objPerms)
+	objPerms := auth.NewObjPerms(validatedToken)
+	authContext := auth.NewContext(domain, project.ID, user.ID, roles, tokenString, objPerms)
 
-	var authKey interface{} = "auth"
-	newCtx := context.WithValue(ctx, authKey, authContext)
-	return newCtx, nil
+	return asfauth.WithIdentity(ctx, authContext), nil
 }

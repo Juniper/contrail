@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/rbac"
-	"github.com/Juniper/contrail/pkg/auth"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
