@@ -10,7 +10,7 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 

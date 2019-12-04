@@ -7,12 +7,11 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
 type pgxReplicationConn interface {

@@ -1,7 +1,7 @@
 syntax = "proto3";
-package github.com.Juniper.contrail.pkg.models;
+package models;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "gogoproto/gogo.proto";
 
 option (gogoproto.goproto_enum_prefix_all) = false;
 option (gogoproto.gostring_all) = false;
@@ -15,8 +15,6 @@ option (gogoproto.marshaler_all) = false;
 option (gogoproto.sizer_all) = true;
 option (gogoproto.unmarshaler_all) = false;
 option (gogoproto.protosizer_all) = false;
-
-option go_package = "models";
 
 {% for schema in schemas sorted %}{% if schema.Type != "abstract" and schema.ID %}
 

@@ -78,7 +78,7 @@ func TestQueryBuilder(t *testing.T) {
 			},
 			spec: baseservices.ListSpec{
 				RefUUIDs: map[string]*baseservices.UUIDs{
-					"project_refs": {[]string{"proj_ref_uuid", "proj_ref_uuid_2"}},
+					"project_refs": {UUIDs: []string{"proj_ref_uuid", "proj_ref_uuid_2"}},
 				},
 			},
 			expected: expectedResult{
