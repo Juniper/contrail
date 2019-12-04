@@ -18,11 +18,13 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:1d0c35e1a989a26f4742b960ac6a7dd2c905fceabf8822abd7139c3ee82db5b6"
+  digest = "1:76d83099a89545a0949b7ef22a7f2bf0aeda31c861c8e7017bfcb0d349de1d3e"
   name = "github.com/Juniper/asf"
   packages = [
+    "pkg/auth",
     "pkg/client",
     "pkg/constants",
+    "pkg/db/basedb",
     "pkg/errutil",
     "pkg/fileutil",
     "pkg/fileutil/template",
@@ -31,15 +33,17 @@
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
+    "pkg/models",
     "pkg/models/basemodels",
     "pkg/osutil",
     "pkg/proxy",
+    "pkg/rbac",
     "pkg/retry",
     "pkg/schema",
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "7f1849325dfd10c12da9301c039b10adb24bd13a"
+  revision = "4325bd2fd374b28bcfe3f9f745fed1852ea549cc"
 
 [[projects]]
   branch = "2.x"
@@ -1365,8 +1369,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/DavidCai1993/etcd-lock",
-    "github.com/ExpansiveWorlds/instrumentedsql",
+    "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
+    "github.com/Juniper/asf/pkg/db/basedb",
     "github.com/Juniper/asf/pkg/errutil",
     "github.com/Juniper/asf/pkg/fileutil",
     "github.com/Juniper/asf/pkg/fileutil/template",
@@ -1378,6 +1383,7 @@
     "github.com/Juniper/asf/pkg/models/basemodels",
     "github.com/Juniper/asf/pkg/osutil",
     "github.com/Juniper/asf/pkg/proxy",
+    "github.com/Juniper/asf/pkg/rbac",
     "github.com/Juniper/asf/pkg/retry",
     "github.com/Juniper/asf/pkg/schema",
     "github.com/Juniper/asf/pkg/services/baseservices",

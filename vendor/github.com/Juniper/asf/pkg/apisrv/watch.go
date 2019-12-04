@@ -3,10 +3,11 @@ package apisrv
 import (
 	"encoding/json"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/labstack/echo"
 	"golang.org/x/net/websocket"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 func (s *Server) watchHandler(c echo.Context) error {

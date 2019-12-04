@@ -25,4 +25,4 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
-  revision = "7f1849325dfd10c12da9301c039b10adb24bd13a"
+  revision = "4325bd2fd374b28bcfe3f9f745fed1852ea549cc" # TODO(dfurman): update hash when merged
