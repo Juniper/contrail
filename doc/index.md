@@ -171,8 +171,7 @@ Generate source code and initial SQL definitions based on schema:
 make generate
 ```
 
-Templates for code generation are stored in ["template" directory](../tools/templates).
-List of templates is specified in [template configuration](../tools/templates/native/template_config.yaml).
+List of templates is specified in [Contrail templates configuration](../tools/templates/contrail/templates_config.yaml) and [Neutron templates configuration](../tools/templates/neutron/templates_config.yaml).
 
 Project uses [Pongo2 template engine](https://github.com/flosch/pongo2) which is based on [Django template language](https://docs.djangoproject.com/en/dev/ref/templates/language/).
 

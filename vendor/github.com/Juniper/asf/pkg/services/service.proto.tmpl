@@ -1,12 +1,13 @@
 syntax = "proto3";
-package github.com.Juniper.contrail.pkg.services;
+package services;
 
-import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/Juniper/asf/pkg/services/baseservices/base.proto";
-import "github.com/Juniper/asf/pkg/models/gen_model.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/empty.proto";
+
+import "github.com/Juniper/asf/pkg/services/baseservices/base.proto";
+import "{{ modelsImportPath }}/gen_model.proto";
 
 option (gogoproto.goproto_enum_prefix_all) = false;
 option (gogoproto.gostring_all) = false;
@@ -20,8 +21,6 @@ option (gogoproto.marshaler_all) = false;
 option (gogoproto.sizer_all) = true;
 option (gogoproto.unmarshaler_all) = false;
 option (gogoproto.protosizer_all) = false;
-
-option go_package = "services";
 
 service ContrailService {
 	{% for schema in schemas %}
@@ -42,21 +41,21 @@ service ContrailService {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 message Create{{ schema.JSONSchema.GoName }}Request {
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+	models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
 	google.protobuf.FieldMask field_mask = 2 [(gogoproto.nullable) = false];
 }
 
 message Create{{ schema.JSONSchema.GoName }}Response {
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}" ,(gogoproto.jsontag) = "{{ schema.Path }}"];
+	models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}" ,(gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 message Update{{ schema.JSONSchema.GoName }}Request {
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+	models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
 	google.protobuf.FieldMask field_mask = 2 [(gogoproto.nullable) = false];
 }
 
 message Update{{ schema.JSONSchema.GoName }}Response {
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+	models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 message Delete{{ schema.JSONSchema.GoName }}Request {
@@ -68,11 +67,11 @@ message Delete{{ schema.JSONSchema.GoName }}Response {
 }
 
 message List{{ schema.JSONSchema.GoName }}Request {
-	github.com.Juniper.contrail.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
+	github.com.Juniper.asf.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
 }
 
 message List{{ schema.JSONSchema.GoName }}Response {
-	repeated github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s"];
+	repeated models.{{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s"];
 	int64 {{ schema.ID }}_count = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}Count"];
 }
 
@@ -82,28 +81,28 @@ message Get{{ schema.JSONSchema.GoName }}Request {
 }
 
 message Get{{ schema.JSONSchema.GoName }}Response {
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
+	models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
 {% for linkTo, reference in schema.References %}
 message Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest {
 	string id = 1 [(gogoproto.customname) = "ID"];
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+	models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
 }
 
 message Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse {
 	string id = 1 [(gogoproto.customname) = "ID"];
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+	models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
 }
 
 message Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest {
 	string id = 1 [(gogoproto.customname) = "ID"];
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+	models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
 }
 
 message Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse {
 	string id = 1 [(gogoproto.customname) = "ID"];
-	github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+	models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
 }{% endfor %}
 {% endif %}{% endfor %}
 
@@ -262,7 +261,7 @@ message RetrieveValuesResponse {
 }
 
 message RetrieveKVPsResponse {
-	repeated github.com.Juniper.contrail.pkg.models.KeyValuePair value = 1 [(gogoproto.customname) = "KeyValuePairs",(gogoproto.jsontag) = "value"];
+	repeated models.KeyValuePair value = 1 [(gogoproto.customname) = "KeyValuePairs",(gogoproto.jsontag) = "value"];
 }
 
 message DeleteKeyRequest {
@@ -315,7 +314,7 @@ message PropCollectionChange {
 	oneof Value {
  {% set index = 5 %}{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
 	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
-	{% if itemType != "string" %}github.com.Juniper.contrail.pkg.models.{% endif %}{{ itemType }} {{ itemType }}Value = {{ index }};
+	{% if itemType != "string" %}models.{% endif %}{{ itemType }} {{ itemType }}Value = {{ index }};
 	{% set index = index + 1 %}
 	{% endif %}{% endfor %}
 	};

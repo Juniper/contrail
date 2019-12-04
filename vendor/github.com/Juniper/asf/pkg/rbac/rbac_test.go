@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/models"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 const apiAccessListUUID = "default-api-access-list8_uuid"
@@ -292,8 +293,7 @@ func TestCheckObjectPermissions(t *testing.T) {
 func userAuth(ctx context.Context, tenant string) context.Context {
 	Context := auth.NewContext(
 		"default-domain", tenant, "bob", []string{"Member"}, "", auth.NewObjPerms(nil))
-	var authKey interface{} = "auth"
-	return context.WithValue(ctx, authKey, Context)
+	return asfauth.WithIdentity(ctx, Context)
 }
 
 func globalAccessRuleList() []*models.APIAccessList {

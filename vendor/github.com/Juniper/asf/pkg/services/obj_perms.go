@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-
-	"github.com/Juniper/asf/pkg/auth"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 // RESTGetObjPerms handles GET operation of obj-perms request.

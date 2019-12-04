@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db/basedb"
 )
 
 func TestStringIPv6(t *testing.T) {
