@@ -169,9 +169,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	if err := m.cleanupProvisioning(); err != nil {
 		return err
 	}
@@ -180,8 +177,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 			return err
 		}
 	}
-	// nolint: errcheck
-	defer m.stopSSHAgent()
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
@@ -309,9 +304,6 @@ func (m *multiCloudProvisioner) manageMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	return m.provision()
 }
 
@@ -399,12 +391,30 @@ func (m *multiCloudProvisioner) provision() error {
 	if m.clusterData.ClusterInfo.ProvisioningAction == updateCloud {
 		args = append(args, "--update")
 	}
-
-	vars := []string{
-		fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK")),
-		fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID")),
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
 	}
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
+	agent, stopAgent, err := m.startSSHAgent()
+	defer stopAgent()
+	if err != nil {
+		return errors.Wrap(err, "cannot start SSH Agent")
+	}
+	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.getExportVars()...)
+}
+
+func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
+	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
+		"command": cliCommand,
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.contrailAnsibleDeployer.ansibleClient.WorkingDirectory(), "executed_cmd.yml"),
+		content,
+		defaultFilePermRWOnly,
+	)
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
@@ -415,8 +425,36 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
 		"--state", filepath.Join(mcRepoDir, "state.yml"),
 	}
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
+	}
+	agent, stopAgent, err := m.startSSHAgent()
+	if err != nil {
+		return err
+	}
+	defer stopAgent()
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
+	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.getExportVars()...)
+}
+
+func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
+	kp, err := m.getPublicCloudKeyPair()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "cannot resolve public cloud keypair")
+	}
+
+	agent := &sshAgent{}
+	stopAgent := func() {
+		if err = agent.stop(); err != nil {
+			m.Log.Errorf("cannot stop SSH Agent: %v", err)
+		}
+	}
+
+	if err = agent.run(filepath.Join(kp.GetSSHKeyDirPath(), kp.GetName())); err != nil {
+		stopAgent()
+		return nil, nil, err
+	}
+	return agent, stopAgent, nil
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
