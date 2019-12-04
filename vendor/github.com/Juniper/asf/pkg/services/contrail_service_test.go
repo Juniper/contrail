@@ -6,9 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {

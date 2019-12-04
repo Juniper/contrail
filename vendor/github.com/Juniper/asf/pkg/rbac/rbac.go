@@ -4,10 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 // CRUD operations rune constants
