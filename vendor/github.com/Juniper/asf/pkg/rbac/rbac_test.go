@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/models"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 const apiAccessListUUID = "default-api-access-list8_uuid"

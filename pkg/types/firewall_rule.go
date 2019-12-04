@@ -283,7 +283,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 	databaseFR *models.FirewallRule,
 	fm *types.FieldMask,
 ) error {
-	if !auth.IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
+	if !baseservices.IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
 		return errutil.ErrorBadRequestf(
 			"cannot directly define Tags reference from a Firewall Rule. " +
 				"Use 'tags' endpoints property in the Firewall Rule")
@@ -420,7 +420,7 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 	databaseFR *models.FirewallRule,
 	fm *types.FieldMask,
 ) error {
-	if !auth.IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
+	if !baseservices.IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
 		return errutil.ErrorBadRequestf(
 			"cannot directly define Address Group reference from a Firewall Rule. " +
 				"Use 'address_group' endpoints property in the Firewall Rule")

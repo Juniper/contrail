@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -30,14 +30,16 @@ func TestMain(m *testing.M) {
 		logutil.FatalWithStackTrace(err)
 	}
 
-	testDB, err := basedb.OpenConnection(basedb.ConnectionConfig{
-		Driver:   basedb.DriverPostgreSQL,
+	c := basedb.ConnectionConfig{
 		User:     viper.GetString("database.user"),
 		Password: viper.GetString("database.password"),
 		Host:     viper.GetString("database.host"),
 		Name:     viper.GetString("database.name"),
-		Debug:    viper.GetBool("database.debug"),
-	})
+	}
+	if viper.GetBool("database.debug") {
+		c.DriverWrappers = append(c.DriverWrappers, basedb.WithInstrumentedSQL())
+	}
+	testDB, err := basedb.OpenConnection(c)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
