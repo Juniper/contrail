@@ -3,11 +3,11 @@ package neutron
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
@@ -71,7 +71,7 @@ func (sv *Service) GetProject(
 }
 
 func (sv *Service) getProjectFromKeystone(ctx context.Context, id string) (*keystone.Project, error) {
-	token := auth.GetAuthCTX(ctx).AuthToken()
+	token := auth.GetIdentity(ctx).AuthToken()
 	if token == "" {
 		return nil, errors.New("expected auth token in context")
 	}

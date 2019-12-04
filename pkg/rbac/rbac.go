@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -41,7 +41,7 @@ func CheckCommonPermissions(ctx context.Context, aaaMode string, kind string, op
 		return false, errutil.ErrorForbidden("invalid context. access denied")
 	}
 
-	authCtx := auth.GetAuthCTX(ctx)
+	authCtx := auth.GetIdentity(ctx)
 
 	if authCtx == nil {
 		return false, errutil.ErrorForbidden("invalid auth context. access denied ")
@@ -63,7 +63,7 @@ func isRBACEnabled(aaaMode string) bool {
 }
 
 // isROAccessAllowed checks whether is Read only  Resource access is allowed if operation is READ.
-func isROAccessAllowed(ctx *auth.Context, op Action) bool {
+func isROAccessAllowed(ctx auth.Identity, op Action) bool {
 	if op != ActionRead {
 		return false
 	}
@@ -130,7 +130,7 @@ type request struct {
 // newRequest creates a new request Object. This object will be initialized with user roles
 // project,domain ,objectKind info.
 func newRequest(ctx context.Context, kind string, op Action) *request {
-	authCtx := auth.GetAuthCTX(ctx)
+	authCtx := auth.GetIdentity(ctx)
 	n := request{
 		kind:    kind,
 		op:      op,
@@ -148,7 +148,7 @@ func getUserRoles(ctx context.Context) map[string]bool {
 		return nil
 	}
 
-	aCtx := auth.GetAuthCTX(ctx)
+	aCtx := auth.GetIdentity(ctx)
 	if aCtx == nil {
 		return nil
 	}

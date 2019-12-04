@@ -19,6 +19,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	asfauth "github.com/Juniper/asf/pkg/auth"
 	asfclient "github.com/Juniper/asf/pkg/client"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -111,10 +112,8 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader) (*Cloud, err
 
 	ctx := auth.NoAuth(context.Background())
 	if c.AuthURL != "" {
-		var authKey interface{} = "auth"
-		ctx = context.WithValue(
+		ctx = asfauth.WithIdentity(
 			context.Background(),
-			authKey,
 			auth.NewContext(
 				c.DomainID,
 				c.ProjectID,

@@ -3,6 +3,7 @@ package basedb
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"strings"
 	"time"
@@ -14,9 +15,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	// TODO(buoto): Decouple from below packages
-	//"github.com/Juniper/asf/pkg/collector"
-	//"github.com/Juniper/asf/pkg/collector/analytics"
 )
 
 // Database driver
@@ -104,16 +102,10 @@ func (db *BaseDB) DoInTransactionWithOpts(
 		return err
 	}
 
-	commitStartedAt := time.Now()
 	err = tx.Commit()
-	commitDurationInUsec := time.Since(commitStartedAt) / time.Microsecond
 	if err != nil {
 		tx.Rollback() // nolint: errcheck
 		return FormatDBError(err)
-	}
-
-	if c := collector.FromContext(ctx); c != nil {
-		c.Send(analytics.VncAPILatencyStatsLog(ctx, "COMMIT", "SQL", int64(commitDurationInUsec)))
 	}
 
 	return nil
@@ -159,15 +151,26 @@ func rollbackOnPanic(tx *sql.Tx) {
 	}
 }
 
+type DriverWrapper func(driver.Driver) driver.Driver
+
+func WithInstrumentedSQL() func(driver.Driver) driver.Driver {
+	return func(d driver.Driver) driver.Driver {
+		return instrumentedsql.WrapDriver(d, instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery)))
+	}
+}
+
 //ConnectDB connect to the db based on viper configuration.
-func ConnectDB() (*sql.DB, error) {
+func ConnectDB(wrappers ...DriverWrapper) (*sql.DB, error) {
+	if debug := viper.GetBool("database.debug"); debug {
+		wrappers = append(wrappers, WithInstrumentedSQL())
+	}
+
 	db, err := OpenConnection(ConnectionConfig{
-		Driver:   DriverPostgreSQL,
-		User:     viper.GetString("database.user"),
-		Password: viper.GetString("database.password"),
-		Host:     viper.GetString("database.host"),
-		Name:     viper.GetString("database.name"),
-		Debug:    viper.GetBool("database.debug"),
+		DriverWrappers: wrappers,
+		User:           viper.GetString("database.user"),
+		Password:       viper.GetString("database.password"),
+		Host:           viper.GetString("database.host"),
+		Name:           viper.GetString("database.name"),
 	})
 	if err != nil {
 		return nil, err
@@ -192,12 +195,11 @@ func ConnectDB() (*sql.DB, error) {
 
 // ConnectionConfig holds DB connection configuration.
 type ConnectionConfig struct {
-	Driver   string
-	User     string
-	Password string
-	Host     string
-	Name     string
-	Debug    bool
+	DriverWrappers []DriverWrapper
+	User           string
+	Password       string
+	Host           string
+	Name           string
 }
 
 // OpenConnection opens DB connection.
@@ -207,11 +209,9 @@ func OpenConnection(c ConnectionConfig) (*sql.DB, error) {
 		return nil, err
 	}
 
-	if c.Debug {
-		c.Driver = wrapDriver(c.Driver)
-	}
+	driverName := registerDriver(c.DriverWrappers)
 
-	db, err := sql.Open(c.Driver, dsn)
+	db, err := sql.Open(driverName, dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open DB connection")
 	}
@@ -222,17 +222,18 @@ func logQuery(_ context.Context, command string, args ...interface{}) {
 	logrus.Debug(command, args)
 }
 
-func wrapDriver(driver string) string {
-	iDriver := "instrumented-" + driver
-	if isDriverRegistered(iDriver) {
-		return iDriver
+func registerDriver(wrappers []DriverWrapper) string {
+	driverName := "wrapped-" + DriverPostgreSQL
+
+	if !isDriverRegistered(driverName) {
+		var d driver.Driver = &pq.Driver{}
+		for _, w := range wrappers {
+			d = w(d)
+		}
+		sql.Register(driverName, d)
 	}
 
-	sql.Register(iDriver, instrumentedsql.WrapDriver(
-		&pq.Driver{},
-		instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
-	)
-	return iDriver
+	return driverName
 }
 
 func isDriverRegistered(driver string) bool {
