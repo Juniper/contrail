@@ -3,8 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/labstack/echo"
-
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/format"
 )
 
@@ -51,7 +50,7 @@ func (context *Context) substituteObjectPerms() {
 }
 
 // GetObjPerms returns object perms
-func (context *Context) GetObjPerms() ObjectPerms {
+func (context *Context) GetObjPerms() interface{} {
 	return context.objectPerms
 }
 
@@ -119,19 +118,6 @@ func (context *Context) Roles() []string {
 	return context.roles
 }
 
-// GetContext is used to get an authentication from echo.Context.
-func GetContext(c echo.Context) *Context {
-	ctx := c.Request().Context()
-	return GetAuthCTX(ctx)
-}
-
-// GetAuthCTX is used to get an authentication from ctx.Context.
-func GetAuthCTX(ctx context.Context) *Context {
-	iAuth := ctx.Value("auth")
-	auth, _ := iAuth.(*Context) // nolint: errcheck
-	return auth
-}
-
 // NoAuth is used to create new no auth context
 func NoAuth(ctx context.Context) context.Context {
 	Context := NewContext(
@@ -142,6 +128,5 @@ func NoAuth(ctx context.Context) context.Context {
 		"",
 		NewObjPerms(nil),
 	)
-	var authKey interface{} = "auth"
-	return context.WithValue(ctx, authKey, Context)
+	return auth.WithIdentity(ctx, Context)
 }

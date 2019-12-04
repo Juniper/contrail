@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 )
@@ -75,7 +75,7 @@ func (db *Service) delete(
 func (db *Service) count(
 	ctx context.Context, qb *basedb.QueryBuilder, spec *baseservices.ListSpec,
 ) (count int64, err error) {
-	query, values := qb.CountQuery(auth.GetAuthCTX(ctx), spec)
+	query, values := qb.CountQuery(auth.GetIdentity(ctx), spec)
 
 	tx := basedb.GetTransaction(ctx)
 	row := tx.QueryRowContext(ctx, query, values...)
@@ -90,7 +90,7 @@ func (db *Service) count(
 // checkPolicy check ownership of resources.
 func (db *Service) checkPolicy(ctx context.Context, qb *basedb.QueryBuilder, uuid string) (err error) {
 	tx := basedb.GetTransaction(ctx)
-	auth := auth.GetAuthCTX(ctx)
+	auth := auth.GetIdentity(ctx)
 
 	selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
 

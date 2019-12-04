@@ -3,8 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/errutil"
+
+	models "{{ modelsImportPath }}"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

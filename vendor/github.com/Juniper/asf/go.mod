@@ -10,7 +10,6 @@ require (
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/codegangsta/cli v1.20.0 // indirect
 	github.com/coreos/etcd v3.3.17+incompatible
-	github.com/databus23/keystone v0.0.0-20180111110916-350fd0e663cd
 	github.com/elazarl/go-bindata-assetfs v1.0.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/flosch/pongo2 v0.0.0-20190707114632-bbf5a6c351f4

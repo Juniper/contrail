@@ -12,7 +12,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -535,7 +535,7 @@ func TestCreateFirewallRule(t *testing.T) {
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = auth.WithInternalRequest(ctx)
+				ctx = baseservices.WithInternalRequest(ctx)
 			}
 
 			paramRequest := &services.CreateFirewallRuleRequest{FirewallRule: &tt.testFirewallRule}
@@ -867,7 +867,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = auth.WithInternalRequest(ctx)
+				ctx = baseservices.WithInternalRequest(ctx)
 			}
 
 			expectedResponse := &services.UpdateFirewallRuleResponse{
