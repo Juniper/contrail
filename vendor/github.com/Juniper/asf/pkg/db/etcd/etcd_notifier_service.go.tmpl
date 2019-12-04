@@ -6,8 +6,8 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/asf/pkg/services"
-	"github.com/Juniper/asf/pkg/models"
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
 )
 
 func (ns *NotifierService) handleRefWrapper(

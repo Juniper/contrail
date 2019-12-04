@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
@@ -365,7 +365,7 @@ func validateChownRequest(r *ChownRequest) error {
 // RESTCreateIntPool handles a POST on int-pools requests
 func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
-	if !auth.GetAuthCTX(ctx).IsAdmin() {
+	if !auth.GetIdentity(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 
@@ -384,7 +384,7 @@ func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
 // RESTGetIntOwner handles a GET on int-owner requests
 func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
 	ctx := c.Request().Context()
-	if !auth.GetAuthCTX(ctx).IsAdmin() {
+	if !auth.GetIdentity(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	aValue := c.QueryParam("value")
@@ -415,7 +415,7 @@ func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
 // RESTDeleteIntPool handles a POST on int-pools requests
 func (service *ContrailService) RESTDeleteIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
-	if !auth.GetAuthCTX(ctx).IsAdmin() {
+	if !auth.GetIdentity(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 
@@ -492,7 +492,7 @@ type IntPoolAllocationBody struct {
 // RESTIntPoolAllocate handles a POST request on int-pool.
 func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	ctx := c.Request().Context()
-	if !auth.GetAuthCTX(ctx).IsAdmin() {
+	if !auth.GetIdentity(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	var allocReq IntPoolAllocationBody
@@ -562,7 +562,7 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 // RESTIntPoolDeallocate handles a DELETE request on int-pool.
 func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	ctx := c.Request().Context()
-	if !auth.GetAuthCTX(ctx).IsAdmin() {
+	if !auth.GetIdentity(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	var allocReq IntPoolAllocationBody

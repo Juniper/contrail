@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
 // EmptyIntOwner is useful for creating pool when owner is not relevant.
