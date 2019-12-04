@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
@@ -12,6 +11,8 @@ import (
 	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/pkg/errors"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 )
 
 //Service for DB.

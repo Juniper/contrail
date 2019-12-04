@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/apisrv"
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/endpoint"
 	"github.com/Juniper/asf/pkg/keystone"
@@ -24,6 +23,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/websocket"
+	// TODO(dfurman): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/auth"
 
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
