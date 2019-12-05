@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/flosch/pongo2"
-	"github.com/sirupsen/logrus"
-
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
+	"github.com/flosch/pongo2"
+	"github.com/sirupsen/logrus"
 )
 
 type topology struct {
@@ -22,16 +21,8 @@ type topology struct {
 	ctx       context.Context
 }
 
-func (t *topology) getTmplFilePath() string {
-	return filepath.Join(t.cloud.getTemplateRoot(), t.getTopoTemplate())
-}
-
-func (t *topology) getTopoTemplate() string {
-
-	if t.cloudData.isCloudPrivate() {
-		return defaultOnPremTopoTemplate
-	}
-	return defaultPublicCloudTopoTemplate
+func (t *topology) getOnPremTemplatePath() string {
+	return filepath.Join(t.cloud.getTemplateRoot(), defaultOnPremTopoTemplate)
 }
 
 func newTopology(c *Cloud, data *Data) *topology {
@@ -48,11 +39,11 @@ func newTopology(c *Cloud, data *Data) *topology {
 	}
 }
 
-func (t *topology) createTopologyFile(topoFile string) error {
+func (t *topology) createOnPremTopologyFile(topoFile string) error {
 	context := pongo2.Context{
 		"cloud": t.cloudData,
 	}
-	content, err := template.Apply(t.getTmplFilePath(), context)
+	content, err := template.Apply(t.getOnPremTemplatePath(), context)
 	if err != nil {
 		return err
 	}
