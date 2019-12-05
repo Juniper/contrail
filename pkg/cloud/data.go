@@ -35,7 +35,7 @@ type Data struct {
 }
 
 type apiServer struct {
-	client *client.HTTP
+	client services.Service
 	ctx    context.Context
 }
 
@@ -157,6 +157,10 @@ func (v *virtualCloudData) updateSubnets() error {
 	data := v.parentRegion.parentProvider.parentCloud
 	data.subnets = append(data.subnets, v.subnets...)
 	return nil
+}
+
+func (i *instanceData) isGateway() bool {
+	return hasCloudRole(i.info.CloudInfo.Roles, gatewayInstanceRole)
 }
 
 func (i *instanceData) getNodeObject() (*models.Node, error) {

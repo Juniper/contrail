@@ -1,5 +1,6 @@
 name: Create Azure Cloud resources
 cleanup:
+- path: /port/cloud_node_gw_port_uuid
 - path: /node/cloud_node_gw_uuid
 - path: /node/cloud_node_compute_uuid
 - path: /cloud-security-group-rule/cloud_security_group_rule_uuid
@@ -131,6 +132,11 @@ test_data:
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
+  cloud_node_gw_port: &cloud_node_gw_port
+    name: private
+    uuid: cloud_node_gw_port_uuid
+    parent_type: node
+    parent_uuid: cloud_node_gw_uuid
 
 clients:
   default:
@@ -303,6 +309,17 @@ workflow:
       node: *cloud_node_gw
   expect:
     node: *cloud_node_gw
+
+- name: create cloud node gw port
+  request:
+    path: /ports
+    method: POST
+    expected:
+    - 200
+    data:
+      port: *cloud_node_gw_port
+  expect:
+    port: *cloud_node_gw_port
 
 - name: create cloud node compute
   request:

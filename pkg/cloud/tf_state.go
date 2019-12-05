@@ -6,10 +6,49 @@ import (
 	"io/ioutil"
 	"os"
 
-	tf "github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform/terraform"
 )
 
-func readStateFile(tfStateFile string) (*tf.State, error) {
+type terraformState interface {
+	GetPublicIP(hostname string) (string, error)
+	GetPrivateIP(hostname string) (string, error)
+}
+
+type cloudTfStateReader struct {
+	cloudUUID string
+}
+
+func (r cloudTfStateReader) Read() (terraformState, error) {
+	tfState, err := readStateFile(GetTFStateFile(r.cloudUUID))
+	if err != nil {
+		return nil, err
+	}
+	return &cloudTfState{tfState: tfState}, nil
+}
+
+type cloudTfState struct {
+	tfState *terraform.State
+}
+
+func (s *cloudTfState) GetPublicIP(hostname string) (string, error) {
+	return s.getKeyValue(fmt.Sprintf("%s.public_ip", hostname))
+}
+
+func (s *cloudTfState) GetPrivateIP(hostname string) (string, error) {
+	return s.getKeyValue(fmt.Sprintf("%s.private_ip", hostname))
+}
+
+func (s *cloudTfState) getKeyValue(outputKey string) (string, error) {
+	mState := s.tfState.RootModule()
+	output, ok := mState.Outputs[outputKey]
+	if !ok {
+		return "", fmt.Errorf("output key %s doesn't exist in tfState", outputKey)
+	}
+
+	return output.Value.(string), nil
+}
+
+func readStateFile(tfStateFile string) (*terraform.State, error) {
 
 	if _, err := os.Stat(tfStateFile); err == nil {
 		state, err := ioutil.ReadFile(tfStateFile)
@@ -21,22 +60,11 @@ func readStateFile(tfStateFile string) (*tf.State, error) {
 		}
 
 		stateBuf := bytes.NewBuffer(state)
-		tfState, err := tf.ReadState(stateBuf)
+		tfState, err := terraform.ReadState(stateBuf)
 		if err != nil {
 			return nil, err
 		}
 		return tfState, nil
 	}
-	return nil, fmt.Errorf("tf state file: %s does not exist", tfStateFile)
-}
-
-func getIPFromTFState(tfState *tf.State, outputKey string) (string, error) {
-
-	mState := tfState.RootModule()
-	output, ok := mState.Outputs[outputKey]
-	if !ok {
-		return "", fmt.Errorf("output key %s doesn't exist in tfState", outputKey)
-	}
-
-	return output.Value.(string), nil
+	return nil, fmt.Errorf("terraform state file: %s does not exist", tfStateFile)
 }
