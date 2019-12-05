@@ -111,7 +111,6 @@ type sgData struct {
 
 func (s *subnetData) getPvtSubnetObject() (*models.CloudPrivateSubnet, error) {
 	request := &services.GetCloudPrivateSubnetRequest{ID: s.info.UUID}
-
 	subnetResp, err := s.client.GetCloudPrivateSubnet(s.ctx, request)
 	return subnetResp.GetCloudPrivateSubnet(), err
 }
@@ -224,27 +223,31 @@ func (v *virtualCloudData) newInstance(instance *models.Node, isDelRequest bool)
 
 	if data.isCloudPrivate() {
 		updatePrivateInstanceRolesAndProvisionState(inst)
-		if err := inst.updatePvtIntf(isDelRequest); err != nil {
+		if err = inst.updatePvtIntf(isDelRequest); err != nil {
 			return nil, err
 		}
-		if err := inst.updateVrouterGW(isDelRequest, inst.info); err != nil {
+		if err = inst.updateVrouterGW(isDelRequest, inst.info); err != nil {
 			return nil, err
 		}
 	} else {
 		updatePublicInstanceRolesAndProvisionState(inst)
-		if err := inst.updateInstType(instObj); err != nil {
+		if err = inst.updateInstType(instObj); err != nil {
 			return nil, err
 		}
-		if err := inst.updateInstanceUsername(v.parentRegion.parentProvider.info.Type); err != nil {
+
+		if inst.username, err = getOSSpecificUsername(
+			inst.info.CloudInfo.OperatingSystem,
+			v.parentRegion.parentProvider.info.Type,
+		); err != nil {
 			return nil, err
 		}
 	}
 
 	if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
-		if err := inst.updateProtoModes(isDelRequest); err != nil {
+		if err = inst.updateProtoModes(isDelRequest); err != nil {
 			return nil, err
 		}
-		if err := inst.updateMCGWServices(); err != nil {
+		if err = inst.updateMCGWServices(); err != nil {
 			return nil, err
 		}
 	}
@@ -287,23 +290,19 @@ func hasCloudRole(roles []string, nodeRole instanceRole) bool {
 	return false
 }
 
-func (i *instanceData) updateInstanceUsername(providerType string) error {
-	switch i.info.CloudInfo.OperatingSystem {
+func getOSSpecificUsername(os, providerType string) (string, error) {
+	switch os {
 	case "ubuntu18":
-		i.username = "ubuntu"
+		return "ubuntu", nil
 	case "centos7":
-		i.username = "centos"
+		return "centos", nil
 	case "rhel7":
 		if providerType == aws {
-			i.username = "ec2-user"
-		} else {
-			i.username = "redhat"
+			return "ec2-user", nil
 		}
-	default:
-		return fmt.Errorf("instance %s operating system %s is not valid",
-			i.info.UUID, i.info.CloudInfo.OperatingSystem)
+		return "redhat", nil
 	}
-	return nil
+	return "", errors.Errorf("operating system %s is not supported", os)
 }
 
 func (i *instanceData) hasInfo() bool {
