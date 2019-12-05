@@ -35,7 +35,7 @@ type Data struct {
 }
 
 type apiServer struct {
-	client *client.HTTP
+	client services.Service
 	ctx    context.Context
 }
 
