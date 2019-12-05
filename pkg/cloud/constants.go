@@ -36,6 +36,8 @@ const (
 
 	// AWS cloud kind
 	AWS    = "aws"
+	gcp    = "gcp"
+	azure  = "azure"
 	onPrem = "private"
 
 	defaultRWOnlyPerm = 0600
