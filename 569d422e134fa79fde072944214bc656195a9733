@@ -94,6 +94,30 @@
     },
     {
       "key": {
+        "uuid": "fd11beb8_b17cc2d4",
+        "filename": "pkg/client/baseclient/context.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-05T11:44:59Z",
+      "side": 1,
+      "message": "I prefer extracting this variable, instead of splitting the `if` line.",
+      "parentUuid": "b022d62e_54273cf4",
+      "range": {
+        "startLine": 29,
+        "startChar": 1,
+        "endLine": 29,
+        "endChar": 4
+      },
+      "revId": "569d422e134fa79fde072944214bc656195a9733",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "84d1a62e_596629a1",
         "filename": "pkg/client/baseclient/context_test.go",
         "patchSetId": 4
