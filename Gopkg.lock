@@ -1094,6 +1094,7 @@
     "assert",
     "mock",
     "require",
+    "suite",
   ]
   pruneopts = ""
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
@@ -1418,6 +1419,7 @@
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",
+    "github.com/stretchr/testify/suite",
     "golang.org/x/crypto/ssh",
     "golang.org/x/net/websocket",
     "golang.org/x/tools/cmd/goimports",
