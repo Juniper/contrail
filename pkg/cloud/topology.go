@@ -8,13 +8,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/flosch/pongo2"
-	"github.com/sirupsen/logrus"
-
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
+	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type topology struct {
@@ -64,6 +66,21 @@ func (t *topology) createTopologyFile(topoFile string) error {
 	if err != nil {
 		return err
 	}
+	t.log.Infof("Created topology file for cloud with uuid: %s ", t.cloudData.info.UUID)
+	return nil
+}
+
+func (t *topology) marshalAndSave(topoFile string, p *pubCloud) error {
+
+	marshaled, err := yaml.Marshal(p.Providers)
+	if err != nil {
+		return errors.Wrapf(err, "cannot marshal topology")
+	}
+	err = fileutil.WriteToFile(topoFile, marshaled, defaultRWOnlyPerm)
+	if err != nil {
+		return err
+	}
+
 	t.log.Infof("Created topology file for cloud with uuid: %s ", t.cloudData.info.UUID)
 	return nil
 }

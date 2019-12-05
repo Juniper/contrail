@@ -34,7 +34,7 @@ const (
 	updateAction      = "update"
 	deleteCloudAction = "DELETE_CLOUD"
 
-	AWS    = "aws"
+	aws    = "aws"
 	azure  = "azure"
 	gcp    = "gcp"
 	onPrem = "private"
