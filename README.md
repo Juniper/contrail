@@ -20,7 +20,16 @@ to community discussion.
 
 ### Step1. Install Go, Docker and Docker Compose
 
-- [Go](https://golang.org/doc/install)
+- Install Go
+    - Follow [Go installation steps](https://golang.org/doc/install)
+    - Add following in ~/.profile:
+
+    ```bash
+    export PATH=$PATH:/usr/local/go/bin # Go toolchain path
+    export PATH=$PATH:$(go env GOPATH)/bin
+    ```
+
+    - Run `source ~/.profile`
 - [Docker](https://docs.docker.com/install/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
