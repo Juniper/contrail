@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "5ee798cc_40c26db9",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-05T17:12:58Z",
+      "side": 1,
+      "message": "I\u0027d change this to just `yaml`, because this isn\u0027t in a file yet.",
+      "range": {
+        "startLine": 68,
+        "startChar": 55,
+        "endLine": 68,
+        "endChar": 63
+      },
+      "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "01476ef2_ed79c738",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -13,6 +36,29 @@
       "writtenOn": "2019-12-05T15:51:26Z",
       "side": 1,
       "message": "Nit: full name: updateAuthorizedRegistry",
+      "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9e13e0fe_5af9ae04",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-05T17:12:58Z",
+      "side": 1,
+      "message": "+1",
+      "range": {
+        "startLine": 78,
+        "startChar": 17,
+        "endLine": 78,
+        "endChar": 25
+      },
       "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
