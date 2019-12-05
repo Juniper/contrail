@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d68c50fb_c23be050",
+        "filename": "pkg/client/baseclient/context.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-05T16:57:00Z",
+      "side": 1,
+      "message": "\"with provided\" like Daniel said.",
+      "revId": "174a2035c33e8e7d80bd8445f283f82d5ff1ade0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
