@@ -212,6 +212,13 @@ func (c *Cloud) create() error {
 		return err
 	}
 
+	pubData := &publicCloud{}
+	if !data.isCloudPrivate() {
+		if err = pubData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
+		}
+	}
+
 	status := map[string]interface{}{statusField: statusCreateProgress}
 	topo, secret, err := c.initialize(data)
 	if err != nil {
@@ -231,7 +238,11 @@ func (c *Cloud) create() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	status[statusField] = statusCreateFailed
 
-	err = topo.createTopologyFile(GetTopoFile(c.config.CloudID))
+	if data.isCloudPrivate() {
+		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+	} else {
+		err = topo.marshalAndSave(GetTopoFile(c.config.CloudID), pubData)
+	}
 	if err != nil {
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
@@ -276,7 +287,7 @@ func (c *Cloud) create() error {
 func (d *Data) modifiedProviders() []string {
 	s := []string{}
 	if d.info.AwsModified {
-		s = append(s, AWS)
+		s = append(s, aws)
 	}
 	if d.info.AzureModified {
 		s = append(s, azure)
@@ -320,16 +331,11 @@ func (c *Cloud) update() error {
 	}
 
 	topo := newTopology(c, data)
-	if data.info.ProvisioningState != statusNoState {
-		topoUpToDate, tErr := topo.isUpToDate(defaultCloudResource)
-		if tErr != nil {
-			c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusUpdateFailed}, defaultCloudResource)
-			return errors.Wrapf(tErr, "failed to check if topology is up to date for cloud %s", c.config.CloudID)
-		}
 
-		if topoUpToDate {
-			c.log.WithField("cloudID", c.config.CloudID).Debug("Topology is already up to date - skipping update")
-			return nil
+	pubData := &publicCloud{}
+	if !data.isCloudPrivate() {
+		if err = pubData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
 		}
 	}
 
@@ -349,7 +355,11 @@ func (c *Cloud) update() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	status[statusField] = statusUpdateFailed
 
-	err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID))
+	if data.isCloudPrivate() {
+		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+	} else {
+		err = topo.marshalAndSave(GetTopoFile(c.config.CloudID), pubData)
+	}
 	if err != nil {
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
