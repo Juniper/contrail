@@ -1,9 +1,16 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
-CONTRAIL_APIDOC_PATH=public/doc/index.html
-CONTRAIL_OPENAPI_PATH=public/openapi.json
+CONTRAIL_APIDOC_PATH := public/doc/index.html
+CONTRAIL_OPENAPI_PATH := public/openapi.json
+DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
+GOPATH ?= `go env GOPATH`
+SOURCEDIR ?= $(GOPATH)
+
 DB_FILES := gen_init_psql.sql init_data.yaml
 SRC_DIRS := cmd pkg vendor
+
+CONTRAILSCHEMA := $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
+CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""
 ANSIBLE_DEPLOYER_BRANCH ?= master
@@ -12,10 +19,6 @@ ANSIBLE_DEPLOYER_REVISION ?= HEAD
 BASE_IMAGE_REGISTRY ?= opencontrailnightly
 BASE_IMAGE_REPOSITORY ?= contrail-base
 BASE_IMAGE_TAG ?= latest
-
-GOPATH ?= `go env GOPATH`
-SOURCEDIR ?= $(GOPATH)
-DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
 
 # This is needed by generate* targets that works only sequentially
 ifneq ($(filter generate,$(MAKECMDGOALS)),)
@@ -39,12 +42,12 @@ generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/gen_service.
 generate_go: install_contrailschema ## Generate source code from templates and schema
 	# Generate for contrail resources.
 	@mkdir -p public/
-	contrailschema generate --no-regenerate \
+	$(CONTRAILSCHEMA) generate --no-regenerate \
 		--schemas schemas/contrail --addons schemas/addons --templates tools/templates/contrail/template_config.yaml \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
-	contrailschema generate --no-regenerate \
+	$(CONTRAILSCHEMA) generate --no-regenerate \
 		--schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
@@ -115,7 +118,7 @@ zero_db: ## Drop and recreate test database
 	./tools/reset_db_psql.sh
 
 init_db: install_contrailutil ## Load initial data to databases
-	contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
+	$(CONTRAILUTIL) convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 
 clean_db: truncate_db init_db ## Truncate all database tables and load initial data
 
@@ -186,8 +189,8 @@ docker_build: ## Build Docker image with Contrail binary
 		--file ${DOCKER_FILE}.patched \
 		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
-package: ## Generate the packages
-	go run cmd/contrailutil/main.go package
+package: install_contrailutil ## Generate the packages
+	$(CONTRAILUTIL) package
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
