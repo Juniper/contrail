@@ -2,40 +2,45 @@ package cloud
 
 import (
 	"context"
-	"fmt"
 
-	tf "github.com/hashicorp/terraform/terraform"
-
-	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-func updateIPDetails(ctx context.Context, cloudID string, data *Data) error {
-	tfState, err := readStateFile(GetTFStateFile(cloudID))
-	if err != nil {
-		return err
-	}
-	for _, instance := range data.instances {
-		err := updateInstanceIP(ctx, instance, tfState)
-		if err != nil {
+const portParentType = "node"
+
+func updateIPDetails(ctx context.Context, instances []*instanceData, tfState terraformState) error {
+	for _, instance := range instances {
+		if err := updateIP(ctx, instance, tfState); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func updateInstanceIP(ctx context.Context,
-	instance *instanceData, tfState *tf.State) error {
+func updateIP(ctx context.Context,
+	instance *instanceData, tfState terraformState) error {
+	if instance.isGateway() {
+		return updateGatewayInstanceIP(ctx, instance, tfState)
+	}
+	return updateInstanceIP(ctx, instance, tfState)
+}
 
-	privateIP, err := getIPFromTFState(tfState,
-		fmt.Sprintf("%s.private_ip", instance.info.Hostname))
+func updateInstanceIP(ctx context.Context,
+	instance *instanceData, tfState terraformState) error {
+	privateIP, err := tfState.GetPrivateIP(instance.info.Hostname)
 	if err != nil {
 		return err
 	}
+	return addIPToNode(ctx, privateIP, instance.info, instance.client)
+}
 
-	if !gwRoleExists(instance) {
-		return addIPToNode(ctx, privateIP, instance.info, instance.client)
+func updateGatewayInstanceIP(ctx context.Context,
+	instance *instanceData, tfState terraformState) error {
+
+	privateIP, err := tfState.GetPrivateIP(instance.info.Hostname)
+	if err != nil {
+		return err
 	}
 
 	portObj, err := createPort(ctx, "private", privateIP,
@@ -48,31 +53,20 @@ func updateInstanceIP(ctx context.Context,
 		return err
 	}
 
-	publicIP, err := getIPFromTFState(tfState,
-		fmt.Sprintf("%s.public_ip", instance.info.Hostname))
+	publicIP, err := tfState.GetPublicIP(instance.info.Hostname)
 	if err != nil {
 		return err
 	}
 	return addIPToNode(ctx, publicIP, instance.info, instance.client)
 }
 
-func gwRoleExists(instance *instanceData) bool {
-	for _, role := range instance.info.CloudInfo.Roles {
-		if role == "gateway" {
-			return true
-		}
-	}
-	return false
-}
-
 func createPort(ctx context.Context, portName string, ip string,
-	instance *models.Node, client *client.HTTP) (*models.Port, error) {
+	instance *models.Node, client services.Service) (*models.Port, error) {
 
 	if len(instance.Ports) != 0 {
 		for _, p := range instance.Ports {
 			if p.Name == portName && p.IPAddress != ip {
-				request := new(services.UpdatePortRequest)
-				request.Port = p
+				request := &services.UpdatePortRequest{Port: p}
 				request.Port.IPAddress = ip
 				portResp, err := client.UpdatePort(ctx, request)
 				if err != nil {
@@ -85,37 +79,32 @@ func createPort(ctx context.Context, portName string, ip string,
 		}
 	}
 
-	port := new(models.Port)
-	port.Name = portName
-	port.ParentType = "node"
-	port.ParentUUID = instance.UUID
-	port.IPAddress = ip
-
-	request := new(services.CreatePortRequest)
-	request.Port = port
+	request := &services.CreatePortRequest{
+		Port: &models.Port{
+			Name:       portName,
+			ParentType: portParentType,
+			ParentUUID: instance.UUID,
+			IPAddress:  ip,
+		}}
 
 	portResp, err := client.CreatePort(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return portResp.GetPort(), nil
+	return portResp.GetPort(), err
 }
 
 func addPortToNode(ctx context.Context, port *models.Port,
-	instance *models.Node, client *client.HTTP) error {
+	instance *models.Node, client services.Service) error {
 
-	request := new(services.UpdateNodeRequest)
-	request.Node = instance
+	request := &services.UpdateNodeRequest{Node: instance}
 	request.Node.AddPort(port)
+
 	_, err := client.UpdateNode(ctx, request)
 	return err
 }
 
 func addIPToNode(ctx context.Context, ip string,
-	instance *models.Node, client *client.HTTP) error {
+	instance *models.Node, client services.Service) error {
 
-	request := new(services.UpdateNodeRequest)
-	request.Node = instance
+	request := &services.UpdateNodeRequest{Node: instance}
 	request.Node.IPAddress = ip
 
 	_, err := client.UpdateNode(ctx, request)
