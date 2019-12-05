@@ -31,6 +31,20 @@ type providerConfig struct {
 	manageFails          bool
 }
 
+type terraformStateReaderFake struct {
+}
+
+func (r terraformStateReaderFake) Read() (terraformState, error) {
+	return terraformStateFake{}, nil
+}
+
+type terraformStateFake struct {
+}
+
+func (s terraformStateFake) GetKeyValue(outputKey string) (string, error) {
+	return "1.1.1.1", nil
+}
+
 type fileToCopy struct {
 	source      string
 	destination string
@@ -366,7 +380,7 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c)
+	cl, err := NewCloud(c, terraformStateReaderFake{})
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl
