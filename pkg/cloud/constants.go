@@ -5,19 +5,18 @@ const (
 	defaultCloudResource     = "cloud"
 	defaultCloudResourcePath = "/" + defaultCloudResource
 
-	defaultWorkRoot                = "/var/tmp/cloud"
-	defaultTemplateRoot            = "./pkg/cloud/configs"
-	defaultGenInventoryScript      = "transform/generate_inventories.py"
-	defaultAWSPlanTF               = "aws.tf.json"
-	defaultAzurePlanTF             = "azure.tf.json"
-	defaultGCPPlanTF               = "google.tf.json"
-	defaultTFStateFile             = "terraform.tfstate"
-	defaultTopologyFile            = "topology.yml"
-	defaultPublicCloudTopoTemplate = "public_cloud_topology.tmpl"
-	defaultOnPremTopoTemplate      = "onprem_cloud_topology.tmpl"
-	defaultSecretFile              = "secret.yml"
-	defaultMultiCloudDir           = "/usr/share/contrail/"
-	defaultMultiCloudRepo          = "contrail-multi-cloud"
+	defaultWorkRoot           = "/var/tmp/cloud"
+	defaultTemplateRoot       = "./pkg/cloud/configs"
+	defaultGenInventoryScript = "transform/generate_inventories.py"
+	defaultAWSPlanTF          = "aws.tf.json"
+	defaultAzurePlanTF        = "azure.tf.json"
+	defaultGCPPlanTF          = "google.tf.json"
+	defaultTFStateFile        = "terraform.tfstate"
+	defaultTopologyFile       = "topology.yml"
+	defaultOnPremTopoTemplate = "onprem_cloud_topology.tmpl"
+	defaultSecretFile         = "secret.yml"
+	defaultMultiCloudDir      = "/usr/share/contrail/"
+	defaultMultiCloudRepo     = "contrail-multi-cloud"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
@@ -35,7 +34,8 @@ const (
 
 	aws    = "aws"
 	azure  = "azure"
-	gcp    = "google"
+	gcp    = "gcp"
+	google = "google"
 	onPrem = "private"
 
 	defaultRWOnlyPerm = 0600
