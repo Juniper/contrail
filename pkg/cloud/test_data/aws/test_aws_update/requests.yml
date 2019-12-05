@@ -1,5 +1,6 @@
 name: Create additional resources for AWS Cloud update
 cleanup:
+- path: /port/cloud_node_gw_vpc2_port_uuid
 - path: /cloud-region/cloud_region_vpc2_uuid
 - path: /tag/public_cloud_tag_vpc2_uuid
 
@@ -78,6 +79,12 @@ test_data:
       - uuid: public_cloud_tag_vpc2_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+
+  cloud_node_gw_vpc2_port: &cloud_node_gw_vpc2_port
+    name: private
+    uuid: cloud_node_gw_vpc2_port_uuid
+    parent_type: node
+    parent_uuid: cloud_node_gw_vpc2_uuid
 
   cloud_node_comp_vpc2: &cloud_node_comp_vpc2
     name: cloud_node_comp_vpc2
@@ -183,6 +190,17 @@ workflow:
       node: *cloud_node_gw_vpc2
   expect:
     node: *cloud_node_gw_vpc2
+
+- name: create cloud node gw vpc2 port
+  request:
+    path: /ports
+    method: POST
+    expected:
+    - 200
+    data:
+      port: *cloud_node_gw_vpc2_port
+  expect:
+    port: *cloud_node_gw_vpc2_port
 
 - name: create cloud node compute 2
   request:
