@@ -22,6 +22,30 @@
       "revId": "de667d1a46c0e86b15a8ec272fea7701bf5860b3",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a8fb07e4_f5ebd21f",
+        "filename": "pkg/cloud/configs/secret.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T14:46:13Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "0c7d651e_5eaba70e",
+      "range": {
+        "startLine": 11,
+        "startChar": 3,
+        "endLine": 11,
+        "endChar": 107
+      },
+      "revId": "de667d1a46c0e86b15a8ec272fea7701bf5860b3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
