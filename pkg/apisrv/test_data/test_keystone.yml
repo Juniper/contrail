@@ -112,16 +112,26 @@ workflow:
     - 200
   expect:
     projects:
-      - domain:
-          id: default
-          name: default
-        id: admin
-        name: admin
-      - domain:
-          id: default
-          name: default
-        id: aa907485e1f94a14834d8c69ed9cb3b2
-        name: neutron
+    - domain:
+        id: default
+        name: default
+      id: admin
+      name: admin
+    - domain:
+        id: default
+        name: default
+      id: demo
+      name: demo
+    - domain:
+        id: default
+        name: default
+      id: aa907485e1f94a14834d8c69ed9cb3b2
+      name: neutron
+    - domain:
+        id: default
+        name: default
+      id: service
+      name: service
 
 - name: get project from keystone
   request:
