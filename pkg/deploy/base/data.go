@@ -1485,18 +1485,34 @@ func (d *Data) GetVCenterClusterInfo() *models.VCenter {
 
 func (d *Data) getOpenstackClusterData() *OpenstackData {
 	// One openstack cluster is the supported topology
-	if len(d.openstackClusterData) > 0 {
-		return d.openstackClusterData[0]
+	if len(d.openstackClusterData) < 1 {
+		return nil
 	}
-	return nil
+	return d.openstackClusterData[0]
 }
 
 // GetOpenstackClusterInfo gets openstack cluster details
 func (d *Data) GetOpenstackClusterInfo() *models.OpenstackCluster {
-	if d.getOpenstackClusterData() != nil {
-		return d.getOpenstackClusterData().ClusterInfo
+	if cd := d.getOpenstackClusterData(); cd != nil {
+		return cd.ClusterInfo
 	}
 	return nil
+}
+
+// KeystoneAdminCredential returns admin credentials from deploy data object.
+func (d *Data) KeystoneAdminCredential() (adminUser, adminPassword string) {
+	adminUser, adminPassword = defaultAdminUser, defaultAdminPassword
+
+	for _, kvp := range d.GetOpenstackClusterInfo().GetKollaPasswords().GetKeyValuePair() {
+		switch kvp.Key {
+		case "keystone_admin_user":
+			adminUser = kvp.Value
+		case "keystone_admin_password":
+			adminPassword = kvp.Value
+		}
+	}
+
+	return adminUser, adminPassword
 }
 
 // GetAllKeypairsInfo gets kepair details

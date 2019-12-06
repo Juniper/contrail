@@ -30,6 +30,10 @@ type Config struct {
 	TemplateRoot string
 	// Work root directory
 	WorkRoot string
+	// Service user name for keystone
+	ServiceUserID string
+	// Service user password for keystone
+	ServiceUserPassword string
 
 	// Optional ansible sudo password
 	AnsibleSudoPass string

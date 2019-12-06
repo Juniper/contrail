@@ -104,24 +104,7 @@ workflow:
         id: aa907485e1f94a14834d8c69ed9cb3b2
         name: neutron
 
-- name: list projects in (/keystone/v3/projects)
-  request:
-    path: /keystone/v3/projects
-    method: GET
-    expected:
-    - 200
-  expect:
-    projects:
-      - domain:
-          id: default
-          name: default
-        id: admin
-        name: admin
-      - domain:
-          id: default
-          name: default
-        id: aa907485e1f94a14834d8c69ed9cb3b2
-        name: neutron
+# TODO: Write a GO test for listing projects.
 
 - name: get project from keystone
   request:
