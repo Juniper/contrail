@@ -19,6 +19,11 @@ type ProjectListResponse struct {
 	Projects []*keystone.Project `json:"projects"`
 }
 
+//UserListResponse represents a user list response.
+type UserListResponse struct {
+	Users []*keystone.User `json:"users"`
+}
+
 //VncProjectListResponse represents a project list response.
 type VncProjectListResponse struct {
 	Projects []*VncProject `json:"projects"`

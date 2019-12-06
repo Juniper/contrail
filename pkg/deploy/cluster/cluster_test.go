@@ -263,14 +263,16 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 	assert.NoError(t, err)
 
 	config := &Config{
-		APIServer:    s,
-		ClusterID:    clusterID,
-		Action:       createAction,
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
+		APIServer:           s,
+		ClusterID:           clusterID,
+		Action:              createAction,
+		LogLevel:            "debug",
+		TemplateRoot:        "templates/",
+		WorkRoot:            workRoot,
+		Test:                true,
+		LogFile:             workRoot + "/deploy.log",
+		ServiceUserID:       "goapi",
+		ServiceUserPassword: "goapi",
 	}
 
 	for _, tt := range []struct {
@@ -471,14 +473,16 @@ func TestXflowOutOfBand(t *testing.T) {
 	defer cleanup()
 
 	d, ok := getClusterDeployer(t, &Config{
-		APIServer:    ts.Clients["default"],
-		ClusterID:    clusterID,
-		Action:       "create",
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
+		APIServer:           ts.Clients["default"],
+		ClusterID:           clusterID,
+		Action:              "create",
+		LogLevel:            "debug",
+		TemplateRoot:        "templates/",
+		WorkRoot:            workRoot,
+		Test:                true,
+		LogFile:             workRoot + "/deploy.log",
+		ServiceUserID:       "goapi",
+		ServiceUserPassword: "goapi",
 	}).(*contrailAnsibleDeployer)
 	require.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
 
@@ -513,14 +517,16 @@ func TestXflowInBand(t *testing.T) {
 	defer cleanup()
 
 	d, ok := getClusterDeployer(t, &Config{
-		APIServer:    ts.Clients["default"],
-		ClusterID:    clusterID,
-		Action:       "create",
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
+		APIServer:           ts.Clients["default"],
+		ClusterID:           clusterID,
+		Action:              "create",
+		LogLevel:            "debug",
+		TemplateRoot:        "templates/",
+		WorkRoot:            workRoot,
+		Test:                true,
+		LogFile:             workRoot + "/deploy.log",
+		ServiceUserID:       "goapi",
+		ServiceUserPassword: "goapi",
 	}).(*contrailAnsibleDeployer)
 	require.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
 
@@ -804,14 +810,16 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 	assert.NoError(t, err)
 
 	config := &Config{
-		APIServer:    s,
-		ClusterID:    clusterID,
-		Action:       createAction,
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
+		APIServer:           s,
+		ClusterID:           clusterID,
+		Action:              createAction,
+		LogLevel:            "debug",
+		TemplateRoot:        "templates/",
+		WorkRoot:            workRoot,
+		Test:                true,
+		LogFile:             workRoot + "/deploy.log",
+		ServiceUserID:       "goapi",
+		ServiceUserPassword: "goapi",
 	}
 	// create cluster
 	removeFile(t, executedPlaybooks)
@@ -897,6 +905,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		AnsibleFetchURL:           "ansibleFetchURL",
 		AnsibleCherryPickRevision: "ansibleCherryPickRevision",
 		AnsibleRevision:           "ansibleRevision",
+		ServiceUserID:             "goapi",
+		ServiceUserPassword:       "goapi",
 	}
 
 	cloudFileCleanup := createDummyCloudFiles(t)
@@ -1054,14 +1064,16 @@ func TestTripleoClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 
 	config := &Config{
-		APIServer:    s,
-		ClusterID:    clusterID,
-		Action:       createAction,
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
+		APIServer:           s,
+		ClusterID:           clusterID,
+		Action:              createAction,
+		LogLevel:            "debug",
+		TemplateRoot:        "templates/",
+		WorkRoot:            workRoot,
+		Test:                true,
+		LogFile:             workRoot + "/deploy.log",
+		ServiceUserID:       "goapi",
+		ServiceUserPassword: "goapi",
 	}
 	// create cluster
 	removeFile(t, executedPlaybooks)
