@@ -220,6 +220,23 @@
     },
     {
       "key": {
+        "uuid": "c43b53d4_72d797c1",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:59:02Z",
+      "side": 1,
+      "message": "Please follow \"the stepdown rule\" for function order",
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1c33887f_e24b47b9",
         "filename": "pkg/cloud/update_test.go",
         "patchSetId": 3
@@ -236,6 +253,29 @@
         "startChar": 1,
         "endLine": 14,
         "endChar": 43
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "30ac0bf0_7ad08340",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:59:02Z",
+      "side": 1,
+      "message": "These functions can be methods of instanceData",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 1
       },
       "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
