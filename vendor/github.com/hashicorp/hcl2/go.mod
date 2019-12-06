@@ -28,3 +28,5 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 	howett.net/plist v0.0.0-20181124034731-591f970eefbb
 )
+
+go 1.13

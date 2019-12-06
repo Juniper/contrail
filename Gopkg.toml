@@ -25,4 +25,4 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
-  revision = "57bb5c7f8cb9ab151e4d18746c145c14591d5c4f"
+  revision = "87093b5f9d3a5d42ae421e1200b2166a6f543769" # TODO Update when Juniper/asf#20 is merged
