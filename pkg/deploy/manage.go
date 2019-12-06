@@ -58,6 +58,8 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 			AnsibleFetchURL:           deploy.config.AnsibleFetchURL,
 			AnsibleCherryPickRevision: deploy.config.AnsibleCherryPickRevision,
 			AnsibleRevision:           deploy.config.AnsibleRevision,
+			ServiceUserID:             deploy.config.ServiceUserID,
+			ServiceUserPassword:       deploy.config.ServiceUserPassword,
 		})
 		if err != nil {
 			return nil, err
