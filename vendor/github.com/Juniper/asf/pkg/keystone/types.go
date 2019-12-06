@@ -123,7 +123,7 @@ type AuthResponse struct {
 	Token *Token `json:"token"`
 }
 
-//User reprenetns a user.
+//User represents a user.
 type User struct {
 	Domain   *Domain `json:"domain,omitempty"`
 	ID       string  `json:"id"`
@@ -137,6 +137,14 @@ type User struct {
 func (u *User) HasCredential() bool {
 	return u.Name != "" || u.Password != ""
 }
+
+// CreateUserRequest represents a keystone user creation request.
+type CreateUserRequest struct {
+	User `json:"user"`
+}
+
+// CreateUserResponse represents a keystone user creation response.
+type CreateUserResponse CreateUserRequest
 
 //Role represents a user role.
 type Role struct {

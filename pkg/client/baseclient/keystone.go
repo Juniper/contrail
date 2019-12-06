@@ -187,3 +187,63 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 
 	return resp.Header.Get(xSubjectTokenHeader), nil
 }
+
+// CreateUser creates user in keystone.
+func (k *Keystone) CreateUser(ctx context.Context, user keystone.User) (*keystone.User, error) {
+	b, err := json.Marshal(keystone.CreateUserRequest{User: user})
+	if err != nil {
+		return nil, errors.Wrap(err, "marshalling CreateUserRequest")
+	}
+	request, err := http.NewRequest(http.MethodPost, k.getURL("/users/"), bytes.NewReader(b))
+	if err != nil {
+		return nil, errors.Wrap(err, "creating HTTP request failed")
+	}
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
+
+	resp, err := k.HTTPDoer.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "issuing HTTP request failed")
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	if err := checkStatusCode([]int{http.StatusCreated}, resp.StatusCode); err != nil {
+		return nil, errorFromResponse(err, resp)
+	}
+
+	var userResp keystone.CreateUserResponse
+	if err := json.NewDecoder(resp.Body).Decode(&userResp); err != nil {
+		return nil, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+	}
+
+	return &userResp.User, nil
+}
+
+// CreateUser creates user in keystone.
+func (k *Keystone) CreateServiceUser(ctx context.Context, user keystone.User) (*keystone.User, error) {
+	u, err := k.CreateUser(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	k.AddRole(ctx, user, keystone.Role{Project: &keystone.Project{}})
+	return u, nil
+}
+
+func (k *Keystone) AddRole(ctx context.Context, user keystone.User, role keystone.Role) error {
+	request, err := http.NewRequest(http.MethodPost, k.getURL("/users/"), bytes.NewReader(b))
+	if err != nil {
+		return nil, errors.Wrap(err, "creating HTTP request failed")
+	}
+	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
+	SetContextHeaders(request)
+
+	resp, err := k.HTTPDoer.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "issuing HTTP request failed")
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	if err := checkStatusCode([]int{http.StatusCreated}, resp.StatusCode); err != nil {
+		return nil, errorFromResponse(err, resp)
+	}
+}
