@@ -48,8 +48,9 @@ type Config struct { // nolint: maligned
 	// Logging  file
 	LogFile string `yaml:"log_file"`
 	// Template root directory
-	TemplateRoot string `yaml:"template_root"`
-
+	TemplateRoot        string `yaml:"template_root"`
+	ServiceUserID       string `yaml:service_user_id`
+	ServiceUserPassword string `yaml:service_user_password`
 	// Optional ansible sudo password
 	AnsibleSudoPass string `yaml:"ansible_sudo_pass"`
 	// Optional ansible deployer cherry pick url

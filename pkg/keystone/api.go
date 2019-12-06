@@ -76,7 +76,7 @@ func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	e.GET("/keystone/v3/auth/projects", keystone.ListProjectsAPI)
+	e.GET("/keystone/v3/auth/projects", keystone.ListAuthProjectsAPI)
 	e.GET("/keystone/v3/auth/domains", keystone.listDomainsAPI)
 
 	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
@@ -139,8 +139,8 @@ func (k *Keystone) listDomainsAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, domainsResponse)
 }
 
-//ListProjectsAPI is an API handler to list projects.
-func (k *Keystone) ListProjectsAPI(c echo.Context) error {
+//ListAuthProjectsAPI is an API handler to list projects available to be scoped to based on the token.
+func (k *Keystone) ListAuthProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
 		return k.proxyRequest(c, ke)
@@ -170,6 +170,28 @@ func (k *Keystone) ListProjectsAPI(c echo.Context) error {
 	}
 	projectsResponse := &ProjectListResponse{
 		Projects: userProjects,
+	}
+	return c.JSON(http.StatusOK, projectsResponse)
+}
+
+//ListProjectsAPI is an API handler to list projects.
+func (k *Keystone) ListProjectsAPI(c echo.Context) error {
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
+		return k.proxyRequest(c, ke)
+	}
+
+	_, err := k.validateToken(c.Request())
+	if err != nil {
+		return err
+	}
+	_, err = k.setAssignment(clusterID)
+	if err != nil {
+		return err
+	}
+	projects := k.Assignment.ListProjects()
+	projectsResponse := &ProjectListResponse{
+		Projects: projects,
 	}
 	return c.JSON(http.StatusOK, projectsResponse)
 }
