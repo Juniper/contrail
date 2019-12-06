@@ -1,12 +1,15 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 )
 
@@ -82,6 +85,23 @@ func (p *deployCluster) createWorkingDir() error {
 
 func (p *deployCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
+}
+
+func (p *deployCluster) createServiceUser() error {
+	ctx := context.Background()
+	name, pass := p.clusterData.KeystoneAdminCredential()
+
+	token, err := p.cluster.APIServer.Keystone.ObtainToken(ctx, name, pass, keystone.NewScope("default", "", "", "admin"))
+	if err != nil {
+		return err
+	}
+	ctx = baseclient.WithXAuthToken(ctx, token)
+
+	_, err = p.cluster.APIServer.Keystone.CreateServiceUser(ctx, keystone.User{
+		Name:     p.cluster.config.ServiceUserID,
+		Password: p.cluster.config.ServiceUserPassword,
+	})
+	return err
 }
 
 func (p *deployCluster) createEndpoints() error {
