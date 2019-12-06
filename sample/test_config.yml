@@ -78,7 +78,20 @@ keystone:
           id: aa907485e1f94a14834d8c69ed9cb3b2
           name: neutron
           domain: *default
+        service: &service
+          id: service
+          name: service
+          domain: *default
       users:
+        admin:
+          id: admin
+          name: admin
+          domain: *default
+          password: contrail123
+          roles:
+          - id: admin
+            name: admin
+            project: *admin
         alice:
           id: alice
           name: Alice
@@ -102,6 +115,15 @@ keystone:
           - id: Member
             name: Member
             project: *demo
+        goapi:
+          id: goapi
+          name: goapi
+          domain: *default
+          password: goapi
+          roles:
+          - id: admin
+            name: admin
+            project: *service
   store:
     type: memory
     expire: 3600
