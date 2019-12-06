@@ -21,6 +21,7 @@ type Assignment interface {
 	FetchUser(id, password string) (*keystone.User, error)
 	ListProjects() []*keystone.Project
 	ListDomains() []*keystone.Domain
+	ListUsers() []*keystone.User
 }
 
 //StaticAssignment is an implementation of Assignment based on static file.
@@ -31,8 +32,12 @@ type StaticAssignment struct {
 }
 
 //ListUsers is used to fetch all users
-func (assignment *StaticAssignment) ListUsers() map[string]*keystone.User {
-	return assignment.Users
+func (assignment *StaticAssignment) ListUsers() []*keystone.User {
+	var users []*keystone.User
+	for _, user := range assignment.Users {
+		users = append(users, user)
+	}
+	return users
 }
 
 //FetchUser is used to fetch a user by ID and Password.
@@ -49,7 +54,7 @@ func (assignment *StaticAssignment) FetchUser(name, password string) (*keystone.
 
 //ListDomains is used to list domains
 func (assignment *StaticAssignment) ListDomains() []*keystone.Domain {
-	domains := []*keystone.Domain{}
+	var domains []*keystone.Domain
 	for _, domain := range assignment.Domains {
 		domains = append(domains, domain)
 	}
@@ -174,7 +179,7 @@ func (assignment *VNCAPIAssignment) FetchUser(name, password string) (*keystone.
 
 //ListDomains is used to list domains
 func (assignment *VNCAPIAssignment) ListDomains() []*keystone.Domain {
-	domains := []*keystone.Domain{}
+	var domains []*keystone.Domain
 	for _, domain := range assignment.Domains {
 		domains = append(domains, domain)
 	}
@@ -188,4 +193,13 @@ func (assignment *VNCAPIAssignment) ListProjects() []*keystone.Project {
 		projects = append(projects, project)
 	}
 	return projects
+}
+
+//ListUsers is used to list projects
+func (assignment *VNCAPIAssignment) ListUsers() []*keystone.User {
+	var users []*keystone.User
+	for _, user := range assignment.Users {
+		users = append(users, user)
+	}
+	return users
 }
