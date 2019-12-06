@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"path"
 
 	"github.com/pkg/errors"
 
@@ -13,6 +15,9 @@ import (
 )
 
 const (
+	// AdminRoleName is default role name for keystone admin.
+	AdminRoleName = "admin"
+
 	// xAuthTokenHeader is a header used by keystone to store user auth tokens.
 	xAuthTokenHeader = "X-Auth-Token"
 	// xSubjectTokenHeader is a header used by keystone to return new tokens.
@@ -20,6 +25,7 @@ const (
 
 	contentTypeHeader    = "Content-Type"
 	applicationJSONValue = "application/json"
+	serviceProjectName   = "service"
 )
 
 // WithXAuthToken creates child context with Auth Token
@@ -47,14 +53,34 @@ type projectListResponse struct {
 
 // GetProject gets project.
 func (k *Client) GetProject(ctx context.Context, token string, id string) (*Project, error) {
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/projects/"+id), nil)
+	ctx = WithXAuthToken(ctx, token)
+
+	var response projectResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, "/projects/"+id, []int{http.StatusOK}, nil, &response,
+	); err != nil {
+		return nil, err
+	}
+	return &response.Project, nil
+}
+
+func (k *Client) do(
+	ctx context.Context, method, requestPath string, expectedCodes []int, input, output interface{},
+) (*http.Response, error) {
+	var payload io.Reader
+	if input != nil {
+		b, err := json.Marshal(input)
+		if err != nil {
+			return nil, errors.Wrap(err, "marshalling keystone request")
+		}
+		payload = bytes.NewReader(b)
+	}
+	request, err := http.NewRequest(method, k.URL+requestPath, payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
 	httputil.SetContextHeaders(request)
-	request.Header.Set(xAuthTokenHeader, token)
-	var output projectResponse
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
@@ -62,63 +88,40 @@ func (k *Client) GetProject(ctx context.Context, token string, id string) (*Proj
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if err = httputil.CheckStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
+	if err := httputil.CheckStatusCode(expectedCodes, resp.StatusCode); err != nil {
 		return nil, httputil.ErrorFromResponse(err, resp)
 	}
 
-	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return nil, errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
+	if output != nil {
+		if err := json.NewDecoder(resp.Body).Decode(output); err != nil {
+			return nil, errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
+		}
 	}
 
-	return &output.Project, nil
+	return resp, nil
 }
 
 // GetProjectIDByName finds project id using project name.
 func (k *Client) GetProjectIDByName(
-	ctx context.Context, id, password, projectName string, domain *Domain) (string, error) {
-	// Fetch unscoped token
-	token, err := k.obtainUnscopedToken(ctx, id, password, domain)
-	if err != nil {
+	ctx context.Context, projectName string, domain *Domain,
+) (string, error) {
+	var response projectListResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, fmt.Sprintf("/projects?name=%s", projectName), []int{http.StatusOK}, nil, &response,
+	); err != nil {
 		return "", err
 	}
-	// Get project list with unscoped token
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/auth/projects"), nil)
-	if err != nil {
-		return "", errors.Wrap(err, "creating HTTP request failed")
-	}
-	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	httputil.SetContextHeaders(request)
-	request.Header.Set(xAuthTokenHeader, token)
 
-	var output *projectListResponse
-	resp, err := k.HTTPDoer.Do(request)
-	if err != nil {
-		return "", errors.Wrap(err, "issuing HTTP request failed")
-	}
-	defer resp.Body.Close() // nolint: errcheck
-
-	if err = httputil.CheckStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
-		return "", httputil.ErrorFromResponse(err, resp)
-	}
-
-	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return "", errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
-	}
-
-	for _, project := range output.Projects {
+	for _, project := range response.Projects {
 		if project.Name == projectName {
 			return project.ID, nil
 		}
 	}
-	return "", fmt.Errorf("'%s' not a valid project name", projectName)
+	return "", errors.Errorf("could not find project with name %q", projectName)
 }
 
-func (k *Client) getURL(path string) string {
-	return k.URL + path
-}
-
-// obtainUnscopedToken gets unscoped authentication token.
-func (k *Client) obtainUnscopedToken(
+// ObtainUnscopedToken gets unscoped authentication token.
+func (k *Client) ObtainUnscopedToken(
 	ctx context.Context, id, password string, domain *Domain,
 ) (string, error) {
 	if k.URL == "" {
@@ -138,6 +141,18 @@ func (k *Client) obtainUnscopedToken(
 			},
 		},
 	})
+}
+
+// fetchToken gets scoped/unscoped token.
+func (k *Client) fetchToken(ctx context.Context, authRequest interface{}) (string, error) {
+	ctx = httputil.WithHTTPHeader(ctx, contentTypeHeader, applicationJSONValue)
+	resp, err := k.do(
+		ctx, http.MethodPost, "/auth/tokens", []int{http.StatusOK, http.StatusCreated}, authRequest, nil,
+	)
+	if err != nil {
+		return "", err
+	}
+	return resp.Header.Get(xSubjectTokenHeader), nil
 }
 
 // ObtainToken gets authentication token.
@@ -162,29 +177,133 @@ func (k *Client) ObtainToken(ctx context.Context, id, password string, scope *Sc
 	})
 }
 
-// fetchToken gets scoped/unscoped token.
-func (k *Client) fetchToken(ctx context.Context, authRequest interface{}) (string, error) {
-	d, err := json.Marshal(authRequest)
+// CreateUser creates user in keystone.
+func (k *Client) CreateUser(ctx context.Context, user User) (User, error) {
+	var response CreateUserResponse
+	httpResp, err := k.do(
+		ctx,
+		http.MethodPost,
+		"/users",
+		[]int{http.StatusCreated, http.StatusConflict},
+		CreateUserRequest{User: user},
+		&response,
+	)
 	if err != nil {
-		return "", err
+		return User{}, err
 	}
-	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewReader(d))
+	if httpResp.StatusCode == http.StatusConflict {
+		return k.GetUserByName(ctx, user.Name)
+	}
+	return response.User, nil
+}
+
+type userListResponse struct {
+	Users []User `json:"users" yaml:"users"`
+}
+
+// GetUserByName looks for role by name in keystone.
+func (k *Client) GetUserByName(ctx context.Context, userName string) (User, error) {
+	var users userListResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, fmt.Sprintf("/users?name=%v", userName), []int{http.StatusOK}, nil, &users,
+	); err != nil {
+		return User{}, err
+	}
+	for _, user := range users.Users {
+		if user.Name == userName {
+			return user, nil
+		}
+	}
+	return User{}, errors.Errorf("user '%s' does not exist", userName)
+}
+
+// createServiceUser creates service user in keystone.
+func (k *Client) createServiceUser(ctx context.Context, user User) (User, error) {
+	projectID, err := k.GetProjectIDByName(ctx, serviceProjectName, DefaultDomain())
 	if err != nil {
-		return "", err
+		return User{}, err
 	}
-	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	httputil.SetContextHeaders(request)
-	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
-	resp, err := k.HTTPDoer.Do(request)
+	user, err = k.CreateUser(ctx, user)
 	if err != nil {
-		return "", httputil.ErrorFromResponse(err, resp)
+		return User{}, err
 	}
-	defer resp.Body.Close() // nolint: errcheck
-
-	if err = httputil.CheckStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
-		return "", httputil.ErrorFromResponse(err, resp)
+	role, err := k.GetRoleByName(ctx, AdminRoleName)
+	if err != nil {
+		return User{}, err
+	}
+	role.Project = &Project{ID: projectID}
+	if err := k.AssignProjectRoleOnUser(ctx, user, role); err != nil {
+		return User{}, err
 	}
 
-	return resp.Header.Get(xSubjectTokenHeader), nil
+	return user, nil
+}
+
+// checkServiceUserExists checks for service user in keystone.
+func (k *Client) checkServiceUserExists(ctx context.Context, user User) (bool, error) {
+	servUser, err := k.GetUserByName(ctx, user.Name)
+	if err != nil {
+		return false, err
+	}
+	if servUser.Password == user.Password {
+		for _, role := range servUser.Roles {
+			if role.Name == AdminRoleName && role.Project.Name == serviceProjectName {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// EnsureServiceUserCreated ensures that service user is present in keystone.
+// This is done to avoid calling "/roles" endpoint when service user is present.
+func (k *Client) EnsureServiceUserCreated(ctx context.Context, user User) (User, error) {
+	userPresent, err := k.checkServiceUserExists(ctx, user)
+	if err != nil {
+		return User{}, err
+	}
+	if userPresent {
+		return user, nil
+	}
+
+	serviceUser, err := k.createServiceUser(ctx, user)
+	if err != nil {
+		return User{}, err
+	}
+	return serviceUser, nil
+}
+
+// AssignProjectRoleOnUser adds role to user in keystone.
+func (k *Client) AssignProjectRoleOnUser(ctx context.Context, user User, role Role) error {
+	_, err := k.do(
+		ctx,
+		http.MethodPut,
+		path.Join("/projects", role.Project.ID, "users", user.ID, "roles", role.ID),
+		[]int{http.StatusNoContent},
+		nil,
+		nil,
+	)
+	return err
+}
+
+type rolesListResponse struct {
+	Roles []Role `json:"roles" yaml:"roles"`
+}
+
+// GetRoleByName looks for role by name in keystone.
+func (k *Client) GetRoleByName(ctx context.Context, roleName string) (Role, error) {
+	var roles rolesListResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, fmt.Sprintf("/roles?name=%v", roleName), []int{http.StatusOK}, nil, &roles,
+	); err != nil {
+		return Role{}, err
+	}
+
+	for _, role := range roles.Roles {
+		if role.Name == roleName {
+			return role, nil
+		}
+	}
+	return Role{}, errors.Errorf("role '%s' does not exist", roleName)
 }

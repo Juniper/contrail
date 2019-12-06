@@ -70,7 +70,8 @@ func TestChownGRPC(t *testing.T) {
 		defer cleanup(t)
 
 		otherProjectName := uuid.NewV4().String()
-		addKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		kscleanup := addKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		defer kscleanup()
 		otherProjectCTX := metadata.NewOutgoingContext(firstProjectCTX,
 			metadata.Pairs("X-Auth-Token", restLogin(firstProjectCTX, t, otherProjectName)))
 
@@ -410,7 +411,8 @@ func testProjectRead(ctx context.Context, c services.ContrailServiceClient, proj
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
-	addKeystoneProjectAndUser(server.APIServer, testName)
+	kscleanup := addKeystoneProjectAndUser(server.APIServer, testName)
+	defer kscleanup()
 	authToken := restLogin(ctx, t, testName)
 
 	conn, err := grpc.Dial(
@@ -432,7 +434,7 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 // addKeystoneProjectAndUser adds Keystone project and user in Server internal state.
 // TODO: Remove that, because it modifies internal state of SUT.
 // TODO: Use pre-created Server's keystone assignment.
-func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
+func addKeystoneProjectAndUser(s *apisrv.Server, testID string) func() {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
 	assignment.Projects[testID] = &kstypes.Project{
 		Domain: assignment.Domains[integration.DefaultDomainID],
@@ -452,6 +454,11 @@ func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 				Project: assignment.Projects[testID],
 			},
 		},
+	}
+
+	return func() {
+		delete(assignment.Projects, testID)
+		delete(assignment.Users, testID)
 	}
 }
 
