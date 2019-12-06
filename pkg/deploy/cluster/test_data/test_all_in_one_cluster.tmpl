@@ -81,6 +81,12 @@ test_data:
         - key: kolla_enable_tls_external
           value: "yes"
     {%endif%}
+    kolla_passwords:
+      key_value_pair:
+        - key: keystone_admin_user
+          value: alice
+        - key: keystone_admin_password
+          value: alice_password
   openstack_control_nodes: &openstack_control_nodes
     uuid: openstack_control_nodes_uuid
     parent_type: openstack-cluster

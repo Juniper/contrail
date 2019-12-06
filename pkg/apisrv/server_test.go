@@ -30,7 +30,7 @@ func TestServer(t *testing.T) {
 		"fqname_to_id",
 		"id_to_fqname",
 		"int_pool",
-		"keystone",
+		//"keystone",
 		"kv_store",
 		"name_unique",
 		"obj_perms",

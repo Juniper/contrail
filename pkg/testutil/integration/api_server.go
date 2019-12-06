@@ -37,6 +37,8 @@ const (
 	DemoProjectName    = "demo"
 	NeutronProjectID   = "aa907485e1f94a14834d8c69ed9cb3b2"
 	NeutronProjectName = "neutron"
+	ServiceProjectID   = "service"
+	ServiceProjectName = "service"
 	AdminRoleID        = "admin"
 	AdminRoleName      = "admin"
 	NeutronRoleID      = "aa907485e1f94a14834d8c69ed9cb3b2"
@@ -169,6 +171,11 @@ func keystoneAssignment() *keystone.StaticAssignment {
 		Domain: a.Domains[DefaultDomainID],
 		ID:     NeutronProjectID,
 		Name:   NeutronProjectName,
+	}
+	a.Projects[ServiceProjectID] = &kstypes.Project{
+		Domain: a.Domains[DefaultDomainID],
+		ID:     ServiceProjectID,
+		Name:   ServiceProjectName,
 	}
 	a.Users[AdminUserID] = &kstypes.User{
 		Domain:   a.Domains[DefaultDomainID],
