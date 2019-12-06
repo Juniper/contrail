@@ -27,6 +27,10 @@ type Config struct {
 	TemplateRoot string
 	// Work root directory
 	WorkRoot string
+	// Service user ID
+	ServiceUserID string
+	// Service user password
+	ServiceUserPassword string
 
 	// Optional ansible sudo password
 	AnsibleSudoPass string
