@@ -1,0 +1,234 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2926b9c1_fe91a476",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "Maybe change that regex to \n %s\u003d(.+?);\nIt\u0027s a little bit more readable IMO.",
+      "range": {
+        "startLine": 42,
+        "startChar": 31,
+        "endLine": 42,
+        "endChar": 41
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "808ab36e_deff32f9",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "ditto line 42",
+      "range": {
+        "startLine": 43,
+        "startChar": 25,
+        "endLine": 43,
+        "endChar": 35
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "19784820_e6931fe0",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "Check if `FindStringSubmatch` return value is not empty",
+      "range": {
+        "startLine": 44,
+        "startChar": 65,
+        "endLine": 45,
+        "endChar": 65
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e5b1618_6a725748",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "Maybe you could use instead of FindProcess\n ssh-agent -k\nwhich kill current ssh-agent pointed by ssh_pid env variable.",
+      "range": {
+        "startLine": 70,
+        "startChar": 1,
+        "endLine": 75,
+        "endChar": 30
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9b50c35_197857a4",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "kill uses os.Process.Kill and documentation states that :\n Kill does not wait until the Process has actually exited. \nSo this test could be flaky.",
+      "range": {
+        "startLine": 16,
+        "startChar": 24,
+        "endLine": 16,
+        "endChar": 29
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a206e4d7_81d64530",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "Use os.FindProcess",
+      "range": {
+        "startLine": 22,
+        "startChar": 1,
+        "endLine": 23,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "65f22961_544cb800",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 456,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "If startSSHAgent return error then this deferred function call will try to stop ssh-agent and it will fail(because of kill process in kill method) and then will print misleading \"cannot stop SSH Agent\" log.",
+      "range": {
+        "startLine": 456,
+        "startChar": 7,
+        "endLine": 456,
+        "endChar": 16
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed40e4f6_e06b1ee8",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "This error message is too long, and error is not thrown.",
+      "range": {
+        "startLine": 458,
+        "startChar": 33,
+        "endLine": 458,
+        "endChar": 89
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "46a326a4_da8f5bdf",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 467,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "Change to nil. And do not call deffer on caller side.",
+      "range": {
+        "startLine": 467,
+        "startChar": 14,
+        "endLine": 467,
+        "endChar": 23
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd8edf6e_1f9cdf5e",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 471,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-06T14:55:12Z",
+      "side": 1,
+      "message": "What if the agent never started? Then returning this function is pointless.",
+      "range": {
+        "startLine": 471,
+        "startChar": 1,
+        "endLine": 471,
+        "endChar": 8
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
