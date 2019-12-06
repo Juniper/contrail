@@ -29,26 +29,31 @@ const (
 
 // Keystone credentials.
 const (
-	DefaultDomainID    = "default"
-	DefaultDomainName  = "default"
-	AdminProjectID     = "admin"
-	AdminProjectName   = "admin"
-	DemoProjectID      = "demo"
-	DemoProjectName    = "demo"
-	NeutronProjectID   = "aa907485e1f94a14834d8c69ed9cb3b2"
-	NeutronProjectName = "neutron"
-	AdminRoleID        = "admin"
-	AdminRoleName      = "admin"
-	NeutronRoleID      = "aa907485e1f94a14834d8c69ed9cb3b2"
-	NeutronRoleName    = "neutron"
-	MemberRoleID       = "Member"
-	MemberRoleName     = "Member"
-	AdminUserID        = "alice"
-	AdminUserName      = "Alice"
-	AdminUserPassword  = "alice_password"
-	BobUserID          = "bob"
-	BobUserName        = "Bob"
-	BobUserPassword    = "bob_password"
+	DefaultDomainID     = "default"
+	DefaultDomainName   = "default"
+	AdminProjectID      = "admin"
+	AdminProjectName    = "admin"
+	DemoProjectID       = "demo"
+	DemoProjectName     = "demo"
+	NeutronProjectID    = "aa907485e1f94a14834d8c69ed9cb3b2"
+	NeutronProjectName  = "neutron"
+	ServiceProjectID    = "service"
+	ServiceProjectName  = "service"
+	AdminRoleID         = "admin"
+	AdminRoleName       = "admin"
+	NeutronRoleID       = "aa907485e1f94a14834d8c69ed9cb3b2"
+	NeutronRoleName     = "neutron"
+	MemberRoleID        = "Member"
+	MemberRoleName      = "Member"
+	AdminUserID         = "alice"
+	AdminUserName       = "Alice"
+	AdminUserPassword   = "alice_password"
+	BobUserID           = "bob"
+	BobUserName         = "Bob"
+	BobUserPassword     = "bob_password"
+	ServiceUserID       = "goapi"
+	ServiceUserName     = "goapi"
+	ServiceUserPassword = "goapi"
 )
 
 // APIServer is embedded API Server for testing purposes.
@@ -170,6 +175,11 @@ func keystoneAssignment() *keystone.StaticAssignment {
 		ID:     NeutronProjectID,
 		Name:   NeutronProjectName,
 	}
+	a.Projects[ServiceProjectID] = &kstypes.Project{
+		Domain: a.Domains[DefaultDomainID],
+		ID:     ServiceProjectID,
+		Name:   ServiceProjectName,
+	}
 	a.Users[AdminUserID] = &kstypes.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       AdminUserID,
@@ -201,6 +211,19 @@ func keystoneAssignment() *keystone.StaticAssignment {
 			},
 		},
 	}
+	/*a.Users[ServiceUserID] = &kstypes.User{
+		Domain:   a.Domains[DefaultDomainID],
+		ID:       ServiceUserID,
+		Name:     ServiceUserName,
+		Password: ServiceUserPassword,
+		Roles: []*kstypes.Role{
+			{
+				ID:      AdminRoleID,
+				Name:    AdminRoleName,
+				Project: a.Projects[AdminProjectID],
+			},
+		},
+	}*/
 	return &a
 }
 
