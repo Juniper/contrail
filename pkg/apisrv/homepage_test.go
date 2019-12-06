@@ -104,6 +104,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		"/keystone/v3/auth/projects", // TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
 		"/keystone/v3/auth/domains",  // TODO: Remove this, since "/keystone/v3/domains" is a keystone endpoint
 		"/keystone/v3/auth/tokens",
+		"/keystone/v3/users",
 		services.UploadCloudKeysPath,
 	} {
 		routes.add(r)

@@ -60,7 +60,9 @@ type Config struct {
 	// InSecure https connection to endpoint
 	InSecure bool `yaml:"insecure"`
 	// Enabled
-	Enabled bool `yaml:"enabled"`
+	Enabled             bool   `yaml:"enabled"`
+	ServiceUserID       string `yaml:"id"`
+	ServiceUserPassword string `yaml:"password"`
 }
 
 // Agent represents Agent service.
@@ -91,6 +93,8 @@ func NewAgentByConfig() (*Agent, error) {
 	c.InSecure = viper.GetBool("insecure")
 	c.SchemaRoot = viper.GetString("client.schema_root")
 	c.Endpoint = viper.GetString("client.endpoint")
+	c.ServiceUserID = viper.GetString("keystone.service_user.id")
+	c.ServiceUserPassword = viper.GetString("keystone.service_user.password")
 
 	return NewAgent(&c)
 }

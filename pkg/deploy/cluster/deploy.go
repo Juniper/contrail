@@ -1,17 +1,21 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 )
 
 const (
-	defaultTemplateRoot = "./pkg/cluster/configs"
+	defaultTemplateRoot        = "./pkg/cluster/configs"
+	defaultServiceUserID       = "goapi"
+	defaultServiceUserPassword = "goapi"
 )
 
 type deployCluster struct {
@@ -82,6 +86,36 @@ func (p *deployCluster) createWorkingDir() error {
 
 func (p *deployCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
+}
+
+func (p *deployCluster) getServiceUserData() (string, string) {
+	name := p.cluster.config.ServiceUserID
+	pass := p.cluster.config.ServiceUserPassword
+	if name == "" {
+		name = defaultServiceUserID
+	}
+	if pass == "" {
+		pass = defaultServiceUserPassword
+	}
+	return name, pass
+}
+
+func (p *deployCluster) ensureServiceUserCreated() error {
+	ctx := context.Background()
+	name, pass := p.clusterData.KeystoneAdminCredential()
+
+	token, err := p.cluster.APIServer.Keystone.ObtainToken(ctx, name, pass, keystone.NewScope("default", "", "", "admin"))
+	if err != nil {
+		return err
+	}
+	ctx = keystone.WithXAuthToken(ctx, token)
+
+	name, pass = p.getServiceUserData()
+	_, err = p.cluster.APIServer.Keystone.EnsureServiceUserCreated(ctx, keystone.User{
+		Name:     name,
+		Password: pass,
+	})
+	return err
 }
 
 func (p *deployCluster) createEndpoints() error {
