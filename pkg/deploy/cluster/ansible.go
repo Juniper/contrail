@@ -719,6 +719,9 @@ func (a *contrailAnsibleDeployer) handleCreate() error {
 	if err := a.createCluster(); err != nil {
 		return err
 	}
+	if err := a.ensureServiceUserCreated(); err != nil {
+		return err
+	}
 	return a.createEndpoints()
 }
 
