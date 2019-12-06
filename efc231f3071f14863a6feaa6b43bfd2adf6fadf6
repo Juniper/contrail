@@ -46,6 +46,30 @@
       "revId": "efc231f3071f14863a6feaa6b43bfd2adf6fadf6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1853f6f7_fc6f5711",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-06T15:36:30Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "89fe31e4_5d92c76f",
+      "range": {
+        "startLine": 98,
+        "startChar": 14,
+        "endLine": 98,
+        "endChar": 66
+      },
+      "revId": "efc231f3071f14863a6feaa6b43bfd2adf6fadf6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
