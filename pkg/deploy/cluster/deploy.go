@@ -1,10 +1,12 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/deploy/base"
@@ -82,6 +84,29 @@ func (p *deployCluster) createWorkingDir() error {
 
 func (p *deployCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
+}
+
+func (p *deployCluster) ensureServiceUserCreated() error {
+	ctx := context.Background()
+	name, pass := p.clusterData.KeystoneAdminCredential()
+
+	fmt.Println("DVPA", name, pass)
+
+	token, err := p.cluster.APIServer.Keystone.ObtainToken(ctx, name, pass, keystone.NewScope("default", "", "", "admin"))
+	if err != nil {
+		return err
+	}
+	ctx = keystone.WithXAuthToken(ctx, token)
+
+	_, err = p.cluster.APIServer.Keystone.EnsureServiceUserCreated(ctx, keystone.User{
+		//TODO: this data flow is broken. Find out why.
+
+		//Name:     p.cluster.config.ServiceUserID,
+		//Password: p.cluster.config.ServiceUserPassword,
+		Name:     "goapi",
+		Password: "goapi",
+	})
+	return err
 }
 
 func (p *deployCluster) createEndpoints() error {
