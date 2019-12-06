@@ -53,6 +53,12 @@
                 ports:
                   - 22
                   - 443
+            - name: default-wan-udp-{{ vcloud.info.UUID }}
+              allow:
+                protocol: udp
+                ports:
+                  - 500
+                  - 4500
             - name: default-wan-vrrp-{{ vcloud.info.UUID }}
               allow:
                 protocol: 112
