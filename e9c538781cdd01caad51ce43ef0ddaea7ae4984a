@@ -84,6 +84,30 @@
     },
     {
       "key": {
+        "uuid": "9d19f9c3_ce841d0b",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-06T15:04:08Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6dd58778_0b7ea9e9",
+      "range": {
+        "startLine": 68,
+        "startChar": 55,
+        "endLine": 68,
+        "endChar": 63
+      },
+      "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "01476ef2_ed79c738",
         "filename": "pkg/cloud/secret.go",
         "patchSetId": 1
@@ -163,6 +187,48 @@
       "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2aaf7921_0141d4dd",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-06T15:04:08Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "fc6a8275_5e901588",
+      "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e084823a_553ef5cc",
+        "filename": "pkg/cloud/secret.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-06T15:04:08Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "83a01cda_6529d264",
+      "range": {
+        "startLine": 78,
+        "startChar": 17,
+        "endLine": 78,
+        "endChar": 25
+      },
+      "revId": "e9c538781cdd01caad51ce43ef0ddaea7ae4984a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
