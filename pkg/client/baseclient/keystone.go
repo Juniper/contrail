@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/Juniper/asf/pkg/keystone"
@@ -19,6 +20,8 @@ const (
 
 	contentTypeHeader    = "Content-Type"
 	applicationJSONValue = "application/json"
+
+	serviceProjectName = "service"
 )
 
 // WithXAuthToken creates child context with Auth Token
@@ -46,65 +49,29 @@ type projectListResponse struct {
 
 // GetProject gets project.
 func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/projects/"+id), nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "creating HTTP request failed")
-	}
-	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	SetContextHeaders(request)
-	request.Header.Set(xAuthTokenHeader, token)
-	var output projectResponse
+	ctx = WithXAuthToken(ctx, token)
 
-	resp, err := k.HTTPDoer.Do(request)
-	if err != nil {
-		return nil, errors.Wrap(err, "issuing HTTP request failed")
+	var response projectResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, k.getURL("/projects/"+id), []int{http.StatusOK}, nil, &response,
+	); err != nil {
+		return nil, err
 	}
-	defer resp.Body.Close() // nolint: errcheck
-
-	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
-		return nil, errorFromResponse(err, resp)
-	}
-
-	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return nil, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
-	}
-
-	return &output.Project, nil
+	return &response.Project, nil
 }
 
 // GetProjectIDByName finds project id using project name.
 func (k *Keystone) GetProjectIDByName(
-	ctx context.Context, id, password, projectName string, domain *keystone.Domain) (string, error) {
-	// Fetch unscoped token
-	token, err := k.obtainUnscopedToken(ctx, id, password, domain)
-	if err != nil {
+	ctx context.Context, projectName string, domain *keystone.Domain,
+) (string, error) {
+	var response projectListResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, k.getURL("/auth/projects"), []int{http.StatusOK}, nil, &response,
+	); err != nil {
 		return "", err
 	}
-	// Get project list with unscoped token
-	request, err := http.NewRequest(http.MethodGet, k.getURL("/auth/projects"), nil)
-	if err != nil {
-		return "", errors.Wrap(err, "creating HTTP request failed")
-	}
-	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	SetContextHeaders(request)
-	request.Header.Set(xAuthTokenHeader, token)
 
-	var output *projectListResponse
-	resp, err := k.HTTPDoer.Do(request)
-	if err != nil {
-		return "", errors.Wrap(err, "issuing HTTP request failed")
-	}
-	defer resp.Body.Close() // nolint: errcheck
-
-	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
-		return "", errorFromResponse(err, resp)
-	}
-
-	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return "", errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
-	}
-
-	for _, project := range output.Projects {
+	for _, project := range response.Projects {
 		if project.Name == projectName {
 			return project.ID, nil
 		}
@@ -116,8 +83,8 @@ func (k *Keystone) getURL(path string) string {
 	return k.URL + path
 }
 
-// obtainUnscopedToken gets unscoped authentication token.
-func (k *Keystone) obtainUnscopedToken(
+// ObtainUnscopedToken gets unscoped authentication token.
+func (k *Keystone) ObtainUnscopedToken(
 	ctx context.Context, id, password string, domain *keystone.Domain,
 ) (string, error) {
 	if k.URL == "" {
@@ -163,27 +130,99 @@ func (k *Keystone) ObtainToken(ctx context.Context, id, password string, scope *
 
 // fetchToken gets scoped/unscoped token.
 func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (string, error) {
-	d, err := json.Marshal(authRequest)
+	ctx = WithHTTPHeader(ctx, contentTypeHeader, applicationJSONValue)
+	resp, err := k.do(
+		ctx, http.MethodPost, k.getURL("/auth/tokens"), []int{http.StatusOK, http.StatusCreated}, authRequest, nil,
+	)
 	if err != nil {
 		return "", err
 	}
-	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewReader(d))
+	return resp.Header.Get(xSubjectTokenHeader), nil
+}
+
+// CreateUserRequest represents a keystone user creation request.
+type CreateUserRequest struct {
+	keystone.User `json:"user"`
+}
+
+// CreateUserResponse represents a keystone user creation response.
+type CreateUserResponse CreateUserRequest
+
+// CreateUser creates user in keystone.
+func (k *Keystone) CreateUser(ctx context.Context, user keystone.User) (*keystone.User, error) {
+	var response CreateUserResponse
+	if _, err := k.do(
+		ctx,
+		http.MethodPost,
+		k.getURL("/users/"),
+		[]int{http.StatusCreated},
+		CreateUserRequest{User: user},
+		&response,
+	); err != nil {
+		return nil, err
+	}
+	return &response.User, nil
+}
+
+// AddRole adds role to user in keystone.
+func (k *Keystone) AddRole(ctx context.Context, user keystone.User, role keystone.Role) error {
+	url := k.getURL("/roles/" + role.Project.ID + "/" + user.ID + "/" + role.ID)
+	_, err := k.do(ctx, http.MethodPut, url, []int{http.StatusNoContent}, nil, nil)
+	return err
+}
+
+func (k *Keystone) do(
+	ctx context.Context, method, url string, expectedCodes []int, input, output interface{},
+) (*http.Response, error) {
+	var payload io.Reader
+	if input != nil {
+		b, err := json.Marshal(input)
+		if err != nil {
+			return nil, errors.Wrap(err, "marshalling keystone request")
+		}
+		payload = bytes.NewReader(b)
+	}
+	request, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		return "", err
+		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
 	SetContextHeaders(request)
-	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
-		return "", errorFromResponse(err, resp)
+		return nil, errors.Wrap(err, "issuing HTTP request failed")
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
-		return "", errorFromResponse(err, resp)
+	if err := checkStatusCode(expectedCodes, resp.StatusCode); err != nil {
+		return nil, errorFromResponse(err, resp)
 	}
 
-	return resp.Header.Get(xSubjectTokenHeader), nil
+	if output != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
+			return nil, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+		}
+	}
+
+	return resp, nil
+}
+
+// CreateServiceUser creates service user in keystone.
+func (k *Keystone) CreateServiceUser(ctx context.Context, user keystone.User) (*keystone.User, error) {
+	u, err := k.CreateUser(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	projectID, err := k.GetProjectIDByName(ctx, serviceProjectName, keystone.DefaultDomain())
+	if err != nil {
+		return nil, err
+	}
+	if err := k.AddRole(
+		ctx, user, keystone.Role{Name: "admin", Project: &keystone.Project{ID: projectID}},
+	); err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }

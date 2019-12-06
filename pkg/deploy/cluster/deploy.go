@@ -1,13 +1,17 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/Juniper/contrail/pkg/deploy/base"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -82,6 +86,24 @@ func (p *deployCluster) createWorkingDir() error {
 
 func (p *deployCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
+}
+
+func (p *deployCluster) createServiceUser() error {
+	ctx := context.Background()
+	name, pass := p.clusterData.KeystoneAdminCredential()
+
+	// TODO(mwierzbicki): unscoped token vs admin project scoped token? check which one works and fix
+	token, err := p.cluster.APIServer.Keystone.ObtainUnscopedToken(ctx, name, pass, keystone.DefaultDomain())
+	if err != nil {
+		return err
+	}
+	ctx = baseclient.WithXAuthToken(ctx, token)
+
+	_, err = p.cluster.APIServer.Keystone.CreateServiceUser(ctx, keystone.User{
+		Name:     viper.GetString("keystone.service_user.id"),
+		Password: viper.GetString("keystone.service_user.password"),
+	})
+	return err
 }
 
 func (p *deployCluster) createEndpoints() error {
