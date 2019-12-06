@@ -191,3 +191,11 @@ type Endpoint struct {
 type ValidateTokenResponse struct {
 	Token *Token `json:"token"`
 }
+
+// CreateUserRequest represents a keystone user creation request.
+type CreateUserRequest struct {
+	User `json:"user"`
+}
+
+// CreateUserResponse represents a keystone user creation response.
+type CreateUserResponse CreateUserRequest
