@@ -1499,6 +1499,33 @@ func (d *Data) GetOpenstackClusterInfo() *models.OpenstackCluster {
 	return nil
 }
 
+// KeystoneAdminCredential returns admin credentials from deploy data object.
+func (d *Data) KeystoneAdminCredential() (adminUser, adminPassword string) {
+	var k []*models.KeyValuePair
+	if o := d.GetOpenstackClusterInfo(); o != nil {
+		if g := o.GetKollaPasswords(); g != nil {
+			k = g.GetKeyValuePair()
+			for _, keyValuePair := range k {
+				switch keyValuePair.Key {
+				case "keystone_admin_user":
+					adminUser = keyValuePair.Value
+				case "keystone_admin_password":
+					adminPassword = keyValuePair.Value
+				}
+			}
+		}
+	}
+
+	if adminUser == "" {
+		adminUser = defaultAdminUser
+	}
+	if adminPassword == "" {
+		adminPassword = defaultAdminPassword
+	}
+
+	return adminUser, adminPassword
+}
+
 // GetAllKeypairsInfo gets kepair details
 func (d *Data) GetAllKeypairsInfo() []*models.Keypair {
 	keypairs := d.keypairsInfo
