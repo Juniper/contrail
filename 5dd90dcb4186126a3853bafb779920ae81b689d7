@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "3eac9f0d_52650407",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "What\u0027s the goal of this function?",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2926b9c1_fe91a476",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -71,6 +94,121 @@
     },
     {
       "key": {
+        "uuid": "5171967d_6a278145",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "In case of no matches from regexp these arrays won\u0027t have any elements",
+      "range": {
+        "startLine": 44,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 67
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6536f59e_f579c7a3",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "Shouldn\u0027t we expect the key to be in proper format/permissions instead of modifying key file?",
+      "range": {
+        "startLine": 49,
+        "startChar": 11,
+        "endLine": 49,
+        "endChar": 30
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1227253d_03ca6732",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "Why return both standard and error outputs as error message?",
+      "range": {
+        "startLine": 55,
+        "startChar": 2,
+        "endLine": 55,
+        "endChar": 41
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f42c83a5_4eec2ed1",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "\"Kill\" suggests sudden and forced termination of agent",
+      "range": {
+        "startLine": 67,
+        "startChar": 19,
+        "endLine": 67,
+        "endChar": 23
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fbbbb9a9_20dac119",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "Why store pid as string in the first place?",
+      "range": {
+        "startLine": 71,
+        "startChar": 1,
+        "endLine": 71,
+        "endChar": 32
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7e5b1618_6a725748",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -133,6 +271,29 @@
         "startChar": 1,
         "endLine": 23,
         "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "173e22fe_794686ad",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-06T15:23:28Z",
+      "side": 1,
+      "message": "This is redundant",
+      "range": {
+        "startLine": 32,
+        "startChar": 22,
+        "endLine": 33,
+        "endChar": 13
       },
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
