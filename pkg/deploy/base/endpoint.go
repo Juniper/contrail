@@ -89,29 +89,7 @@ func (e *EndpointData) getPort(nodeIP, service string) string {
 }
 
 func (e *EndpointData) getkeystoneAdminCredential() (adminUser, adminPassword string) {
-	var k []*models.KeyValuePair
-	if o := e.ClusterData.GetOpenstackClusterInfo(); o != nil {
-		if g := o.GetKollaPasswords(); g != nil {
-			k = g.GetKeyValuePair()
-			for _, keyValuePair := range k {
-				switch keyValuePair.Key {
-				case "keystone_admin_user":
-					adminUser = keyValuePair.Value
-				case "keystone_admin_password":
-					adminPassword = keyValuePair.Value
-				}
-			}
-		}
-	}
-
-	if adminUser == "" {
-		adminUser = defaultAdminUser
-	}
-	if adminPassword == "" {
-		adminPassword = defaultAdminPassword
-	}
-
-	return adminUser, adminPassword
+	return e.ClusterData.KeystoneAdminCredential()
 }
 
 func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]string) {
