@@ -22,6 +22,12 @@
                 ports:
                   - 22
                   - 443
+            - name: default-wan-udp-virtual_cloud_uuid
+              allow:
+                protocol: udp
+                ports:
+                  - 500
+                  - 4500
             - name: default-wan-vrrp-virtual_cloud_uuid
               allow:
                 protocol: 112
