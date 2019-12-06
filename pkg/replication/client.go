@@ -128,9 +128,7 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 	var projectID string
 	ctx := auth.WithXClusterID(context.Background(), clusterID)
 	if apiClient.Scope.Project.Name == "" && apiClient.Scope.Project.ID == "" {
-		projectID, err = apiClient.Keystone.GetProjectIDByName(
-			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
-			apiClient.Scope.Project.Domain)
+		projectID, err = h.getProjectIDByName(ctx, apiClient)
 		if err == nil {
 			apiClient.Scope = kstypes.NewScope(
 				kstypes.DefaultDomainID, kstypes.DefaultDomainName,
@@ -143,6 +141,19 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 	var authKey interface{} = "auth"
 	ctx = context.WithValue(ctx, authKey, varCtx)
 	return ctx
+}
+
+func (h *vncAPIHandle) getProjectIDByName(ctx context.Context, apiClient *client.HTTP) (string, error) {
+	token, err := apiClient.Keystone.ObtainUnscopedToken(
+		ctx, apiClient.ID, apiClient.Password, apiClient.Scope.Project.Domain,
+	)
+	if err != nil {
+		return "", err
+	}
+	ctx = kstypes.WithXAuthToken(ctx, token)
+	return apiClient.Keystone.GetProjectIDByName(
+		ctx, defaultProjectName, apiClient.Scope.Project.Domain,
+	)
 }
 
 // UpdateClient updates client for given endpoint.
