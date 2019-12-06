@@ -1,0 +1,268 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bbd33881_d2d5efcb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "which*",
+      "range": {
+        "startLine": 12,
+        "startChar": 25,
+        "endLine": 12,
+        "endChar": 30
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86ca6ebc_e9be8b02",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "logic*",
+      "range": {
+        "startLine": 15,
+        "startChar": 10,
+        "endLine": 15,
+        "endChar": 16
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81c0404a_16521f34",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "fake terraform state",
+      "range": {
+        "startLine": 17,
+        "startChar": 6,
+        "endLine": 17,
+        "endChar": 26
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "18e0eb11_c7314aa9",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "Redundant new line",
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fa3e234e_f6cff179",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "593f086b_c9fdbc2d",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "It\u0027s not a proper interface name.\nhttps://golang.org/doc/effective_go.html#interface-names",
+      "range": {
+        "startLine": 12,
+        "startChar": 5,
+        "endLine": 12,
+        "endChar": 19
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e3e9955e_57d65139",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "Instead of adding is as a new field you could embed this type or just make\ntype cloudTfState terraform.State",
+      "range": {
+        "startLine": 29,
+        "startChar": 1,
+        "endLine": 29,
+        "endChar": 25
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f286472e_a6d20ce7",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "This is more like a method of instanceData type.",
+      "range": {
+        "startLine": 28,
+        "startChar": 5,
+        "endLine": 28,
+        "endChar": 14
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ace86561_b7c9699d",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "Move your const gateway out from test and move it here.",
+      "range": {
+        "startLine": 30,
+        "startChar": 13,
+        "endLine": 30,
+        "endChar": 22
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9eaf3e66_e73ab86a",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "Same as line 30.",
+      "range": {
+        "startLine": 97,
+        "startChar": 15,
+        "endLine": 97,
+        "endChar": 21
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c33887f_e24b47b9",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "Please follow the instructions about sorting imports in review.md",
+      "range": {
+        "startLine": 8,
+        "startChar": 1,
+        "endLine": 14,
+        "endChar": 43
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f2b7f485_d527ace7",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-06T14:39:06Z",
+      "side": 1,
+      "message": "There is already const \u0027onPrem\u0027 for this value in cloud package",
+      "range": {
+        "startLine": 107,
+        "startChar": 1,
+        "endLine": 107,
+        "endChar": 28
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
