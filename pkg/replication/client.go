@@ -2,7 +2,6 @@ package replication
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -36,12 +34,12 @@ const (
 type vncAPIHandle struct {
 	APIServer     *client.HTTP
 	clients       map[string]*vncAPI
-	endpointStore *endpoint.Store
+	endpointStore EndpointStore
 	log           *logrus.Entry
 	auth          *keystone.Keystone
 }
 
-func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHandle {
+func newVncAPIHandle(epStore EndpointStore, auth *keystone.Keystone) *vncAPIHandle {
 	return &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
@@ -65,7 +63,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 	if authType != basicAuth {
 		config.Scope = &kstypes.Scope{Project: &kstypes.Project{Domain: kstypes.DefaultDomain()}}
 		// get keystone endpoint
-		var e *endpoint.Endpoint
+		var e *Endpoint
 		e, err = h.readAuthEndpoint(ep.ParentUUID)
 		if err != nil {
 			h.log.Warnf("VNC API client not prepared for %s, %v", ep.ParentUUID, err)
@@ -95,7 +93,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 	h.log.Debugf("Created VNC API client for endpoint: %s", ep.UUID)
 }
 
-func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoint.Endpoint, err error) {
+func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *Endpoint, err error) {
 	// retry 5 times at interval of 2 seconds
 	// config endpoints are created before keystone
 	// endpoints
@@ -103,16 +101,11 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 		// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 		endpointKey := strings.Join(
 			[]string{"/proxy", clusterID, keystoneService, scope}, "/")
-		keystoneTargets := h.endpointStore.Read(endpointKey)
-		if keystoneTargets == nil {
-			err = fmt.Errorf("keystone targets not found for: %s", endpointKey)
+		s, err := h.endpointStore.GetAuthEndpoint(scope, endpointKey)
+		if err != nil {
 			return true, err
 		}
-		authEndpoint = keystoneTargets.Next(scope)
-		if authEndpoint == nil {
-			err = fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
-			return true, err
-		}
+		authEndpoint = newEndpointFromString(s)
 		return false, nil
 	}, retry.WithLog(logrus.StandardLogger()),
 		retry.WithInterval(proxySyncInterval)); err != nil {

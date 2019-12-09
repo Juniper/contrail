@@ -17,7 +17,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -431,7 +430,7 @@ func neutronPortsPrivatePath(clusterName string) string {
 		apisrv.DefaultDynamicProxyPath,
 		contrailClusterUUID(clusterName),
 		neutronEndpointPrefix,
-		endpoint.PrivateURLScope,
+		apisrv.PrivateURLScope,
 		portsPath,
 	)
 }
@@ -452,7 +451,7 @@ func swiftPrivatePath(clusterName string) string {
 		apisrv.DefaultDynamicProxyPath,
 		contrailClusterUUID(clusterName),
 		swiftEndpointPrefix,
-		endpoint.PrivateURLScope,
+		apisrv.PrivateURLScope,
 		portsPath,
 	)
 }
