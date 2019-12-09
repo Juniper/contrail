@@ -16,7 +16,6 @@ import (
 	"github.com/Juniper/asf/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/config"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
@@ -33,17 +32,25 @@ const (
 	keystoneAuth     = "keystone"
 	keystoneService  = "keystone"
 	openstack        = "openstack"
+	privateURLScope  = "private"
 	xAuthTokenKey    = "X-Auth-Token"
 	xSubjectTokenKey = "X-Subject-Token"
 	xClusterIDKey    = "X-Cluster-ID"
 )
+
+type endpointStore interface {
+	GetUsername(prefix string, endpointKey string) string
+	GetPassword(prefix string, endpointKey string) string
+	GetEndpointURL(clusterID, prefix string) (string, bool)
+	GetEndpointURLs(prefix string, endpointKey string) []string
+}
 
 //Keystone is used to represents Keystone Controller.
 type Keystone struct {
 	store            Store
 	Assignment       Assignment
 	staticAssignment *StaticAssignment
-	endpointStore    *endpoint.Store
+	endpointStore    endpointStore
 	apiClient        *client.HTTP
 
 	log *logrus.Entry
@@ -51,7 +58,7 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
+func Init(e *echo.Echo, es endpointStore) (*Keystone, error) {
 	keystone := &Keystone{
 		endpointStore: es,
 		apiClient:     client.NewHTTPFromConfig(),
@@ -91,7 +98,7 @@ func (k *Keystone) GetProjectAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
 		c.Request().URL.Path = path.Join(c.Request().URL.Path, c.Param("id"))
-		return k.proxyRequest(c, ke)
+		return k.proxyRequest(c)
 	}
 
 	token, err := k.validateToken(c.Request())
@@ -111,17 +118,30 @@ func (k *Keystone) GetProjectAPI(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, nil)
 }
 
-func (k *Keystone) proxyRequest(c echo.Context, endpoints []*endpoint.Endpoint) error {
+func (k *Keystone) proxyRequest(c echo.Context) error {
 	r := c.Request()
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, LocalAuthPath)
-	return proxy.HandleRequest(c, rawAuthURLs(endpoints), k.log)
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	ke := getKeystoneEndpoints(clusterID, k.endpointStore)
+	return proxy.HandleRequest(c, rawAuthURLs(ke), k.log)
+}
+
+func rawAuthURLs(urls []string) (u []string) {
+	for _, url := range urls {
+		u = append(u, withAPIVersionSuffix(url))
+	}
+	return
+}
+
+func withAPIVersionSuffix(url string) string {
+	return fmt.Sprintf("%s/%s", url, authAPIVersion)
 }
 
 //listDomainsAPI is an API handler to list domains.
 func (k *Keystone) listDomainsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
-		return k.proxyRequest(c, ke)
+		return k.proxyRequest(c)
 	}
 
 	_, err := k.validateToken(c.Request())
@@ -143,7 +163,7 @@ func (k *Keystone) listDomainsAPI(c echo.Context) error {
 func (k *Keystone) ListProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
-		return k.proxyRequest(c, ke)
+		return k.proxyRequest(c)
 	}
 
 	token, err := k.validateToken(c.Request())
@@ -199,21 +219,20 @@ func (k *Keystone) setAssignment(clusterID string) (configEndpoint string, err e
 	if authType != basicAuth {
 		return "", nil
 	}
-	e := k.endpointStore.GetEndpoint(clusterID, configService)
-	if e == nil {
+	e, ok := k.endpointStore.GetEndpointURL(clusterID, configService)
+	if !ok {
 		k.Assignment = k.staticAssignment
 		return "", nil
 	}
-	configEndpoint = e.URL
 	apiAssignment := &VNCAPIAssignment{}
 	err = apiAssignment.Init(
-		configEndpoint, k.staticAssignment.ListUsers())
+		e, k.staticAssignment.ListUsers())
 	if err != nil {
 		logrus.Error(err)
-		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
+		return e, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	k.Assignment = apiAssignment
-	return configEndpoint, nil
+	return e, nil
 }
 
 // GetAuthType from the cluster configuration
@@ -241,30 +260,31 @@ func (k *Keystone) CreateTokenAPI(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 
-	ke := getKeystoneEndpoints(c.Request().Header.Get(xClusterIDKey), k.endpointStore)
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	endpointKey := path.Join("/proxy", clusterID, keystoneService, privateURLScope)
+	ke := getKeystoneEndpoints(clusterID, k.endpointStore)
 	if sar.GetIdentity().Cluster != nil {
 		if len(ke) == 0 {
 			return k.createLocalToken(c, k.newLocalAuthRequest())
 		}
-		return k.fetchServerTokenWithClusterToken(c, sar.GetIdentity(), ke)
+		return k.fetchServerTokenWithClusterToken(c, sar.GetIdentity())
 	}
 
 	if len(ke) > 0 {
-		return k.fetchClusterToken(c, sar, ke)
+		return k.fetchClusterToken(c, sar, privateURLScope, endpointKey)
 	}
 
 	return k.createLocalToken(c, sar)
 }
 
 func (k *Keystone) fetchServerTokenWithClusterToken(
-	c echo.Context, i *keystone.Identity, ke []*endpoint.Endpoint,
-) error {
+	c echo.Context, i *keystone.Identity) error {
 	if i.Cluster.Token != nil {
 		c.Request().Header.Set(xAuthTokenKey, i.Cluster.Token.ID)
 		c.Request().Header.Set(xSubjectTokenKey, i.Cluster.Token.ID)
 	}
 
-	return k.proxyRequest(c, ke)
+	return k.proxyRequest(c)
 }
 
 func (k *Keystone) newLocalAuthRequest() keystone.AuthRequest {
@@ -292,7 +312,7 @@ func (k *Keystone) newLocalAuthRequest() keystone.AuthRequest {
 	return authRequest
 }
 
-func (k *Keystone) fetchClusterToken(c echo.Context, sar keystone.AuthRequest, ke []*endpoint.Endpoint) error {
+func (k *Keystone) fetchClusterToken(c echo.Context, sar keystone.AuthRequest, scope string, endpointKey string) error {
 	// TODO(dfurman): prevent panic: use fields without pointers in models and/or provide getters with nil checks
 	if sar.GetIdentity().Password != nil {
 		if sar.GetScope() == nil {
@@ -312,13 +332,12 @@ func (k *Keystone) fetchClusterToken(c echo.Context, sar keystone.AuthRequest, k
 			if !ok {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 			}
-
-			sar.SetCredential(ke[0].Username, ke[0].Password)
+			sar.SetCredential(k.endpointStore.GetUsername(scope, endpointKey), k.endpointStore.GetPassword(scope, endpointKey))
 		}
 	}
 
 	c = withRequestBody(c, sar)
-	return k.proxyRequest(c, ke)
+	return k.proxyRequest(c)
 }
 
 func withRequestBody(c echo.Context, ar keystone.AuthRequest) echo.Context {
@@ -405,7 +424,7 @@ func filterProject(user *keystone.User, scope *keystone.Scope) (*keystone.Projec
 func (k *Keystone) ValidateTokenAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	if ke := getKeystoneEndpoints(clusterID, k.endpointStore); len(ke) > 0 {
-		return k.proxyRequest(c, ke)
+		return k.proxyRequest(c)
 	}
 
 	tokenID := c.Request().Header.Get(xAuthTokenKey)
@@ -422,29 +441,12 @@ func (k *Keystone) ValidateTokenAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, validateTokenResponse)
 }
 
-func getKeystoneEndpoints(clusterID string, es *endpoint.Store) []*endpoint.Endpoint {
+func getKeystoneEndpoints(clusterID string, es endpointStore) []string {
 	if es == nil {
 		// getKeystoneEndpoints called from CreateTokenAPI, ValidateTokenAPI or GetProjectAPI of the mock keystone
 		return nil
 	}
 
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
-	ts := es.Read(path.Join("/proxy", clusterID, keystoneService, endpoint.PrivateURLScope))
-	if ts == nil {
-		return nil
-	}
-
-	return ts.ReadAll(endpoint.PrivateURLScope)
-}
-
-func rawAuthURLs(targets []*endpoint.Endpoint) []string {
-	var u []string
-	for _, target := range targets {
-		u = append(u, withAPIVersionSuffix(target.URL))
-	}
-	return u
-}
-
-func withAPIVersionSuffix(url string) string {
-	return fmt.Sprintf("%s/%s", url, authAPIVersion)
+	return es.GetEndpointURLs(privateURLScope, path.Join("/proxy", clusterID, keystoneService, privateURLScope))
 }
