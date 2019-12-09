@@ -7,8 +7,10 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/cmd/contrail"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/pkg/errors"
@@ -86,7 +88,8 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
-	s, err := apisrv.NewServer()
+	es := endpoint.NewStore()
+	s, err := apisrv.NewServer(es)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
@@ -98,6 +101,9 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 
 	if err = s.Init(); err != nil {
 		return nil, errors.Wrapf(err, "initialization of test API Server failed")
+	}
+	if _, err = contrail.StartVNCReplicator(s, es); err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	return &APIServer{

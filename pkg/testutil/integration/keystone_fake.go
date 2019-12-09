@@ -7,6 +7,7 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
+
 	"github.com/stretchr/testify/require"
 
 	kstypes "github.com/Juniper/asf/pkg/keystone"

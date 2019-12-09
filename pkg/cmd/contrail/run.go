@@ -21,6 +21,9 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/endpoint"
+	"github.com/Juniper/contrail/pkg/replication"
+
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -145,7 +148,8 @@ func startAmqpReplicator() {
 }
 
 func startServer() {
-	server, err := apisrv.NewServer()
+	es := endpoint.NewStore()
+	server, err := apisrv.NewServer(es)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
@@ -153,9 +157,26 @@ func startServer() {
 	if err = server.Init(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+	var r *replication.Replicator
+	if r, err = StartVNCReplicator(server, es); err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	defer r.Stop()
 	if err = server.Run(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+}
+
+func StartVNCReplicator(s *apisrv.Server, es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
+	vncReplicator, err = replication.New(es, s.Keystone)
+	if err != nil {
+		return nil, err
+	}
+	err = vncReplicator.Start()
+	if err != nil {
+		return nil, err
+	}
+	return vncReplicator, nil
 }
 
 func startSync() {
