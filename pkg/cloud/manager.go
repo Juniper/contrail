@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/Juniper/asf/pkg/keystone"
@@ -62,10 +63,32 @@ type terraformStateReader interface {
 	Read() (terraformState, error)
 }
 
+// CommandExecutor interface provides methods to execute a command
+type CommandExecutor interface {
+	ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+	ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error
+}
+
+// OsCommandExecutor executes commands using exec package
+type OsCommandExecutor struct{}
+
+// ExecCmdAndWait execute command provided as string
+func (e *OsCommandExecutor) ExecCmdAndWait(
+	r *report.Reporter, cmd string, args []string, dir string, envVars ...string,
+) error {
+	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
+}
+
+// ExecAndWait execute command provided as exec.Cmd object
+func (e *OsCommandExecutor) ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
+	return osutil.ExecAndWait(r, cmd)
+}
+
 // Cloud represents cloud service.
 type Cloud struct {
 	config               *Config
 	APIServer            *client.HTTP
+	commandExecutor      CommandExecutor
 	log                  *logrus.Entry
 	reporter             *report.Reporter
 	streamServer         *logutil.StreamServer
@@ -86,11 +109,11 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	return NewCloud(&c, cloudTfStateReader{c.CloudID})
+	return NewCloud(&c, cloudTfStateReader{c.CloudID}, &OsCommandExecutor{})
 }
 
 // NewCloud returns a new Cloud instance
-func NewCloud(c *Config, terraformStateReader terraformStateReader) (*Cloud, error) {
+func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExecutor) (*Cloud, error) {
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -142,6 +165,7 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader) (*Cloud, err
 			logutil.NewFileLogger("reporter", c.LogFile),
 		),
 		streamServer:         logutil.NewStreamServer(c.LogFile),
+		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
 	}, nil
