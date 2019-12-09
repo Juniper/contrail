@@ -39,6 +39,10 @@ const (
 	refUpdateAction = "ref-update"
 )
 
+type EndpointStore interface {
+	GetAuthEndpoint(scope string, endpointKey string) (*endpoint.Endpoint, error)
+}
+
 type handler interface {
 	Replicate(action, url string, data interface{}, response interface{})
 	CreateClient(e *models.Endpoint)
@@ -55,7 +59,7 @@ type Replicator struct {
 }
 
 // New initializes replication data
-func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator, error) {
+func New(epStore EndpointStore, localKeystone *keystone.Keystone) (*Replicator, error) {
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err

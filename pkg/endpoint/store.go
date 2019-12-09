@@ -1,10 +1,14 @@
 package endpoint
 
 import (
+	"errors"
+	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/sirupsen/logrus"
 )
 
 // Endpoint related constants.
@@ -146,6 +150,10 @@ func NewStore() *Store {
 	}
 }
 
+func (e *Store) Range(f func(scope, value interface{}) bool) {
+	e.Data.Range(f)
+}
+
 // Read reads endpoint targets store from memory.
 func (e *Store) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
@@ -157,9 +165,64 @@ func (e *Store) Read(endpointKey string) *TargetStore {
 	return ts
 }
 
+func (e *Store) ReadEndpoints(scope string, endpointKey string) []*Endpoint {
+
+	targetStore := e.Read(endpointKey)
+	if targetStore == nil {
+		return nil
+	}
+
+	return targetStore.ReadAll(scope)
+}
+
+func (e *Store) ReadEndpointsUrls(scope string, endpointKey string) []string {
+
+	targetStore := e.Read(endpointKey)
+	if targetStore == nil {
+		return nil
+	}
+
+	targets := targetStore.ReadAll(scope)
+
+	var u []string
+	for _, target := range targets {
+		u = append(u, target.URL)
+	}
+	return u
+}
+
+func (e *Store) InStore(scope string) bool {
+
+	_, ok := e.Data.Load(scope)
+	return ok
+}
+
 // Write writes endpoint targets store in-memory.
 func (e *Store) Write(endpointKey string, endpointStore *TargetStore) {
 	e.Data.Store(endpointKey, endpointStore)
+}
+
+func (e *Store) InitScope(scope string) {
+	targetStore := e.Read(scope)
+	if targetStore == nil {
+		e.Write(scope, NewTargetStore())
+	}
+}
+
+func (t *Store) UpdateEndpoint(scope string, endpoint *models.Endpoint) error {
+
+	targetStore := t.Read(scope)
+	if targetStore == nil {
+		return errors.New("Endpoint store for prefix is not found in-memory store")
+	}
+
+	e := targetStore.Read(endpoint.UUID)
+	if !reflect.DeepEqual(e, endpoint) {
+		// proxy endpoint not in memory store or
+		// proxy endpoint updated
+		targetStore.Write(endpoint.UUID, endpoint)
+	}
+	return nil
 }
 
 // Remove removes endpoint target store from memory.
@@ -167,17 +230,67 @@ func (e *Store) Remove(prefix string) {
 	e.Data.Delete(prefix)
 }
 
+func (e *Store) RemoveDeleted(scope, proxy interface{}, endpoints map[string]*models.Endpoint, log *logrus.Entry) bool {
+
+	s, ok := proxy.(*TargetStore)
+	if !ok {
+		log.WithField("prefix", scope).Error("Unable to read cluster's proxy data from in-memory store")
+		return true
+	}
+	s.Data.Range(func(id, endpoint interface{}) bool {
+		_, ok := endpoint.(*models.Endpoint)
+		if !ok {
+			log.WithField("id", id).Error("Unable to Read endpoint data from in-memory store")
+			return true
+		}
+		ids, ok := id.(string)
+		if !ok {
+			log.WithField("id", id).Error("Unable to convert id to string when looking endpointStore")
+			return true
+		}
+		_, ok = endpoints[ids]
+		if !ok {
+			s.Remove(ids)
+			log.WithField("id", ids).Debug("Deleting dynamic proxy endpoint")
+		}
+		return true
+	})
+	if s.Count() == 0 {
+		prefixStr, ok := scope.(string)
+		if !ok {
+			log.WithField("prefix", scope).Error("Unable to convert prefix to string")
+		}
+		e.Remove(prefixStr)
+		log.WithField("prefix", prefixStr).Debug("Deleting dynamic proxy endpoint prefix")
+	}
+	return true
+}
+
 // GetEndpoint returns endpoint.
-func (e *Store) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
+func (e *Store) GetEndpoint(clusterID, prefix string) (*Endpoint, bool) {
 	if clusterID == "" {
-		return nil
+		return nil, false
 	}
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
 	if targets == nil {
-		return nil
+		return nil, false
 	}
-	return targets.Next(PrivateURLScope)
+	return targets.Next(PrivateURLScope), true
+}
+
+func (e *Store) GetAuthEndpoint(scope string, endpointKey string) (*Endpoint, error) {
+	keystoneTargets := e.Read(endpointKey)
+	if keystoneTargets == nil {
+		err := fmt.Errorf("keystone targets not found for: %s", endpointKey)
+		return nil, err
+	}
+	authEndpoint := keystoneTargets.Next(scope)
+	if authEndpoint == nil {
+		err := fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
+		return nil, err
+	}
+	return authEndpoint, nil
 }
 
 // Endpoint represents an endpoint url with its credentials.

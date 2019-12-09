@@ -38,12 +38,22 @@ const (
 	xClusterIDKey    = "X-Cluster-ID"
 )
 
+const (
+	PublicURLScope  = "public"
+	PrivateURLScope = "private"
+)
+
+type EndpointStore interface {
+	GetEndpoint(clusterID, prefix string) (*endpoint.Endpoint, bool)
+	ReadEndpoints(scope string, endpointKey string) []*endpoint.Endpoint
+}
+
 //Keystone is used to represents Keystone Controller.
 type Keystone struct {
 	store            Store
 	Assignment       Assignment
 	staticAssignment *StaticAssignment
-	endpointStore    *endpoint.Store
+	endpointStore    EndpointStore
 	apiClient        *client.HTTP
 
 	log *logrus.Entry
@@ -51,7 +61,7 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
+func Init(e *echo.Echo, es EndpointStore) (*Keystone, error) {
 	keystone := &Keystone{
 		endpointStore: es,
 		apiClient:     client.NewHTTPFromConfig(),
@@ -199,8 +209,8 @@ func (k *Keystone) setAssignment(clusterID string) (configEndpoint string, err e
 	if authType != basicAuth {
 		return "", nil
 	}
-	e := k.endpointStore.GetEndpoint(clusterID, configService)
-	if e == nil {
+	e, ok := k.endpointStore.GetEndpoint(clusterID, configService)
+	if !ok {
 		k.Assignment = k.staticAssignment
 		return "", nil
 	}
@@ -422,19 +432,14 @@ func (k *Keystone) ValidateTokenAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, validateTokenResponse)
 }
 
-func getKeystoneEndpoints(clusterID string, es *endpoint.Store) []*endpoint.Endpoint {
+func getKeystoneEndpoints(clusterID string, es EndpointStore) []*endpoint.Endpoint {
 	if es == nil {
 		// getKeystoneEndpoints called from CreateTokenAPI, ValidateTokenAPI or GetProjectAPI of the mock keystone
 		return nil
 	}
 
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
-	ts := es.Read(path.Join("/proxy", clusterID, keystoneService, endpoint.PrivateURLScope))
-	if ts == nil {
-		return nil
-	}
-
-	return ts.ReadAll(endpoint.PrivateURLScope)
+	return es.ReadEndpoints(PrivateURLScope, path.Join("/proxy", clusterID, keystoneService, PrivateURLScope))
 }
 
 func rawAuthURLs(targets []*endpoint.Endpoint) []string {

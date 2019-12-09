@@ -2,7 +2,6 @@ package replication
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -36,12 +35,12 @@ const (
 type vncAPIHandle struct {
 	APIServer     *client.HTTP
 	clients       map[string]*vncAPI
-	endpointStore *endpoint.Store
+	endpointStore EndpointStore
 	log           *logrus.Entry
 	auth          *keystone.Keystone
 }
 
-func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHandle {
+func newVncAPIHandle(epStore EndpointStore, auth *keystone.Keystone) *vncAPIHandle {
 	return &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
@@ -103,15 +102,10 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 		// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 		endpointKey := strings.Join(
 			[]string{"/proxy", clusterID, keystoneService, scope}, "/")
-		keystoneTargets := h.endpointStore.Read(endpointKey)
-		if keystoneTargets == nil {
-			err = fmt.Errorf("keystone targets not found for: %s", endpointKey)
-			return true, err
-		}
-		authEndpoint = keystoneTargets.Next(scope)
-		if authEndpoint == nil {
-			err = fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
-			return true, err
+		var er error
+		authEndpoint, er = h.endpointStore.GetAuthEndpoint(scope, endpointKey)
+		if er != nil {
+			return true, er
 		}
 		return false, nil
 	}, retry.WithLog(logrus.StandardLogger()),
