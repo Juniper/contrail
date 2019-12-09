@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
@@ -58,7 +59,7 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 			AnsibleFetchURL:           deploy.config.AnsibleFetchURL,
 			AnsibleCherryPickRevision: deploy.config.AnsibleCherryPickRevision,
 			AnsibleRevision:           deploy.config.AnsibleRevision,
-		})
+		}, &cloud.OsCommandExecutor{})
 		if err != nil {
 			return nil, err
 		}

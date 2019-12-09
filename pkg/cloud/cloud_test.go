@@ -36,6 +36,8 @@ type fileToCopy struct {
 	destination string
 }
 
+const executedCmdTestFile = "executed_cmd.yml"
+
 // TODO: Use relative path in every test that uses absolute paths.
 func TestCreatingUpdatingPublicClouds(t *testing.T) {
 	for _, providerConfig := range []*providerConfig{
@@ -406,7 +408,7 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c)
+	cl, err := NewCloud(c, testutil.NewTestCommandExecutor(executedCommandsPath(c.CloudID)))
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl
