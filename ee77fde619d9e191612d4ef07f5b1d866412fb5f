@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "6fb60356_b64cef2a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:19:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bbd33881_d2d5efcb",
+      "range": {
+        "startLine": 12,
+        "startChar": 25,
+        "endLine": 12,
+        "endChar": 30
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "86ca6ebc_e9be8b02",
         "filename": "/COMMIT_MSG",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2019-12-06T14:39:06Z",
       "side": 1,
       "message": "logic*",
+      "range": {
+        "startLine": 15,
+        "startChar": 10,
+        "endLine": 15,
+        "endChar": 16
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b07492c_edf18655",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:19:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "86ca6ebc_e9be8b02",
       "range": {
         "startLine": 15,
         "startChar": 10,
@@ -112,6 +160,24 @@
     },
     {
       "key": {
+        "uuid": "8a9a70fe_53ce99a1",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:19:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "18e0eb11_c7314aa9",
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "fa3e234e_f6cff179",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 3
@@ -123,6 +189,24 @@
       "writtenOn": "2019-12-06T14:39:06Z",
       "side": 1,
       "message": "ditto",
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f35d216f_6838c77b",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:19:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fa3e234e_f6cff179",
       "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
