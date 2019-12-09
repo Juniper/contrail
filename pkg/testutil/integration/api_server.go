@@ -9,7 +9,9 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/replication"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -60,12 +62,13 @@ type APIServer struct {
 
 // APIServerConfig contains parameters for test API Server.
 type APIServerConfig struct {
-	CacheDB            *cache.DB
-	RepoRootPath       string
-	LogLevel           string
-	EnableEtcdNotifier bool
-	DisableLogAPI      bool
-	EnableRBAC         bool
+	CacheDB              *cache.DB
+	RepoRootPath         string
+	LogLevel             string
+	EnableEtcdNotifier   bool
+	DisableLogAPI        bool
+	EnableRBAC           bool
+	EnableVNCReplication bool
 }
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.
@@ -86,7 +89,8 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
-	s, err := apisrv.NewServer()
+	es := endpoint.NewStore()
+	s, err := apisrv.NewServer(es)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
@@ -98,6 +102,12 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 
 	if err = s.Init(); err != nil {
 		return nil, errors.Wrapf(err, "initialization of test API Server failed")
+	}
+
+	if c.EnableVNCReplication {
+		if _, err = startVNCReplicator(s, es); err != nil {
+			return nil, errors.WithStack(err)
+		}
 	}
 
 	return &APIServer{
@@ -208,6 +218,18 @@ func setViper(config map[string]interface{}) {
 	for k, v := range config {
 		viper.SetDefault(k, v)
 	}
+}
+
+func startVNCReplicator(s *apisrv.Server, es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
+	vncReplicator, err = replication.New(es, s.Keystone)
+	if err != nil {
+		return nil, err
+	}
+	err = vncReplicator.Start()
+	if err != nil {
+		return nil, err
+	}
+	return vncReplicator, nil
 }
 
 // URL returns server base URL.
