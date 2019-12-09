@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "67259fdd_87de28a6",
+        "filename": "pkg/cloud/configs/public_cloud_topology.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 53
+      },
+      "writtenOn": "2019-12-09T15:10:05Z",
+      "side": 1,
+      "message": "Dont understand this need in GCP while the bug is filed for Azure WESTUS2 region only.",
+      "range": {
+        "startLine": 56,
+        "startChar": 20,
+        "endLine": 56,
+        "endChar": 27
+      },
+      "revId": "c0e5c52049878761a3f29649204f0c27d52f5b3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
