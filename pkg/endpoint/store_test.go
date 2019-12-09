@@ -32,7 +32,7 @@ func TestTargetStoreWriteRead(t *testing.T) {
 			ts := NewTargetStore()
 			ts.Write(fooID, fooE)
 
-			e := ts.Read(tt.id)
+			e := ts.Get(tt.id)
 
 			assert.Equal(t, tt.expected, e)
 		})
@@ -100,7 +100,7 @@ func TestTargetStoreReadAll(t *testing.T) {
 			ts.Write("bar", barE)
 			ts.Write("spock", spockE)
 
-			targets := ts.ReadAll(tt.scope)
+			targets := ts.GetAll(tt.scope)
 
 			assert.Len(t, targets, len(tt.expected))
 			for _, target := range targets {

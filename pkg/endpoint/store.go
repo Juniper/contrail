@@ -1,10 +1,14 @@
 package endpoint
 
 import (
+	"errors"
+	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/sirupsen/logrus"
 )
 
 // Endpoint related constants.
@@ -27,8 +31,8 @@ func NewTargetStore() *TargetStore {
 	}
 }
 
-// Read endpoint target from memory.
-func (t *TargetStore) Read(id string) *models.Endpoint {
+// Get endpoint target from memory.
+func (t *TargetStore) Get(id string) *models.Endpoint {
 	rawE, ok := t.Data.Load(id)
 	if !ok {
 		return nil
@@ -40,9 +44,9 @@ func (t *TargetStore) Read(id string) *models.Endpoint {
 	return e
 }
 
-// ReadAll reads all endpoint targets from target store using given scope.
+// GetAll reads all endpoint targets from target store using given scope.
 // Order of returned targets is not deterministic.
-func (t *TargetStore) ReadAll(scope string) (targets []*Endpoint) {
+func (t *TargetStore) GetAll(scope string) (targets []*Endpoint) {
 	if scope != PublicURLScope && scope != PrivateURLScope {
 		return nil
 	}
@@ -137,18 +141,58 @@ func (t *TargetStore) Count() int {
 // Store is used to store cluster specific endpoint targets store in-memory.
 type Store struct {
 	Data *sync.Map
+	log  *logrus.Entry
 }
 
 // NewStore returns new Store.
 func NewStore() *Store {
 	return &Store{
 		Data: new(sync.Map),
+		log:  logutil.NewLogger("endpoint-store"),
 	}
 }
 
-// Read reads endpoint targets store from memory.
-func (e *Store) Read(endpointKey string) *TargetStore {
-	p, ok := e.Data.Load(endpointKey)
+// RemoveDeleted removes all endpoints that do not match the given ones.
+func (s *Store) RemoveDeleted(endpoints map[string]*models.Endpoint) {
+	s.Data.Range(func(prefix, targetStore interface{}) bool {
+		ts, ok := targetStore.(*TargetStore)
+		if !ok {
+			s.log.WithField("prefix", prefix).Error("Unable to read cluster's proxy data from in-memory store")
+			return true
+		}
+		ts.Data.Range(func(id, endpoint interface{}) bool {
+			_, ok := endpoint.(*models.Endpoint)
+			if !ok {
+				s.log.WithField("id", id).Error("Unable to Read endpoint data from in-memory store")
+				return true
+			}
+			ids, ok := id.(string)
+			if !ok {
+				s.log.WithField("id", id).Error("Unable to convert id to string when looking endpointStore")
+				return true
+			}
+			_, ok = endpoints[ids]
+			if !ok {
+				ts.Remove(ids)
+				s.log.WithField("id", ids).Debug("Deleting dynamic proxy endpoint")
+			}
+			return true
+		})
+		if ts.Count() == 0 {
+			prefixStr, ok := prefix.(string)
+			if !ok {
+				s.log.WithField("prefix", prefix).Error("Unable to convert prefix to string")
+			}
+			s.Remove(prefixStr)
+			s.log.WithField("prefix", prefixStr).Debug("Deleting dynamic proxy endpoint prefix")
+		}
+		return true
+	})
+}
+
+// Get reads endpoint targets store from memory.
+func (s *Store) Get(endpointKey string) *TargetStore {
+	p, ok := s.Data.Load(endpointKey)
 	if !ok {
 		return nil
 	}
@@ -157,27 +201,88 @@ func (e *Store) Read(endpointKey string) *TargetStore {
 	return ts
 }
 
+func (s *Store) getEndpoints(prefix string, endpointKey string) []*Endpoint {
+	targetStore := s.Get(endpointKey)
+	if targetStore == nil {
+		return nil
+	}
+	return targetStore.GetAll(prefix)
+}
+
+// GetUsername reads the username of the first endpoint target of the given store.
+func (s *Store) GetUsername(prefix string, endpointKey string) string {
+	targets := s.getEndpoints(prefix, endpointKey)
+	if len(targets) == 0 {
+		return ""
+	}
+	return targets[0].Username
+}
+
+// GetPassword reads the password of the first endpoint target of the given store.
+func (s *Store) GetPassword(prefix string, endpointKey string) string {
+	targets := s.getEndpoints(prefix, endpointKey)
+	if len(targets) == 0 {
+		return ""
+	}
+	return targets[0].Password
+}
+
+// GetEndpointURLs reads the urls of endpoint targets of the given store.
+func (s *Store) GetEndpointURLs(prefix string, endpointKey string) []string {
+	var u []string
+	for _, target := range s.getEndpoints(prefix, endpointKey) {
+		u = append(u, target.URL)
+	}
+	return u
+}
+
+// Contains check if the prefix exists in store.
+func (s *Store) Contains(prefix string) bool {
+	_, ok := s.Data.Load(prefix)
+	return ok
+}
+
 // Write writes endpoint targets store in-memory.
-func (e *Store) Write(endpointKey string, endpointStore *TargetStore) {
-	e.Data.Store(endpointKey, endpointStore)
+func (s *Store) Write(endpointKey string, endpointStore *TargetStore) {
+	s.Data.Store(endpointKey, endpointStore)
+}
+
+// InitScope creates a new target store for a given prefix if it doesn't yet exist.
+func (s *Store) InitScope(prefix string) {
+	if s.Get(prefix) == nil {
+		s.Write(prefix, NewTargetStore())
+	}
+}
+
+// UpdateEndpoint writes endpoint target in memory if proxy endpoint not in store or updated.
+func (s *Store) UpdateEndpoint(prefix string, endpoint *models.Endpoint) error {
+	ts := s.Get(prefix)
+	if ts == nil {
+		return errors.New("endpoint store for prefix is not found in-memory store")
+	}
+	e := ts.Get(endpoint.UUID)
+	if !reflect.DeepEqual(e, endpoint) {
+		ts.Write(endpoint.UUID, endpoint)
+	}
+	return nil
 }
 
 // Remove removes endpoint target store from memory.
-func (e *Store) Remove(prefix string) {
-	e.Data.Delete(prefix)
+func (s *Store) Remove(prefix string) {
+	s.Data.Delete(prefix)
 }
 
-// GetEndpoint returns endpoint.
-func (e *Store) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
+// GetEndpointURL returns endpoint.
+func (s *Store) GetEndpointURL(clusterID, prefix string) (string, bool) {
 	if clusterID == "" {
-		return nil
+		return "", false
 	}
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
-	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
+	targets := s.Get(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
 	if targets == nil {
-		return nil
+		return "", false
 	}
-	return targets.Next(PrivateURLScope)
+	return targets.Next(PrivateURLScope).URL, true
 }
 
 // Endpoint represents an endpoint url with its credentials.
