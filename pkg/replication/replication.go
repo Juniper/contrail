@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -39,6 +38,10 @@ const (
 	refUpdateAction = "ref-update"
 )
 
+type EndpointStore interface {
+	GetAuthEndpoint(scope string, endpointKey string) (username string, password string, err error)
+}
+
 type handler interface {
 	Replicate(action, url string, data interface{}, response interface{})
 	CreateClient(e *models.Endpoint)
@@ -55,7 +58,7 @@ type Replicator struct {
 }
 
 // New initializes replication data
-func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator, error) {
+func New(epStore EndpointStore, localKeystone *keystone.Keystone) (*Replicator, error) {
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
