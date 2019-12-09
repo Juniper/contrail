@@ -1,9 +1,13 @@
 package endpoint
 
 import (
+	"errors"
+	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -146,6 +150,48 @@ func NewStore() *Store {
 	}
 }
 
+func (e *Store) Range(f func(scope, value interface{}) bool) {
+	e.Data.Range(f)
+}
+
+func (e *Store) RemoveDeleted(endpoints map[string]*models.Endpoint) {
+	log := logutil.NewLogger("endpoint-store")
+	e.Range(func(scope, proxy interface{}) bool {
+		ts, ok := proxy.(*TargetStore)
+		if !ok {
+			log.WithField("prefix", scope).Error("Unable to read cluster's proxy data from in-memory store")
+			return true
+		}
+		ts.Data.Range(func(id, endpoint interface{}) bool {
+			_, ok := endpoint.(*models.Endpoint)
+			if !ok {
+				log.WithField("id", id).Error("Unable to Read endpoint data from in-memory store")
+				return true
+			}
+			ids, ok := id.(string)
+			if !ok {
+				log.WithField("id", id).Error("Unable to convert id to string when looking endpointStore")
+				return true
+			}
+			_, ok = endpoints[ids]
+			if !ok {
+				ts.Remove(ids)
+				log.WithField("id", ids).Debug("Deleting dynamic proxy endpoint")
+			}
+			return true
+		})
+		if ts.Count() == 0 {
+			prefixStr, ok := scope.(string)
+			if !ok {
+				log.WithField("prefix", scope).Error("Unable to convert prefix to string")
+			}
+			e.Remove(prefixStr)
+			log.WithField("prefix", prefixStr).Debug("Deleting dynamic proxy endpoint prefix")
+		}
+		return true
+	})
+}
+
 // Read reads endpoint targets store from memory.
 func (e *Store) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
@@ -157,9 +203,78 @@ func (e *Store) Read(endpointKey string) *TargetStore {
 	return ts
 }
 
+func (e *Store) ReadEndpoints(scope string, endpointKey string) []*Endpoint {
+
+	targetStore := e.Read(endpointKey)
+	if targetStore == nil {
+		return nil
+	}
+
+	return targetStore.ReadAll(scope)
+}
+
+func (e *Store) ReadAuthURLs(scope string, endpointKey string, authApiVersion string) []string {
+
+	targets := e.ReadEndpoints(scope, endpointKey)
+
+	var u []string
+	for _, target := range targets {
+		u = append(u, withAPIVersionSuffix(target.URL, authApiVersion))
+	}
+	return u
+}
+
+func (e *Store) ReadUsername(scope string, endpointKey string) string {
+	targets := e.ReadEndpoints(scope, endpointKey)
+	return targets[0].Username
+}
+
+func (e *Store) ReadPassword(scope string, endpointKey string) string {
+	targets := e.ReadEndpoints(scope, endpointKey)
+	return targets[0].Password
+}
+
+func withAPIVersionSuffix(url string, authAPIVersion string) string {
+	return fmt.Sprintf("%s/%s", url, authAPIVersion)
+}
+
+func (e *Store) ReadEndpointURLs(scope string, endpointKey string) []string {
+	var u []string
+	for _, target := range e.ReadEndpoints(scope, endpointKey) {
+		u = append(u, target.URL)
+	}
+	return u
+}
+
+func (e *Store) Contains(scope string) bool {
+
+	_, ok := e.Data.Load(scope)
+	return ok
+}
+
 // Write writes endpoint targets store in-memory.
 func (e *Store) Write(endpointKey string, endpointStore *TargetStore) {
 	e.Data.Store(endpointKey, endpointStore)
+}
+
+func (e *Store) InitScope(scope string) {
+	if e.Read(scope) == nil {
+		e.Write(scope, NewTargetStore())
+	}
+}
+
+func (t *Store) UpdateEndpoint(scope string, endpoint *models.Endpoint) error {
+
+	ts := t.Read(scope)
+	if ts == nil {
+		return errors.New("endpoint store for prefix is not found in-memory store")
+	}
+
+	e := ts.Read(endpoint.UUID)
+	if !reflect.DeepEqual(e, endpoint) {
+		ts.Write(endpoint.UUID, endpoint)
+	}
+	return nil
 }
 
 // Remove removes endpoint target store from memory.
@@ -168,16 +283,16 @@ func (e *Store) Remove(prefix string) {
 }
 
 // GetEndpoint returns endpoint.
-func (e *Store) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
+func (e *Store) GetEndpointURL(clusterID, prefix string) (string, bool) {
 	if clusterID == "" {
-		return nil
+		return "", false
 	}
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
 	if targets == nil {
-		return nil
+		return "", false
 	}
-	return targets.Next(PrivateURLScope)
+	return targets.Next(PrivateURLScope).URL, true
 }
 
 // Endpoint represents an endpoint url with its credentials.
