@@ -128,6 +128,30 @@
     },
     {
       "key": {
+        "uuid": "ef6201b3_29d9a5ae",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:00:11Z",
+      "side": 1,
+      "message": "It is an interface that represents some domain object with state and now only exposes one method to access that state. Naming that per rule you pointed will produce names like `terraformStateGetter` or `terraformKeyValueGetter`, which in my opinion is not super readable, especially that this interface is returned form `terraformStateReader.Read` method. But after f2f discussion I will split `GetKeyValue` method into two methods `GetPrivateIp` and `GetPublicIp`",
+      "parentUuid": "593f086b_c9fdbc2d",
+      "range": {
+        "startLine": 12,
+        "startChar": 5,
+        "endLine": 12,
+        "endChar": 19
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e3e9955e_57d65139",
         "filename": "pkg/cloud/tf_state.go",
         "patchSetId": 3
