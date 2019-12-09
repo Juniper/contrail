@@ -21,6 +21,8 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/endpoint"
+
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -145,7 +147,8 @@ func startAmqpReplicator() {
 }
 
 func startServer() {
-	server, err := apisrv.NewServer()
+	es := endpoint.NewStore()
+	server, err := apisrv.NewServer(es)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

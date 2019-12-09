@@ -9,6 +9,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/pkg/errors"
@@ -86,7 +87,8 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
-	s, err := apisrv.NewServer()
+	es := endpoint.NewStore()
+	s, err := apisrv.NewServer(es)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
