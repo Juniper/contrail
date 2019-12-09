@@ -175,6 +175,30 @@
     },
     {
       "key": {
+        "uuid": "7c4b6b47_8b87a9b2",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:12:11Z",
+      "side": 1,
+      "message": "Embedding this or changing into type alias will expose additional interface of `terraform.State` which is not required by any clients of this class. In my opinion, it is better to keep the interface of structs as simple as possible and embedding or aliasing terraform.State will not add any value.",
+      "parentUuid": "e3e9955e_57d65139",
+      "range": {
+        "startLine": 29,
+        "startChar": 1,
+        "endLine": 29,
+        "endChar": 25
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f286472e_a6d20ce7",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 3
