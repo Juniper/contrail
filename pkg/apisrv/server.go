@@ -18,7 +18,6 @@ import (
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
@@ -166,7 +165,7 @@ func (s *Server) Init() (err error) {
 		return errors.Wrap(err, "failed to register static proxy endpoints")
 	}
 
-	endpointStore := endpoint.NewStore()
+	var endpointStore EndpointStore
 	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
@@ -183,7 +182,7 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("keystone.local") {
 		var k *keystone.Keystone
-		k, err = keystone.Init(s.Echo, endpointStore)
+		k, err = keystone.Init(s.Echo, endpointStore.GetData())
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
@@ -428,7 +427,7 @@ func (s *Server) registerStaticProxyEndpoints() error {
 	return nil
 }
 
-func (s *Server) serveDynamicProxy(es *endpoint.Store) {
+func (s *Server) serveDynamicProxy(es EndpointStore) {
 	config := loadDynamicProxyConfig()
 	s.Echo.Group(config.Path, dynamicProxyMiddleware(es, config))
 
@@ -464,8 +463,8 @@ func loadServiceUserClientConfig() *client.HTTPConfig {
 	return c
 }
 
-func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
-	s.VNCReplicator, err = replication.New(endpointStore, auth)
+func (s *Server) startVNCReplicator(endpointStore EndpointStore, auth *keystone.Keystone) (err error) {
+	s.VNCReplicator, err = replication.New(endpointStore.GetData(), auth)
 	if err != nil {
 		return err
 	}
