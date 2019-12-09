@@ -1,10 +1,13 @@
 package endpoint
 
 import (
+	"errors"
+	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/sirupsen/logrus"
 )
 
 // Endpoint related constants.
@@ -146,6 +149,14 @@ func NewStore() *Store {
 	}
 }
 
+func (e *Store) GetData() *sync.Map {
+	return e.Data
+}
+
+func (e *Store) Range(f func(scope, value interface{}) bool) {
+	e.Data.Range(f)
+}
+
 // Read reads endpoint targets store from memory.
 func (e *Store) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
@@ -157,9 +168,71 @@ func (e *Store) Read(endpointKey string) *TargetStore {
 	return ts
 }
 
+func (e *Store) ReadEndpoints(scope string, endpointKey string) [][3]string {
+
+	targetStore := e.Read(endpointKey)
+	if targetStore == nil {
+		return nil
+	}
+
+	targets := targetStore.ReadAll(scope)
+
+	var endpoints [][3]string
+	for _, target := range targets {
+		endpoint := stringFromEndpoint(target)
+		endpoints = append(endpoints, endpoint)
+	}
+	return endpoints
+}
+
+func (e *Store) ReadEndpointsUrls(scope string, endpointKey string) []string {
+
+	targetStore := e.Read(endpointKey)
+	if targetStore == nil {
+		return nil
+	}
+
+	targets := targetStore.ReadAll(scope)
+
+	var u []string
+	for _, target := range targets {
+		u = append(u, target.URL)
+	}
+	return u
+}
+
+func (e *Store) InStore(scope string) bool {
+
+	_, ok := e.Data.Load(scope)
+	return ok
+}
+
 // Write writes endpoint targets store in-memory.
 func (e *Store) Write(endpointKey string, endpointStore *TargetStore) {
 	e.Data.Store(endpointKey, endpointStore)
+}
+
+func (e *Store) InitScope(scope string) {
+	targetStore := e.Read(scope)
+	if targetStore == nil {
+		e.Write(scope, NewTargetStore())
+	}
+}
+
+func (t *Store) UpdateEndpoint(scope string, endpoint *models.Endpoint) error {
+
+	targetStore := t.Read(scope)
+	if targetStore == nil {
+		return errors.New("Endpoint store for prefix is not found in-memory store")
+	}
+
+	e := targetStore.Read(endpoint.UUID)
+	if !reflect.DeepEqual(e, endpoint) {
+		// proxy endpoint not in memory store or
+		// proxy endpoint updated
+		targetStore.Write(endpoint.UUID, endpoint)
+	}
+	return nil
 }
 
 // Remove removes endpoint target store from memory.
@@ -167,17 +240,54 @@ func (e *Store) Remove(prefix string) {
 	e.Data.Delete(prefix)
 }
 
+func (e *Store) RemoveDeleted(scope, proxy interface{}, endpoints map[string]*models.Endpoint, log *logrus.Entry) bool {
+
+	s, ok := proxy.(*TargetStore)
+	if !ok {
+		log.WithField("prefix", scope).Error("Unable to read cluster's proxy data from in-memory store")
+		return true
+	}
+	s.Data.Range(func(id, endpoint interface{}) bool {
+		_, ok := endpoint.(*models.Endpoint)
+		if !ok {
+			log.WithField("id", id).Error("Unable to Read endpoint data from in-memory store")
+			return true
+		}
+		ids, ok := id.(string)
+		if !ok {
+			log.WithField("id", id).Error("Unable to convert id to string when looking endpointStore")
+			return true
+		}
+		_, ok = endpoints[ids]
+		if !ok {
+			s.Remove(ids)
+			log.WithField("id", ids).Debug("Deleting dynamic proxy endpoint")
+		}
+		return true
+	})
+	if s.Count() == 0 {
+		prefixStr, ok := scope.(string)
+		if !ok {
+			log.WithField("prefix", scope).Error("Unable to convert prefix to string")
+		}
+		e.Remove(prefixStr)
+		log.WithField("prefix", prefixStr).Debug("Deleting dynamic proxy endpoint prefix")
+	}
+	return true
+}
+
 // GetEndpoint returns endpoint.
-func (e *Store) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
+func (e *Store) GetEndpoint(clusterID, prefix string) ([3]string, bool) {
+	var s [3]string
 	if clusterID == "" {
-		return nil
+		return s, false
 	}
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	targets := e.Read(strings.Join([]string{"/proxy", clusterID, prefix, PrivateURLScope}, "/"))
 	if targets == nil {
-		return nil
+		return s, false
 	}
-	return targets.Next(PrivateURLScope)
+	return stringFromEndpoint(targets.Next(PrivateURLScope)), true
 }
 
 // Endpoint represents an endpoint url with its credentials.
@@ -185,6 +295,10 @@ type Endpoint struct {
 	URL      string
 	Username string
 	Password string
+}
+
+func stringFromEndpoint(endpoint *Endpoint) [3]string {
+	return [3]string{endpoint.URL, endpoint.Username, endpoint.Password}
 }
 
 // NewEndpoint returns new Endpoint.
