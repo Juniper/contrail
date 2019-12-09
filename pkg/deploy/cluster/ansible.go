@@ -178,7 +178,7 @@ func (a *contrailAnsibleDeployer) fetchAnsibleDeployer() error {
 		return err
 	}
 	args = append([]string{"fetch"}, args...)
-	if err = osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
+	if err = a.cluster.commandExecutor.ExecuteCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("git fetch completed")
@@ -190,7 +190,7 @@ func (a *contrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
-	if err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
+	if err := a.cluster.commandExecutor.ExecuteCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("Cherry-pick completed")
@@ -202,7 +202,7 @@ func (a *contrailAnsibleDeployer) resetAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
-	if err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
+	if err := a.cluster.commandExecutor.ExecuteCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("Git reset completed")
@@ -489,7 +489,7 @@ func (a *contrailAnsibleDeployer) playXflowProvision() error {
 
 		command.Dir = xflowDir
 
-		if err := osutil.ExecAndWait(a.Reporter, command); err != nil {
+		if err := a.cluster.commandExecutor.ExecAndWait(a.Reporter, command); err != nil {
 			a.Log.Errorf("Error when running command in venv %s: %s", venvDir, err)
 			return err
 		}

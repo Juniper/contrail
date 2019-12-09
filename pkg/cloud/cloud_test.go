@@ -406,7 +406,7 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c)
+	cl, err := NewCloud(c, testutil.NewTestCommandExecutor())
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl
