@@ -18,11 +18,9 @@ import (
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
-	"github.com/Juniper/contrail/pkg/replication"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 	"github.com/labstack/echo"
@@ -50,6 +48,7 @@ const (
 type Server struct {
 	Echo                       *echo.Echo
 	GRPCServer                 *grpc.Server
+	endpointStore              EndpointStore
 	Keystone                   *keystone.Keystone
 	DBService                  *db.Service
 	Proxy                      *proxyService
@@ -64,14 +63,14 @@ type Server struct {
 	PropCollectionUpdateServer services.PropCollectionUpdateServer
 	Cache                      *cache.DB
 	Collector                  collector.Collector
-	VNCReplicator              *replication.Replicator
 	log                        *logrus.Entry
 }
 
 // NewServer makes a server.
-func NewServer() (*Server, error) {
+func NewServer(es EndpointStore) (*Server, error) {
 	server := &Server{
-		Echo: echo.New(),
+		Echo:          echo.New(),
+		endpointStore: es,
 	}
 	return server, nil
 }
@@ -168,8 +167,7 @@ func (s *Server) Init() (err error) {
 		return errors.Wrap(err, "failed to register static proxy endpoints")
 	}
 
-	endpointStore := endpoint.NewStore()
-	s.serveDynamicProxy(endpointStore)
+	s.serveDynamicProxy(s.endpointStore)
 
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
 	if keystoneAuthURL != "" {
@@ -184,18 +182,11 @@ func (s *Server) Init() (err error) {
 	}
 
 	if viper.GetBool("keystone.local") {
-		var k *keystone.Keystone
-		k, err = keystone.Init(s.Echo, endpointStore)
+		k, err := keystone.Init(s.Echo, s.endpointStore)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
 		s.Keystone = k
-	}
-
-	if viper.GetBool("server.enable_vnc_replication") {
-		if err = s.startVNCReplicator(endpointStore, s.Keystone); err != nil {
-			return err
-		}
 	}
 
 	if viper.GetBool("server.enable_grpc") {
@@ -430,7 +421,7 @@ func (s *Server) registerStaticProxyEndpoints() error {
 	return nil
 }
 
-func (s *Server) serveDynamicProxy(es *endpoint.Store) {
+func (s *Server) serveDynamicProxy(es EndpointStore) {
 	config := loadDynamicProxyConfig()
 	s.Echo.Group(config.Path, dynamicProxyMiddleware(es, config))
 
@@ -464,14 +455,6 @@ func loadServiceUserClientConfig() *asfclient.HTTPConfig {
 		viper.GetString("keystone.service_user.project_name"),
 	)
 	return c
-}
-
-func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
-	s.VNCReplicator, err = replication.New(endpointStore, auth)
-	if err != nil {
-		return err
-	}
-	return s.VNCReplicator.Start()
 }
 
 func (s *Server) setupHomepage() {
@@ -551,9 +534,6 @@ func (s *Server) Run() error {
 
 // Close closes Server.
 func (s *Server) Close() error {
-	if s.VNCReplicator != nil {
-		s.VNCReplicator.Stop()
-	}
 	s.Proxy.StopEndpointsSync()
 	return s.DBService.Close()
 }
