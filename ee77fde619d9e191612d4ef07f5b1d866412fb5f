@@ -71,6 +71,30 @@
     },
     {
       "key": {
+        "uuid": "58f4eecd_df248151",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:18:31Z",
+      "side": 1,
+      "message": "I mean that I used someStruct fake(in meaning that this is fake like other method of mocking in test fake/mock/stub)",
+      "parentUuid": "81c0404a_16521f34",
+      "range": {
+        "startLine": 17,
+        "startChar": 6,
+        "endLine": 17,
+        "endChar": 26
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "18e0eb11_c7314aa9",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 3
