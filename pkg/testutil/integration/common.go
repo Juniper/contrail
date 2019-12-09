@@ -62,9 +62,10 @@ func TestMain(m *testing.M, s **APIServer) {
 		}
 
 		if srv, err := NewRunningServer(&APIServerConfig{
-			RepoRootPath:       "../../..",
-			EnableEtcdNotifier: true,
-			CacheDB:            cacheDB,
+			RepoRootPath:         "../../..",
+			EnableEtcdNotifier:   true,
+			EnableVNCReplication: viper.GetBool("enable_vnc_replication"),
+			CacheDB:              cacheDB,
 		}); err != nil {
 			logutil.FatalWithStackTrace(errors.Wrap(err, "failed to initialize API Server"))
 		} else {
