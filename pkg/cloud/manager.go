@@ -57,14 +57,26 @@ type Config struct { // nolint: maligned
 	Test bool `yaml:"test"`
 }
 
+type CommandExecutor interface {
+	ExecuteAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+}
+
+type OsCommandExecutor struct {
+}
+
+func (e *OsCommandExecutor) ExecuteAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
+	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
+}
+
 // Cloud represents cloud service.
 type Cloud struct {
-	config       *Config
-	APIServer    *client.HTTP
-	log          *logrus.Entry
-	reporter     *report.Reporter
-	streamServer *logutil.StreamServer
-	ctx          context.Context
+	config          *Config
+	APIServer       *client.HTTP
+	commandExecutor CommandExecutor
+	log             *logrus.Entry
+	reporter        *report.Reporter
+	streamServer    *logutil.StreamServer
+	ctx             context.Context
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -80,11 +92,10 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	return NewCloud(&c)
+	return NewCloud(&c, &OsCommandExecutor{})
 }
 
-// NewCloud returns a new Cloud instance
-func NewCloud(c *Config) (*Cloud, error) {
+func NewCloud(c *Config, e CommandExecutor) (*Cloud, error) {
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -134,8 +145,9 @@ func NewCloud(c *Config) (*Cloud, error) {
 			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
 			logutil.NewFileLogger("reporter", c.LogFile),
 		),
-		streamServer: logutil.NewStreamServer(c.LogFile),
-		ctx:          ctx,
+		streamServer:    logutil.NewStreamServer(c.LogFile),
+		commandExecutor: e,
+		ctx:             ctx,
 	}, nil
 }
 

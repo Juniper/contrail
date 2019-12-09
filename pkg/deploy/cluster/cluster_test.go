@@ -3,13 +3,18 @@ package cluster
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil/template"
+	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/services"
@@ -70,6 +75,28 @@ const (
 	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
 	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
 )
+
+type CommandExecutorStub struct {
+}
+
+func (e *CommandExecutorStub) ExecuteCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
+	cliCommand := strings.Join(append([]string{cmd}, args...), " ")
+	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
+		"command": cliCommand,
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(workRoot+"/"+clusterID, "executed_cmd.yml"),
+		content,
+		defaultFilePermRWOnly,
+	)
+}
+func (e *CommandExecutorStub) ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
+	return errors.New("not implemented")
+}
 
 var server *integration.APIServer
 
@@ -326,7 +353,7 @@ func runClusterCreateUpdateTest(
 }
 
 func manageCluster(t *testing.T, c *Config) {
-	clusterDeployer, err := NewCluster(c)
+	clusterDeployer, err := NewCluster(c, &CommandExecutorStub{})
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -533,7 +560,7 @@ func TestXflowInBand(t *testing.T) {
 }
 
 func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
-	cluster, err := NewCluster(config)
+	cluster, err := NewCluster(config, &CommandExecutorStub{})
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := cluster.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -885,14 +912,17 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err)
 
 	config := &Config{
-		APIServer:    s,
-		ClusterID:    clusterID,
-		Action:       createAction,
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
+		APIServer:                 s,
+		ClusterID:                 clusterID,
+		Action:                    createAction,
+		LogLevel:                  "debug",
+		TemplateRoot:              "templates/",
+		WorkRoot:                  workRoot,
+		Test:                      true,
+		LogFile:                   workRoot + "/deploy.log",
+		AnsibleFetchURL:           "ansibleFetchURL",
+		AnsibleCherryPickRevision: "ansibleCherryPickRevision",
+		AnsibleRevision:           "ansibleRevision",
 	}
 
 	cloudFileCleanup := createDummyCloudFiles(t)
@@ -901,7 +931,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	removeFile(t, executedPlaybooks)
 	removeFile(t, executedMCCommand)
 
-	clusterDeployer, err := NewCluster(config)
+	clusterDeployer, err := NewCluster(config, &CommandExecutorStub{})
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -960,7 +990,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
-	clusterDeployer, err = NewCluster(config)
+	clusterDeployer, err = NewCluster(config, &CommandExecutorStub{})
 	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1062,7 +1092,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	// create cluster
 	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := NewCluster(config)
+	clusterDeployer, err := NewCluster(config, &CommandExecutorStub{})
 	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1088,7 +1118,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 	// delete cluster
 	config.Action = deleteAction
-	clusterDeployer, err = NewCluster(config)
+	clusterDeployer, err = NewCluster(config, &CommandExecutorStub{})
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
