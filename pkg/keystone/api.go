@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Juniper/asf/pkg/keystone"
@@ -51,9 +52,9 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
+func Init(e *echo.Echo, es *sync.Map) (*Keystone, error) {
 	keystone := &Keystone{
-		endpointStore: es,
+		endpointStore: &endpoint.Store{es},
 		apiClient:     client.NewHTTPFromConfig(),
 		log:           logutil.NewLogger("keystone-api"),
 	}

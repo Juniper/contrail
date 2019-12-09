@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -15,7 +14,6 @@ import (
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
@@ -34,10 +32,19 @@ const (
 	pathSeparator = "/"
 )
 
+type EndpointStore interface {
+	GetData() *sync.Map
+	InStore(endpointKey string) bool
+	ReadEndpoints(scope string, endpointKey string) []*Endpoint
+	Remove(prefix string)
+	UpdateEndpoint(endpointKey string, endpoint *models.Endpoint)
+	WriteNewTargetStore(endpointKey string)
+}
+
 // proxyService provides dynamic HTTP and WebSockets proxy capabilities.
 // TODO(dfurman): move to subpackage to improve design
 type proxyService struct {
-	endpointStore    *endpoint.Store
+	endpointStore    EndpointStore
 	dbService        services.Service
 	dynamicProxyPath string
 	stopService      context.CancelFunc
@@ -56,7 +63,7 @@ type DynamicProxyConfig struct {
 	ServiceUserClientConfig *client.HTTPConfig
 }
 
-func newProxyService(es *endpoint.Store, dbService services.Service, config *DynamicProxyConfig) *proxyService {
+func newProxyService(es EndpointStore, dbService services.Service, config *DynamicProxyConfig) *proxyService {
 	return &proxyService{
 		endpointStore:    es,
 		dbService:        dbService,
@@ -67,7 +74,7 @@ func newProxyService(es *endpoint.Store, dbService services.Service, config *Dyn
 }
 
 func dynamicProxyMiddleware(
-	es *endpoint.Store, config *DynamicProxyConfig,
+	es EndpointStore, config *DynamicProxyConfig,
 ) func(next echo.HandlerFunc) echo.HandlerFunc {
 	log := logutil.NewLogger("dynamic-proxy-mw")
 
@@ -115,31 +122,29 @@ func proxyPrefix(urlPath string, scope string) string {
 }
 
 func withNoProxyPrefix(path, pp string) string {
-	return strings.TrimPrefix(path, strings.TrimSuffix(pp, endpoint.PublicURLScope))
+	return strings.TrimPrefix(path, strings.TrimSuffix(pp, PublicURLScope))
 }
 
-func readTargets(es *endpoint.Store, scope string, proxyPrefix string) ([]*endpoint.Endpoint, error) {
-	ts := es.Read(proxyPrefix)
-	if ts == nil {
+func readTargets(es EndpointStore, scope string, proxyPrefix string) ([]*Endpoint, error) {
+
+	if !es.InStore(proxyPrefix) {
 		return nil, errors.Errorf("target store not found for given proxy prefix: %v", proxyPrefix)
 	}
-
-	targets := ts.ReadAll(scope)
+	targets := es.ReadEndpoints(scope, proxyPrefix)
 	if len(targets) == 0 {
 		return nil, errors.New("no targets in proxy target store")
 	}
-
 	return targets, nil
 }
 
 func urlScope(urlPath string) string {
-	if strings.Contains(urlPath, endpoint.PrivateURLScope) {
-		return endpoint.PrivateURLScope
+	if strings.Contains(urlPath, PrivateURLScope) {
+		return PrivateURLScope
 	}
-	return endpoint.PublicURLScope
+	return PublicURLScope
 }
 
-func rawTargetURLs(targets []*endpoint.Endpoint) []string {
+func rawTargetURLs(targets []*Endpoint) []string {
 	var u []string
 	for _, target := range targets {
 		u = append(u, target.URL)
@@ -254,15 +259,15 @@ func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint)
 	for _, e := range endpoints {
 		p.initProxyTargetStore(e)
 		if e.PublicURL != "" {
-			p.manageProxyEndpoint(e, endpoint.PublicURLScope)
-			p.manageProxyEndpoint(e, endpoint.PrivateURLScope)
+			p.manageProxyEndpoint(e, PublicURLScope)
+			p.manageProxyEndpoint(e, PrivateURLScope)
 		}
 	}
 }
 
 func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
-	p.endpointStore.Data.Range(func(prefix, proxy interface{}) bool {
-		s, ok := proxy.(*endpoint.TargetStore)
+	p.endpointStore.GetData().Range(func(prefix, proxy interface{}) bool {
+		s, ok := proxy.(*TargetStore)
 		if !ok {
 			p.log.WithField("prefix", prefix).Error("Unable to read cluster's proxy data from in-memory store")
 			return true
@@ -299,31 +304,21 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 
 func (p *proxyService) initProxyTargetStore(e *models.Endpoint) {
 	if e.PublicURL != "" {
-		proxyPrefix := p.getProxyPrefix(e, endpoint.PublicURLScope)
-		targetStore := p.endpointStore.Read(proxyPrefix)
-		if targetStore == nil {
-			p.endpointStore.Write(proxyPrefix, endpoint.NewTargetStore())
-		}
-		privateProxyPrefix := p.getProxyPrefix(e, endpoint.PrivateURLScope)
-		privateTargetStore := p.endpointStore.Read(privateProxyPrefix)
-		if privateTargetStore == nil {
-			p.endpointStore.Write(privateProxyPrefix, endpoint.NewTargetStore())
-		}
+		proxyPrefix := p.getProxyPrefix(e, PublicURLScope)
+		p.endpointStore.WriteNewTargetStore(proxyPrefix)
+
+		privateProxyPrefix := p.getProxyPrefix(e, PrivateURLScope)
+		p.endpointStore.WriteNewTargetStore(privateProxyPrefix)
 	}
 }
 
 func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope string) {
 	proxyPrefix := p.getProxyPrefix(endpoint, scope)
-	s := p.endpointStore.Read(proxyPrefix)
-	if s == nil {
-		p.log.WithField("prefix", proxyPrefix).Error("Endpoint store for prefix is not found in-memory store")
-	}
 
-	e := s.Read(endpoint.UUID)
-	if !reflect.DeepEqual(e, endpoint) {
-		// proxy endpoint not in memory store or
-		// proxy endpoint updated
-		s.Write(endpoint.UUID, endpoint)
+	if !p.endpointStore.InStore(proxyPrefix) {
+		p.log.WithField("prefix", proxyPrefix).Error("Endpoint store for prefix is not found in-memory store")
+	} else {
+		p.endpointStore.UpdateEndpoint(proxyPrefix, endpoint)
 	}
 }
 

@@ -55,7 +55,7 @@ type Replicator struct {
 }
 
 // New initializes replication data
-func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator, error) {
+func New(epStore *sync.Map, localKeystone *keystone.Keystone) (*Replicator, error) {
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator
 
 	return &Replicator{
 		serviceWaitGroup: &sync.WaitGroup{},
-		handler:          newVncAPIHandle(epStore, localKeystone),
+		handler:          newVncAPIHandle(&endpoint.Store{epStore}, localKeystone),
 		log:              logutil.NewLogger("vnc_replication"),
 	}, nil
 }
