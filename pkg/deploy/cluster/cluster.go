@@ -4,6 +4,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/models"
@@ -42,17 +43,19 @@ type Config struct {
 
 // Cluster represents contrail cluster manager
 type Cluster struct {
-	config    *Config
-	APIServer *client.HTTP
-	log       *logrus.Entry
+	config          *Config
+	APIServer       *client.HTTP
+	log             *logrus.Entry
+	commandExecutor cloud.CommandExecutor
 }
 
 // NewCluster creates Cluster with given configuration.
-func NewCluster(c *Config) (*Cluster, error) {
+func NewCluster(c *Config, commandExecutor cloud.CommandExecutor) (*Cluster, error) {
 	return &Cluster{
-		config:    c,
-		APIServer: c.APIServer,
-		log:       logutil.NewFileLogger("cluster", c.LogFile),
+		config:          c,
+		APIServer:       c.APIServer,
+		log:             logutil.NewFileLogger("cluster", c.LogFile),
+		commandExecutor: commandExecutor,
 	}, nil
 }
 

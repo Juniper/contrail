@@ -104,7 +104,7 @@ func (m *multiCloudProvisioner) deploy() error {
 		return nil
 	}
 
-	if pa == addCloud && !m.cluster.config.Test {
+	if pa == addCloud {
 		if m.cluster.config.AnsibleFetchURL != "" {
 			if err := m.fetchAnsibleDeployer(); err != nil {
 				return err
@@ -396,29 +396,12 @@ func (m *multiCloudProvisioner) provision() error {
 	if m.clusterData.ClusterInfo.ProvisioningAction == updateCloud {
 		args = append(args, "--update")
 	}
-	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
-		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
-	}
+
 	vars := []string{
 		fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK")),
 		fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID")),
 	}
-	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
-}
-
-func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
-	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
-		"command": cliCommand,
-	})
-	if err != nil {
-		return err
-	}
-
-	return fileutil.AppendToFile(
-		filepath.Join(m.contrailAnsibleDeployer.ansibleClient.WorkingDirectory(), "executed_cmd.yml"),
-		content,
-		defaultFilePermRWOnly,
-	)
+	return m.cluster.commandExecutor.ExecuteCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
@@ -429,11 +412,8 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
 		"--state", filepath.Join(mcRepoDir, "state.yml"),
 	}
-	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
-		return m.mockCLI(strings.Join(append([]string{cmd}, args...), " "))
-	}
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
+	return m.cluster.commandExecutor.ExecuteCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {

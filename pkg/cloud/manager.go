@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/Juniper/asf/pkg/keystone"
@@ -57,14 +58,35 @@ type Config struct { // nolint: maligned
 	Test bool `yaml:"test"`
 }
 
+// CommandExecutor interface provides methods to execute a command
+type CommandExecutor interface {
+	ExecuteCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+	ExecuteAndWait(r *report.Reporter, cmd *exec.Cmd) error
+}
+
+// OsCommandExecutor executes commands using exec package
+type OsCommandExecutor struct {
+}
+
+// ExecuteCmdAndWait execute command provided as string
+func (e *OsCommandExecutor) ExecuteCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error {
+	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
+}
+
+// ExecuteAndWait execute command provided as exec.Cmd object
+func (e *OsCommandExecutor) ExecuteAndWait(r *report.Reporter, cmd *exec.Cmd) error {
+	return osutil.ExecAndWait(r, cmd)
+}
+
 // Cloud represents cloud service.
 type Cloud struct {
-	config       *Config
-	APIServer    *client.HTTP
-	log          *logrus.Entry
-	reporter     *report.Reporter
-	streamServer *logutil.StreamServer
-	ctx          context.Context
+	config          *Config
+	APIServer       *client.HTTP
+	commandExecutor CommandExecutor
+	log             *logrus.Entry
+	reporter        *report.Reporter
+	streamServer    *logutil.StreamServer
+	ctx             context.Context
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -80,11 +102,11 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	return NewCloud(&c)
+	return NewCloud(&c, &OsCommandExecutor{})
 }
 
 // NewCloud returns a new Cloud instance
-func NewCloud(c *Config) (*Cloud, error) {
+func NewCloud(c *Config, e CommandExecutor) (*Cloud, error) {
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -134,8 +156,9 @@ func NewCloud(c *Config) (*Cloud, error) {
 			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
 			logutil.NewFileLogger("reporter", c.LogFile),
 		),
-		streamServer: logutil.NewStreamServer(c.LogFile),
-		ctx:          ctx,
+		streamServer:    logutil.NewStreamServer(c.LogFile),
+		commandExecutor: e,
+		ctx:             ctx,
 	}, nil
 }
 
