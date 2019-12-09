@@ -2,7 +2,6 @@ package cloud
 
 import (
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/osutil"
 )
 
 func destroyTopology(c *Cloud, providers []string) error {
@@ -29,8 +28,5 @@ func updateTopology(c *Cloud, providers []string) error {
 	for _, p := range providers {
 		args = append(args, []string{"--limit", p}...)
 	}
-	if c.config.Test {
-		return TestCmdHelper(cmd, args, workDir, testTemplate)
-	}
-	return osutil.ExecCmdAndWait(c.reporter, cmd, args, workDir)
+	return c.commandExecutor.ExecCmdAndWait(c.reporter, cmd, args, workDir)
 }
