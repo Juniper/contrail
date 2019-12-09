@@ -14,7 +14,7 @@
 
 - name: "Install docker-compose"
   pip:
-    name: docker-compose
+    name: docker-compose==1.24.1
   become: yes
   become_user: root
 
