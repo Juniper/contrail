@@ -21,6 +21,10 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/endpoint"
+	"github.com/Juniper/contrail/pkg/replication"
+	"github.com/pkg/errors"
+
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -145,8 +149,15 @@ func startAmqpReplicator() {
 }
 
 func startServer() {
-	server, err := apisrv.NewServer()
+	endpointStore := endpoint.NewStore()
+	server, err := apisrv.NewServer(endpointStore)
 	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	if err = InitKeystone(server, endpointStore); err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	if err = StartVNCReplicator(server, endpointStore); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 	server.Cache = cacheDB
@@ -156,6 +167,33 @@ func startServer() {
 	if err = server.Run(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+}
+
+func InitKeystone(s *apisrv.Server, endpointStore *endpoint.Store) error {
+	if viper.GetBool("keystone.local") {
+		k := apisrv.NewKeystone()
+		err := k.Init(s.Echo, endpointStore)
+		if err != nil {
+			return errors.Wrap(err, "Failed to init local keystone server")
+		}
+		s.Keystone = k
+	}
+	return nil
+}
+
+func StartVNCReplicator(s *apisrv.Server, endpointStore *endpoint.Store) (err error) {
+	if viper.GetBool("server.enable_vnc_replication") {
+
+		s.VNCReplicator, err = replication.New(endpointStore, s.Keystone)
+		if err != nil {
+			return err
+		}
+		err = s.VNCReplicator.Start()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func startSync() {
