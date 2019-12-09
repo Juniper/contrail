@@ -260,6 +260,30 @@
     },
     {
       "key": {
+        "uuid": "b3c86e47_da835514",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ef6201b3_29d9a5ae",
+      "range": {
+        "startLine": 12,
+        "startChar": 5,
+        "endLine": 12,
+        "endChar": 19
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e3e9955e_57d65139",
         "filename": "pkg/cloud/tf_state.go",
         "patchSetId": 3
@@ -330,6 +354,30 @@
     },
     {
       "key": {
+        "uuid": "70951590_35290fc0",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f286472e_a6d20ce7",
+      "range": {
+        "startLine": 28,
+        "startChar": 5,
+        "endLine": 28,
+        "endChar": 14
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ace86561_b7c9699d",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 3
@@ -341,6 +389,30 @@
       "writtenOn": "2019-12-06T14:39:06Z",
       "side": 1,
       "message": "Move your const gateway out from test and move it here.",
+      "range": {
+        "startLine": 30,
+        "startChar": 13,
+        "endLine": 30,
+        "endChar": 22
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2511375b_e0b19241",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ace86561_b7c9699d",
       "range": {
         "startLine": 30,
         "startChar": 13,
@@ -393,6 +465,24 @@
     },
     {
       "key": {
+        "uuid": "ed0c2af9_a017b606",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c43b53d4_72d797c1",
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1c33887f_e24b47b9",
         "filename": "pkg/cloud/update_test.go",
         "patchSetId": 3
@@ -404,6 +494,30 @@
       "writtenOn": "2019-12-06T14:39:06Z",
       "side": 1,
       "message": "Please follow the instructions about sorting imports in review.md",
+      "range": {
+        "startLine": 8,
+        "startChar": 1,
+        "endLine": 14,
+        "endChar": 43
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c1628f5_6e4c0f96",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1c33887f_e24b47b9",
       "range": {
         "startLine": 8,
         "startChar": 1,
@@ -439,6 +553,30 @@
     },
     {
       "key": {
+        "uuid": "bdab5ec9_13dcb499",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "30ac0bf0_7ad08340",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 1
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f2b7f485_d527ace7",
         "filename": "pkg/cloud/update_test.go",
         "patchSetId": 3
@@ -450,6 +588,30 @@
       "writtenOn": "2019-12-06T14:39:06Z",
       "side": 1,
       "message": "There is already const \u0027onPrem\u0027 for this value in cloud package",
+      "range": {
+        "startLine": 107,
+        "startChar": 1,
+        "endLine": 107,
+        "endChar": 28
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81b4ddd8_e3911dba",
+        "filename": "pkg/cloud/update_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:45:41Z",
+      "side": 1,
+      "message": "Maybe there is such const for that value but this const purpose is for naming \"private\" value with regard to the context of that test and give it a meaningful name. So using onPrem const in places where privatePortName is used could be slightly misleading.",
+      "parentUuid": "f2b7f485_d527ace7",
       "range": {
         "startLine": 107,
         "startChar": 1,
