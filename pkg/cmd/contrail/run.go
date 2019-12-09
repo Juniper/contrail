@@ -21,6 +21,10 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/replication"
+	"github.com/pkg/errors"
+
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -144,9 +148,59 @@ func startAmqpReplicator() {
 	}
 }
 
+type EndpointStore interface {
+	Range(f func(scope, value interface{}) bool)
+	InStore(scope string) bool
+	ReadEndpointsUrls(scope string, endpointKey string) []string
+	Remove(scope string)
+	UpdateEndpoint(scope string, endpoint *models.Endpoint) error
+	InitScope(scope string)
+	RemoveDeleted(scope, value interface{}, endpoints map[string]*models.Endpoint, log *logrus.Entry) bool
+	GetEndpoints(scope string, endpointKey string) bool
+	ReadAuthURLs(scope string, endpointKey string, authApiVersion string) []string
+	ReadUsername(scope string, endpointKey string) string
+	ReadPassword(scope string, endpointKey string) string
+	GetAuthEndpoint(scope string, endpointKey string) (username string, password string, err error)
+	GetEndpointUrl(clusterID, prefix string) (string, bool)
+}
+
+func initKeystone(s *apisrv.Server, endpointStore EndpointStore) error {
+	if viper.GetBool("keystone.local") {
+		k := apisrv.NewKeystone()
+		err := k.Init(s.Echo, endpointStore)
+		if err != nil {
+			return errors.Wrap(err, "Failed to init local keystone server")
+		}
+		s.Keystone = k
+	}
+	return nil
+}
+
+func startVNCReplicator(s *apisrv.Server, endpointStore EndpointStore) (err error) {
+	if viper.GetBool("server.enable_vnc_replication") {
+
+		s.VNCReplicator, err = replication.New(endpointStore, s.Keystone)
+		if err != nil {
+			return err
+		}
+		err = s.VNCReplicator.Start()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func startServer() {
 	server, err := apisrv.NewServer()
 	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	var endpointStore EndpointStore
+	if err = initKeystone(server, endpointStore); err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	if err = startVNCReplicator(server, endpointStore); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 	server.Cache = cacheDB
