@@ -105,7 +105,7 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 		// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 		endpointKey := strings.Join(
 			[]string{"/proxy", clusterID, keystoneService, scope}, "/")
-		keystoneTargets := h.endpointStore.Read(endpointKey)
+		keystoneTargets := h.endpointStore.Get(endpointKey)
 		if keystoneTargets == nil {
 			err = fmt.Errorf("keystone targets not found for: %s", endpointKey)
 			return true, err
