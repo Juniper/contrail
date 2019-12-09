@@ -448,6 +448,30 @@
     },
     {
       "key": {
+        "uuid": "a281ef75_576641a5",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-09T14:52:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9eaf3e66_e73ab86a",
+      "range": {
+        "startLine": 97,
+        "startChar": 15,
+        "endLine": 97,
+        "endChar": 21
+      },
+      "revId": "ee77fde619d9e191612d4ef07f5b1d866412fb5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c43b53d4_72d797c1",
         "filename": "pkg/cloud/update_test.go",
         "patchSetId": 3
