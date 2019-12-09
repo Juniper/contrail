@@ -22,6 +22,30 @@
       "revId": "c0e5c52049878761a3f29649204f0c27d52f5b3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1d75590e_581cd469",
+        "filename": "pkg/cloud/configs/public_cloud_topology.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-12-09T21:34:13Z",
+      "side": 1,
+      "message": "The fact that this happened to show up with Azure was coincidental.  This blunder was the result of two problems.  The first was that the health check for the IPSEC VPN connection reports that it\u0027s healthy as long as it\u0027s in the CONNECTING state.  When the connection is made from any cloud provider to GCP, it remains in the CONNECTING state forever, because incoming connections are blocked.  This unhealthy state is not reported.\n\nThe second problem is that GCP can\u0027t receive incoming connections.  This is due to a misconfiguration of the firewall that prevents incoming IPSEC connections.  Note that a VPN connections FROM GCP to Azure (or any cloud provider) will always work... so some measure of luck is required to encounter this problem.\n\nTo make the matter even more insidious, we of course will route traffic back through the on-prem gateway if intercloud communication is compromised, so end-to-end connectivity checks are successful, though performance would likely be impacted.\n\nThis fix makes it so that it\u0027s actually possible to create an IPSEC VPN connection TO GCP.\n\nThere is a related fix to the health check done by Damian to resolve the false IPSEC health reporting.  That change may have other ramifications, so it\u0027s not currently planned for R1912.  Personally, I would like it to be, but I am glad at least the fix is in review.  If you have more questions, Damian can provide the answers.",
+      "parentUuid": "67259fdd_87de28a6",
+      "range": {
+        "startLine": 56,
+        "startChar": 20,
+        "endLine": 56,
+        "endChar": 27
+      },
+      "revId": "c0e5c52049878761a3f29649204f0c27d52f5b3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
