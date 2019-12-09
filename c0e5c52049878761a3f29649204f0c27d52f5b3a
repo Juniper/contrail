@@ -94,6 +94,30 @@
       "revId": "c0e5c52049878761a3f29649204f0c27d52f5b3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fb296ba6_8d71a1fc",
+        "filename": "pkg/cloud/configs/public_cloud_topology.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 822
+      },
+      "writtenOn": "2019-12-09T21:45:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "01c78dc7_706f1208",
+      "range": {
+        "startLine": 56,
+        "startChar": 20,
+        "endLine": 56,
+        "endChar": 27
+      },
+      "revId": "c0e5c52049878761a3f29649204f0c27d52f5b3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
