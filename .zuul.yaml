@@ -58,7 +58,7 @@
         - name: builder
           label: rhel-7-builder-xxlarge
     vars:
-      distro: 'rhel-queens-'
+      distro: '-rhel'
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
