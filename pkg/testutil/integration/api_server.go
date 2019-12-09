@@ -7,8 +7,10 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/cmd/contrail"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/pkg/errors"
@@ -86,9 +88,16 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
+	endpointStore := endpoint.NewStore()
 	s, err := apisrv.NewServer()
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
+	}
+	if err = contrail.InitKeystone(s, endpointStore); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if err = contrail.StartVNCReplicator(s, endpointStore); err != nil {
+		return nil, errors.WithStack(err)
 	}
 	s.Cache = c.CacheDB
 
@@ -96,7 +105,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	viper.Set("keystone.authurl", ts.URL+keystone.LocalAuthPath)
 	viper.Set("client.endpoint", ts.URL)
 
-	if err = s.Init(); err != nil {
+	if err = s.Init(endpointStore); err != nil {
 		return nil, errors.Wrapf(err, "initialization of test API Server failed")
 	}
 

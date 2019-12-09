@@ -18,7 +18,6 @@ import (
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
@@ -76,9 +75,14 @@ func NewServer() (*Server, error) {
 	return server, nil
 }
 
+func NewKeystone() *keystone.Keystone {
+	keystone := &keystone.Keystone{}
+	return keystone
+}
+
 // Init setups the Server.
 // nolint: gocyclo
-func (s *Server) Init() (err error) {
+func (s *Server) Init(endpointStore EndpointStore) (err error) {
 	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
 		return err
 	}
@@ -168,7 +172,6 @@ func (s *Server) Init() (err error) {
 		return errors.Wrap(err, "failed to register static proxy endpoints")
 	}
 
-	endpointStore := endpoint.NewStore()
 	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
@@ -181,21 +184,6 @@ func (s *Server) Init() (err error) {
 		s.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
 	} else if viper.GetBool("no_auth") {
 		s.Echo.Use(noAuthMiddleware())
-	}
-
-	if viper.GetBool("keystone.local") {
-		var k *keystone.Keystone
-		k, err = keystone.Init(s.Echo, endpointStore)
-		if err != nil {
-			return errors.Wrap(err, "Failed to init local keystone server")
-		}
-		s.Keystone = k
-	}
-
-	if viper.GetBool("server.enable_vnc_replication") {
-		if err = s.startVNCReplicator(endpointStore, s.Keystone); err != nil {
-			return err
-		}
 	}
 
 	if viper.GetBool("server.enable_grpc") {
@@ -430,7 +418,7 @@ func (s *Server) registerStaticProxyEndpoints() error {
 	return nil
 }
 
-func (s *Server) serveDynamicProxy(es *endpoint.Store) {
+func (s *Server) serveDynamicProxy(es EndpointStore) {
 	config := loadDynamicProxyConfig()
 	s.Echo.Group(config.Path, dynamicProxyMiddleware(es, config))
 
@@ -464,14 +452,6 @@ func loadServiceUserClientConfig() *asfclient.HTTPConfig {
 		viper.GetString("keystone.service_user.project_name"),
 	)
 	return c
-}
-
-func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
-	s.VNCReplicator, err = replication.New(endpointStore, auth)
-	if err != nil {
-		return err
-	}
-	return s.VNCReplicator.Start()
 }
 
 func (s *Server) setupHomepage() {
