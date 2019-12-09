@@ -11,21 +11,15 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 )
 
 const (
-	testTemplate        = "./test_data/test_cmd.tmpl"
-	executedCmdTestFile = "executed_cmd.yml"
-
 	statusRetryInterval = 3 * time.Second
 )
 
@@ -42,20 +36,6 @@ func GetMultiCloudRepodir() string {
 // GetGenInventoryCmd get generate inventory command
 func GetGenInventoryCmd(mcDir string) string {
 	return filepath.Join(mcDir, defaultGenInventoryScript)
-}
-
-// TestCmdHelper helps to write cmd to a file (instead of executing)
-func TestCmdHelper(cmd string, args []string, workDir string, testTemplate string) error {
-	content, err := template.Apply(testTemplate, pongo2.Context{
-		"cmd":  cmd,
-		"args": args,
-	})
-	if err != nil {
-		return err
-	}
-
-	destPath := filepath.Join(workDir, executedCmdTestFile)
-	return fileutil.AppendToFile(destPath, content, defaultRWOnlyPerm)
 }
 
 // GetCloud gets cloud data for a given cloud UUID

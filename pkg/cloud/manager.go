@@ -62,10 +62,16 @@ type terraformStateReader interface {
 	Read() (terraformState, error)
 }
 
+// CommandExecutor interface provides methods to execute a command
+type CommandExecutor interface {
+	ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+}
+
 // Cloud represents cloud service.
 type Cloud struct {
 	config               *Config
 	APIServer            *client.HTTP
+	commandExecutor      CommandExecutor
 	log                  *logrus.Entry
 	reporter             *report.Reporter
 	streamServer         *logutil.StreamServer
@@ -74,7 +80,7 @@ type Cloud struct {
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
-func NewCloudManager(configPath string) (*Cloud, error) {
+func NewCloudManager(configPath string, commandExecutor CommandExecutor) (*Cloud, error) {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return nil, err
@@ -86,11 +92,11 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	return NewCloud(&c, cloudTfStateReader{c.CloudID})
+	return NewCloud(&c, cloudTfStateReader{c.CloudID}, commandExecutor)
 }
 
 // NewCloud returns a new Cloud instance
-func NewCloud(c *Config, terraformStateReader terraformStateReader) (*Cloud, error) {
+func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExecutor) (*Cloud, error) {
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -142,6 +148,7 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader) (*Cloud, err
 			logutil.NewFileLogger("reporter", c.LogFile),
 		),
 		streamServer:         logutil.NewStreamServer(c.LogFile),
+		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
 	}, nil
