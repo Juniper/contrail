@@ -39,6 +39,23 @@
       "revId": "efd18e67f678edb410303087284f90e7102a5c52",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08f9c747_8289eb5c",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-10T15:02:39Z",
+      "side": 1,
+      "message": "Why this is a method of topology struct? From implementation it sounds more like pubCloud method.",
+      "revId": "efd18e67f678edb410303087284f90e7102a5c52",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

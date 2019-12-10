@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2cc7f5ab_6467b757",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-10T15:02:39Z",
+      "side": 1,
+      "message": "To the whole file \nPlease use full names ex `pubCloud` -\u003e `publicCloud`( this could at first glance be obvious that pub mean public, but `azRegion` is not anymore so obvious)",
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
