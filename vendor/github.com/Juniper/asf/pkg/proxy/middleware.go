@@ -48,7 +48,7 @@ func HandleRequest(ctx echo.Context, rawTargetURLs []string, log *logrus.Entry) 
 		rb = newResponseBuffer(ctx.Response())
 		setBody(ctx.Request(), body)
 		rp.ServeHTTP(rb, ctx.Request())
-		if rb.Status() != http.StatusBadGateway && rb.Status() != http.StatusServiceUnavailable {
+		if rb.Status() < 500 || rb.Status() > 599 {
 			break
 		}
 

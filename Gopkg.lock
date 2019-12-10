@@ -18,7 +18,8 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:ef94c16e82f0c04839631fa499a22dd069a2728bad0314437fefb575f18f9f00"
+  branch = "proxy-fix-retry-5xx"
+  digest = "1:10f5e0feda336c1b4fa075c6105bccf5d38dc918043cf66eb80b3db93ae2ed0d"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/constants",
@@ -36,7 +37,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "7a40ffba37b9b4180f4d3c9553c0ca5a809c2f40"
+  revision = "2def3d40474964a8eebbd6f9db243ad636863d17"
 
 [[projects]]
   branch = "2.x"
