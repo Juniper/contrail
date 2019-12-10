@@ -66,3 +66,18 @@ func (p *publicCloud) marshalAndSave(destination string) error {
 	}
 	return fileutil.WriteToFile(destination, marshaled, defaultRWOnlyPerm)
 }
+
+func (t *topology) marshalOnPremAndSave(topoFile string, p *onPremCloud) error {
+
+	marshaled, err := yaml.Marshal([]*onPremCloud{p})
+	if err != nil {
+		return errors.Wrapf(err, "cannot marshal topology")
+	}
+	err = fileutil.WriteToFile(topoFile, marshaled, defaultRWOnlyPerm)
+	if err != nil {
+		return err
+	}
+
+	t.log.Infof("Created topology file for cloud with uuid: %s ", t.cloudData.info.UUID)
+	return nil
+}

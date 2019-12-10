@@ -38,6 +38,7 @@ test_data:
     name: cloud_credential
     uuid: cloud_credential_uuid
     ssh_user: centos
+    ssh_password: samplepassword
     keypair_refs:
       - uuid: cloud_keypair_uuid
     parent_type: global-system-config
