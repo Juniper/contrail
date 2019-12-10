@@ -25,5 +25,5 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
-  revision = "7a40ffba37b9b4180f4d3c9553c0ca5a809c2f40"
-
+  branch = "proxy-fix-retry-5xx" # TODO(dfurman): change revision when merged
+#  revision = "7a40ffba37b9b4180f4d3c9553c0ca5a809c2f40"
