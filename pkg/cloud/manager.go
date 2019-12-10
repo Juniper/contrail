@@ -279,13 +279,18 @@ func (c *Cloud) create() error {
 	}
 
 	pubData := &publicCloud{}
+	onPremData := newOnPremCloud(c.ctx, c.APIServer, c.log)
 	if !data.isCloudPrivate() {
 		if err = pubData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
 			return err
 		}
+	} else {
+		if err = onPremData.fill(c.config.CloudID); err != nil {
+			return err
+		}
 	}
 
-	topo, secret, err := c.initialize(data)
+	secret, err := c.initialize(data)
 	if err != nil {
 		return err
 	}
@@ -294,7 +299,7 @@ func (c *Cloud) create() error {
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
 	if data.isCloudPrivate() {
-		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+		err = onPremData.marshalAndSave(GetTopoFile(c.config.CloudID))
 	} else {
 		err = pubData.marshalAndSave(GetTopoFile(c.config.CloudID))
 	}
@@ -371,11 +376,14 @@ func (c *Cloud) update() error {
 		return nil
 	}
 
-	topo := newTopology(c, data)
-
 	pubData := &publicCloud{}
+	onPremData := newOnPremCloud(c.ctx, c.APIServer, c.log)
 	if !data.isCloudPrivate() {
 		if err = pubData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
+		}
+	} else {
+		if err = onPremData.fill(c.config.CloudID); err != nil {
 			return err
 		}
 	}
@@ -392,7 +400,7 @@ func (c *Cloud) update() error {
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
 	if data.isCloudPrivate() {
-		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+		err = onPremData.marshalAndSave(GetTopoFile(c.config.CloudID))
 	} else {
 		err = pubData.marshalAndSave(GetTopoFile(c.config.CloudID))
 	}
@@ -440,17 +448,17 @@ func (c *Cloud) updatePublicCloudIP(data *Data) error {
 	return nil
 }
 
-func (c *Cloud) initialize(d *Data) (*topology, *secret, error) {
+func (c *Cloud) initialize(d *Data) (*secret, error) {
 	var secret *secret
 	var err error
 	if !d.isCloudPrivate() {
 		secret, err = c.initializeSecret(d)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	return newTopology(c, d), secret, nil
+	return secret, nil
 }
 
 func (c *Cloud) initializeSecret(d *Data) (*secret, error) {
