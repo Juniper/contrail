@@ -10,6 +10,7 @@ test_data:
     uuid: cloud_uuid_gcp
     prebuild_image_id: test-update-image-id
     organization: unit_test
+    gcp_modified: true
     cloud_user_refs:
       - uuid: cloud_user_uuid
 

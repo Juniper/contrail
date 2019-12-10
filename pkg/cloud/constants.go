@@ -34,8 +34,9 @@ const (
 	updateAction      = "update"
 	deleteCloudAction = "DELETE_CLOUD"
 
-	// AWS cloud kind
 	AWS    = "aws"
+	azure  = "azure"
+	gcp    = "gcp"
 	onPrem = "private"
 
 	defaultRWOnlyPerm = 0600

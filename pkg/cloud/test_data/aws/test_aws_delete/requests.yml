@@ -6,6 +6,7 @@ test_data:
     name: cloud
     uuid: cloud_uuid_aws
     organization: unit_test
+    aws_modified: true
     cloud_user_refs:
       - uuid: cloud_user_uuid
     provisioning_action: DELETE_CLOUD

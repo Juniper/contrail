@@ -33,9 +33,6 @@ test_data:
   cloud_user: &cloud_user
     name: cloud_user
     uuid: cloud_user_uuid
-    aws_credential:
-      access_key: XXXXXX
-      secret_key: YYYYYYYYYYY
     credential_refs:
       - uuid: cloud_credential_uuid
 
