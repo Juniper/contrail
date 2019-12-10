@@ -1,5 +1,4 @@
 - provider: onprem
-  organization: unit_test
   project:
   instances:
     - name: cloud_node_compute
@@ -8,7 +7,7 @@
       interface: cloud_node_compute_pvt_port
       provision: true
       username: centos
-      password:
+      password: samplepassword
       roles:
         - vrouter
       gateway: 2.2.2.2
@@ -18,7 +17,7 @@
       interface: cloud_node_controller_pvt_port
       provision: false
       username: centos
-      password:
+      password: samplepassword
       roles:
         - controller
     - name: cloud_node_gw
@@ -27,7 +26,7 @@
       interface: cloud_node_gw_pvt_port
       provision: true
       username: centos
-      password:
+      password: samplepassword
       services:
         - bgp_rr
       roles:
@@ -43,7 +42,7 @@
       interface: k8s_node_port
       provision: true
       username: centos
-      password:
+      password: samplepassword
       roles:
         - k8s_master
     - name: mx60
