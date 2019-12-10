@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "f7131237_56f3eec0",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-10T16:40:12Z",
+      "side": 1,
+      "message": "But why the user can\u0027t create agent object and invoke runSSHAgent with pvtKey instead? What\u0027s the advantage of using this function as it isn\u0027t exported?",
+      "parentUuid": "1f31d900_443e9110",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2926b9c1_fe91a476",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -237,6 +261,30 @@
     },
     {
       "key": {
+        "uuid": "fb98ade7_9c187f0e",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-10T16:40:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f3762cb1_4815352c",
+      "range": {
+        "startLine": 44,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 67
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6536f59e_f579c7a3",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -307,6 +355,30 @@
     },
     {
       "key": {
+        "uuid": "bd42bc5e_9cbe983e",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-10T16:40:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "002dc775_6ca4007b",
+      "range": {
+        "startLine": 55,
+        "startChar": 2,
+        "endLine": 55,
+        "endChar": 41
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f42c83a5_4eec2ed1",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -354,6 +426,30 @@
     },
     {
       "key": {
+        "uuid": "f9650c18_167b7e5f",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-10T16:40:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a39f2948_821580f8",
+      "range": {
+        "startLine": 67,
+        "startChar": 19,
+        "endLine": 67,
+        "endChar": 23
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fbbbb9a9_20dac119",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -398,6 +494,30 @@
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "62e8372f_e87115af",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-10T16:40:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2254ac43_bb0ce421",
+      "range": {
+        "startLine": 71,
+        "startChar": 1,
+        "endLine": 71,
+        "endChar": 32
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -586,6 +706,30 @@
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "822125e8_9250e3bc",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-10T16:40:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4c48c8a9_9b9e6cad",
+      "range": {
+        "startLine": 32,
+        "startChar": 22,
+        "endLine": 33,
+        "endChar": 13
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
