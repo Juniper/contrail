@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7eb038e0_d4e7f792",
+        "filename": "pkg/cloud/constants.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-10T09:45:44Z",
+      "side": 1,
+      "message": "Stick with upper case naming or change `AWS` to `aws`",
+      "range": {
+        "startLine": 38,
+        "startChar": 1,
+        "endLine": 40,
+        "endChar": 17
+      },
+      "revId": "efd18e67f678edb410303087284f90e7102a5c52",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e12864a_a45b1665",
+        "filename": "pkg/cloud/data.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 301,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-10T09:45:44Z",
+      "side": 1,
+      "message": "https://github.com/golang/go/wiki/CodeReviewComments#error-strings\n Error strings should not be capitalized (unless beginning with proper nouns or acronyms)",
+      "revId": "efd18e67f678edb410303087284f90e7102a5c52",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
