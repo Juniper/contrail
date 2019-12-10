@@ -16,6 +16,161 @@
       "revId": "d94819f525f761e159710968381f8615c0d324e7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1291046c_7cdda785",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "Please finish this method.",
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2801bb91_ae3b47f7",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "You implemented a method for filling region resource. Cannot we load DisplayName from DB since we already load this resource in region fill method?",
+      "range": {
+        "startLine": 239,
+        "startChar": 10,
+        "endLine": 239,
+        "endChar": 24
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f5a1a72_efc63408",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 382,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "It won\u0027t work if there are more than one security group.",
+      "range": {
+        "startLine": 382,
+        "startChar": 4,
+        "endLine": 382,
+        "endChar": 16
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e483539f_e18feffa",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 389,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "Are we sure that there won\u0027t be any node duplicates?",
+      "range": {
+        "startLine": 389,
+        "startChar": 5,
+        "endLine": 389,
+        "endChar": 24
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "912118c2_2d260d25",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 436,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "Maybe we should point that it\u0027s valid only for one subnet. To see if it equals to one.",
+      "range": {
+        "startLine": 436,
+        "startChar": 1,
+        "endLine": 436,
+        "endChar": 45
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11523cfe_4ac92fc2",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "Should we not return an error in case if bareInstanceRole is not the only role that instance contains?",
+      "range": {
+        "startLine": 449,
+        "startChar": 25,
+        "endLine": 449,
+        "endChar": 34
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03e6f854_efb2b0e6",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T16:21:17Z",
+      "side": 1,
+      "message": "IMO it would be more clear if we name it marshalAndSaveToFile.\nAlso marshal word is redundant. If we pass an object it\u0027s pretty clear that it needs to be marshaled first.",
+      "range": {
+        "startLine": 73,
+        "startChar": 19,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
