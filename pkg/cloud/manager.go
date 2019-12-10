@@ -221,8 +221,13 @@ func (c *Cloud) create() error {
 	}
 
 	pubData := &publicCloud{}
+	onPremData := &onPremCloud{}
 	if !data.isCloudPrivate() {
 		if err = pubData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
+		}
+	} else {
+		if err = onPremData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
 			return err
 		}
 	}
@@ -247,7 +252,7 @@ func (c *Cloud) create() error {
 	status[statusField] = statusCreateFailed
 
 	if data.isCloudPrivate() {
-		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+		err = topo.marshalOnPremAndSave(GetTopoFile(c.config.CloudID), onPremData)
 	} else {
 		err = topo.marshalAndSave(GetTopoFile(c.config.CloudID), pubData)
 	}
@@ -337,8 +342,13 @@ func (c *Cloud) update() error {
 	topo := newTopology(c, data)
 
 	pubData := &publicCloud{}
+	onPremData := &onPremCloud{}
 	if !data.isCloudPrivate() {
 		if err = pubData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
+		}
+	} else {
+		if err = onPremData.fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
 			return err
 		}
 	}
@@ -360,7 +370,7 @@ func (c *Cloud) update() error {
 	status[statusField] = statusUpdateFailed
 
 	if data.isCloudPrivate() {
-		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+		err = topo.marshalOnPremAndSave(GetTopoFile(c.config.CloudID), onPremData)
 	} else {
 		err = topo.marshalAndSave(GetTopoFile(c.config.CloudID), pubData)
 	}
