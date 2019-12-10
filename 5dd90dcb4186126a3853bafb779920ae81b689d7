@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "1f31d900_443e9110",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "The goal of this function is to start ssh-agent process and load a certain key to it.",
+      "parentUuid": "3eac9f0d_52650407",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2926b9c1_fe91a476",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "7b33b599_ddbee4ea",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2926b9c1_fe91a476",
+      "range": {
+        "startLine": 42,
+        "startChar": 31,
+        "endLine": 42,
+        "endChar": 41
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "808ab36e_deff32f9",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -59,6 +107,30 @@
       "writtenOn": "2019-12-06T14:55:12Z",
       "side": 1,
       "message": "ditto line 42",
+      "range": {
+        "startLine": 43,
+        "startChar": 25,
+        "endLine": 43,
+        "endChar": 35
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0ddf308e_fddcc53a",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "808ab36e_deff32f9",
       "range": {
         "startLine": 43,
         "startChar": 25,
@@ -117,6 +189,54 @@
     },
     {
       "key": {
+        "uuid": "f3762cb1_4815352c",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5171967d_6a278145",
+      "range": {
+        "startLine": 44,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 67
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c31cc137_559bd4eb",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "19784820_e6931fe0",
+      "range": {
+        "startLine": 44,
+        "startChar": 65,
+        "endLine": 45,
+        "endChar": 65
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6536f59e_f579c7a3",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -163,6 +283,30 @@
     },
     {
       "key": {
+        "uuid": "002dc775_6ca4007b",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Because standard error contains information such as \"Error code 1.\"",
+      "parentUuid": "1227253d_03ca6732",
+      "range": {
+        "startLine": 55,
+        "startChar": 2,
+        "endLine": 55,
+        "endChar": 41
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f42c83a5_4eec2ed1",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -174,6 +318,30 @@
       "writtenOn": "2019-12-06T15:23:28Z",
       "side": 1,
       "message": "\"Kill\" suggests sudden and forced termination of agent",
+      "range": {
+        "startLine": 67,
+        "startChar": 19,
+        "endLine": 67,
+        "endChar": 23
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a39f2948_821580f8",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f42c83a5_4eec2ed1",
       "range": {
         "startLine": 67,
         "startChar": 19,
@@ -209,6 +377,30 @@
     },
     {
       "key": {
+        "uuid": "2254ac43_bb0ce421",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Because we get it as a string and we pass it through environment variables as a string. This is the only place where it requires to be an integer. Moreover, this function will be changed so it won\u0027t require integer at all.",
+      "parentUuid": "fbbbb9a9_20dac119",
+      "range": {
+        "startLine": 71,
+        "startChar": 1,
+        "endLine": 71,
+        "endChar": 32
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7e5b1618_6a725748",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -220,6 +412,30 @@
       "writtenOn": "2019-12-06T14:55:12Z",
       "side": 1,
       "message": "Maybe you could use instead of FindProcess\n ssh-agent -k\nwhich kill current ssh-agent pointed by ssh_pid env variable.",
+      "range": {
+        "startLine": 70,
+        "startChar": 1,
+        "endLine": 75,
+        "endChar": 30
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "468cfa54_0e3064e1",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7e5b1618_6a725748",
       "range": {
         "startLine": 70,
         "startChar": 1,
@@ -255,6 +471,30 @@
     },
     {
       "key": {
+        "uuid": "d208dbfd_f5e2c773",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Changed into running ssh-agent -k so there won\u0027t be any flake anymore (at least within this part of code).",
+      "parentUuid": "d9b50c35_197857a4",
+      "range": {
+        "startLine": 16,
+        "startChar": 24,
+        "endLine": 16,
+        "endChar": 29
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a206e4d7_81d64530",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 6
@@ -266,6 +506,30 @@
       "writtenOn": "2019-12-06T14:55:12Z",
       "side": 1,
       "message": "Use os.FindProcess",
+      "range": {
+        "startLine": 22,
+        "startChar": 1,
+        "endLine": 23,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9767adc_64d8f878",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "os.FindProcess always successes in case of UNIX systems. No matter if the process exists.",
+      "parentUuid": "a206e4d7_81d64530",
       "range": {
         "startLine": 22,
         "startChar": 1,
@@ -301,6 +565,30 @@
     },
     {
       "key": {
+        "uuid": "4c48c8a9_9b9e6cad",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "173e22fe_794686ad",
+      "range": {
+        "startLine": 32,
+        "startChar": 22,
+        "endLine": 33,
+        "endChar": 13
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "65f22961_544cb800",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 6
@@ -312,6 +600,30 @@
       "writtenOn": "2019-12-06T14:55:12Z",
       "side": 1,
       "message": "If startSSHAgent return error then this deferred function call will try to stop ssh-agent and it will fail(because of kill process in kill method) and then will print misleading \"cannot stop SSH Agent\" log.",
+      "range": {
+        "startLine": 456,
+        "startChar": 7,
+        "endLine": 456,
+        "endChar": 16
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24a93499_854aa535",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 456,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "65f22961_544cb800",
       "range": {
         "startLine": 456,
         "startChar": 7,
@@ -347,6 +659,30 @@
     },
     {
       "key": {
+        "uuid": "0cdb401c_fdb9b4d4",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ed40e4f6_e06b1ee8",
+      "range": {
+        "startLine": 458,
+        "startChar": 33,
+        "endLine": 458,
+        "endChar": 89
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "46a326a4_da8f5bdf",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 6
@@ -370,6 +706,30 @@
     },
     {
       "key": {
+        "uuid": "2d449f6d_73f61505",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 467,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "where should I not call this?",
+      "parentUuid": "46a326a4_da8f5bdf",
+      "range": {
+        "startLine": 467,
+        "startChar": 14,
+        "endLine": 467,
+        "endChar": 23
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dd8edf6e_1f9cdf5e",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 6
@@ -381,6 +741,30 @@
       "writtenOn": "2019-12-06T14:55:12Z",
       "side": 1,
       "message": "What if the agent never started? Then returning this function is pointless.",
+      "range": {
+        "startLine": 471,
+        "startChar": 1,
+        "endLine": 471,
+        "endChar": 8
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b3bb0f73_619e8174",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 471,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-10T15:00:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dd8edf6e_1f9cdf5e",
       "range": {
         "startLine": 471,
         "startChar": 1,
