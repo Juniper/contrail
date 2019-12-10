@@ -13,7 +13,6 @@ const (
 	defaultGCPPlanTF          = "google.tf.json"
 	defaultTFStateFile        = "terraform.tfstate"
 	defaultTopologyFile       = "topology.yml"
-	defaultOnPremTopoTemplate = "onprem_cloud_topology.tmpl"
 	defaultSecretFile         = "secret.yml"
 	defaultMultiCloudDir      = "/usr/share/contrail/"
 	defaultMultiCloudRepo     = "contrail-multi-cloud"

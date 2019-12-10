@@ -3,13 +3,10 @@ package cloud
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
-	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -22,10 +19,6 @@ type topology struct {
 	log       *logrus.Entry
 	reporter  *report.Reporter
 	ctx       context.Context
-}
-
-func (t *topology) getOnPremTemplatePath() string {
-	return filepath.Join(t.cloud.getTemplateRoot(), defaultOnPremTopoTemplate)
 }
 
 func newTopology(c *Cloud, data *Data) *topology {
@@ -42,27 +35,25 @@ func newTopology(c *Cloud, data *Data) *topology {
 	}
 }
 
-func (t *topology) createOnPremTopologyFile(topoFile string) error {
-	context := pongo2.Context{
-		"cloud": t.cloudData,
-	}
-	content, err := template.Apply(t.getOnPremTemplatePath(), context)
-	if err != nil {
-		return err
-	}
-
-	err = fileutil.WriteToFile(topoFile, content, defaultRWOnlyPerm)
-	if err != nil {
-		return err
-	}
-	t.log.Infof("Created topology file for cloud with uuid: %s ", t.cloudData.info.UUID)
-	return nil
-}
-
 func (p *publicCloud) marshalAndSave(destination string) error {
 	marshaled, err := yaml.Marshal(p.Providers)
 	if err != nil {
 		return errors.Wrapf(err, "cannot marshal topology")
 	}
 	return fileutil.WriteToFile(destination, marshaled, defaultRWOnlyPerm)
+}
+
+func (t *topology) marshalOnPremAndSave(topoFile string, p *onPremCloud) error {
+
+	marshaled, err := yaml.Marshal([]*onPremCloud{p})
+	if err != nil {
+		return errors.Wrapf(err, "cannot marshal topology")
+	}
+	err = fileutil.WriteToFile(topoFile, marshaled, defaultRWOnlyPerm)
+	if err != nil {
+		return err
+	}
+
+	t.log.Infof("Created topology file for cloud with uuid: %s ", t.cloudData.info.UUID)
+	return nil
 }
