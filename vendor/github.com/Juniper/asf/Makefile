@@ -1,3 +1,5 @@
+all: deps generate test
+
 deps:
 	./tools/install_proto.sh
 
