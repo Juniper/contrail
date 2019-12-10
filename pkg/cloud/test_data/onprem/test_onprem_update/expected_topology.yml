@@ -1,5 +1,4 @@
 - provider: onprem
-  organization: unit_test
   project:
   instances:
     - name: cloud_node_compute
