@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"path"
@@ -144,7 +145,7 @@ func testDynamicProxyServiceHTTPSupport(t *testing.T, synchronizeProxyEndpoints 
 	verifyNeutronReadRequests(t, hc, clusterBName)
 }
 
-func TestDynamicProxyServiceWithClosedTargetServers(t *testing.T) {
+func TestDynamicProxyServiceRetriesRequestWhenTargetServerIsClosed(t *testing.T) {
 	// arrange
 	const ok1EndpointName, ok2EndpointName = "neutron-ok1", "neutron-ok2"
 	clusterName := contrailClusterName(t, "")
@@ -188,11 +189,10 @@ func TestDynamicProxyServiceWithClosedTargetServers(t *testing.T) {
 	verifyNeutronReadRequestsFail(t, hc, clusterName)
 }
 
-func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
+func TestDynamicProxyServiceRetriesRequestWhenTargetServerReturnsServerError(t *testing.T) {
 	// arrange
 	const (
-		okEndpointName, badGatewayEndpointName = "neutron-ok", "neutron-bad-gateway"
-		unavailableEndpointName                = "neutron-unavailable"
+		okEndpointName, unhealthyEndpointName = "neutron-ok", "neutron-bad-gateway"
 	)
 	clusterName := contrailClusterName(t, "")
 	hc := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
@@ -216,41 +216,23 @@ func TestDynamicProxyServiceWithUnavailableTargetServers(t *testing.T) {
 	// act/assert
 	verifyFiveNeutronReadRequests(t, hc, clusterName)
 
-	badGatewayNeutron := newNeutronServerStub(http.StatusBadGateway)
-	defer badGatewayNeutron.Close()
+	unhealthyNeutron := newNeutronServerStub(500 + rand.Intn(100))
+	defer unhealthyNeutron.Close()
 
 	cleanupE = createEndpoint(t, hc, endpointParameters{
 		clusterName:    clusterName,
-		endpointName:   badGatewayEndpointName,
+		endpointName:   unhealthyEndpointName,
 		endpointPrefix: neutronEndpointPrefix,
-		privateURL:     badGatewayNeutron.URL,
-		publicURL:      badGatewayNeutron.URL,
+		privateURL:     unhealthyNeutron.URL,
+		publicURL:      unhealthyNeutron.URL,
 	})
 	defer cleanupE()
 	server.ForceProxyUpdate()
 
 	verifyFiveNeutronReadRequests(t, hc, clusterName)
-
-	unavailableNeutron := newNeutronServerStub(http.StatusServiceUnavailable)
-	defer unavailableNeutron.Close()
-	cleanupE = createEndpoint(t, hc, endpointParameters{
-		clusterName:    clusterName,
-		endpointName:   unavailableEndpointName,
-		endpointPrefix: neutronEndpointPrefix,
-		privateURL:     unavailableNeutron.URL,
-		publicURL:      unavailableNeutron.URL,
-	})
-	defer cleanupE()
-	server.ForceProxyUpdate()
-
-	verifyFiveNeutronReadRequests(t, hc, clusterName)
-
-	okNeutron.Close()
-
-	verifyFiveNeutronReadRequestsStatus(t, hc, clusterName, []int{http.StatusBadGateway, http.StatusServiceUnavailable})
 }
 
-func TestDynamicProxyServiceInjectingServiceToken(t *testing.T) {
+func TestDynamicProxyServiceInjectsServiceToken(t *testing.T) {
 	// arrange
 	const (
 		keystoneEndpointName  = "keystone"
@@ -494,7 +476,7 @@ func swiftPrivatePath(clusterName string) string {
 // Keystone tests //
 ////////////////////
 
-func TestKeystoneRequestsProxying(t *testing.T) {
+func TestKeystoneProxy(t *testing.T) {
 	// arrange
 	const (
 		endpointName         = "keystone-endpoint"
@@ -572,7 +554,7 @@ func TestKeystoneRequestsProxying(t *testing.T) {
 	verifyReadTokenRequestFails(context.Background(), t, hcUserD, "without X-Cluster-ID")
 }
 
-func TestKeystoneRequestsProxyingWithClosedRemoteKeystoneServers(t *testing.T) {
+func TestKeystoneProxyRetriesRequestWhenTargetKeystoneServerIsClosed(t *testing.T) {
 	// arrange
 	const (
 		endpointNameOne, endpointNameTwo = "keystone-endpoint-one", "keystone-endpoint-two"
@@ -644,14 +626,13 @@ func TestKeystoneRequestsProxyingWithClosedRemoteKeystoneServers(t *testing.T) {
 	verifyFiveReadTokenRequestsFail(ctxWithXClusterID(clusterName), t, hcTest, "all Keystone servers closed")
 }
 
-func TestKeystoneRequestsProxyingWithUnavailableRemoteKeystoneServers(t *testing.T) {
-	// TODO(dfurman): split to multiple tests
+func TestKeystoneProxyRetriesRequestWhenTargetKeystoneServerReturnsServerError(t *testing.T) {
 	// arrange
 	const (
-		endpointNameHealthy                                    = "keystone-endpoint-healthy"
-		endpointNameBadRequest, endpointNameServiceUnavailable = "keystone-endpoint-502", "keystone-endpoint-503"
-		username                                               = "test-user"
-		password                                               = "test-password"
+		healthyEndpointName   = "healthy-keystone-endpoint"
+		unhealthyEndpointName = "unhealthy-keystone-endpoint"
+		username              = "test-user"
+		password              = "test-password"
 	)
 	clusterName := contrailClusterName(t, "")
 	authURL := server.URL() + keystone.LocalAuthPath
@@ -674,7 +655,7 @@ func TestKeystoneRequestsProxyingWithUnavailableRemoteKeystoneServers(t *testing
 
 	cleanupEOne := createEndpoint(t, hcBob, endpointParameters{
 		clusterName:    clusterName,
-		endpointName:   endpointNameHealthy,
+		endpointName:   healthyEndpointName,
 		endpointPrefix: keystoneEndpointPrefix,
 		privateURL:     ksPrivateOne.URL,
 		publicURL:      ksPublicOne.URL,
@@ -688,12 +669,12 @@ func TestKeystoneRequestsProxyingWithUnavailableRemoteKeystoneServers(t *testing
 	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "only healthy Keystone server up")
 	verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "only healthy Keystone servers up")
 
-	ksBadGateway := newKeystoneServerStub(http.StatusBadGateway)
+	ksBadGateway := newKeystoneServerStub(500 + rand.Intn(100))
 	defer ksBadGateway.Close()
 
 	cleanupEBadGateway := createEndpoint(t, hcBob, endpointParameters{
 		clusterName:    clusterName,
-		endpointName:   endpointNameBadRequest,
+		endpointName:   unhealthyEndpointName,
 		endpointPrefix: keystoneEndpointPrefix,
 		privateURL:     ksBadGateway.URL,
 		publicURL:      ksBadGateway.URL,
@@ -703,36 +684,8 @@ func TestKeystoneRequestsProxyingWithUnavailableRemoteKeystoneServers(t *testing
 	defer cleanupEBadGateway()
 	server.ForceProxyUpdate()
 
-	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "healthy Keystone server and stub 502 up")
-	verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "healthy Keystone server and stub 502 up")
-
-	ksServiceUnavailable := newKeystoneServerStub(http.StatusServiceUnavailable)
-	defer ksServiceUnavailable.Close()
-
-	cleanupEServiceUnavailable := createEndpoint(t, hcBob, endpointParameters{
-		clusterName:    clusterName,
-		endpointName:   endpointNameServiceUnavailable,
-		endpointPrefix: keystoneEndpointPrefix,
-		privateURL:     ksServiceUnavailable.URL,
-		publicURL:      ksServiceUnavailable.URL,
-		username:       username,
-		password:       password,
-	})
-	defer cleanupEServiceUnavailable()
-	server.ForceProxyUpdate()
-
-	verifyFiveCreateTokenRequests(
-		ctxWithXClusterID(clusterName),
-		t,
-		hcTest,
-		"healthy Keystone server, 502 and 503 stubs up",
-	)
-	verifyFiveReadTokenRequests(
-		ctxWithXClusterID(clusterName),
-		t,
-		hcTest,
-		"healthy Keystone server, 502 and 503 stubs up",
-	)
+	verifyFiveCreateTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "both healthy and unhealthy Keystone servers up")
+	verifyFiveReadTokenRequests(ctxWithXClusterID(clusterName), t, hcTest, "both healthy and unhealthy Keystone servers up")
 }
 
 func newKeystoneServerStub(statusToReturn int) *httptest.Server {
