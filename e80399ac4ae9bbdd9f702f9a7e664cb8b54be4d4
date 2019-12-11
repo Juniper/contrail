@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1c063a49_26da05ef",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-11T10:31:55Z",
+      "side": 1,
+      "message": "`does not`?",
+      "range": {
+        "startLine": 229,
+        "startChar": 39,
+        "endLine": 229,
+        "endChar": 43
+      },
+      "revId": "e80399ac4ae9bbdd9f702f9a7e664cb8b54be4d4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "31e9da80_0942675a",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 670,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-11T10:31:55Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 670,
+        "startChar": 49,
+        "endLine": 670,
+        "endChar": 53
+      },
+      "revId": "e80399ac4ae9bbdd9f702f9a7e664cb8b54be4d4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
