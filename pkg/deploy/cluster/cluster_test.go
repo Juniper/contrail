@@ -61,12 +61,14 @@ const (
 	generatedTopology       = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
 	generatedContrailCommon = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
 	generatedGatewayCommon  = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
+	generatedTorCommon      = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTORCommonFile
 	executedPlaybooks       = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
 	executedMCCommand       = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
 
 	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
 	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
 	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
+	expectedTorCommon           = "./test_data/expected_mc_tor_common.yml"
 	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
 	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
 	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
@@ -161,6 +163,11 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	assert.NoErrorf(t, err, "Unable to read generated: %s", generatedFile)
 	expectedData, err := ioutil.ReadFile(expectedFile)
 	assert.NoErrorf(t, err, "Unable to read expected: %s", expectedFile)
+	fmt.Println("generated")
+	fmt.Println(string(generatedData))
+	fmt.Println("expected")
+	fmt.Println(string(expectedData))
+
 	return bytes.Equal(generatedData, expectedData)
 }
 
@@ -935,6 +942,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		removeFile(t, generatedSecret)
 		removeFile(t, generatedContrailCommon)
 		removeFile(t, generatedGatewayCommon)
+		removeFile(t, generatedTorCommon)
 
 		config.Action = tt.action
 
@@ -952,6 +960,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 			"Contrail common file created during cluster %s is not as expected", tt.action)
 		assert.Truef(t, compareFiles(t, expectedGatewayCommon, generatedGatewayCommon),
 			"Gateway common file created during cluster %s is not as expected", tt.action)
+		assert.Truef(t, compareFiles(t, expectedTorCommon, generatedTorCommon),
+			"Tor common file created during cluster %s is not as expected", tt.action)
 		assert.Truef(t, verifyCommandsExecuted(t, tt.expectedCommands),
 			"MC commands executed during cluster %s are not as expected", tt.action)
 	}
