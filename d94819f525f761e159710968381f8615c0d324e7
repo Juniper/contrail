@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "97be10e3_982369fb",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2cc7f5ab_6467b757",
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1291046c_7cdda785",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 2
@@ -59,6 +77,30 @@
     },
     {
       "key": {
+        "uuid": "91ac5a7c_163861c3",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "It was done in the way to preserve convention that fill method loads only parameters which requires loading objects form DB.",
+      "parentUuid": "2801bb91_ae3b47f7",
+      "range": {
+        "startLine": 239,
+        "startChar": 10,
+        "endLine": 239,
+        "endChar": 24
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3f5a1a72_efc63408",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 2
@@ -70,6 +112,30 @@
       "writtenOn": "2019-12-10T16:21:17Z",
       "side": 1,
       "message": "It won\u0027t work if there are more than one security group.",
+      "range": {
+        "startLine": 382,
+        "startChar": 4,
+        "endLine": 382,
+        "endChar": 16
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fec99306_7f5c0f0c",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 382,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3f5a1a72_efc63408",
       "range": {
         "startLine": 382,
         "startChar": 4,
@@ -105,6 +171,30 @@
     },
     {
       "key": {
+        "uuid": "f7218c05_dc9ce62f",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 389,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "This behaviour is the same as old logic. After the way of connecting instances to clouds is changed, this part will be changed to ensure uniqueness of the nodes.",
+      "parentUuid": "e483539f_e18feffa",
+      "range": {
+        "startLine": 389,
+        "startChar": 5,
+        "endLine": 389,
+        "endChar": 24
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "912118c2_2d260d25",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 2
@@ -116,6 +206,30 @@
       "writtenOn": "2019-12-10T16:21:17Z",
       "side": 1,
       "message": "Maybe we should point that it\u0027s valid only for one subnet. To see if it equals to one.",
+      "range": {
+        "startLine": 436,
+        "startChar": 1,
+        "endLine": 436,
+        "endChar": 45
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc84267d_a153fb1c",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 436,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "912118c2_2d260d25",
       "range": {
         "startLine": 436,
         "startChar": 1,
@@ -151,6 +265,30 @@
     },
     {
       "key": {
+        "uuid": "89399e2b_cdace623",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "Preservation of old logic. Following your proposal every role should be sanitized, e.g. gateway shouldn\u0027t be compute at the same time, but it\u0027s outside of scope of this patch.",
+      "parentUuid": "11523cfe_4ac92fc2",
+      "range": {
+        "startLine": 449,
+        "startChar": 25,
+        "endLine": 449,
+        "endChar": 34
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "03e6f854_efb2b0e6",
         "filename": "pkg/cloud/topology.go",
         "patchSetId": 2
@@ -162,6 +300,30 @@
       "writtenOn": "2019-12-10T16:21:17Z",
       "side": 1,
       "message": "IMO it would be more clear if we name it marshalAndSaveToFile.\nAlso marshal word is redundant. If we pass an object it\u0027s pretty clear that it needs to be marshaled first.",
+      "range": {
+        "startLine": 73,
+        "startChar": 19,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f2137f59_ec4d92c9",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-11T11:41:52Z",
+      "side": 1,
+      "message": "I disagree that \"marshal\" is redundant - object can be represented in file in multiple ways (yaml, json, plain representation, sql queries).",
+      "parentUuid": "03e6f854_efb2b0e6",
       "range": {
         "startLine": 73,
         "startChar": 19,
