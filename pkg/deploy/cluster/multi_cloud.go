@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -44,8 +45,8 @@ const (
 	defaultContrailTenant     = "default-project"
 	pathConfig                = "/etc/multicloud"
 	bgpSecret                 = "bgp_secret"
-	bgpMCRoutesForController  = "False"
-	debugMCRoutes             = "False"
+	bgpMCRoutesForController  = "false"
+	debugMCRoutes             = "false"
 	torBGPSecret              = "contrail_secret"
 	torOSPFSecret             = "contrail_secret"
 
@@ -62,6 +63,68 @@ const (
 
 	statusRetryInterval = 3 * time.Second
 )
+
+type contrailCommon struct {
+	User            string                    `yaml:"contrail_user"`
+	Password        string                    `yaml:"contrail_password"`
+	Port            string                    `yaml:"contrail_port"`
+	Tenant          string                    `yaml:"contrail_tenant"`
+	Configuration   contrailConfiguration     `yaml:"contrail_configuration"`
+	ProviderConfigs map[string]providerConfig `yaml:"provider_config"`
+}
+
+type providerConfig struct {
+	SSHUser        string `yaml:"ssh_user"`
+	SSHPassword    string `yaml:"ssh_pwd"`
+	SSHPublicKey   string `yaml:"ssh_public_key,omitempty"`
+	DomainSuffix   string `yaml:"domainsuffix,omitempty"`
+	NTPServer      string `yaml:"ntpserver"`
+	ManageEtcHosts bool   `yaml:"manage_etc_hosts"`
+}
+
+type contrailConfiguration struct {
+	Version               string `yaml:"CONTRAIL_VERSION,omitempty"`
+	EncapsulationPriority string `yaml:"ENCAP_PRIORITY"`
+	CloudOrchestrator     string `yaml:"CLOUD_ORCHESTRATOR"`
+	VrouterEncryption     string `yaml:"VROUTER_ENCRYPTION,omitempty"`
+}
+
+type gatewayCommon struct {
+	ConfigPath                string `yaml:"PATH_CONFIG"`
+	SSLConfigLocalPath        string `yaml:"PATH_SSL_CONFIG_LOCAL"`
+	SSLConfigPath             string `yaml:"PATH_SSL_CONFIG"`
+	OpenVPNConfigPath         string `yaml:"PATH_OPENVPN_CONFIG"`
+	BirdConfigPath            string `yaml:"PATH_BIRD_CONFIG"`
+	StrongSwanConfigPath      string `yaml:"PATH_STRONGSWAN_CONFIG"`
+	VRRPConfigPath            string `yaml:"PATH_VRRP_CONFIG"`
+	AWSConfigPath             string `yaml:"PATH_AWS_CONFIG"`
+	InterfaceConfigPath       string `yaml:"PATH_INTERFACE_CONFIG"`
+	FwConfigPath              string `yaml:"PATH_FW_CONFIG"`
+	GCPConfigPath             string `yaml:"PATH_GCP_CONFIG"`
+	SecretConfigPath          string `yaml:"PATH_SECRET_CONFIG"`
+	VxLanConfigPath           string `yaml:"PATH_VXLAN_CONFIG"`
+	ContainerRegistry         string `yaml:"CONTAINER_REGISTRY"`
+	ContrailMulticloudVersion string `yaml:"CONTRAIL_MULTICLOUD_VERSION,omitempty"`
+	UpgradeKernel             string `yaml:"UPGRADE_KERNEL"`
+	KernelVersion             string `yaml:"KERNEL_VERSION"`
+	AutonomousSystem          string `yaml:"AS"`
+	VPNLoNetwork              string `yaml:"vpn_lo_network"`
+	VPNNetwork                string `yaml:"vpn_network"`
+	OpenVPNPort               string `yaml:"openvpn_port"`
+	BfdInterval               string `yaml:"bfd_interval"`
+	BfdMultiplier             string `yaml:"bfd_multiplier"`
+	BfdIntervalMultihop       string `yaml:"bfd_interval_multihop"`
+	BfdMultiplierMultihop     string `yaml:"bfd_multiplier_multihop"`
+	CoreBgpSecret             string `yaml:"core_bgp_secret"`
+	RegistryPrivateInsecure   string `yaml:"registry_private_insecure"`
+}
+
+type torCommon struct {
+	BGPSecret                        string `yaml:"tor_bgp_secret"`
+	OspfSecret                       string `yaml:"tor_ospf_secret"`
+	DebugMulticloudRoutes            string `yaml:"DEBUG_MULTI_CLOUD_ROUTES"`
+	BGPMulticloudRoutesForController string `yaml:"BGP_MULTI_CLOUD_ROUTES_FOR_CONTROLLER"`
+}
 
 type multiCloudProvisioner struct {
 	contrailAnsibleDeployer
@@ -193,13 +256,13 @@ func (m *multiCloudProvisioner) createFiles() error {
 	if err := m.createClusterSecretFile(); err != nil {
 		return err
 	}
-	if err := m.createContrailCommonFile(m.getContrailCommonFile()); err != nil {
+	if err := m.createContrailCommonFile(); err != nil {
 		return err
 	}
-	if err := m.createGatewayCommonFile(m.getGatewayCommonFile()); err != nil {
+	if err := m.createGatewayCommonFile(); err != nil {
 		return err
 	}
-	return m.createTORCommonFile(m.getTORCommonFile())
+	return m.createTORCommonFile()
 }
 
 // nolint: gocyclo
@@ -436,30 +499,54 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	return osutil.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
 }
 
-func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
+func (m *multiCloudProvisioner) createContrailCommonFile() error {
 	m.Log.Info("Creating contrail/common.yml input file for multi-cloud deployer")
-	contrailPassword := m.getContrailPassword()
 
-	pContext := pongo2.Context{
-		"cluster":                   m.clusterData.ClusterInfo,
-		"k8sCluster":                m.clusterData.GetK8sClusterInfo(),
-		"defaultSSHUser":            m.clusterData.DefaultSSHUser,
-		"defaultSSHPassword":        m.clusterData.DefaultSSHPassword,
-		"defaultSSHKey":             m.clusterData.DefaultSSHKey,
-		"defaultContrailUser":       defaultContrailUser,
-		"defaultContrailPassword":   contrailPassword,
-		"defaultContrailConfigPort": defaultContrailConfigPort,
-		"defaultContrailTenant":     defaultContrailTenant,
+	encapPriority := m.clusterData.ClusterInfo.EncapPriority
+	if encapPriority == "" {
+		encapPriority = "MPLSoGRE,MPLSoUDP,VXLAN"
 	}
 
-	if err := template.ApplyToFile(
-		m.contrailCommonTemplatePath(),
-		destination,
-		pContext,
-		defaultFilePermRWOnly,
-	); err != nil {
-		return err
+	// TODO: Check if not nil and if is not empty value
+	vrouterEncryption := m.clusterData.ClusterInfo.ContrailConfiguration.GetValue("VROUTER_ENCRYPTION")
+
+	// TODO: Check if not nil and if is not empty value
+	contrailVersion := m.clusterData.ClusterInfo.ContrailVersion
+	if contrailVersion == "" {
+		contrailVersion = m.clusterData.ClusterInfo.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG")
 	}
+
+	common := contrailCommon{
+		User:     defaultContrailUser,
+		Password: m.getContrailPassword(),
+		Tenant:   defaultContrailTenant,
+		Port:     defaultContrailConfigPort,
+		Configuration: contrailConfiguration{
+			CloudOrchestrator:     "kubernetes",
+			VrouterEncryption:     vrouterEncryption,
+			EncapsulationPriority: encapPriority,
+			Version:               contrailVersion,
+		},
+		ProviderConfigs: map[string]providerConfig{
+			"bms": providerConfig{
+				SSHUser:      m.clusterData.DefaultSSHKey,
+				SSHPassword:  m.clusterData.DefaultSSHPassword,
+				SSHPublicKey: m.clusterData.DefaultSSHKey,
+				NTPServer:    m.clusterData.ClusterInfo.NTPServer,
+				DomainSuffix: m.clusterData.ClusterInfo.DomainSuffix,
+			},
+		},
+	}
+
+	data, err := yaml.Marshal(common)
+	if err != nil {
+		return errors.Wrap(err, "cannot marshal contrail common yml file")
+	}
+
+	if err = fileutil.WriteToFile(m.getContrailCommonFile(), data, defaultFilePermRWOnly); err != nil {
+		return errors.Wrap(err, "cannot create contrail common yml file")
+	}
+
 	m.Log.Info("Created contrail/common.yml input file for multi-cloud deployer")
 	return nil
 }
@@ -484,22 +571,55 @@ func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) erro
 	return nil
 }
 
-func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
-	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
-	pContext := pongo2.Context{
-		"torBGPSecret":             torBGPSecret,
-		"torOSPFSecret":            torOSPFSecret,
-		"debugMCRoutes":            debugMCRoutes,
-		"bgpMCRoutesForController": bgpMCRoutesForController,
+func (m *multiCloudProvisioner) createGatewayCommonFile() error {
+	m.Log.Info("Creating gateway/common.yml input file for multi-cloud deployer")
+	pathConfigVar := "{{ PATH_CONFIG }}"
+	// TODO: Czy tu musi być ten {{ PATH_CONFIG }}. Askuj Szymoneł
+	common := gatewayCommon{
+		ConfigPath:           pathConfig,
+		SSLConfigPath:        filepath.Join(pathConfigVar, "ssl"),
+		OpenVPNConfigPath:    filepath.Join(pathConfigVar, "openvpn"),
+		BirdConfigPath:       filepath.Join(pathConfigVar, "bird"),
+		StrongSwanConfigPath: filepath.Join(pathConfigVar, "strongswan"),
+		VRRPConfigPath:       filepath.Join(pathConfigVar, "vrrp"),
+		AWSConfigPath:        filepath.Join(pathConfigVar, "aws"),
+		InterfaceConfigPath:  "/etc/network/interfaces.d",
+		FwConfigPath:         filepath.Join(pathConfigVar, "firewall"),
+		GCPConfigPath:        filepath.Join(pathConfigVar, "gcp"),
+		SecretConfigPath:     filepath.Join(pathConfigVar, "secret"),
+		VxLanConfigPath:      filepath.Join(pathConfigVar, "vxlan"),
+		ContainerRegistry:    m.clusterData.ClusterInfo.ContainerRegistry,
 	}
 
-	if err := template.ApplyToFile(
-		m.torCommonTemplatePath(),
-		destination,
-		pContext,
-		defaultFilePermRWOnly,
-	); err != nil {
-		return err
+	data, err := yaml.Marshal(common)
+	if err != nil {
+		return errors.Wrap(err, "cannot marshal tor common yml file")
+	}
+
+	if err = fileutil.WriteToFile(m.getGatewayCommonFile(), data, defaultFilePermRWOnly); err != nil {
+		return errors.Wrap(err, "cannot create tor common yml file")
+	}
+	m.Lo
+	m.Log.Info("Created gateway/common.yml input file for multi-cloud deployer")
+	return nil
+}
+
+func (m *multiCloudProvisioner) createTORCommonFile() error {
+	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
+
+	common := torCommon{
+		BGPMulticloudRoutesForController: bgpMCRoutesForController,
+		BGPSecret:                        torBGPSecret,
+		DebugMulticloudRoutes:            debugMCRoutes,
+		OspfSecret:                       torOSPFSecret,
+	}
+	data, err := yaml.Marshal(common)
+	if err != nil {
+		return errors.Wrap(err, "cannot marshal tor common yml file")
+	}
+
+	if err = fileutil.WriteToFile(m.getTORCommonFile(), data, defaultFilePermRWOnly); err != nil {
+		return errors.Wrap(err, "cannot create tor common yml file")
 	}
 	m.Log.Info("Created tor/common.yml input file for multi-cloud deployer")
 	return nil
