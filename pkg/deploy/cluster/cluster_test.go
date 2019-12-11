@@ -54,19 +54,15 @@ const (
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
-	generatedInstances      = workRoot + "/" + clusterID + "/" + defaultInstanceFile
-	generatedInventory      = workRoot + "/" + clusterID + "/" + defaultInventoryFile
-	generatedVcenterVars    = workRoot + "/" + clusterID + "/" + defaultVcenterFile
-	generatedSecret         = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
-	generatedTopology       = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
-	generatedContrailCommon = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
-	generatedGatewayCommon  = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
-	executedPlaybooks       = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
-	executedMCCommand       = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
+	generatedInstances   = workRoot + "/" + clusterID + "/" + defaultInstanceFile
+	generatedInventory   = workRoot + "/" + clusterID + "/" + defaultInventoryFile
+	generatedVcenterVars = workRoot + "/" + clusterID + "/" + defaultVcenterFile
+	generatedSecret      = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
+	generatedTopology    = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
+	executedPlaybooks    = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
+	executedMCCommand    = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
 
 	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
-	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
-	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
 	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
 	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
 	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
@@ -943,8 +939,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		removeFile(t, executedMCCommand)
 		removeFile(t, generatedTopology)
 		removeFile(t, generatedSecret)
-		removeFile(t, generatedContrailCommon)
-		removeFile(t, generatedGatewayCommon)
 
 		config.Action = tt.action
 
@@ -958,10 +952,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 
 		assert.Truef(t, compareFiles(t, expectedMCClusterTopology, generatedTopology),
 			"Topolgy file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, compareFiles(t, expectedContrailCommon, generatedContrailCommon),
-			"Contrail common file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, compareFiles(t, expectedGatewayCommon, generatedGatewayCommon),
-			"Gateway common file created during cluster %s is not as expected", tt.action)
 		assert.Truef(t, verifyCommandsExecuted(t, tt.expectedCommands),
 			"MC commands executed during cluster %s are not as expected", tt.action)
 	}
