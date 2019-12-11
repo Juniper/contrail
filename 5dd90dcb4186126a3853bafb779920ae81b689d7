@@ -120,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "9982c38d_ef201177",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7b33b599_ddbee4ea",
+      "range": {
+        "startLine": 42,
+        "startChar": 31,
+        "endLine": 42,
+        "endChar": 41
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "808ab36e_deff32f9",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -164,6 +188,30 @@
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00c06580_589aef31",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0ddf308e_fddcc53a",
+      "range": {
+        "startLine": 43,
+        "startChar": 25,
+        "endLine": 43,
+        "endChar": 35
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -278,6 +326,30 @@
         "startChar": 1,
         "endLine": 45,
         "endChar": 67
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9e566ce1_8fce9ac5",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c31cc137_559bd4eb",
+      "range": {
+        "startLine": 44,
+        "startChar": 65,
+        "endLine": 45,
+        "endChar": 65
       },
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
@@ -568,6 +640,30 @@
     },
     {
       "key": {
+        "uuid": "72372582_225b202d",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "468cfa54_0e3064e1",
+      "range": {
+        "startLine": 70,
+        "startChar": 1,
+        "endLine": 75,
+        "endChar": 30
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d9b50c35_197857a4",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 6
@@ -615,6 +711,30 @@
     },
     {
       "key": {
+        "uuid": "c270f393_5e8e9d5b",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d208dbfd_f5e2c773",
+      "range": {
+        "startLine": 16,
+        "startChar": 24,
+        "endLine": 16,
+        "endChar": 29
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a206e4d7_81d64530",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 6
@@ -659,6 +779,30 @@
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fb5fda00_2a6b3149",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d9767adc_64d8f878",
+      "range": {
+        "startLine": 22,
+        "startChar": 1,
+        "endLine": 23,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -780,6 +924,30 @@
     },
     {
       "key": {
+        "uuid": "002da0ee_376d4c53",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 456,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "24a93499_854aa535",
+      "range": {
+        "startLine": 456,
+        "startChar": 7,
+        "endLine": 456,
+        "endChar": 16
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ed40e4f6_e06b1ee8",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 6
@@ -827,6 +995,30 @@
     },
     {
       "key": {
+        "uuid": "bfd4f4d5_8bce67fa",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0cdb401c_fdb9b4d4",
+      "range": {
+        "startLine": 458,
+        "startChar": 33,
+        "endLine": 458,
+        "endChar": 89
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "46a326a4_da8f5bdf",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 6
@@ -862,6 +1054,30 @@
       "side": 1,
       "message": "where should I not call this?",
       "parentUuid": "46a326a4_da8f5bdf",
+      "range": {
+        "startLine": 467,
+        "startChar": 14,
+        "endLine": 467,
+        "endChar": 23
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08bc4693_2c1a1d60",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 467,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "On line 429.",
+      "parentUuid": "2d449f6d_73f61505",
       "range": {
         "startLine": 467,
         "startChar": 14,
@@ -918,6 +1134,30 @@
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "871cfcfd_969fbd47",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 471,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b3bb0f73_619e8174",
+      "range": {
+        "startLine": 471,
+        "startChar": 1,
+        "endLine": 471,
+        "endChar": 8
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

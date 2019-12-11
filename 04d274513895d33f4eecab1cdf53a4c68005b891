@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "75ad96f7_906dbc51",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 429,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "This will panic if startSSHAgent return not nil error.",
+      "revId": "04d274513895d33f4eecab1cdf53a4c68005b891",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "942058d1_68c30d22",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-11T10:58:59Z",
+      "side": 1,
+      "message": "Why not checking for if err !\u003d nil?",
+      "range": {
+        "startLine": 444,
+        "startChar": 3,
+        "endLine": 444,
+        "endChar": 45
+      },
+      "revId": "04d274513895d33f4eecab1cdf53a4c68005b891",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
