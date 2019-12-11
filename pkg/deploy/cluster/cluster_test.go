@@ -61,12 +61,14 @@ const (
 	generatedTopology       = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
 	generatedContrailCommon = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
 	generatedGatewayCommon  = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
+	generatedTorCommon      = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTORCommonFile
 	executedPlaybooks       = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
 	executedMCCommand       = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
 
 	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
 	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
 	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
+	expectedTorCommon           = "./test_data/expected_mc_tor_common.yml"
 	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
 	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
 	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
@@ -162,6 +164,19 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	expectedData, err := ioutil.ReadFile(expectedFile)
 	assert.NoErrorf(t, err, "Unable to read expected: %s", expectedFile)
 	return bytes.Equal(generatedData, expectedData)
+}
+
+func assertYAMLFileEqual(t *testing.T, expectedFilePath, actualFilePath string, msg string, args ...string) {
+	var actualYAML interface{}
+	require.NoErrorf(t, fileutil.LoadFile(actualFilePath, &actualYAML), "Failed read yaml from %s", actualFilePath)
+
+	var expectedYAML interface{}
+	require.NoErrorf(t, fileutil.LoadFile(expectedFilePath, &expectedYAML), "Failed read yaml from %s", expectedFilePath)
+
+	msg = fmt.Sprintf(msg, args)
+
+	testutil.AssertEqual(t, expectedYAML, actualYAML,
+		fmt.Sprintf("YAML files %s and %s are not equal", expectedFilePath, actualFilePath), msg)
 }
 
 func removeFile(t *testing.T, path string) {
@@ -935,6 +950,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		removeFile(t, generatedSecret)
 		removeFile(t, generatedContrailCommon)
 		removeFile(t, generatedGatewayCommon)
+		removeFile(t, generatedTorCommon)
 
 		config.Action = tt.action
 
@@ -948,10 +964,12 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 
 		assert.Truef(t, compareFiles(t, expectedMCClusterTopology, generatedTopology),
 			"Topolgy file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, compareFiles(t, expectedContrailCommon, generatedContrailCommon),
+		assertYAMLFileEqual(t, expectedContrailCommon, generatedContrailCommon,
 			"Contrail common file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, compareFiles(t, expectedGatewayCommon, generatedGatewayCommon),
+		assertYAMLFileEqual(t, expectedGatewayCommon, generatedGatewayCommon,
 			"Gateway common file created during cluster %s is not as expected", tt.action)
+		assertYAMLFileEqual(t, expectedTorCommon, generatedTorCommon,
+			"Tor common file created during cluster %s is not as expected", tt.action)
 		assert.Truef(t, verifyCommandsExecuted(t, tt.expectedCommands),
 			"MC commands executed during cluster %s are not as expected", tt.action)
 	}
