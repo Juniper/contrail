@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "fe99bc91_3096c701",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-11T12:28:13Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e78a2992_875078fa",
+      "range": {
+        "startLine": 229,
+        "startChar": 39,
+        "endLine": 229,
+        "endChar": 43
+      },
+      "revId": "e80399ac4ae9bbdd9f702f9a7e664cb8b54be4d4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "31e9da80_0942675a",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 3
@@ -93,6 +117,30 @@
       "revId": "e80399ac4ae9bbdd9f702f9a7e664cb8b54be4d4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a079a492_0c8be871",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 670,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-11T12:28:13Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "583fa9e0_0e356ebe",
+      "range": {
+        "startLine": 670,
+        "startChar": 49,
+        "endLine": 670,
+        "endChar": 53
+      },
+      "revId": "e80399ac4ae9bbdd9f702f9a7e664cb8b54be4d4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
