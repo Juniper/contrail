@@ -11,14 +11,12 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -26,29 +24,11 @@ import (
 )
 
 const (
-	defaultContrailCommonTemplate = "contrail_common.tmpl"
-	defaultGatewayCommonTemplate  = "gateway_common.tmpl"
-	defaultTORCommonTemplate      = "tor_common.tmpl"
-
 	mcWorkDir                 = "multi-cloud"
 	mcAnsibleRepo             = "contrail-multi-cloud"
-	defaultContrailCommonFile = "ansible-multicloud/contrail/common.yml"
-	defaultTORCommonFile      = "ansible-multicloud/tor/common.yml"
-	defaultGatewayCommonFile  = "ansible-multicloud/gateway/common.yml"
 	defaultMCInventoryFile    = "inventories/inventory.yml"
 	defaultTopologyFile       = "topology.yml"
 	defaultSecretFile         = "secret.yml"
-
-	defaultContrailUser       = "admin"
-	defaultContrailPassword   = "c0ntrail123"
-	defaultContrailConfigPort = "8082"
-	defaultContrailTenant     = "default-project"
-	pathConfig                = "/etc/multicloud"
-	bgpSecret                 = "bgp_secret"
-	bgpMCRoutesForController  = "False"
-	debugMCRoutes             = "False"
-	torBGPSecret              = "contrail_secret"
-	torOSPFSecret             = "contrail_secret"
 
 	openstack = "openstack"
 
@@ -194,13 +174,13 @@ func (m *multiCloudProvisioner) createFiles() error {
 	if err := m.createClusterSecretFile(); err != nil {
 		return err
 	}
-	if err := m.createContrailCommonFile(m.getContrailCommonFile()); err != nil {
+	if err := m.createContrailCommonFile(); err != nil {
 		return err
 	}
-	if err := m.createGatewayCommonFile(m.getGatewayCommonFile()); err != nil {
+	if err := m.createGatewayCommonFile(); err != nil {
 		return err
 	}
-	return m.createTORCommonFile(m.getTORCommonFile())
+	return m.createTORCommonFile()
 }
 
 // nolint: gocyclo
@@ -419,75 +399,6 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
 }
 
-func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
-	m.Log.Info("Creating contrail/common.yml input file for multi-cloud deployer")
-	contrailPassword := m.getContrailPassword()
-
-	pContext := pongo2.Context{
-		"cluster":                   m.clusterData.ClusterInfo,
-		"k8sCluster":                m.clusterData.GetK8sClusterInfo(),
-		"defaultSSHUser":            m.clusterData.DefaultSSHUser,
-		"defaultSSHPassword":        m.clusterData.DefaultSSHPassword,
-		"defaultSSHKey":             m.clusterData.DefaultSSHKey,
-		"defaultContrailUser":       defaultContrailUser,
-		"defaultContrailPassword":   contrailPassword,
-		"defaultContrailConfigPort": defaultContrailConfigPort,
-		"defaultContrailTenant":     defaultContrailTenant,
-	}
-
-	if err := template.ApplyToFile(
-		m.contrailCommonTemplatePath(),
-		destination,
-		pContext,
-		defaultFilePermRWOnly,
-	); err != nil {
-		return err
-	}
-	m.Log.Info("Created contrail/common.yml input file for multi-cloud deployer")
-	return nil
-}
-
-func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) error {
-	m.Log.Info("Creating gateway/common.yml input file for multi-cloud deployer")
-	pContext := pongo2.Context{
-		"cluster":    m.clusterData.ClusterInfo,
-		"pathConfig": pathConfig,
-		"bgpSecret":  bgpSecret,
-	}
-
-	if err := template.ApplyToFile(
-		m.gatewayCommonTemplatePath(),
-		destination,
-		pContext,
-		defaultFilePermRWOnly,
-	); err != nil {
-		return err
-	}
-	m.Log.Info("Created gateway/common.yml input file for multi-cloud deployer")
-	return nil
-}
-
-func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
-	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
-	pContext := pongo2.Context{
-		"torBGPSecret":             torBGPSecret,
-		"torOSPFSecret":            torOSPFSecret,
-		"debugMCRoutes":            debugMCRoutes,
-		"bgpMCRoutesForController": bgpMCRoutesForController,
-	}
-
-	if err := template.ApplyToFile(
-		m.torCommonTemplatePath(),
-		destination,
-		pContext,
-		defaultFilePermRWOnly,
-	); err != nil {
-		return err
-	}
-	m.Log.Info("Created tor/common.yml input file for multi-cloud deployer")
-	return nil
-}
-
 func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 	removeErr := osutil.ForceRemoveFiles(m.filesToRemove(), m.Log)
 	return errors.Wrap(removeErr, "failed to remove credential files")
@@ -591,18 +502,6 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 	}
 
 	return keypairObj.Keypair, nil
-}
-
-func (m *multiCloudProvisioner) contrailCommonTemplatePath() string {
-	return filepath.Join(m.getTemplateRoot(), defaultContrailCommonTemplate)
-}
-
-func (m *multiCloudProvisioner) gatewayCommonTemplatePath() string {
-	return filepath.Join(m.getTemplateRoot(), defaultGatewayCommonTemplate)
-}
-
-func (m *multiCloudProvisioner) torCommonTemplatePath() string {
-	return filepath.Join(m.getTemplateRoot(), defaultTORCommonTemplate)
 }
 
 func (m *multiCloudProvisioner) getTFStateFile() string {
