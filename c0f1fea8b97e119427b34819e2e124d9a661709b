@@ -91,6 +91,52 @@
       "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7b71f2f1_4157d044",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:28:05Z",
+      "side": 1,
+      "message": "errors.Wrapf()",
+      "range": {
+        "startLine": 272,
+        "startChar": 25,
+        "endLine": 272,
+        "endChar": 35
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "101ec136_77b436c8",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:28:05Z",
+      "side": 1,
+      "message": "Why not nil?",
+      "range": {
+        "startLine": 272,
+        "startChar": 7,
+        "endLine": 272,
+        "endChar": 23
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
