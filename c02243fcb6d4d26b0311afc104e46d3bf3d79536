@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3df327ee_170e6fff",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-12T16:14:10Z",
+      "side": 1,
+      "message": "Please follow point 2 https://github.com/Juniper/contrail/blob/master/REVIEW.md#function-signature-formatting\nDo it in other parts too",
+      "revId": "c02243fcb6d4d26b0311afc104e46d3bf3d79536",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
