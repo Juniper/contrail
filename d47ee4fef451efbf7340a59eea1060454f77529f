@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "d56ea963_bc79496f",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-12T16:07:54Z",
+      "side": 1,
+      "message": "Ah yes, I remembered that there was some great description about differences between mock/fake/stub, but I was not managed to find this. Thanks for that link :)",
+      "parentUuid": "bfaeaaee_12965700",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0e336faf_e0af1163",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 11
