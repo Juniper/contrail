@@ -66,6 +66,30 @@
     },
     {
       "key": {
+        "uuid": "013b5ce3_535fbf84",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-12T15:09:50Z",
+      "side": 1,
+      "message": "+1 to Michał.",
+      "parentUuid": "6deeb278_b87f4af1",
+      "range": {
+        "startLine": 52,
+        "startChar": 1,
+        "endLine": 52,
+        "endChar": 4
+      },
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0a62a61a_fc646cca",
         "filename": "pkg/client/baseclient/keystone.go",
         "patchSetId": 9
@@ -101,6 +125,30 @@
       "side": 1,
       "message": "I would rather not.",
       "parentUuid": "0a62a61a_fc646cca",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 133,
+        "endChar": 4
+      },
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a1016396_9b12e085",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-12T15:09:50Z",
+      "side": 1,
+      "message": "+1 to Michał.",
+      "parentUuid": "74f71c96_31bb5509",
       "range": {
         "startLine": 133,
         "startChar": 1,
