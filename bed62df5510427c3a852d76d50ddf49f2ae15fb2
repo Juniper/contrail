@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "6d470330_6d49c79f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-12T15:14:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "59c985ec_47f0ffd3",
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a2f26588_44096699",
         "filename": "pkg/client/baseclient/keystone.go",
         "patchSetId": 9
