@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "77a483eb_b385880b",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-12T16:08:50Z",
+      "side": 1,
+      "message": "Named constant...",
+      "revId": "8964e320512f4e1a6777b77560a3cef3e6eeff2e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8540718a_71c33aea",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-12T16:08:50Z",
+      "side": 1,
+      "message": "...versus stating the string directly. Choose one of those methods and keep it uniform.",
+      "revId": "8964e320512f4e1a6777b77560a3cef3e6eeff2e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
