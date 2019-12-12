@@ -177,6 +177,98 @@
       "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a682896_ff119700",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 723,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T16:04:38Z",
+      "side": 1,
+      "message": "IMO: errors.Wrap(err, \"create service user\")",
+      "range": {
+        "startLine": 723,
+        "startChar": 9,
+        "endLine": 723,
+        "endChar": 12
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "20baed20_c9f002e7",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T16:04:38Z",
+      "side": 1,
+      "message": "Please add those fields to deploy.Config, instead of reading them here.",
+      "range": {
+        "startLine": 102,
+        "startChar": 12,
+        "endLine": 102,
+        "endChar": 55
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5f377f5d_3b58ec68",
+        "filename": "pkg/replication/client.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T16:04:38Z",
+      "side": 1,
+      "message": "dd",
+      "range": {
+        "startLine": 147,
+        "startChar": 1,
+        "endLine": 147,
+        "endChar": 24
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a2d01b90_b40682ba",
+        "filename": "pkg/replication/client.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T16:04:38Z",
+      "side": 1,
+      "message": "IMO: redundant variable",
+      "range": {
+        "startLine": 154,
+        "startChar": 1,
+        "endLine": 154,
+        "endChar": 4
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
