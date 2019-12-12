@@ -45,6 +45,52 @@
       "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9dbffdce_deb9ff13",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:26:40Z",
+      "side": 1,
+      "message": "Can\u0027t it be just nil? Below as well",
+      "range": {
+        "startLine": 229,
+        "startChar": 0,
+        "endLine": 229,
+        "endChar": 24
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d396979_ef0579e9",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:26:40Z",
+      "side": 1,
+      "message": "IMO redundant variable",
+      "range": {
+        "startLine": 249,
+        "startChar": 1,
+        "endLine": 249,
+        "endChar": 5
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
