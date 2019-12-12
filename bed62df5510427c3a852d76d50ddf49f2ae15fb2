@@ -42,6 +42,30 @@
     },
     {
       "key": {
+        "uuid": "6deeb278_b87f4af1",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-12T15:08:16Z",
+      "side": 1,
+      "message": "I would rather not.",
+      "parentUuid": "a2f26588_44096699",
+      "range": {
+        "startLine": 52,
+        "startChar": 1,
+        "endLine": 52,
+        "endChar": 4
+      },
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0a62a61a_fc646cca",
         "filename": "pkg/client/baseclient/keystone.go",
         "patchSetId": 9
@@ -53,6 +77,30 @@
       "writtenOn": "2019-12-12T14:58:23Z",
       "side": 1,
       "message": "Consider removing variable",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 133,
+        "endChar": 4
+      },
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "74f71c96_31bb5509",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-12T15:08:16Z",
+      "side": 1,
+      "message": "I would rather not.",
+      "parentUuid": "0a62a61a_fc646cca",
       "range": {
         "startLine": 133,
         "startChar": 1,
