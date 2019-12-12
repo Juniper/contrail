@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a71d85da_1aefe0da",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:19:40Z",
+      "side": 1,
+      "message": "errors.Wrapf()",
+      "range": {
+        "startLine": 223,
+        "startChar": 25,
+        "endLine": 223,
+        "endChar": 35
+      },
+      "revId": "463f0b66d742e6ee63ea1a110ac7e1bf29544415",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

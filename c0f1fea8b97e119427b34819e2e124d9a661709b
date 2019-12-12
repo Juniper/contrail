@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fd6ec0c9_202e6cad",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:19:40Z",
+      "side": 1,
+      "message": "Optionally: errors.Wrapf()",
+      "range": {
+        "startLine": 117,
+        "startChar": 12,
+        "endLine": 117,
+        "endChar": 22
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "93d738e5_a42f990f",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T15:19:40Z",
+      "side": 1,
+      "message": "Optionally: Wrapping errors in this function would add useful context if anything fails.",
+      "range": {
+        "startLine": 229,
+        "startChar": 26,
+        "endLine": 229,
+        "endChar": 29
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
