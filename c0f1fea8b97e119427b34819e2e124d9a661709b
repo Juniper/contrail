@@ -226,6 +226,30 @@
     },
     {
       "key": {
+        "uuid": "e925361a_d1c1cc69",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-12T16:26:17Z",
+      "side": 1,
+      "message": "And add values for new fields to pkg/deploy/templates/contrail-deploy-config.yml",
+      "parentUuid": "20baed20_c9f002e7",
+      "range": {
+        "startLine": 102,
+        "startChar": 12,
+        "endLine": 102,
+        "endChar": 55
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5f377f5d_3b58ec68",
         "filename": "pkg/replication/client.go",
         "patchSetId": 13
