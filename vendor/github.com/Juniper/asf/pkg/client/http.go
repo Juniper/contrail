@@ -8,16 +8,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
-	"strconv"
 
-	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/httputil"
 	"github.com/Juniper/asf/pkg/keystone"
-	// TODO(buoto): Decouple from below packages
-	//"github.com/Juniper/asf/pkg/neutron/logic"
-	"github.com/Juniper/asf/pkg/services"
-	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -64,9 +58,8 @@ func (c *HTTPConfig) SetCredentials(username, password string) {
 
 // HTTP represents API Server HTTP client.
 type HTTP struct {
-	services.BaseService
 	httpClient *http.Client
-	Keystone   *Keystone
+	Keystone   *keystone.Client
 
 	HTTPConfig `yaml:",inline"`
 
@@ -78,9 +71,9 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 	hc := &http.Client{Transport: transport(c.Endpoint, c.Insecure)}
 	return &HTTP{
 		httpClient: hc,
-		Keystone: &Keystone{
-			HTTPClient: hc,
-			URL:        c.AuthURL,
+		Keystone: &keystone.Client{
+			HTTPDoer: hc,
+			URL:      c.AuthURL,
 		},
 		HTTPConfig: *c,
 	}
@@ -115,17 +108,14 @@ func urlScheme(endpoint string) (string, error) {
 }
 
 // Login refreshes authentication token.
-func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
-	resp, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
+func (h *HTTP) Login(ctx context.Context) error {
+	token, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
 	if err != nil {
-		return resp, err
+		return err
 	}
 
-	if resp != nil {
-		h.AuthToken = resp.Header.Get("X-Subject-Token")
-	}
-
-	return resp, nil
+	h.AuthToken = token
+	return nil
 }
 
 // Batch execution.
@@ -158,182 +148,52 @@ type Request struct {
 
 // Create send a create API request.
 func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.POST, path, nil, data, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodPost, path, nil, data, output, []int{http.StatusOK})
 }
 
 // Read send a get API request.
 func (h *HTTP) Read(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.GET, path, nil, nil, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodGet, path, nil, nil, output, []int{http.StatusOK})
 }
 
 // ReadWithQuery send a get API request with a query.
 func (h *HTTP) ReadWithQuery(
 	ctx context.Context, path string, query url.Values, output interface{},
 ) (*http.Response, error) {
-	return h.Do(ctx, echo.GET, path, query, nil, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodGet, path, query, nil, output, []int{http.StatusOK})
 }
 
 // Update send an update API request.
 func (h *HTTP) Update(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.PUT, path, nil, data, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodPut, path, nil, data, output, []int{http.StatusOK})
 }
 
 // Delete send a delete API request.
 func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodDelete, path, nil, nil, output, []int{http.StatusOK})
 }
 
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.DELETE, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
-}
-
-// RefUpdate sends a create/update API request/
-func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
-}
-
-// CreateIntPool sends a create int pool request to remote int-pools.
-func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
-	_, err := h.Do(
-		ctx,
-		echo.POST,
-		"/"+services.IntPoolsPath,
-		nil,
-		&services.CreateIntPoolRequest{
-			Pool:  pool,
-			Start: start,
-			End:   end,
-		},
-		&struct{}{},
-		[]int{http.StatusOK},
-	)
-	return errors.Wrap(err, "error creating int pool in int-pools via HTTP")
-}
-
-// GetIntOwner sends a get int pool owner request to remote int-owner.
-func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (string, error) {
-	q := make(url.Values)
-	q.Set("pool", pool)
-	q.Set("value", strconv.FormatInt(value, 10))
-	var output struct {
-		Owner string `json:"owner"`
-	}
-
-	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
-	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
-}
-
-// DeleteIntPool sends a delete int pool request to remote int-pools.
-func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
-	_, err := h.Do(
-		ctx,
-		echo.DELETE,
-		"/"+services.IntPoolsPath,
-		nil,
-		&services.DeleteIntPoolRequest{
-			Pool: pool,
-		},
-		&struct{}{},
-		[]int{http.StatusOK},
-	)
-	return errors.Wrap(err, "error deleting int pool in int-pools via HTTP")
-}
-
-// AllocateInt sends an allocate int request to remote int-pool.
-func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, error) {
-	var output struct {
-		Value int64 `json:"value"`
-	}
-	_, err := h.Do(
-		ctx,
-		echo.POST,
-		"/"+services.IntPoolPath,
-		nil,
-		&services.IntPoolAllocationBody{
-			Pool:  pool,
-			Owner: owner,
-		},
-		&output,
-		[]int{http.StatusOK},
-	)
-	return output.Value, errors.Wrap(err, "error allocating int in int-pool via HTTP")
-}
-
-// SetInt sends a set int request to remote int-pool.
-func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
-	_, err := h.Do(
-		ctx,
-		echo.POST,
-		"/"+services.IntPoolPath,
-		nil,
-		&services.IntPoolAllocationBody{
-			Pool:  pool,
-			Value: &value,
-			Owner: owner,
-		},
-		&struct{}{},
-		[]int{http.StatusOK},
-	)
-	return errors.Wrap(err, "error setting int in int-pool via HTTP")
-}
-
-// DeallocateInt sends a deallocate int request to remote int-pool.
-func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) error {
-	_, err := h.Do(
-		ctx,
-		echo.DELETE,
-		"/"+services.IntPoolPath,
-		nil,
-		&services.IntPoolAllocationBody{
-			Pool:  pool,
-			Value: &value,
-		},
-		&struct{}{},
-		[]int{http.StatusOK},
-	)
-	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
-}
-
-// NeutronPost sends Neutron request
-func (h *HTTP) NeutronPost(ctx context.Context, r *logic.Request, expected []int) (logic.Response, error) {
-	response, err := logic.MakeResponse(r.GetType())
-	if err != nil {
-		return nil, errors.Errorf("failed to get response type for request %v", r)
-	}
-	_, err = h.Do(
-		ctx,
-		echo.POST,
-		fmt.Sprintf("/neutron/%s", r.Context.Type),
-		nil,
-		r,
-		&response,
-		expected,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return response, nil
+	return h.Do(ctx, http.MethodDelete, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
 }
 
 // Do issues an API request.
 func (h *HTTP) Do(
 	ctx context.Context,
-	method,
-	path string,
+	method, path string,
 	query url.Values,
-	data interface{},
-	output interface{},
+	data, output interface{},
 	expected []int,
 ) (*http.Response, error) {
-	request, err := h.prepareHTTPRequest(method, path, data, query)
+	request, err := h.prepareHTTPRequest(ctx, method, path, data, query)
 	if err != nil {
 		return nil, err
 	}
 
 	resp, err := h.doHTTPRequestRetryingOn401(ctx, request, data)
 	if err != nil {
-		return resp, errorFromResponse(err, resp)
+		return resp, httputil.ErrorFromResponse(err, resp)
 	}
 	defer func() {
 		if cErr := resp.Body.Close(); cErr != nil {
@@ -341,9 +201,9 @@ func (h *HTTP) Do(
 		}
 	}()
 
-	err = checkStatusCode(expected, resp.StatusCode)
+	err = httputil.CheckStatusCode(expected, resp.StatusCode)
 	if err != nil {
-		return resp, errorFromResponse(err, resp)
+		return resp, httputil.ErrorFromResponse(err, resp)
 	}
 
 	d := json.NewDecoder(resp.Body)
@@ -351,14 +211,16 @@ func (h *HTTP) Do(
 	err = d.Decode(&output)
 	switch err {
 	default:
-		return resp, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+		return resp, errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
 	case io.EOF:
 	case nil:
 	}
 	return resp, nil
 }
 
-func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
+func (h *HTTP) prepareHTTPRequest(
+	ctx context.Context, method, path string, data interface{}, query url.Values,
+) (*http.Request, error) {
 	var request *http.Request
 	if data != nil {
 		dataJSON, err := json.Marshal(data)
@@ -369,12 +231,14 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query u
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
+		request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
 	} else {
 		var err error
 		request, err = http.NewRequest(method, h.getURL(path), nil)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
+		request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
 	}
 	if len(query) > 0 {
 		request.URL.RawQuery = query.Encode()
@@ -391,8 +255,9 @@ func (h *HTTP) getURL(path string) string {
 }
 
 // nolint: gocyclo
-func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
-	request *http.Request, data interface{}) (*http.Response, error) {
+func (h *HTTP) doHTTPRequestRetryingOn401(
+	ctx context.Context, request *http.Request, data interface{},
+) (*http.Response, error) {
 	logrus.WithFields(logrus.Fields{
 		"method": request.Method,
 		"url":    request.URL,
@@ -400,7 +265,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 		"data":   data,
 	}).Debug("Executing API Server request")
 
-	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	httputil.SetContextHeaders(request)
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error
@@ -422,7 +287,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 			}
 
 			// refresh token and use the new token in request header
-			if resp, err = h.Login(ctx); err != nil {
+			if err := h.Login(ctx); err != nil {
 				return resp, err
 			}
 			if h.AuthToken != "" {
@@ -431,24 +296,4 @@ func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 		}
 	}
 	return resp, nil
-}
-
-func checkStatusCode(expected []int, actual int) error {
-	for _, e := range expected {
-		if e == actual {
-			return nil
-		}
-	}
-	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
-}
-
-func errorFromResponse(e error, r *http.Response) error {
-	if r == nil {
-		return errors.Wrap(e, "HTTP response is nil, error")
-	}
-	b, err := httputil.DumpResponse(r, true)
-	if err != nil {
-		return errors.Wrapf(e, "HTTP response: failed to dump (%s)", err)
-	}
-	return errors.Wrapf(e, "HTTP response:\n%v", string(b))
 }

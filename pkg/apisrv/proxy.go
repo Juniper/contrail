@@ -21,6 +21,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	asfclient "github.com/Juniper/asf/pkg/client"
 )
 
 // Proxy service related constants.
@@ -53,7 +55,7 @@ type DynamicProxyConfig struct {
 	// ServiceTokenEndpointPrefixes are prefixes of the endpoints that should have a service token injected into requests.
 	ServiceTokenEndpointPrefixes []string
 	// ServiceUserClientConfig is an HTTP config that allows logging in as the service user.
-	ServiceUserClientConfig *client.HTTPConfig
+	ServiceUserClientConfig *asfclient.HTTPConfig
 }
 
 func newProxyService(es *endpoint.Store, dbService services.Service, config *DynamicProxyConfig) *proxyService {

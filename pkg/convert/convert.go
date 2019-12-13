@@ -14,6 +14,8 @@ import (
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfclient "github.com/Juniper/asf/pkg/client"
 )
 
 // Data source and destination types.
@@ -153,7 +155,7 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 	}
 	events = &services.EventList{Events: e}
 
-	c := client.NewHTTP(&client.HTTPConfig{
+	c := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       "",
 		Password: "",
 		Endpoint: url,

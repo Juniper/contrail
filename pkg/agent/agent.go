@@ -16,6 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	asfclient "github.com/Juniper/asf/pkg/client"
 )
 
 // Agent constants.
@@ -99,7 +101,7 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
+	s := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.Endpoint,

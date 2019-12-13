@@ -30,6 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -152,12 +153,12 @@ type Waiters map[string][]Event
 
 //Task has API request and expected response.
 type Task struct {
-	Name     string          `yaml:"name,omitempty"`
-	Client   string          `yaml:"client,omitempty"`
-	Request  *client.Request `yaml:"request,omitempty"`
-	Expect   interface{}     `yaml:"expect,omitempty"`
-	Watchers Watchers        `yaml:"watchers,omitempty"`
-	Waiters  Waiters         `yaml:"await,omitempty"`
+	Name     string             `yaml:"name,omitempty"`
+	Client   string             `yaml:"client,omitempty"`
+	Request  *asfclient.Request `yaml:"request,omitempty"`
+	Expect   interface{}        `yaml:"expect,omitempty"`
+	Watchers Watchers           `yaml:"watchers,omitempty"`
+	Waiters  Waiters            `yaml:"await,omitempty"`
 }
 
 // CleanTask defines clean task
@@ -170,16 +171,16 @@ type CleanTask struct {
 
 // TestScenario defines integration test scenario.
 type TestScenario struct {
-	Name                  string                        `yaml:"name,omitempty"`
-	Description           string                        `yaml:"description,omitempty"`
-	IntentCompilerEnabled bool                          `yaml:"intent_compiler_enabled,omitempty"`
-	Tables                []string                      `yaml:"tables,omitempty"`
-	ClientConfigs         map[string]*client.HTTPConfig `yaml:"clients,omitempty"`
-	Clients               ClientsList                   `yaml:"-"`
-	CleanTasks            []CleanTask                   `yaml:"cleanup,omitempty"`
-	Workflow              []*Task                       `yaml:"workflow,omitempty"`
-	Watchers              Watchers                      `yaml:"watchers,omitempty"`
-	TestData              interface{}                   `yaml:"test_data,omitempty"`
+	Name                  string                           `yaml:"name,omitempty"`
+	Description           string                           `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                             `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                         `yaml:"tables,omitempty"`
+	ClientConfigs         map[string]*asfclient.HTTPConfig `yaml:"clients,omitempty"`
+	Clients               ClientsList                      `yaml:"-"`
+	CleanTasks            []CleanTask                      `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                          `yaml:"workflow,omitempty"`
+	Watchers              Watchers                         `yaml:"watchers,omitempty"`
+	TestData              interface{}                      `yaml:"test_data,omitempty"`
 }
 
 // ClientsList is the list of clients used in test
@@ -369,7 +370,7 @@ func startIntentCompiler(
 // It assigns created clients to given test scenario.
 func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server *APIServer) ClientsList {
 	for k, c := range ts.ClientConfigs {
-		ts.Clients[k] = client.NewHTTP(&client.HTTPConfig{
+		ts.Clients[k] = client.NewHTTP(&asfclient.HTTPConfig{
 			ID:       c.ID,
 			Password: c.Password,
 			Endpoint: server.URL(),

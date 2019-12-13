@@ -3,9 +3,9 @@ package contrailcli
 import (
 	"fmt"
 
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/spf13/cobra"
 )
 
@@ -135,14 +135,14 @@ var listCmd = &cobra.Command{
 			schemaID = args[0]
 		}
 
-		cli, err := baseclient.NewCLIByViper()
+		cli, err := client.NewCLIByViper()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}
 
 		r, err := cli.ListResources(
 			schemaID,
-			&baseclient.ListParameters{
+			&client.ListParameters{
 				Filters:      filters,
 				PageLimit:    pageLimit,
 				PageMarker:   pageMarker,

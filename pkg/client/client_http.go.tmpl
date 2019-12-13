@@ -6,32 +6,26 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Juniper/contrail/pkg/client/baseclient"
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 )
 
-// TODO(mblotniak): remove below aliases after moving to asf.
-type HTTPConfig = baseclient.HTTPConfig
-type Request = baseclient.Request
-var LoadHTTPConfig = baseclient.LoadHTTPConfig
-
-
 // HTTP is an API client that implements services.Service interface.
 type HTTP struct {
 	services.BaseService
-	*baseclient.HTTP
+	*client.HTTP
 }
 
 // NewHTTP makes API Server HTTP client.
-func NewHTTP(c *baseclient.HTTPConfig) *HTTP {
-	return &HTTP{HTTP: baseclient.NewHTTP(c)}
+func NewHTTP(c *client.HTTPConfig) *HTTP {
+	return &HTTP{HTTP: client.NewHTTP(c)}
 }
 
 // NewHTTPFromConfig makes API Server HTTP client with viper config
 func NewHTTPFromConfig() *HTTP {
-	return &HTTP{HTTP: baseclient.NewHTTPFromConfig()}
+	return &HTTP{HTTP: client.NewHTTPFromConfig()}
 }
 
 // RefUpdate sends a create/update API request

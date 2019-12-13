@@ -2,10 +2,151 @@ package client
 
 import (
 	"context"
+	"net/http"
+	"net/url"
+	"strconv"
 
-	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services"
+	"github.com/Juniper/contrail/pkg/client/baseclient"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
 )
+
+// TODO(mblotniak): remove below aliases after moving to asf.
+type HTTPConfig = baseclient.HTTPConfig
+type Request = baseclient.Request
+var LoadHTTPConfig = baseclient.LoadHTTPConfig
+
+
+// HTTP is an API client that implements services.Service interface.
+type HTTP struct {
+	services.BaseService
+	*baseclient.HTTP
+}
+
+// NewHTTP makes API Server HTTP client.
+func NewHTTP(c *baseclient.HTTPConfig) *HTTP {
+	return &HTTP{HTTP: baseclient.NewHTTP(c)}
+}
+
+// NewHTTPFromConfig makes API Server HTTP client with viper config
+func NewHTTPFromConfig() *HTTP {
+	return &HTTP{HTTP: baseclient.NewHTTPFromConfig()}
+}
+
+// RefUpdate sends a create/update API request
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
+	return h.Do(ctx, http.MethodPost, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
+}
+
+// CreateIntPool sends a create int pool request to remote int-pools.
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodPost,
+		"/"+services.IntPoolsPath,
+		nil,
+		&services.CreateIntPoolRequest{
+			Pool:  pool,
+			Start: start,
+			End:   end,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error creating int pool in int-pools via HTTP")
+}
+
+// GetIntOwner sends a get int pool owner request to remote int-owner.
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (string, error) {
+	q := make(url.Values)
+	q.Set("pool", pool)
+	q.Set("value", strconv.FormatInt(value, 10))
+	var output struct {
+		Owner string `json:"owner"`
+	}
+
+	_, err := h.Do(ctx, http.MethodGet, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
+	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
+}
+
+// DeleteIntPool sends a delete int pool request to remote int-pools.
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodDelete,
+		"/"+services.IntPoolsPath,
+		nil,
+		&services.DeleteIntPoolRequest{
+			Pool: pool,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error deleting int pool in int-pools via HTTP")
+}
+
+// AllocateInt sends an allocate int request to remote int-pool.
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, error) {
+	var output struct {
+		Value int64 `json:"value"`
+	}
+	_, err := h.Do(
+		ctx,
+		http.MethodPost,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Owner: owner,
+		},
+		&output,
+		[]int{http.StatusOK},
+	)
+	return output.Value, errors.Wrap(err, "error allocating int in int-pool via HTTP")
+}
+
+// SetInt sends a set int request to remote int-pool.
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodPost,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Value: &value,
+			Owner: owner,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error setting int in int-pool via HTTP")
+}
+
+// DeallocateInt sends a deallocate int request to remote int-pool.
+// TODO(mblotniak): Move to ASF/pkg/client package, when handler implementation(pkg/services/common.go) is moved.
+func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodDelete,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Value: &value,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
+}
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 

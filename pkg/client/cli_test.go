@@ -13,7 +13,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	. "github.com/Juniper/contrail/pkg/client/baseclient"
+	. "github.com/Juniper/asf/pkg/client"
 )
 
 const (
