@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7afba69d_2e4f2dcd",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:04:00Z",
+      "side": 1,
+      "message": "Just drop those 2 comments. Or write some meaningful description if you want.",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "822375ff_f3b71597",
+        "filename": "pkg/deploy/deploy.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:04:00Z",
+      "side": 1,
+      "message": "Drop those comments or write descriptive ones.",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11afba15_0ebe27c3",
+        "filename": "pkg/deploy/templates/contrail-deploy-config.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:04:00Z",
+      "side": 1,
+      "message": "Please check where this config is used. I guess it is only for integration tests.\n\nAdd those keys also to contrail-command-deployer/playbooks/roles/create_configs/templates/contrail-deploy-config.tmpl.j2\nThen add to https://review.opencontrail.org/c/Juniper/contrail/+/55686 commit message \"Depends-on: \u003cnumber of CCD change\u003e\" in order to prevent breaking CC+CCD compability. Ask me offline how to do that.",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
