@@ -14,7 +14,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
@@ -57,7 +56,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	server.ForceProxyUpdate()
 
 	// Fetch cluster keystone token
-	k := &baseclient.Keystone{
+	k := &kstypes.Client{
 		URL:      ksPrivate.URL + "/v3",
 		HTTPDoer: &http.Client{},
 	}
@@ -106,7 +105,7 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 	})
 	assert.NoError(t, err, "failed to marshal cluster_token request")
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	k := &baseclient.Keystone{
+	k := &kstypes.Client{
 		URL: keystoneAuthURL,
 		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
@@ -188,7 +187,7 @@ func TestClusterLogin(t *testing.T) {
 			for _, client := range clients {
 				ctx = auth.WithXClusterID(ctx, clusterID)
 				if tt.token != "" {
-					ctx = baseclient.WithXAuthToken(ctx, tt.token)
+					ctx = kstypes.WithXAuthToken(ctx, tt.token)
 				}
 				client.ID = tt.id
 				client.Password = tt.password

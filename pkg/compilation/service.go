@@ -25,6 +25,8 @@ import (
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
+
+	asfclient "github.com/Juniper/asf/pkg/client"
 )
 
 const serviceName = "intent-compiler"
@@ -100,7 +102,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 }
 
 func newAPIClient(c *config.APIClientConfig) *client.HTTP {
-	client := client.NewHTTP(&client.HTTPConfig{
+	client := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.URL,

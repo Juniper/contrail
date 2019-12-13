@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 	protocodec "github.com/gogo/protobuf/codec"
 	uuid "github.com/satori/go.uuid"
@@ -455,7 +456,7 @@ func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 }
 
 func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
-	c := client.NewHTTP(&client.HTTPConfig{
+	c := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       projectName,
 		Password: projectName,
 		Endpoint: server.URL(),

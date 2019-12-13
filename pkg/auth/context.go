@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/client/baseclient"
+	"github.com/Juniper/asf/pkg/httputil"
 )
 
 type key string
@@ -33,5 +33,5 @@ func IsInternalRequest(ctx context.Context) bool {
 
 // WithXClusterID creates child context with cluster ID
 func WithXClusterID(ctx context.Context, clusterID string) context.Context {
-	return baseclient.WithHTTPHeader(ctx, xClusterIDHeader, clusterID)
+	return httputil.WithHTTPHeader(ctx, xClusterIDHeader, clusterID)
 }

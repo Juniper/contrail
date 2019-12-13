@@ -1,4 +1,4 @@
-package baseclient
+package keystone
 
 import (
 	"bytes"
@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/asf/pkg/httputil"
 )
 
 const (
@@ -23,35 +24,35 @@ const (
 
 // WithXAuthToken creates child context with Auth Token
 func WithXAuthToken(ctx context.Context, token string) context.Context {
-	return WithHTTPHeader(ctx, xAuthTokenHeader, token)
+	return httputil.WithHTTPHeader(ctx, xAuthTokenHeader, token)
 }
 
 type doer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Keystone is a keystone client.
-type Keystone struct {
+// Client is a keystone client.
+type Client struct {
 	URL      string
 	HTTPDoer doer
 }
 
 type projectResponse struct {
-	Project keystone.Project `json:"project"`
+	Project Project `json:"project"`
 }
 
 type projectListResponse struct {
-	Projects []*keystone.Project `json:"projects"`
+	Projects []*Project `json:"projects"`
 }
 
 // GetProject gets project.
-func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
+func (k *Client) GetProject(ctx context.Context, token string, id string) (*Project, error) {
 	request, err := http.NewRequest(http.MethodGet, k.getURL("/projects/"+id), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	SetContextHeaders(request)
+	httputil.SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
 	var output projectResponse
 
@@ -61,20 +62,20 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
-		return nil, errorFromResponse(err, resp)
+	if err = httputil.CheckStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
+		return nil, httputil.ErrorFromResponse(err, resp)
 	}
 
 	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return nil, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+		return nil, errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
 	}
 
 	return &output.Project, nil
 }
 
 // GetProjectIDByName finds project id using project name.
-func (k *Keystone) GetProjectIDByName(
-	ctx context.Context, id, password, projectName string, domain *keystone.Domain) (string, error) {
+func (k *Client) GetProjectIDByName(
+	ctx context.Context, id, password, projectName string, domain *Domain) (string, error) {
 	// Fetch unscoped token
 	token, err := k.obtainUnscopedToken(ctx, id, password, domain)
 	if err != nil {
@@ -86,7 +87,7 @@ func (k *Keystone) GetProjectIDByName(
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	SetContextHeaders(request)
+	httputil.SetContextHeaders(request)
 	request.Header.Set(xAuthTokenHeader, token)
 
 	var output *projectListResponse
@@ -96,12 +97,12 @@ func (k *Keystone) GetProjectIDByName(
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
-		return "", errorFromResponse(err, resp)
+	if err = httputil.CheckStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
+		return "", httputil.ErrorFromResponse(err, resp)
 	}
 
 	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return "", errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+		return "", errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
 	}
 
 	for _, project := range output.Projects {
@@ -112,23 +113,23 @@ func (k *Keystone) GetProjectIDByName(
 	return "", fmt.Errorf("'%s' not a valid project name", projectName)
 }
 
-func (k *Keystone) getURL(path string) string {
+func (k *Client) getURL(path string) string {
 	return k.URL + path
 }
 
 // obtainUnscopedToken gets unscoped authentication token.
-func (k *Keystone) obtainUnscopedToken(
-	ctx context.Context, id, password string, domain *keystone.Domain,
+func (k *Client) obtainUnscopedToken(
+	ctx context.Context, id, password string, domain *Domain,
 ) (string, error) {
 	if k.URL == "" {
 		return "", nil
 	}
-	return k.fetchToken(ctx, &keystone.UnScopedAuthRequest{
-		Auth: &keystone.UnScopedAuth{
-			Identity: &keystone.Identity{
+	return k.fetchToken(ctx, &UnScopedAuthRequest{
+		Auth: &UnScopedAuth{
+			Identity: &Identity{
 				Methods: []string{"password"},
-				Password: &keystone.Password{
-					User: &keystone.User{
+				Password: &Password{
+					User: &User{
 						Name:     id,
 						Password: password,
 						Domain:   domain,
@@ -140,16 +141,16 @@ func (k *Keystone) obtainUnscopedToken(
 }
 
 // ObtainToken gets authentication token.
-func (k *Keystone) ObtainToken(ctx context.Context, id, password string, scope *keystone.Scope) (string, error) {
+func (k *Client) ObtainToken(ctx context.Context, id, password string, scope *Scope) (string, error) {
 	if k.URL == "" {
 		return "", nil
 	}
-	return k.fetchToken(ctx, &keystone.ScopedAuthRequest{
-		Auth: &keystone.ScopedAuth{
-			Identity: &keystone.Identity{
+	return k.fetchToken(ctx, &ScopedAuthRequest{
+		Auth: &ScopedAuth{
+			Identity: &Identity{
 				Methods: []string{"password"},
-				Password: &keystone.Password{
-					User: &keystone.User{
+				Password: &Password{
+					User: &User{
 						Name:     id,
 						Password: password,
 						Domain:   scope.GetDomain(),
@@ -162,7 +163,7 @@ func (k *Keystone) ObtainToken(ctx context.Context, id, password string, scope *
 }
 
 // fetchToken gets scoped/unscoped token.
-func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (string, error) {
+func (k *Client) fetchToken(ctx context.Context, authRequest interface{}) (string, error) {
 	d, err := json.Marshal(authRequest)
 	if err != nil {
 		return "", err
@@ -172,17 +173,17 @@ func (k *Keystone) fetchToken(ctx context.Context, authRequest interface{}) (str
 		return "", err
 	}
 	request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	SetContextHeaders(request)
+	httputil.SetContextHeaders(request)
 	request.Header.Set(contentTypeHeader, applicationJSONValue)
 
 	resp, err := k.HTTPDoer.Do(request)
 	if err != nil {
-		return "", errorFromResponse(err, resp)
+		return "", httputil.ErrorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
-		return "", errorFromResponse(err, resp)
+	if err = httputil.CheckStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
+		return "", httputil.ErrorFromResponse(err, resp)
 	}
 
 	return resp.Header.Get(xSubjectTokenHeader), nil
