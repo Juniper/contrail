@@ -1,10 +1,15 @@
-package baseclient
+package httputil
 
 import (
 	"context"
 	"net/http"
 	"reflect"
 	"testing"
+)
+
+const (
+	contentTypeHeader    = "Content-Type"
+	applicationJSONValue = "application/json"
 )
 
 func TestWithHTTPHeader(t *testing.T) {

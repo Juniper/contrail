@@ -9,10 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
@@ -32,6 +31,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	protocodec "github.com/gogo/protobuf/codec"
@@ -315,7 +315,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		serviceChain = append(serviceChain, &neutron.Service{
-			Keystone: &baseclient.Keystone{
+			Keystone: &kstypes.Client{
 				URL: viper.GetString("keystone.authurl"),
 				HTTPDoer: analytics.LatencyReportingDoer{
 					Doer: &http.Client{
@@ -449,10 +449,10 @@ func loadDynamicProxyConfig() *DynamicProxyConfig {
 	}
 }
 
-func loadServiceUserClientConfig() *client.HTTPConfig {
+func loadServiceUserClientConfig() *asfclient.HTTPConfig {
 	c := client.LoadHTTPConfig()
 	c.SetCredentials(
-		viper.GetString("keystone.service_user.id"),
+		viper.GetString("kstypesrvice_user.id"),
 		viper.GetString("keystone.service_user.password"),
 	)
 	c.Scope = kstypes.NewScope(

@@ -1,4 +1,4 @@
-package client_test
+package keystone_test
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/client"
-	"github.com/Juniper/asf/pkg/testutil/integration"
+	"github.com/Juniper/asf/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,18 +18,17 @@ func TestKeystoneClient(t *testing.T) {
 	})
 	defer s.CloseT(t)
 
-	k := &client.Keystone{
+	k := &keystone.Client{
 		URL: viper.GetString("keystone.authurl"),
-		HTTPClient: &http.Client{
+		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
 			},
 		},
 	}
 
-	resp, err := k.ObtainToken(context.Background(), integration.AdminUserID, integration.AdminUserPassword, nil)
+	token, err := k.ObtainToken(context.Background(), integration.AdminUserID, integration.AdminUserPassword, nil)
 	assert.NoError(t, err)
-	token := resp.Header.Get("X-Subject-Token")
 	assert.NotEmpty(t, token)
 
 	p, err := k.GetProject(context.Background(), token, integration.AdminProjectID)

@@ -3,8 +3,8 @@ package contrailcli
 import (
 	"fmt"
 
+	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/client/baseclient"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var showCmd = &cobra.Command{
 			uuid = args[1]
 		}
 
-		cli, err := baseclient.NewCLIByViper()
+		cli, err := client.NewCLIByViper()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}

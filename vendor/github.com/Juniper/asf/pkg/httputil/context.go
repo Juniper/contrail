@@ -1,14 +1,14 @@
-package baseclient
+package httputil
 
 import (
 	"context"
 	"net/http"
 )
 
-type clientContextKey string
+type httputilContextKey string
 
 const (
-	headersClientContextKey clientContextKey = "headers"
+	headersClientContextKey httputilContextKey = "headers"
 )
 
 // WithHTTPHeader creates child context with provided header.

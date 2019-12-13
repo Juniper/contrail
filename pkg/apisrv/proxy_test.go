@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/websocket"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
@@ -471,14 +472,14 @@ func TestKeystoneProxy(t *testing.T) {
 	clusterCName, clusterDName := contrailClusterName(t, "C"), contrailClusterName(t, "D")
 	authURL := server.URL() + keystone.LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
-	hcUserC := client.NewHTTP(&client.HTTPConfig{
+	hcUserC := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       usernameC,
 		Password: passwordC,
 		Endpoint: server.URL(),
 		AuthURL:  authURL,
 		Insecure: true,
 	})
-	hcUserD := client.NewHTTP(&client.HTTPConfig{
+	hcUserD := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       usernameD,
 		Password: passwordD,
 		Endpoint: server.URL(),
@@ -549,7 +550,7 @@ func TestKeystoneProxyRetriesRequestWhenTargetKeystoneServerIsClosed(t *testing.
 	clusterName := contrailClusterName(t, "")
 	authURL := server.URL() + keystone.LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
-	hcTest := client.NewHTTP(&client.HTTPConfig{
+	hcTest := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       username,
 		Password: password,
 		Endpoint: server.URL(),
@@ -622,7 +623,7 @@ func TestKeystoneProxyRetriesRequestWhenTargetKeystoneServerReturnsServerError(t
 	clusterName := contrailClusterName(t, "")
 	authURL := server.URL() + keystone.LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
-	hcTest := client.NewHTTP(&client.HTTPConfig{
+	hcTest := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       username,
 		Password: password,
 		Endpoint: server.URL(),

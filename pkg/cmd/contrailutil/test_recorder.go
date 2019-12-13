@@ -12,6 +12,8 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+
+	asfclient "github.com/Juniper/asf/pkg/client"
 )
 
 var inputPath string
@@ -51,7 +53,7 @@ func recordTest() {
 
 	clients := map[string]*client.HTTP{}
 	for key := range testScenario.Clients {
-		clients[key] = client.NewHTTP(&client.HTTPConfig{
+		clients[key] = client.NewHTTP(&asfclient.HTTPConfig{
 			Endpoint: endpoint,
 			AuthURL:  authURL,
 			Insecure: true,

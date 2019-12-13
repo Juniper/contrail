@@ -19,6 +19,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -89,7 +90,7 @@ func NewCloud(c *Config) (*Cloud, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&client.HTTPConfig{
+	s := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.Endpoint,

@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
@@ -57,7 +58,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		return
 	}
 
-	config := client.LoadHTTPConfig()
+	config := asfclient.LoadHTTPConfig()
 	authType, err := h.auth.GetAuthType(ep.ParentUUID)
 	if err != nil {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
