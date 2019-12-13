@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "304f8be1_1f70d1a3",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c47d35cf_e858bf68",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0e336faf_e0af1163",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 11
@@ -125,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "f3ecb621_5192461f",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c298fdc0_c5b0feeb",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "de3427e1_f99af5ff",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 11
@@ -172,6 +208,30 @@
     },
     {
       "key": {
+        "uuid": "b02e257d_55609d52",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "928f0c68_1332d294",
+      "range": {
+        "startLine": 23,
+        "startChar": 1,
+        "endLine": 26,
+        "endChar": 48
+      },
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1f679194_43696604",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 11
@@ -204,6 +264,24 @@
       "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "046c9d87_444f1969",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a74aed68_75dad035",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
@@ -242,6 +320,24 @@
     },
     {
       "key": {
+        "uuid": "213b952c_09604332",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "81f1b8e4_737bcdc8",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8a99b0b4_7bf25fc8",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 11
@@ -274,6 +370,24 @@
       "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "38334bb8_209a61e0",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a1d5c323_1a5d2805",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
@@ -312,6 +426,24 @@
     },
     {
       "key": {
+        "uuid": "365ab067_a69889f0",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e609ae98_680cc0ac",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a7f4bad2_70c78f40",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 11
@@ -344,6 +476,24 @@
       "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3987ef_ea334a4c",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d251024a_4112f837",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     },
     {
       "key": {
@@ -382,6 +532,24 @@
     },
     {
       "key": {
+        "uuid": "7dc75c66_11705d8d",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70fa8b64_dade5f7d",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ebbe40f4_f1a764d5",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 11
@@ -417,6 +585,24 @@
     },
     {
       "key": {
+        "uuid": "f32cd646_bae1706c",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9c3615bb_25db7506",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0a9b4775_9b1c7243",
         "filename": "pkg/cloud/update.go",
         "patchSetId": 11
@@ -449,6 +635,24 @@
       "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bf466482_30e3c556",
+        "filename": "pkg/cloud/update.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-13T14:02:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e6c8b623_cb20c92e",
+      "revId": "d47ee4fef451efbf7340a59eea1060454f77529f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
