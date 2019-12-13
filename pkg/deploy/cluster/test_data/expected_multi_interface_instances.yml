@@ -51,3 +51,8 @@ kolla_config:
     kolla_enable_tls_external: yes
   kolla_passwords:
     keystone_admin_password: contrail123
+  customize:
+    swift-proxy-server/proxy-server.conf: |
+      [filter:authtoken]
+      service_token_roles_required = True
+      service_token_roles = admin

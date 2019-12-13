@@ -54,3 +54,7 @@ kolla_config:
       [libvirt]
       virt_type=qemu
       cpu_mode=none
+    swift-proxy-server/proxy-server.conf: |
+      [filter:authtoken]
+      service_token_roles_required = True
+      service_token_roles = admin
