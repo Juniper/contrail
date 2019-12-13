@@ -97,6 +97,30 @@
     },
     {
       "key": {
+        "uuid": "75fe4f8b_d232e20f",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-13T15:51:24Z",
+      "side": 1,
+      "message": "okay. I agree. Removing this function.",
+      "parentUuid": "f7131237_56f3eec0",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2926b9c1_fe91a476",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -392,6 +416,30 @@
       "writtenOn": "2019-12-06T15:23:28Z",
       "side": 1,
       "message": "Shouldn\u0027t we expect the key to be in proper format/permissions instead of modifying key file?",
+      "range": {
+        "startLine": 49,
+        "startChar": 11,
+        "endLine": 49,
+        "endChar": 30
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "74496daa_4134394b",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-13T15:51:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6536f59e_f579c7a3",
       "range": {
         "startLine": 49,
         "startChar": 11,
