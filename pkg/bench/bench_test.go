@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
@@ -34,7 +35,7 @@ func TestBenchAPI(t *testing.T) {
 		return
 	}
 
-	c := client.NewHTTP(&client.HTTPConfig{
+	c := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       testName,
 		Password: testName,
 		Endpoint: host,

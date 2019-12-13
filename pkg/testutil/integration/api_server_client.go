@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
 
@@ -69,7 +70,7 @@ func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
 	return newLoggedInHTTPClient(AdminHTTPConfig(apiServerURL))
 }
 
-func newLoggedInHTTPClient(c *client.HTTPConfig) (*client.HTTP, error) {
+func newLoggedInHTTPClient(c *asfclient.HTTPConfig) (*client.HTTP, error) {
 	cl := client.NewHTTP(c)
 
 	if err := cl.Login(context.Background()); err != nil {
@@ -79,8 +80,8 @@ func newLoggedInHTTPClient(c *client.HTTPConfig) (*client.HTTP, error) {
 }
 
 // AdminHTTPConfig returns HTTP client config containing admin credentials.
-func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
-	return &client.HTTPConfig{
+func AdminHTTPConfig(apiServerURL string) *asfclient.HTTPConfig {
+	return &asfclient.HTTPConfig{
 		ID:       AdminUserID,
 		Password: AdminUserPassword,
 		Endpoint: apiServerURL,
@@ -97,7 +98,7 @@ func AdminHTTPConfig(apiServerURL string) *client.HTTPConfig {
 
 // NewHTTPClient creates HTTP client of API Server using Bob user credentials.
 func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	return newLoggedInHTTPClient(&client.HTTPConfig{
+	return newLoggedInHTTPClient(&asfclient.HTTPConfig{
 		ID:       BobUserID,
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
