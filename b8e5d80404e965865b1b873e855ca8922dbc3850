@@ -105,6 +105,24 @@
       "revId": "b8e5d80404e965865b1b873e855ca8922dbc3850",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ae69492e_d6f9507a",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-13T14:33:40Z",
+      "side": 1,
+      "message": "Done for real + fixed comment format",
+      "parentUuid": "c22e1cdc_49dcc452",
+      "revId": "b8e5d80404e965865b1b873e855ca8922dbc3850",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

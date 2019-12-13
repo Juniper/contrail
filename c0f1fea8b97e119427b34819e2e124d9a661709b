@@ -119,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "89ad3295_306aea38",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-13T14:33:40Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "93d738e5_a42f990f",
+      "range": {
+        "startLine": 229,
+        "startChar": 26,
+        "endLine": 229,
+        "endChar": 29
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9d396979_ef0579e9",
         "filename": "pkg/client/baseclient/keystone.go",
         "patchSetId": 13
@@ -407,6 +431,30 @@
     },
     {
       "key": {
+        "uuid": "af7c1a17_0a2a441d",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 723,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-13T14:33:40Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6a682896_ff119700",
+      "range": {
+        "startLine": 723,
+        "startChar": 9,
+        "endLine": 723,
+        "endChar": 12
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "20baed20_c9f002e7",
         "filename": "pkg/deploy/cluster/deploy.go",
         "patchSetId": 13
@@ -451,6 +499,30 @@
       "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6471e736_2b8b0cb3",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-13T14:33:40Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e925361a_d1c1cc69",
+      "range": {
+        "startLine": 102,
+        "startChar": 12,
+        "endLine": 102,
+        "endChar": 55
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

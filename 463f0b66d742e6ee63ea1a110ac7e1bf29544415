@@ -22,6 +22,30 @@
       "revId": "463f0b66d742e6ee63ea1a110ac7e1bf29544415",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed25fcba_0fec4864",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-13T14:33:40Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a71d85da_1aefe0da",
+      "range": {
+        "startLine": 223,
+        "startChar": 25,
+        "endLine": 223,
+        "endChar": 35
+      },
+      "revId": "463f0b66d742e6ee63ea1a110ac7e1bf29544415",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
