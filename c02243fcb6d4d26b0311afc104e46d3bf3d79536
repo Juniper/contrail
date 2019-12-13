@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "64d79914_b7d6e086",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-13T09:35:41Z",
+      "side": 1,
+      "message": "Rawr",
+      "range": {
+        "startLine": 69,
+        "startChar": 0,
+        "endLine": 69,
+        "endChar": 1
+      },
+      "revId": "c02243fcb6d4d26b0311afc104e46d3bf3d79536",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3df327ee_170e6fff",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 5
