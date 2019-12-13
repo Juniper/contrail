@@ -2,6 +2,46 @@
   "comments": [
     {
       "key": {
+        "uuid": "94034623_b444a4a5",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-13T10:21:12Z",
+      "side": 1,
+      "message": "+1 for the name change",
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c7b93376_f7a47a99",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-13T10:21:12Z",
+      "side": 1,
+      "message": "You don\u0027t need to extract variable. In-lining this would be as much, or maybe even more readable.",
+      "range": {
+        "startLine": 275,
+        "startChar": 1,
+        "endLine": 276,
+        "endChar": 16
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0258ee34_4f9b6b88",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 5
@@ -37,6 +77,30 @@
       "side": 1,
       "message": "I know \"if Test\" is anti-pattern when we need testing and we want to use mocking/stubbing. But the injection is kind of hard for now. One test for example, in pkg/deploy/cluster/cluster_test.go, function runClusterActionTest calls function manageCluster to make mock management. Function manageCluster, in turn, works like the following:\n\n    clusterDeployer, err :\u003d NewCluster(c)\n    deployer, err :\u003d clusterDeployer.GetDeployer()\n    err \u003d deployer.Deploy()\n\nAnd if we want an ansibleDeployer, GetDeployer calls function newAnsibleDeployer, newAnsibleDeployer creates container_player. So the ideal injection point is to do something like deployer.containerClient \u003d mockClient and we are done. But containerClient is an unexported field, and mockClient needs working directory information from a deployCluster instance which is created in function new AnsibleDeployer. So in one sentence, injection in this situation(in test logic instead of code logic) requires information form the lower level and one field export status changed. Adam, do you have any sugggestion about this problem?",
       "parentUuid": "0258ee34_4f9b6b88",
+      "range": {
+        "startLine": 159,
+        "startChar": 1,
+        "endLine": 160,
+        "endChar": 10
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffb65933_1c7003d4",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-13T10:21:12Z",
+      "side": 1,
+      "message": "@jim Have you removed the mock play functions from the production code players? If yes, then I think it\u0027s ok to leave above code as it is for this review. It\u0027s still some progress because previously AFAIR it was hidden inside the players.\n\nOn the other side, what is a must here is that we need to annotate this with some \"TODO\" comment.",
+      "parentUuid": "162b5215_e69224f6",
       "range": {
         "startLine": 159,
         "startChar": 1,
