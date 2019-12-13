@@ -14,7 +14,11 @@ kolla_config:
     {{key_value.Key}}: {{key_value.Value}}
     {%endif%}
     {%endfor%}
-  {% if openstackCluster.Customize %}
   customize:
+    {% if openstackCluster.Customize %}
     {{ openstackCluster.Customize }}
-  {%endif%}
+    {%endif%}
+    swift-proxy-server/proxy-server.conf: |
+      [filter:authtoken]
+      service_token_roles_required = True
+      service_token_roles = admin
