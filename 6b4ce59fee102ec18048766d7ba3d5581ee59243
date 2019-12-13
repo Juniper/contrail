@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "e7c94f28_029a21b0",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "80e9db6a_45846488",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "428a42b1_2eb19ec1",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 10
@@ -81,6 +99,30 @@
       "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a62e94a_e67433ec",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "339cccdf_d1f7fd41",
+      "range": {
+        "startLine": 235,
+        "startChar": 22,
+        "endLine": 235,
+        "endChar": 28
+      },
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -131,6 +173,30 @@
     },
     {
       "key": {
+        "uuid": "a9a7198e_fa09bf1f",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "821eb58c_646b8695",
+      "range": {
+        "startLine": 239,
+        "startChar": 21,
+        "endLine": 239,
+        "endChar": 27
+      },
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4dd9fdf6_4d7ce649",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 10
@@ -178,6 +244,30 @@
     },
     {
       "key": {
+        "uuid": "ce71632c_0ad8a559",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 241,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "52ff9fba_2a99b0a7",
+      "range": {
+        "startLine": 219,
+        "startChar": 1,
+        "endLine": 241,
+        "endChar": 2
+      },
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dd37d5ec_b8765332",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 10
@@ -210,6 +300,24 @@
       "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52f5a259_8bb6e9f1",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "dbf1b577_8f8eac0d",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -283,6 +391,24 @@
     },
     {
       "key": {
+        "uuid": "e5526f9d_2ac62ded",
+        "filename": "pkg/cmd/contrail/cloud.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7c5f36de_6ea54395",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f0bab1c1_49a5e23e",
         "filename": "pkg/cmd/contrail/cloud.go",
         "patchSetId": 10
@@ -312,6 +438,24 @@
       "side": 1,
       "message": "This message has been seen only within console session that started contrail process. Since we are checking cloud.log file this information was not seen there.",
       "parentUuid": "f0bab1c1_49a5e23e",
+      "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c965a5a7_a197269d",
+        "filename": "pkg/cmd/contrail/cloud.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "I insist on logging stack trace. You could just call m.Log.Error() within manager and logutil.FatalWith... here.\nI think that logging to file is a bad approach. But we won\u0027t fix it here, ofc.",
+      "parentUuid": "6eec38fb_de01c1e7",
       "revId": "6b4ce59fee102ec18048766d7ba3d5581ee59243",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

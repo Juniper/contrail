@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d19d52cc_02f36181",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T16:53:11Z",
+      "side": 1,
+      "message": "Return error to the caller and crash program there. Never crash program in library code.",
+      "range": {
+        "startLine": 148,
+        "startChar": 2,
+        "endLine": 148,
+        "endChar": 49
+      },
+      "revId": "cfba40ce1593dc6997e83408215ee0382e10c169",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
