@@ -19,6 +19,75 @@
     },
     {
       "key": {
+        "uuid": "37c26c7e_08ebdbf2",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "Please use \"github.com/pkg/errors\"\nWe probably should have it referenced in REVIEW.md (added to my TODO list ;))",
+      "range": {
+        "startLine": 8,
+        "startChar": 2,
+        "endLine": 8,
+        "endChar": 9
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26e8c149_59900492",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "This comment is hard to understand without further context. And those paths might change, so I suggest to remove it.",
+      "range": {
+        "startLine": 237,
+        "startChar": 0,
+        "endLine": 238,
+        "endChar": 69
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e0a6d697_06f61465",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "Please wrap all errors that come from p.client methods in order to add stack traces.\nE.g. here it could be \"return errors.Wrap(err, \"create container exec\")\"\n\nSee: https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package -\u003e Putting it all together\nWe probably should have it referenced in REVIEW.md (added to my TODO list ;))",
+      "range": {
+        "startLine": 258,
+        "startChar": 9,
+        "endLine": 258,
+        "endChar": 12
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c7b93376_f7a47a99",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 5
@@ -36,6 +105,162 @@
         "endLine": 276,
         "endChar": 16
       },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52d9cd3b_e68181dc",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "c7b93376_f7a47a99",
+      "range": {
+        "startLine": 275,
+        "startChar": 1,
+        "endLine": 276,
+        "endChar": 16
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b2969cc8_b318dc6b",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "\"failed to inspect container, status code: \"",
+      "range": {
+        "startLine": 277,
+        "startChar": 21,
+        "endLine": 277,
+        "endChar": 32
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d672956f_5d0c9aec",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 385,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "IMO: redundant variable",
+      "range": {
+        "startLine": 385,
+        "startChar": 1,
+        "endLine": 385,
+        "endChar": 17
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3d6d5089_36b850a5",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 386,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "\".. in container\"",
+      "range": {
+        "startLine": 386,
+        "startChar": 54,
+        "endLine": 386,
+        "endChar": 70
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a78d97d7_0d25b6dd",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 403,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "Please remove unused function.",
+      "range": {
+        "startLine": 401,
+        "startChar": 0,
+        "endLine": 403,
+        "endChar": 1
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cfa699e0_5fed3dbb",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 454,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "\"change this\" -\u003e \"use a.playInContainer\". In other comments too.",
+      "range": {
+        "startLine": 454,
+        "startChar": 14,
+        "endLine": 454,
+        "endChar": 25
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e4923073_fb0cf388",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 798,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-13T15:29:16Z",
+      "side": 1,
+      "message": "Please add \"TODO: move to testing code and inject as dependency\"",
       "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
