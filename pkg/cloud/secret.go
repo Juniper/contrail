@@ -6,18 +6,18 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/flosch/pongo2"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh"
+	"strings"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -26,66 +26,92 @@ const (
 	sshPubKeyPerm = 0644
 )
 
+// Keypair holds name and public SSH key value
+type Keypair struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
+}
+
+// AuthorizedRegistry stores the information about authorized docker registries
+type AuthorizedRegistry struct {
+	Registry string `yaml:"registry,omitempty"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	Tag      string `yaml:"tag,omitempty"`
+}
+
 // SecretFileConfig holds the secret keys of the cloud
 type SecretFileConfig struct {
-	AWSAccessKey        string
-	AWSSecretKey        string
-	AzureSubscriptionID string
-	AzureClientID       string
-	AzureClientSecret   string
-	AzureTenantID       string
-	GoogleAccount       string
-	ProviderType        string
-	Keypair             *models.Keypair
+	Keypair              Keypair               `yaml:"public_key"`
+	AWSAccessKey         string                `yaml:"aws_access_key,omitempty"`
+	AWSSecretKey         string                `yaml:"aws_secret_key,omitempty"`
+	AzureSubscriptionID  string                `yaml:"azure_subscription_id,omitempty"`
+	AzureClientID        string                `yaml:"azure_client_id,omitempty"`
+	AzureClientSecret    string                `yaml:"azure_client_secret,omitempty"`
+	AzureTenantID        string                `yaml:"azure_tenant_id,omitempty"`
+	GoogleAccount        string                `yaml:"google_credentials,omitempty"`
+	AuthorizedRegistries []*AuthorizedRegistry `yaml:"authorized_registries,omitempty"`
 }
 
 type secret struct {
-	cloud  *Cloud
-	sfc    *SecretFileConfig
-	log    *logrus.Entry
-	action string
-	ctx    context.Context
-}
-
-func (s *secret) getSecretTemplate() string {
-	return filepath.Join(s.cloud.getTemplateRoot(), defaultSecretTemplate)
+	cloud *Cloud
+	sfc   *SecretFileConfig
+	log   *logrus.Entry
+	ctx   context.Context
 }
 
 func (s *secret) createSecretFile(clusterUUID string) error {
-	sf := GetSecretFile(s.cloud.config.CloudID)
-
-	ctx, err := s.createSecretTemplateContext(clusterUUID)
-	if err != nil {
+	if err := s.updateAuthorizedRegistry(clusterUUID); err != nil {
 		return err
 	}
-
-	if err = template.ApplyToFile(s.getSecretTemplate(), sf, ctx, defaultRWOnlyPerm); err != nil {
-		return err
+	marshaled, err := yaml.Marshal(s.sfc)
+	if err != nil {
+		return errors.Wrapf(err, "couldn't marshal secret to yaml for cloud %s", s.cloud.config.CloudID)
+	}
+	if err = ioutil.WriteFile(GetSecretFile(s.cloud.config.CloudID), marshaled, defaultRWOnlyPerm); err != nil {
+		return errors.Wrapf(err, "couldn't create secret.yml file for cloud %s", s.cloud.config.CloudID)
 	}
 
 	s.log.Infof("Created secret file for cloud with uuid: %s ", s.cloud.config.CloudID)
 	return nil
 }
 
-func (s *secret) createSecretTemplateContext(clusterUUID string) (pongo2.Context, error) {
+func (s *secret) updateAuthorizedRegistry(clusterUUID string) error {
 	clusterResp, err := s.cloud.APIServer.GetContrailCluster(s.ctx, &services.GetContrailClusterRequest{
 		ID: clusterUUID,
 	})
-
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot resolve Authentication Registries")
+		return errors.Wrap(err, "cannot resolve Authentication Registries")
 	}
+	reg, err := NewAuthorizedRegistry(clusterResp.ContrailCluster)
+	if err != nil {
+		return err
+	}
+	s.sfc.AuthorizedRegistries = []*AuthorizedRegistry{reg}
 
-	return pongo2.Context{
-		"secret":  s.sfc,
-		"cluster": clusterResp.ContrailCluster,
-		"tag":     clusterResp.ContrailCluster.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
+	return nil
+}
+
+// NewAuthorizedRegistry creates AuthorizedRegistry based on ContrailCluster parameters
+func NewAuthorizedRegistry(c *models.ContrailCluster) (*AuthorizedRegistry, error) {
+	if c.ContainerRegistry == "" {
+		return nil, errors.Errorf("authorized registry isn't specified")
+	}
+	if c.ContainerRegistryUsername == "" {
+		return nil, errors.Errorf("authorized registry username isn't specified")
+	}
+	if c.ContainerRegistryPassword == "" {
+		return nil, errors.Errorf("authorized registry password isn't specified")
+	}
+	return &AuthorizedRegistry{
+		Registry: c.ContainerRegistry,
+		Username: c.ContainerRegistryUsername,
+		Password: c.ContainerRegistryPassword,
+		Tag:      c.ContrailConfiguration.GetValue("CONTRAIL_CONTAINER_TAG"),
 	}, nil
 }
 
-func getCredObject(ctx context.Context, client *client.HTTP,
-	uuid string) (*models.Credential, error) {
-
+func getCredObject(ctx context.Context, client *client.HTTP, uuid string) (*models.Credential, error) {
 	request := new(services.GetCredentialRequest)
 	request.ID = uuid
 
@@ -97,9 +123,7 @@ func getCredObject(ctx context.Context, client *client.HTTP,
 	return credResp.GetCredential(), nil
 }
 
-func getKeyPairObject(ctx context.Context, uuid string,
-	c *Cloud) (*models.Keypair, error) {
-
+func getKeyPairObject(ctx context.Context, uuid string, c *Cloud) (*models.Keypair, error) {
 	request := new(services.GetKeypairRequest)
 	request.ID = uuid
 
@@ -113,7 +137,7 @@ func getKeyPairObject(ctx context.Context, uuid string,
 
 // Update fills the secret file config
 func (sfc *SecretFileConfig) Update(kp *models.Keypair) error {
-	sfc.Keypair = kp
+	sfc.Keypair = Keypair{Name: kp.Name, Value: kp.SSHPublicKey}
 	kfd := services.NewKeyFileDefaults()
 
 	if err := sfc.updateAWSCredentials(kfd); err != nil {
@@ -234,6 +258,7 @@ func loadAzureCredentials(kfd *services.KeyFileDefaults) (*SecretFileConfig, err
 		AzureTenantID:       string(tenantID),
 	}, nil
 }
+
 func (sfc *SecretFileConfig) updateGCPCredentials(kfd *services.KeyFileDefaults) error {
 	bytes, err := ioutil.ReadFile(kfd.GetGoogleAccountPath())
 	if err != nil {
@@ -251,11 +276,10 @@ func (sfc *SecretFileConfig) updateGCPCredentials(kfd *services.KeyFileDefaults)
 
 func newSecret(c *Cloud) *secret {
 	return &secret{
-		cloud:  c,
-		log:    logutil.NewFileLogger("secret", c.config.LogFile),
-		action: c.config.Action,
-		sfc:    &SecretFileConfig{},
-		ctx:    c.ctx,
+		cloud: c,
+		log:   logutil.NewFileLogger("secret", c.config.LogFile),
+		sfc:   &SecretFileConfig{},
+		ctx:   c.ctx,
 	}
 }
 
@@ -317,9 +341,7 @@ func getCloudSSHKeyPath(cloudID string, name string) string {
 }
 
 //nolint: gocyclo
-func (s *secret) getCredKeyPairIfExists(d *Data,
-	cloudID string) (*models.Keypair, error) {
-
+func (s *secret) getCredKeyPairIfExists(d *Data, cloudID string) (*models.Keypair, error) {
 	if d.credentials != nil {
 		for _, cred := range d.credentials {
 			for _, keyPairRef := range cred.KeypairRefs {
@@ -395,7 +417,7 @@ func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
 		return err
 	}
 
-	keypair.SSHPublicKey = string(rawPubkey)
+	keypair.SSHPublicKey = strings.TrimSpace(string(rawPubkey))
 
 	// check if pvt key is valid
 	rawPvtKey, err := getSSHKeyIfValid(keypair, privateSSHKey)
@@ -413,7 +435,7 @@ func createSSHKey(cloudID string, keypair *models.Keypair) error {
 	if err != nil {
 		return err
 	}
-	keypair.SSHPublicKey = string(pubKey)
+	keypair.SSHPublicKey = strings.TrimSpace(string(pubKey))
 
 	if err = fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName),
 		pvtKey, defaultRWOnlyPerm); err != nil {
