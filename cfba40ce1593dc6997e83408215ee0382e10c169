@@ -46,6 +46,30 @@
       "revId": "cfba40ce1593dc6997e83408215ee0382e10c169",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7d991f38_38e20361",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-16T10:21:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3e5ab58c_8439b296",
+      "range": {
+        "startLine": 148,
+        "startChar": 2,
+        "endLine": 148,
+        "endChar": 49
+      },
+      "revId": "cfba40ce1593dc6997e83408215ee0382e10c169",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
