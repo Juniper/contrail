@@ -121,6 +121,30 @@
     },
     {
       "key": {
+        "uuid": "26fc5159_e64a0c81",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-16T11:52:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "75fe4f8b_d232e20f",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 1
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2926b9c1_fe91a476",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 6
@@ -449,6 +473,30 @@
       "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "339a9f24_325f4484",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-16T11:52:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "74496daa_4134394b",
+      "range": {
+        "startLine": 49,
+        "startChar": 11,
+        "endLine": 49,
+        "endChar": 30
+      },
+      "revId": "5dd90dcb4186126a3853bafb779920ae81b689d7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
