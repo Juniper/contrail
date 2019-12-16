@@ -18,13 +18,15 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:290b607a2b5022a7ff18861c9860663365f0801332d49a6eb4946c2479d34299"
+  digest = "1:1d0c35e1a989a26f4742b960ac6a7dd2c905fceabf8822abd7139c3ee82db5b6"
   name = "github.com/Juniper/asf"
   packages = [
+    "pkg/client",
     "pkg/constants",
     "pkg/fileutil",
     "pkg/fileutil/template",
     "pkg/format",
+    "pkg/httputil",
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
@@ -36,7 +38,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "d0e77919d1c0501fa4dc2c7fb1b02900545ed639"
+  revision = "7f1849325dfd10c12da9301c039b10adb24bd13a"
 
 [[projects]]
   branch = "2.x"
@@ -1362,9 +1364,11 @@
   input-imports = [
     "github.com/DavidCai1993/etcd-lock",
     "github.com/ExpansiveWorlds/instrumentedsql",
+    "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/fileutil",
     "github.com/Juniper/asf/pkg/fileutil/template",
     "github.com/Juniper/asf/pkg/format",
+    "github.com/Juniper/asf/pkg/httputil",
     "github.com/Juniper/asf/pkg/keystone",
     "github.com/Juniper/asf/pkg/logutil",
     "github.com/Juniper/asf/pkg/logutil/report",

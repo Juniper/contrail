@@ -3,8 +3,22 @@ package client
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/services"
+	"github.com/Juniper/contrail/pkg/services"
 )
+
+// Sanity typechecks
+var _ services.ReadService = &GRPC{}
+var _ services.WriteService = &GRPC{}
+
+// GRPC is a GRPC API server client.
+type GRPC struct {
+	c services.ContrailServiceClient
+}
+
+// NewGRPC returns a new GRPC.
+func NewGRPC(c services.ContrailServiceClient) *GRPC {
+	return &GRPC{c: c}
+}
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
