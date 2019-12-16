@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "19148d2a_5135305e",
+        "filename": "pkg/cloud/test_data/gcp/expected_commands.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-16T15:38:46Z",
+      "side": 1,
+      "message": "The issue mentions `--limit gcp`. Is using `google` instead of `gcp` intentional?",
+      "range": {
+        "startLine": 1,
+        "startChar": 152,
+        "endLine": 1,
+        "endChar": 158
+      },
+      "revId": "3715f97ad0257002ac543647488282322a3fdb73",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
