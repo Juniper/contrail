@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "c9fbd6e0_b7380eaa",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T12:45:26Z",
+      "side": 1,
+      "message": "Because if the handleCloudRequest panics, then vulnerable files won\u0027t be deleted.",
+      "parentUuid": "d98d1425_36bf6729",
+      "revId": "989a4b596deb5cd40b8fc71e9d8776f9ac27d8e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7e4fbd64_2afe35a7",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 15
