@@ -597,6 +597,30 @@
     },
     {
       "key": {
+        "uuid": "391a5d08_7c5b417a",
+        "filename": "pkg/replication/client.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-16T10:34:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d272fa57_d72ec50f",
+      "range": {
+        "startLine": 147,
+        "startChar": 1,
+        "endLine": 147,
+        "endChar": 24
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a2d01b90_b40682ba",
         "filename": "pkg/replication/client.go",
         "patchSetId": 13

@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "acfd36f3_be62564c",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-16T10:34:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7afba69d_2e4f2dcd",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "822375ff_f3b71597",
         "filename": "pkg/deploy/deploy.go",
         "patchSetId": 15
@@ -33,6 +51,24 @@
       "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7151ffbb_3edd6cf3",
+        "filename": "pkg/deploy/deploy.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-16T10:34:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "822375ff_f3b71597",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
