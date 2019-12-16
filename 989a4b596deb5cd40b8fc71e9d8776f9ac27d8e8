@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d4c66440_72d4a466",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T11:37:57Z",
+      "side": 1,
+      "message": "Optional: Shouldn\u0027t that be deferred?",
+      "revId": "989a4b596deb5cd40b8fc71e9d8776f9ac27d8e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e4fbd64_2afe35a7",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T11:37:57Z",
+      "side": 1,
+      "message": "I think using the object despite the error state is bad. I saw your response for comment in L459 and I can agree with that but only if you choose one of the following:\n\n1. Return half done objects together with error, like in L459 (the contract is that user won\u0027t use the object because of the error value)\n2. Use objects despite even if the error value is not nil, like here (the contract is that the object is zero value every time when the error is returned)\n\nWhat you have now is both of those approaches, which is inconsistent and in my opinion can lead to hard to spot bugs. I know that the above code works, but it\u0027s about having some rules.\n\nTo fix this you can revert error handling in L459 or add error handling here before accessing the cloudObject value (which I prefer).",
+      "range": {
+        "startLine": 177,
+        "startChar": 8,
+        "endLine": 177,
+        "endChar": 59
+      },
+      "revId": "989a4b596deb5cd40b8fc71e9d8776f9ac27d8e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
