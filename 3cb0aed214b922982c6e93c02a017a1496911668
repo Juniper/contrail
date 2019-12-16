@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c2c1543b_e48ea400",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T13:18:11Z",
+      "side": 1,
+      "message": "Please use consistent naming - change it to ExecCmd... or change function in osutil to ExecuteCmd...",
+      "range": {
+        "startLine": 63,
+        "startChar": 1,
+        "endLine": 63,
+        "endChar": 18
+      },
+      "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "09ef1235_6405e504",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T13:18:11Z",
+      "side": 1,
+      "message": "Please define it in the package that uses it, because it\u0027s a bit like https://github.com/golang/go/wiki/CodeReviewComments#interfaces",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 80,
+        "endChar": 1
+      },
+      "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9558116c_373434ea",
+        "filename": "pkg/testutil/cmd.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T13:18:11Z",
+      "side": 1,
+      "message": "Name \"Test\" seem redundant for me, especially in the context of \"testutil\" package. Please rename it to what it really does - FileWritingExecutor.",
+      "range": {
+        "startLine": 17,
+        "startChar": 5,
+        "endLine": 17,
+        "endChar": 9
+      },
+      "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "71f2ffdf_10e14234",
+        "filename": "pkg/testutil/cmd.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-16T13:18:11Z",
+      "side": 1,
+      "message": "Writing to file in test scenarios seems dirty for me. How about logging to stdout/stderr?",
+      "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
