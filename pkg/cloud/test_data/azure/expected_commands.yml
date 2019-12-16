@@ -1,1 +1,1 @@
-deployer all topology --topology /var/tmp/cloud/cloud_uuid_azure/topology.yml --secret /var/tmp/cloud/cloud_uuid_azure/secret.yml --skip_validation --azure
+deployer all topology --topology /var/tmp/cloud/cloud_uuid_azure/topology.yml --secret /var/tmp/cloud/cloud_uuid_azure/secret.yml --skip_validation --limit azure

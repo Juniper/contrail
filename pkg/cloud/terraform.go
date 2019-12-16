@@ -27,7 +27,7 @@ func updateTopology(c *Cloud, providers []string) error {
 		"--skip_validation",
 	}
 	for _, p := range providers {
-		args = append(args, "--"+p)
+		args = append(args, "--limit "+p)
 	}
 	if c.config.Test {
 		return TestCmdHelper(cmd, args, workDir, testTemplate)
