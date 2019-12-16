@@ -280,7 +280,7 @@ func (c *Cloud) create() error {
 func (d *Data) modifiedProviders() []string {
 	s := []string{}
 	if d.info.AwsModified {
-		s = append(s, AWS)
+		s = append(s, aws)
 	}
 	if d.info.AzureModified {
 		s = append(s, azure)
