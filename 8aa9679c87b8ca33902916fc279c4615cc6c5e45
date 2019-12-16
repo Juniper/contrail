@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "88eedf86_ff64991d",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-16T12:52:26Z",
+      "side": 1,
+      "message": "if limit and provider name are separate words please pass them as separate elemenents within slice. []string{\"--limit\", p}...",
+      "range": {
+        "startLine": 30,
+        "startChar": 22,
+        "endLine": 30,
+        "endChar": 34
+      },
+      "revId": "8aa9679c87b8ca33902916fc279c4615cc6c5e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
