@@ -31,6 +31,22 @@ type providerConfig struct {
 	manageFails          bool
 }
 
+type terraformStateReaderStub struct{}
+
+func (r terraformStateReaderStub) Read() (terraformState, error) {
+	return terraformStateStub{}, nil
+}
+
+type terraformStateStub struct{}
+
+func (s terraformStateStub) GetPublicIP(hostname string) (string, error) {
+	return "1.1.1.1", nil
+}
+
+func (s terraformStateStub) GetPrivateIP(hostname string) (string, error) {
+	return "2.2.2.2", nil
+}
+
 type fileToCopy struct {
 	source      string
 	destination string
@@ -406,7 +422,7 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c)
+	cl, err := NewCloud(c, terraformStateReaderStub{})
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl

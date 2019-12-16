@@ -58,14 +58,19 @@ type Config struct { // nolint: maligned
 	Test bool `yaml:"test"`
 }
 
+type terraformStateReader interface {
+	Read() (terraformState, error)
+}
+
 // Cloud represents cloud service.
 type Cloud struct {
-	config       *Config
-	APIServer    *client.HTTP
-	log          *logrus.Entry
-	reporter     *report.Reporter
-	streamServer *logutil.StreamServer
-	ctx          context.Context
+	config               *Config
+	APIServer            *client.HTTP
+	log                  *logrus.Entry
+	reporter             *report.Reporter
+	streamServer         *logutil.StreamServer
+	terraformStateReader terraformStateReader
+	ctx                  context.Context
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -81,11 +86,11 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	return NewCloud(&c)
+	return NewCloud(&c, cloudTfStateReader{c.CloudID})
 }
 
 // NewCloud returns a new Cloud instance
-func NewCloud(c *Config) (*Cloud, error) {
+func NewCloud(c *Config, terraformStateReader terraformStateReader) (*Cloud, error) {
 	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
@@ -120,9 +125,10 @@ func NewCloud(c *Config) (*Cloud, error) {
 		)
 	}
 
-	if c.CloudID != "" && c.Action == "" {
+	if c.Action == "" {
 		return nil, fmt.Errorf("action not specified in the config")
-	} else if c.CloudID == "" && c.Action != "" {
+	}
+	if c.CloudID == "" {
 		return nil, fmt.Errorf("cloudID not specified in the config")
 	}
 
@@ -135,8 +141,9 @@ func NewCloud(c *Config) (*Cloud, error) {
 			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
 			logutil.NewFileLogger("reporter", c.LogFile),
 		),
-		streamServer: logutil.NewStreamServer(c.LogFile),
-		ctx:          ctx,
+		streamServer:         logutil.NewStreamServer(c.LogFile),
+		terraformStateReader: terraformStateReader,
+		ctx:                  ctx,
 	}, nil
 }
 
@@ -253,12 +260,8 @@ func (c *Cloud) create() error {
 
 	// update IP details only when cloud is public
 	// basically when instances created by terraform
-	if !data.isCloudPrivate() && (!c.config.Test) {
-		err = updateIPDetails(c.ctx, c.config.CloudID, data)
-		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-			return err
-		}
+	if err = c.updatePublicCloudIP(data, status); err != nil {
+		return err
 	}
 
 	if !data.isCloudPrivate() {
@@ -373,11 +376,8 @@ func (c *Cloud) update() error {
 	}
 
 	//update IP address
-	if !data.isCloudPrivate() && (!c.config.Test) {
-		if err = updateIPDetails(c.ctx, c.config.CloudID, data); err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-			return err
-		}
+	if err = c.updatePublicCloudIP(data, status); err != nil {
+		return err
 	}
 
 	if !data.isCloudPrivate() {
@@ -389,6 +389,20 @@ func (c *Cloud) update() error {
 
 	status[statusField] = statusUpdated
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+	return nil
+}
+
+func (c *Cloud) updatePublicCloudIP(data *Data, status map[string]interface{}) error {
+	if !data.isCloudPrivate() {
+		tfState, err := c.terraformStateReader.Read()
+		if err != nil {
+			return err
+		}
+		if err = updateIPDetails(c.ctx, data.instances, tfState); err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+	}
 	return nil
 }
 
