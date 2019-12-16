@@ -22,6 +22,30 @@
       "revId": "0f259d19f5ada9460aa9c4cdabc024c97850ece7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffcb1f7d_eab4b893",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-16T12:35:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bdf0c5c0_957fa014",
+      "range": {
+        "startLine": 55,
+        "startChar": 1,
+        "endLine": 57,
+        "endChar": 5
+      },
+      "revId": "0f259d19f5ada9460aa9c4cdabc024c97850ece7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
