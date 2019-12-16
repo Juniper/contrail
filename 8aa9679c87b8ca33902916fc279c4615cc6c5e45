@@ -22,6 +22,30 @@
       "revId": "8aa9679c87b8ca33902916fc279c4615cc6c5e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "705c5a92_28e7631a",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-16T14:07:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "88eedf86_ff64991d",
+      "range": {
+        "startLine": 30,
+        "startChar": 22,
+        "endLine": 30,
+        "endChar": 34
+      },
+      "revId": "8aa9679c87b8ca33902916fc279c4615cc6c5e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
