@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "0bf12828_b998cc3d",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-17T10:56:11Z",
+      "side": 1,
+      "message": "I would go with this way. The code may be a bit hard for now but it will be refactored in the future. Unfortunately data variable needs to be resolved before handling Cloud request because delete operation removes the crucial information from the DB so getting Data after this request is impossible.",
+      "parentUuid": "c9fbd6e0_b7380eaa",
+      "revId": "989a4b596deb5cd40b8fc71e9d8776f9ac27d8e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7e4fbd64_2afe35a7",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 15
