@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "711158aa_9581d446",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-17T16:23:07Z",
+      "side": 1,
+      "message": "nit: don\u0027t start error messages with capital letter",
+      "range": {
+        "startLine": 42,
+        "startChar": 24,
+        "endLine": 42,
+        "endChar": 25
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f99a54be_8cb07c97",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-17T16:23:07Z",
+      "side": 1,
+      "message": "ditto L#42",
+      "range": {
+        "startLine": 48,
+        "startChar": 24,
+        "endLine": 48,
+        "endChar": 25
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00177e3c_aa747b35",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-17T16:23:07Z",
+      "side": 1,
+      "message": "These newlines are redundant",
+      "range": {
+        "startLine": 14,
+        "startChar": 70,
+        "endLine": 20,
+        "endChar": 42
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
