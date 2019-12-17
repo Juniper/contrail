@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "3351e863_176c957d",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2019-12-17T07:50:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ea22a017_8bded63d",
+      "range": {
+        "startLine": 36,
+        "startChar": 1,
+        "endLine": 41,
+        "endChar": 40
+      },
+      "revId": "e1c9df55d81e59603a9c1675353ef1a4ca824603",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "076c9d28_77570102",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 1
@@ -59,6 +83,24 @@
       "writtenOn": "2019-12-16T11:05:48Z",
       "side": 1,
       "message": "IMO GetData() method is a bit too broad and exposes the implementation details of endpoint.Store. Please add Range method on endpointStore instead.",
+      "revId": "e1c9df55d81e59603a9c1675353ef1a4ca824603",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3635c031_246ae03f",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2019-12-17T07:50:41Z",
+      "side": 1,
+      "message": "Range method was added.",
+      "parentUuid": "076c9d28_77570102",
       "revId": "e1c9df55d81e59603a9c1675353ef1a4ca824603",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -88,6 +130,30 @@
     },
     {
       "key": {
+        "uuid": "95bfaff2_57e8eb22",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 322,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2019-12-17T07:50:41Z",
+      "side": 1,
+      "message": "Error was added to UpdateEndpoint signature. Still InStore method is used in readTargets function.",
+      "parentUuid": "792accd6_ddc69c2a",
+      "range": {
+        "startLine": 318,
+        "startChar": 1,
+        "endLine": 322,
+        "endChar": 2
+      },
+      "revId": "e1c9df55d81e59603a9c1675353ef1a4ca824603",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4903e816_75c4737b",
         "filename": "pkg/apisrv/store.go",
         "patchSetId": 1
@@ -102,6 +168,24 @@
       "revId": "e1c9df55d81e59603a9c1675353ef1a4ca824603",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bd94b4b6_7d3da4bb",
+        "filename": "pkg/apisrv/store.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2019-12-17T07:50:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4903e816_75c4737b",
+      "revId": "e1c9df55d81e59603a9c1675353ef1a4ca824603",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
