@@ -119,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "e7a0bf8b_43ed89ab",
+        "filename": "pkg/testutil/cmd.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-17T09:50:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9558116c_373434ea",
+      "range": {
+        "startLine": 17,
+        "startChar": 5,
+        "endLine": 17,
+        "endChar": 9
+      },
+      "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "71f2ffdf_10e14234",
         "filename": "pkg/testutil/cmd.go",
         "patchSetId": 6
