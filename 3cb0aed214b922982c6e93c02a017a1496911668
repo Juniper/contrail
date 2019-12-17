@@ -127,6 +127,24 @@
       "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "19dcd126_a37496fe",
+        "filename": "pkg/testutil/cmd.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-17T09:27:02Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7d48cd8d_f1c1fe7b",
+      "revId": "3cb0aed214b922982c6e93c02a017a1496911668",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
