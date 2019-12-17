@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b21d64ef_4d9eaacd",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-17T09:40:24Z",
+      "side": 1,
+      "message": "This is duplicated with L158-168 - please extract function (getContainerPlayer?). Then this func can use switch and doesn\u0027t have to define vars.",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 143,
+        "endChar": 2
+      },
+      "revId": "e39df8131424037b932642800b88dffcaae679ce",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
