@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "34c4cf81_ea8e6cb1",
+        "filename": "Gopkg.toml",
+        "patchSetId": 18
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T16:02:37Z",
+      "side": 1,
+      "message": "Please update now.",
+      "revId": "9691ef268c46879a9ef94879dc547dd179d45e5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "12fd8a6e_3cf29189",
+        "filename": "vendor/github.com/Juniper/asf/pkg/client/client_http.go.tmpl",
+        "patchSetId": 18
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T16:02:37Z",
+      "side": 1,
+      "message": "Why asfclient?",
+      "range": {
+        "startLine": 11,
+        "startChar": 1,
+        "endLine": 11,
+        "endChar": 10
+      },
+      "revId": "9691ef268c46879a9ef94879dc547dd179d45e5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
