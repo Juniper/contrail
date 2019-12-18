@@ -2,6 +2,46 @@
   "comments": [
     {
       "key": {
+        "uuid": "d8745493_340c7c1f",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T07:47:24Z",
+      "side": 1,
+      "message": "Why was this file shrunk so much?",
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e2a090d3_16c95ea2",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T07:47:24Z",
+      "side": 1,
+      "message": "This is a sshAgent, why does it run SSHAgent? Isn\u0027t run() sufficient?",
+      "range": {
+        "startLine": 23,
+        "startChar": 22,
+        "endLine": 23,
+        "endChar": 30
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "711158aa_9581d446",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 12
@@ -64,6 +104,70 @@
         "startChar": 70,
         "endLine": 20,
         "endChar": 42
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cb697f3d_53d121a1",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T07:47:24Z",
+      "side": 1,
+      "message": "+1, please follow \"given, when, then\" structure.",
+      "parentUuid": "00177e3c_aa747b35",
+      "range": {
+        "startLine": 14,
+        "startChar": 70,
+        "endLine": 20,
+        "endChar": 42
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4a9e3caa_59e6486c",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T07:47:24Z",
+      "side": 1,
+      "message": "Why are we changing file perms in tests? File perms are persisted, so setting it multiple times should have no effect. Additionally file perms are tracked in git.",
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef9a3042_1fc5445d",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T07:47:24Z",
+      "side": 1,
+      "message": "What exists? I don\u0027t understand. L62-64 does not explain much.",
+      "range": {
+        "startLine": 36,
+        "startChar": 2,
+        "endLine": 36,
+        "endChar": 4
       },
       "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
