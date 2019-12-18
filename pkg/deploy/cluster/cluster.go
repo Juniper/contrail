@@ -1,7 +1,10 @@
 package cluster
 
 import (
+	"os/exec"
+
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
@@ -40,19 +43,27 @@ type Config struct {
 	Test bool
 }
 
+// CommandExecutor interface provides methods to execute a command
+type CommandExecutor interface {
+	ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+	ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error
+}
+
 // Cluster represents contrail cluster manager
 type Cluster struct {
-	config    *Config
-	APIServer *client.HTTP
-	log       *logrus.Entry
+	config          *Config
+	APIServer       *client.HTTP
+	log             *logrus.Entry
+	commandExecutor CommandExecutor
 }
 
 // NewCluster creates Cluster with given configuration.
-func NewCluster(c *Config) (*Cluster, error) {
+func NewCluster(c *Config, commandExecutor CommandExecutor) (*Cluster, error) {
 	return &Cluster{
-		config:    c,
-		APIServer: c.APIServer,
-		log:       logutil.NewFileLogger("cluster", c.LogFile),
+		config:          c,
+		APIServer:       c.APIServer,
+		log:             logutil.NewFileLogger("cluster", c.LogFile),
+		commandExecutor: commandExecutor,
 	}, nil
 }
 

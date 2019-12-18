@@ -1,10 +1,14 @@
 package deploy
 
 import (
+	"os/exec"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil/report"
+	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
@@ -18,6 +22,19 @@ type manager interface {
 type oneShotManager struct {
 	deploy *Deploy
 	log    *logrus.Entry
+}
+
+// TODO(apasyniuk) Export this into asf/osutils
+type osCommandExecutor struct{}
+
+func (e *osCommandExecutor) ExecCmdAndWait(
+	r *report.Reporter, cmd string, args []string, dir string, envVars ...string,
+) error {
+	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
+}
+
+func (e *osCommandExecutor) ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
+	return osutil.ExecAndWait(r, cmd)
 }
 
 func (o *oneShotManager) manage() error {
@@ -58,7 +75,7 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 			AnsibleFetchURL:           deploy.config.AnsibleFetchURL,
 			AnsibleCherryPickRevision: deploy.config.AnsibleCherryPickRevision,
 			AnsibleRevision:           deploy.config.AnsibleRevision,
-		})
+		}, &osCommandExecutor{})
 		if err != nil {
 			return nil, err
 		}
