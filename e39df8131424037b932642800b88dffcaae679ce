@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "f9854ea2_409d6128",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-18T19:01:54Z",
+      "side": 1,
+      "message": "\"Error strings should not be capitalized\" https://github.com/golang/go/wiki/CodeReviewComments#error-strings I recommend whole article BTW",
+      "revId": "e39df8131424037b932642800b88dffcaae679ce",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b21d64ef_4d9eaacd",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 7
@@ -18,6 +35,29 @@
         "startChar": 1,
         "endLine": 143,
         "endChar": 2
+      },
+      "revId": "e39df8131424037b932642800b88dffcaae679ce",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5f5ee3c8_3224be3f",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-18T19:01:54Z",
+      "side": 1,
+      "message": "Ditto (decapitalize (decapitate ?) the word)",
+      "range": {
+        "startLine": 167,
+        "startChar": 32,
+        "endLine": 167,
+        "endChar": 33
       },
       "revId": "e39df8131424037b932642800b88dffcaae679ce",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
