@@ -3,8 +3,8 @@ package types
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 type draftModeStateGetter interface {

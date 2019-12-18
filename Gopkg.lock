@@ -23,6 +23,7 @@
   packages = [
     "pkg/client",
     "pkg/constants",
+    "pkg/errutil",
     "pkg/fileutil",
     "pkg/fileutil/template",
     "pkg/format",
@@ -1366,6 +1367,7 @@
     "github.com/DavidCai1993/etcd-lock",
     "github.com/ExpansiveWorlds/instrumentedsql",
     "github.com/Juniper/asf/pkg/client",
+    "github.com/Juniper/asf/pkg/errutil",
     "github.com/Juniper/asf/pkg/fileutil",
     "github.com/Juniper/asf/pkg/fileutil/template",
     "github.com/Juniper/asf/pkg/format",

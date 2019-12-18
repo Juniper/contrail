@@ -3,8 +3,8 @@ package models
 import (
 	"strconv"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 const (

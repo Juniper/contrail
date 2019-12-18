@@ -3,8 +3,8 @@ package apisrv
 import (
 	"encoding/json"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/labstack/echo"
 	"golang.org/x/net/websocket"
 )

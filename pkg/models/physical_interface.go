@@ -3,7 +3,7 @@ package models
 import (
 	"regexp"
 
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 )
 
 var regexpPhysicalInterfaceESIFormat = regexp.MustCompile("^([0-9A-Fa-f]{2}[:]){9}[0-9A-Fa-f]{2}")

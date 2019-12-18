@@ -3,9 +3,9 @@ package models
 import (
 	"fmt"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 // Virtual network forwarding modes.

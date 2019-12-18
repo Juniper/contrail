@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 )
 
 // ValidateEndpointType checks if endpoint refers to only one endpoint type
