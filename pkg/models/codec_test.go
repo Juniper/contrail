@@ -12,6 +12,8 @@ import (
 	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
+// TODO: move to ASF
+
 func TestUpdateData(t *testing.T) {
 	codecs := []Codec{
 		JSONCodec,

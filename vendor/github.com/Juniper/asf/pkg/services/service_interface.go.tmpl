@@ -10,6 +10,9 @@ import (
 	models "{{ modelsImportPath }}"
 )
 
+// TODO(dfurman): move non-template code out of template
+// TODO(dfurman): write tests
+
 // Service is a generic service that can be placed in chain.
 type Service interface {
     Next() Service

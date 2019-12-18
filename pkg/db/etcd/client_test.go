@@ -13,6 +13,8 @@ import (
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
+// TODO(dfurman): move to ASF
+
 const (
 	dialTimeout      = 10 * time.Second
 	shortDialTimeout = 10 * time.Millisecond
