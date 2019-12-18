@@ -97,6 +97,24 @@
       "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f93322b7_f3c3a5e1",
+        "filename": "pkg/cmd/contrail/cloud.go",
+        "patchSetId": 20
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-18T19:10:58Z",
+      "side": 1,
+      "message": "Wasn\u0027t it a shadowing of \"err\" variable?",
+      "parentUuid": "579f956d_e7d31d21",
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
