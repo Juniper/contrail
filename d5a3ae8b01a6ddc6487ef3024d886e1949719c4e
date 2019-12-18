@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8e12991b_3725c7a7",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T07:33:36Z",
+      "side": 1,
+      "message": "This looks a bit cryptic. I am not sure if it\u0027s a right direction.",
+      "range": {
+        "startLine": 171,
+        "startChar": 66,
+        "endLine": 171,
+        "endChar": 75
+      },
+      "revId": "d5a3ae8b01a6ddc6487ef3024d886e1949719c4e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
