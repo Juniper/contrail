@@ -9,8 +9,8 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 )
 

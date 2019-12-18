@@ -3,12 +3,11 @@ package services
 import (
 	"encoding/json"
 
-	"github.com/pkg/errors"
-
-	"github.com/gogo/protobuf/types"
-	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 

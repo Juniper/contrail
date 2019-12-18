@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 )
 
 // IsParentTypeVirtualNetwork checks if parent's type is virtual network

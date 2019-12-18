@@ -3,7 +3,7 @@ package rbac
 import (
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 )
 

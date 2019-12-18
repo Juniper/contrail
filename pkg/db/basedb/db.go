@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 )
 
 // Database driver

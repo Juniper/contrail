@@ -5,7 +5,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/pkg/errors"
 
 	uuid "github.com/satori/go.uuid"

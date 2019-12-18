@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 //Sharable resource can share.

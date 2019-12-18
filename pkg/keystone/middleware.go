@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"

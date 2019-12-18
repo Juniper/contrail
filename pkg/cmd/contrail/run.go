@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
@@ -20,7 +21,6 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/errutil"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 

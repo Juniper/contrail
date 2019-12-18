@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
