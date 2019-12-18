@@ -13,16 +13,16 @@ import (
 )
 
 type generateFlags struct {
-	SchemasDir          string
-	AddonsDir           string
-	TemplatesConfigPath string
-	ModelsImportPath    string
-	ServicesImportPath  string
-	SchemaOutputPath    string
-	OpenAPIOutputPath   string
-	NoRegenerate        bool
-	SkipMissingRefs     bool
-	Verbose             bool
+	SchemasDir         string
+	AddonsDir          string
+	TemplateConfigPath string
+	ModelsImportPath   string
+	ServicesImportPath string
+	SchemaOutputPath   string
+	OpenAPIOutputPath  string
+	NoRegenerate       bool
+	SkipMissingRefs    bool
+	Verbose            bool
 }
 
 var flags = generateFlags{}
@@ -36,8 +36,8 @@ func init() {
 	generateCmd.Flags().StringVarP(&flags.SchemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&flags.AddonsDir, "addons", "a", "", "Addons Directory")
 	generateCmd.Flags().StringVarP(
-		&flags.TemplatesConfigPath, "templates-config", "t", "",
-		"Path to file containing configuration of templates",
+		&flags.TemplateConfigPath, "template-config", "t", "",
+		"Path to a file with a list of templates to be applied",
 	)
 	// TODO(dfurman): do not require user to specify those paths
 	generateCmd.Flags().StringVarP(
@@ -106,13 +106,13 @@ func generateCode() error {
 		return errors.Wrap(err, "make API")
 	}
 
-	tcs, err := schema.LoadTemplatesConfig(flags.TemplatesConfigPath)
+	tcs, err := schema.LoadTemplateConfigs(flags.TemplateConfigPath)
 	if err != nil {
 		return errors.Wrap(err, "load template config")
 	}
 
 	if err = schema.GenerateFiles(api, &schema.GenerateConfig{
-		TemplatesConfig:    tcs,
+		TemplateConfigs:    tcs,
 		ModelsImportPath:   flags.ModelsImportPath,
 		ServicesImportPath: flags.ServicesImportPath,
 		NoRegenerate:       flags.NoRegenerate,

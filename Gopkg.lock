@@ -3,14 +3,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3696d400a9966c467ca6b050c18547608c821b46bbe9fee915b3d92c3ff08ede"
-  name = "github.com/DavidCai1993/etcd-lock"
-  packages = ["."]
-  pruneopts = ""
-  revision = "32f65b8d019ac3b77f9a893b7443aa3cc001d9da"
-
-[[projects]]
-  branch = "master"
   digest = "1:fd5b873b775d438769f240912b5bcc0a860d89b4d9624c81935b0d85ac3e4ff5"
   name = "github.com/ExpansiveWorlds/instrumentedsql"
   packages = ["."]
@@ -18,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:76d83099a89545a0949b7ef22a7f2bf0aeda31c861c8e7017bfcb0d349de1d3e"
+  digest = "1:9c3a6be534157d6f322e51be328b68cb34beb80495e19a5aa8f12ff2d9811d80"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -41,7 +33,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "e7bfa747d5a8cbf7977eeae1e8b8a10c959f6788"
+  revision = "57bb5c7f8cb9ab151e4d18746c145c14591d5c4f"
 
 [[projects]]
   branch = "2.x"
@@ -224,7 +216,6 @@
     "auth/authpb",
     "clientv3",
     "clientv3/concurrency",
-    "etcdserver/api/v3lock/v3lockpb",
     "etcdserver/api/v3rpc/rpctypes",
     "etcdserver/etcdserverpb",
     "mvcc/mvccpb",
@@ -1366,7 +1357,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/DavidCai1993/etcd-lock",
     "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/db/basedb",

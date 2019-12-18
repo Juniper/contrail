@@ -25,4 +25,4 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
-  revision = "e7bfa747d5a8cbf7977eeae1e8b8a10c959f6788"
+  revision = "57bb5c7f8cb9ab151e4d18746c145c14591d5c4f"
