@@ -54,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "6fb5e64d_a84736f5",
+        "filename": "tools/templates/contrail/templates_config.yaml",
+        "patchSetId": 18
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-18T18:31:29Z",
+      "side": 1,
+      "message": "Done. Changes requiring modifications in ASF will be done in seprate CR.",
+      "parentUuid": "f415f75e_904f703a",
+      "revId": "9691ef268c46879a9ef94879dc547dd179d45e5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "12fd8a6e_3cf29189",
         "filename": "vendor/github.com/Juniper/asf/pkg/client/client_http.go.tmpl",
         "patchSetId": 18
