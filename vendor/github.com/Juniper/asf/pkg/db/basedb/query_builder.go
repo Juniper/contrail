@@ -39,11 +39,10 @@ type authContext interface {
 
 type defaultAuthContext struct{}
 
-func (defaultAuthContext) IsAdmin() bool { return true }
-
+// TODO(dfurman): do not assume admin by default
+func (defaultAuthContext) IsAdmin() bool     { return true }
 func (defaultAuthContext) ProjectID() string { return "project" }
-
-func (defaultAuthContext) DomainID() string { return "domain" }
+func (defaultAuthContext) DomainID() string  { return "domain" }
 
 type queryContext struct {
 	auth        authContext

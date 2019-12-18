@@ -19,7 +19,7 @@ const (
 
 // GenerateConfig holds configuration for template-base files generation.
 type GenerateConfig struct {
-	TemplatesConfig    []TemplateConfig
+	TemplateConfigs    []TemplateConfig
 	ModelsImportPath   string
 	ServicesImportPath string
 	NoRegenerate       bool
@@ -33,8 +33,8 @@ type TemplateConfig struct {
 	OutputPath   string `yaml:"-"`
 }
 
-// LoadTemplatesConfig loads template configurations from given path.
-func LoadTemplatesConfig(path string) ([]TemplateConfig, error) {
+// LoadTemplateConfigs loads template configurations from given path.
+func LoadTemplateConfigs(path string) ([]TemplateConfig, error) {
 	var tcs []TemplateConfig
 	err := fileutil.LoadFile(path, &tcs)
 	return tcs, err
@@ -50,7 +50,7 @@ func GenerateFiles(api *API, gc *GenerateConfig) error {
 		return errors.Wrap(err, "register filters")
 	}
 
-	for _, tc := range gc.TemplatesConfig {
+	for _, tc := range gc.TemplateConfigs {
 		resolveOutputPath(&tc)
 		if gc.NoRegenerate && !isOutdated(api, &tc) {
 			logrus.WithField(
