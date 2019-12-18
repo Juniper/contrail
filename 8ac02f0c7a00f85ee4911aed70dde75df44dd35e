@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5132ed9b_bae2d1ed",
+        "filename": "pkg/db/utils.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2019-12-18T15:43:44Z",
+      "side": 1,
+      "message": "sort dependencies",
+      "revId": "8ac02f0c7a00f85ee4911aed70dde75df44dd35e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
