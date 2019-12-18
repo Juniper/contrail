@@ -1,0 +1,630 @@
+package etcd
+
+import (
+	"context"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"time"
+	"encoding/json"
+	"strings"
+
+	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/mvcc/mvccpb"
+	"github.com/coreos/etcd/pkg/transport"
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/gogo/protobuf/proto"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc/grpclog"
+
+	conc "github.com/coreos/etcd/clientv3/concurrency"
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
+)
+
+// TODO(dfurman): move non-template code out of template
+// TODO(dfurman): write tests
+
+// NotifierService is a service that performs writes to etcd.
+type NotifierService struct {
+	services.BaseService
+	Path   string
+	Client *Client
+	Codec  models.Codec
+	log    *logrus.Entry
+}
+
+// NewNotifierService creates a etcd Notifier Service.
+func NewNotifierService(path string, codec models.Codec) (*NotifierService, error) {
+	ec, err := NewClientByViper("etcd-notifier")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to etcd server")
+	}
+
+	service := &NotifierService{
+		Path:   path,
+		Client: ec,
+		Codec:  codec,
+		log:    logutil.NewLogger("etcd-notifier"),
+	}
+	return service, nil
+}
+
+
+func (ns *NotifierService) handleRefWrapper(
+	ctx context.Context, key string, obj proto.Message, handleRef func(),
+) error {
+	txn := GetTxn(ctx)
+	oldData := txn.Get(key)
+	if len(oldData) == 0 {
+		return nil
+	}
+
+	sObj := models.NewSerializedObject(oldData, obj, ns.Codec)
+	if err := sObj.Map(handleRef); err != nil {
+		return err
+	}
+
+	txn.Put(key, sObj.GetData())
+	return nil
+}
+
+// CLIENT
+
+const (
+	kvClientRequestTimeout = 60 * time.Second
+)
+
+// Client is an etcd client using clientv3.
+type Client struct {
+	ETCD *clientv3.Client
+	log  *logrus.Entry
+}
+
+// Config holds Client configuration.
+type Config struct {
+	*clientv3.Client // optional clientv3.Client
+	clientv3.Config  // config for new clientv3.Client to create
+	TLSConfig        TLSConfig
+	ServiceName      string
+}
+
+// TLSConfig holds Client TLS configuration.
+type TLSConfig struct {
+	Enabled         bool
+	CertificatePath string
+	KeyPath         string
+	TrustedCAPath   string
+}
+
+// Viper keys
+const (
+	ETCDEndpointsVK          = "etcd.endpoints"
+	ETCDDialTimeoutVK        = "etcd.dial_timeout"
+	ETCDGRPCInsecureVK       = "etcd.grpc_insecure"
+	ETCDPasswordVK           = "etcd.password"
+	ETCDPathVK               = "etcd.path"
+	ETCDTLSEnabledVK         = "etcd.tls.enabled"
+	ETCDTLSCertificatePathVK = "etcd.tls.certificate_path"
+	ETCDTLSKeyPathVK         = "etcd.tls.key_path"
+	ETCDTLSTrustedCAPathVK   = "etcd.tls.trusted_ca_path"
+	ETCDUsernameVK           = "etcd.username"
+)
+
+
+// NewClientByViper creates etcd client based on global Viper configuration.
+func NewClientByViper(serviceName string) (*Client, error) {
+	return NewClient(&Config{
+		Config: clientv3.Config{
+			Endpoints:   viper.GetStringSlice(ETCDEndpointsVK),
+			Username:    viper.GetString(ETCDUsernameVK),
+			Password:    viper.GetString(ETCDPasswordVK),
+			DialTimeout: viper.GetDuration(ETCDDialTimeoutVK),
+		},
+		TLSConfig: TLSConfig{
+			Enabled:         viper.GetBool(ETCDTLSEnabledVK),
+			CertificatePath: viper.GetString(ETCDTLSCertificatePathVK),
+			KeyPath:         viper.GetString(ETCDTLSKeyPathVK),
+			TrustedCAPath:   viper.GetString(ETCDTLSTrustedCAPathVK),
+		},
+		ServiceName: serviceName,
+	})
+}
+
+// NewClient creates new etcd Client with given clientv3.Client.
+// It creates new clientv3.Client if it is not passed by parameter.
+func NewClient(c *Config) (*Client, error) {
+	clientv3.SetLogger(grpclog.NewLoggerV2(ioutil.Discard, os.Stdout, os.Stdout))
+
+	var etcd *clientv3.Client
+	if c.Client != nil {
+		etcd = c.Client
+	} else {
+		var err error
+		etcd, err = newETCDClient(c)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &Client{
+		ETCD: etcd,
+		log:  logutil.NewLogger(fmt.Sprint(c.ServiceName, "-etcd-client")),
+	}, nil
+}
+
+func newETCDClient(c *Config) (*clientv3.Client, error) {
+	if c.TLSConfig.Enabled {
+		var err error
+		c.TLS, err = transport.TLSInfo{
+			CertFile:      c.TLSConfig.CertificatePath,
+			KeyFile:       c.TLSConfig.KeyPath,
+			TrustedCAFile: c.TLSConfig.TrustedCAPath,
+		}.ClientConfig()
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid TLS config")
+		}
+	}
+
+	etcd, err := clientv3.New(c.Config)
+	if err != nil {
+		return nil, errors.Wrapf(err, "connecting to etcd failed")
+	}
+
+	return etcd, nil
+}
+
+// Get gets a value in etcd.
+func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
+	kvHandle := clientv3.NewKV(c.ETCD)
+	response, err := kvHandle.Get(ctx, key)
+	if err != nil || response.Count == 0 {
+		return nil, err
+	}
+	return response.Kvs[0].Value, nil
+}
+
+// Put puts value in etcd no matter if it was there or not.
+func (c *Client) Put(ctx context.Context, key string, value []byte) error {
+	kvHandle := clientv3.NewKV(c.ETCD)
+
+	_, err := kvHandle.Put(ctx, key, string(value))
+
+	return err
+}
+
+// Create puts value in etcd if following key didn't exist.
+func (c *Client) Create(ctx context.Context, key string, value []byte) error {
+	kvHandle := clientv3.NewKV(c.ETCD)
+
+	_, err := kvHandle.Txn(ctx).
+		If(clientv3.Compare(clientv3.Version(key), "=", 0)).
+		Then(clientv3.OpPut(key, string(value))).
+		Commit()
+
+	return err
+}
+
+// Update puts value in etcd if key existed before.
+func (c *Client) Update(ctx context.Context, key, value string) error {
+	kvHandle := clientv3.NewKV(c.ETCD)
+
+	_, err := kvHandle.Txn(ctx).
+		If(clientv3.Compare(clientv3.Version(key), "=", 0)).
+		Else(clientv3.OpPut(key, value)).
+		Commit()
+
+	return err
+}
+
+// Delete deletes a key/value in etcd.
+func (c *Client) Delete(ctx context.Context, key string) error {
+	kvHandle := clientv3.NewKV(c.ETCD)
+
+	_, err := kvHandle.Txn(ctx).
+		If(clientv3.Compare(clientv3.Version(key), "=", 0)).
+		Else(clientv3.OpDelete(key)).
+		Commit()
+
+	return err
+}
+
+// WatchRecursive watches a key pattern for changes After an Index and returns channel with messages.
+func (c *Client) WatchRecursive(
+		ctx context.Context, keyPattern string, afterIndex int64,
+) chan Message {
+	return c.Watch(ctx, keyPattern, clientv3.WithPrefix(), clientv3.WithRev(afterIndex))
+
+}
+
+// Watch watches a key and returns channel with messages.
+func (c *Client) Watch(
+		ctx context.Context, key string, opts ...clientv3.OpOption,
+) chan Message {
+	resultChan := make(chan Message)
+	rchan := c.ETCD.Watch(ctx, key, opts...)
+
+	go func() {
+		for wresp := range rchan {
+			for _, ev := range wresp.Events {
+				resultChan <- NewMessage(ev)
+			}
+		}
+		close(resultChan)
+	}()
+
+	return resultChan
+}
+
+// DoInTransaction wraps clientv3 transaction and wraps conc.STM with own Txn.
+func (c *Client) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
+	if txn := GetTxn(ctx); txn != nil {
+		// Transaction already in context
+		return do(ctx)
+	}
+	// New transaction required
+
+	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
+	defer cancel()
+
+	_, err := conc.NewSTM(c.ETCD, func(stm conc.STM) error {
+		return do(WithTxn(ctx, stmTxn{stm, c.log}))
+	}, conc.WithAbortContext(ctx))
+	return err
+}
+
+// Close closes client.
+func (c *Client) Close() error {
+	return c.ETCD.Close()
+}
+
+// EVENT PRODUCER
+
+//EventProducer watches etcd and call event processor.
+type EventProducer struct {
+	client    *Client
+	Processor services.EventProcessor
+	WatchPath string
+	Timeout   time.Duration
+}
+
+//NewEventProducer makes a event producer and couple it with processor.
+func NewEventProducer(processor services.EventProcessor, serviceName string) (p *EventProducer, err error) {
+	p = &EventProducer{
+		Processor: processor,
+		WatchPath: viper.GetString(ETCDPathVK),
+		Timeout:   viper.GetDuration("cache.timeout"),
+	}
+
+	p.client, err = NewClientByViper(serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
+// HandleMessage handles message received from etcd pubsub.
+func (p *EventProducer) HandleMessage(
+		ctx context.Context, index int64, oper int32, key string, newValue []byte,
+) {
+	logrus.Debugf("Index: %d, oper: %d, Got Message %s: %s",
+		index, oper, key, newValue)
+
+	event, err := ParseEvent(oper, key, newValue)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to parse etcd event")
+		return
+	}
+
+	_, err = p.Processor.Process(ctx, event)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to process etcd event")
+	}
+}
+
+// ParseEvent returns an Event corresponding to a change in etcd.
+func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error) {
+
+	//TODO(nati) use sync.Codec
+
+	kind, uuid, err := parseKey(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse kind and UUID from etcd key: %s", key)
+	}
+
+	operation, err := parseOperation(oper)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse etcd operation")
+	}
+
+	var data map[string]interface{}
+	if operation == services.OperationCreate || operation == services.OperationUpdate {
+		err = json.Unmarshal(newValue, &data)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to decode %s", string(newValue))
+		}
+	}
+
+	event, err := services.NewEvent(services.EventOption{
+		UUID:      uuid,
+		Kind:      kind,
+		Operation: operation,
+		Data:      data,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from data: %v", data)
+	}
+	return event, nil
+}
+
+func parseKey(key string) (kind string, uuid string, err error) {
+	subkeys := strings.Split(key, "/")
+
+	if len(subkeys) < 4 {
+		return "", "", errors.New("key has too few fields")
+	}
+	kind = subkeys[2]
+	uuid = subkeys[3]
+	return kind, uuid, nil
+}
+
+func parseOperation(etcdOperation int32) (string, error) {
+	switch etcdOperation {
+	case MessageCreate:
+		return services.OperationCreate, nil
+	case MessageModify:
+		return services.OperationUpdate, nil
+	case MessageDelete:
+		return services.OperationDelete, nil
+	default:
+		return "", errors.Errorf("unsupported etcd operation: %v", etcdOperation)
+	}
+}
+
+//Start watch etcd.
+func (p *EventProducer) Start(ctx context.Context) error {
+	eventChan := p.client.WatchRecursive(ctx, "/"+p.WatchPath, int64(0))
+	logrus.Debug("Starting handle loop")
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case e, ok := <-eventChan:
+			if !ok {
+				logrus.Info("event channel unsuspectingly closed, restarting etcd watch")
+				eventChan = p.client.WatchRecursive(ctx, "/"+p.WatchPath, int64(0))
+			}
+			p.HandleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
+		}
+	}
+}
+
+// TXN
+
+
+// Txn is a transaction object allowing to perform operations in it.
+type Txn interface {
+	Get(key string) []byte
+	Put(key string, val []byte)
+	Delete(key string)
+}
+
+var txnKey interface{} = "etcd-txn"
+
+// GetTxn get a txn from context.
+func GetTxn(ctx context.Context) Txn {
+	iTxn := ctx.Value(txnKey)
+	t, _ := iTxn.(Txn) //nolint: errcheck
+	return t
+}
+
+// WithTxn returns new context with Txn object.
+func WithTxn(ctx context.Context, t Txn) context.Context {
+	return context.WithValue(ctx, txnKey, t)
+}
+
+type stmTxn struct {
+	conc.STM
+	log *logrus.Entry
+}
+
+func (s stmTxn) Get(key string) []byte {
+	s.log.WithFields(logrus.Fields{"key": key}).Debugf(
+		"Getting resource from etcd in transaction")
+	return []byte(s.STM.Get(key))
+}
+
+func (s stmTxn) Put(key string, val []byte) {
+	s.log.WithFields(logrus.Fields{"key": key}).Debugf(
+		"Putting resource in etcd in transaction")
+	s.STM.Put(key, string(val))
+}
+
+func (s stmTxn) Delete(key string) {
+	s.log.WithFields(logrus.Fields{"key": key}).Debugf(
+		"Deleting resource in etcd in transaction")
+	s.STM.Del(key)
+}
+
+// MESSAGE
+
+// Message contains message data reveived from WatchRecursive.
+type Message struct {
+	Revision int64
+	Type     int32
+	Key      string
+	Value    []byte
+}
+
+// Message type values.
+const (
+	MessageCreate = iota
+	MessageModify
+	MessageDelete
+	MessageUnknown
+)
+
+// NewMessage creates a new message object based on Event.
+func NewMessage(e *clientv3.Event) Message {
+	return Message{
+		Revision: e.Kv.ModRevision,
+		Type:     messageTypeFromEvent(e),
+		Key:      string(e.Kv.Key),
+		Value:    e.Kv.Value,
+	}
+}
+
+func messageTypeFromEvent(e *clientv3.Event) int32 {
+	switch {
+	case e.IsCreate():
+		return MessageCreate
+	case e.IsModify():
+		return MessageModify
+	case e.Type == mvccpb.DELETE:
+		return MessageDelete
+	}
+	return MessageUnknown
+}
+
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request,
+) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
+	response, err := ns.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	o := response.Get{{ schema.JSONSchema.GoName }}()
+    key := models.ResourceKey("{{ schema.ID }}", o.UUID)
+
+	jsonStr, err := ns.Codec.Encode(o)
+	if err != nil {
+		return nil, errors.New("error encoding create data")
+	}
+
+	err = ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		GetTxn(ctx).Put(key, []byte(jsonStr))
+		return nil
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create {{ schema.JSONSchema.GoName }} with UUID %q in etcd", o.UUID)
+	}
+
+	ns.log.WithField("uuid", o.UUID).Debug("Created {{ schema.JSONSchema.GoName }} in etcd")
+	return response, nil
+}
+
+func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request,
+) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
+	response, err := ns.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	o := response.Get{{ schema.JSONSchema.GoName }}()
+    key := models.ResourceKey("{{ schema.ID }}", o.UUID)
+
+	ns.log.WithField("uuid", o.UUID).Debug("Updating {{ schema.JSONSchema.GoName }} in etcd")
+	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		txn := GetTxn(ctx)
+		oldData := txn.Get(key)
+		newData, err := models.UpdateData(ns.Codec, oldData, o, request.GetFieldMask())
+		if err != nil {
+			return errors.Wrap(err, "error processing update data for etcd")
+		}
+		txn.Put(key, newData)
+		return nil
+	})
+}
+
+func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request,
+) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	response, err := ns.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	key := models.ResourceKey("{{ schema.ID }}", response.GetID())
+
+	err = ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		GetTxn(ctx).Delete(key)
+		return nil
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to delete {{ schema.JSONSchema.GoName }} with UUID %q in etcd", response.GetID())
+	}
+
+	ns.log.WithField("uuid", response.GetID()).Debug("Deleted {{ schema.JSONSchema.GoName }} in etcd")
+	return response, nil
+}
+
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+
+func (ns *NotifierService) Create{{ refType }}(
+	ctx context.Context, request *services.Create{{ refType }}Request,
+) (*services.Create{{ refType }}Response, error) {
+	response, err := ns.BaseService.Create{{ refType }}(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	ref := response.Get{{ refType }}()
+	fromKey := models.ResourceKey("{{ schema.ID }}", response.ID)
+	toKey := models.ResourceKey("{{ reference.LinkTo.ID }}", ref.UUID)
+
+	ns.log.WithField("from-key", fromKey).WithField("to-key", toKey).Debug("Creating {{ refType }} in etcd")
+	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		newFrom, newTo := &models.{{ schema.JSONSchema.GoName }}{}, &models.{{ reference.GoName }}{}
+		err := ns.handleRefWrapper(ctx, fromKey, newFrom, func() {
+			newFrom.Add{{ reference.GoName }}Ref(ref)
+		})
+		if err != nil {
+			return err
+		}
+
+		return ns.handleRefWrapper(ctx, toKey, newTo, func() {
+			newTo.Add{{ schema.JSONSchema.GoName }}Backref(&models.{{ schema.JSONSchema.GoName }}{UUID: response.ID})
+		})
+	})
+}
+
+func (ns *NotifierService) Delete{{ refType }}(
+	ctx context.Context, request *services.Delete{{ refType }}Request,
+) (*services.Delete{{ refType }}Response, error) {
+	response, err := ns.BaseService.Delete{{ refType }}(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	ref := response.Get{{ refType }}()
+	fromKey := models.ResourceKey("{{ schema.ID }}", response.ID)
+	toKey := models.ResourceKey("{{ reference.LinkTo.ID }}", ref.UUID)
+
+	ns.log.WithField("from-key", fromKey).WithField("to-key", toKey).Debug("Deleting {{ refType }} in etcd")
+	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		newFrom, newTo := &models.{{ schema.JSONSchema.GoName }}{}, &models.{{ reference.GoName }}{}
+		err := ns.handleRefWrapper(ctx, fromKey, newFrom, func() {
+			newFrom.Remove{{ reference.GoName }}Ref(ref)
+		})
+		if err != nil {
+			return err
+		}
+
+		return ns.handleRefWrapper(ctx, toKey, newTo, func() {
+			newTo.Remove{{ schema.JSONSchema.GoName }}Backref(&models.{{ schema.JSONSchema.GoName }}{UUID: response.ID})
+		})
+	})
+}
+
+{% endfor %}
+
+{% endif %}{% endfor %}

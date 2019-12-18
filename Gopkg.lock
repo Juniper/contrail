@@ -3,14 +3,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3696d400a9966c467ca6b050c18547608c821b46bbe9fee915b3d92c3ff08ede"
-  name = "github.com/DavidCai1993/etcd-lock"
-  packages = ["."]
-  pruneopts = ""
-  revision = "32f65b8d019ac3b77f9a893b7443aa3cc001d9da"
-
-[[projects]]
-  branch = "master"
   digest = "1:fd5b873b775d438769f240912b5bcc0a860d89b4d9624c81935b0d85ac3e4ff5"
   name = "github.com/ExpansiveWorlds/instrumentedsql"
   packages = ["."]
@@ -18,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:76d83099a89545a0949b7ef22a7f2bf0aeda31c861c8e7017bfcb0d349de1d3e"
+  digest = "1:9c3a6be534157d6f322e51be328b68cb34beb80495e19a5aa8f12ff2d9811d80"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -41,7 +33,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "e7bfa747d5a8cbf7977eeae1e8b8a10c959f6788"
+  revision = "579ad49bace20da5b4f5ee88755e9fda74f33215"
 
 [[projects]]
   branch = "2.x"
@@ -223,13 +215,9 @@
   packages = [
     "auth/authpb",
     "clientv3",
-    "clientv3/concurrency",
-    "etcdserver/api/v3lock/v3lockpb",
     "etcdserver/api/v3rpc/rpctypes",
     "etcdserver/etcdserverpb",
     "mvcc/mvccpb",
-    "pkg/tlsutil",
-    "pkg/transport",
     "pkg/types",
   ]
   pruneopts = ""
@@ -317,14 +305,6 @@
   pruneopts = ""
   revision = "519db1ee28dcc9fd2474ae59fca29a810482bfb1"
   version = "v0.4.0"
-
-[[projects]]
-  digest = "1:f1a75a8e00244e5ea77ff274baa9559eb877437b240ee7b278f3fc560d9f08bf"
-  name = "github.com/dustin/go-humanize"
-  packages = ["."]
-  pruneopts = ""
-  revision = "9f541cc9db5d55bce703bd99987c9d5cb8eea45e"
-  version = "v1.0.0"
 
 [[projects]]
   digest = "1:044b2f1eea2f5cfb0d3678baf60892734f59d5c2ea3932cb6ed894a97ccba15c"
@@ -1366,7 +1346,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/DavidCai1993/etcd-lock",
     "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/db/basedb",
@@ -1386,9 +1365,6 @@
     "github.com/Juniper/asf/pkg/services/baseservices",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
-    "github.com/coreos/etcd/clientv3/concurrency",
-    "github.com/coreos/etcd/mvcc/mvccpb",
-    "github.com/coreos/etcd/pkg/transport",
     "github.com/databus23/keystone",
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/container",
@@ -1435,7 +1411,6 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",
-    "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
     "gopkg.in/yaml.v2",

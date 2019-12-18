@@ -20,7 +20,7 @@
   template_path: vendor/github.com/Juniper/asf/pkg/db/db_types.go.tmpl
   output_dir: pkg/db
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/etcd/etcd_notifier_service.go.tmpl
+  template_path: vendor/github.com/Juniper/asf/pkg/db/etcd/notifier_service.go.tmpl
   output_dir: pkg/db/etcd
 - type: alltype
   template_path: vendor/github.com/Juniper/asf/pkg/models/model.go.tmpl
