@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0acdeb61_4cfe20f7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 20
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T08:00:52Z",
+      "side": 1,
+      "message": "Is the commit message stil correct, despite all this changes?",
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd5baefc_be073ae7",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 20
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T08:00:52Z",
+      "side": 1,
+      "message": "This parameter is unused, is that intended?",
+      "range": {
+        "startLine": 238,
+        "startChar": 21,
+        "endLine": 238,
+        "endChar": 36
+      },
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9547ad09_e64d0e16",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 20
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T08:00:52Z",
+      "side": 1,
+      "message": "Why is Fail exported?",
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "579f956d_e7d31d21",
+        "filename": "pkg/cmd/contrail/cloud.go",
+        "patchSetId": 20
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T08:00:52Z",
+      "side": 1,
+      "message": "It worked previously, why does it need to be changed?",
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

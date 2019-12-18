@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "53c4a971_b49b42b5",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-18T08:00:52Z",
+      "side": 1,
+      "message": "You both disagreed and changed it. I am confused now",
+      "parentUuid": "0bf12828_b998cc3d",
+      "revId": "989a4b596deb5cd40b8fc71e9d8776f9ac27d8e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7e4fbd64_2afe35a7",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 15
