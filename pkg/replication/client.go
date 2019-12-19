@@ -13,7 +13,6 @@ import (
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/endpoint"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
@@ -40,10 +39,10 @@ type vncAPIHandle struct {
 	clients       map[string]*vncAPI
 	endpointStore *endpoint.Store
 	log           *logrus.Entry
-	auth          *keystone.Keystone
+	auth          KeystoneController
 }
 
-func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHandle {
+func newVncAPIHandle(epStore *endpoint.Store, auth KeystoneController) *vncAPIHandle {
 	return &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,

@@ -51,8 +51,9 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
-	keystone := &Keystone{
+
+func (keystone *Keystone) Init(e *echo.Echo, es *endpoint.Store) error {
+	keystone = &Keystone{
 		endpointStore: es,
 		apiClient:     client.NewHTTPFromConfig(),
 		log:           logutil.NewLogger("keystone-api"),
@@ -62,7 +63,7 @@ func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 		var staticAssignment StaticAssignment
 		err := config.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		keystone.staticAssignment = &staticAssignment
 		keystone.Assignment = &staticAssignment
@@ -83,7 +84,7 @@ func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
 	e.GET("/keystone/v3/domains", keystone.listDomainsAPI)
 
-	return keystone, nil
+	return nil
 }
 
 //GetProjectAPI is an API handler to list projects.

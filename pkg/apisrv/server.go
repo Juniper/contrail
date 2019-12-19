@@ -46,11 +46,16 @@ const (
 	WatchPath       = "watch"
 )
 
+type KeystoneController interface {
+	GetAuthType(clusterID string) (string, error)
+	Init(e *echo.Echo, es *endpoint.Store) error
+}
+
 // Server represents Intent API Server.
 type Server struct {
 	Echo                       *echo.Echo
 	GRPCServer                 *grpc.Server
-	Keystone                   *keystone.Keystone
+	Keystone                   KeystoneController
 	DBService                  *db.Service
 	Proxy                      *proxyService
 	Service                    services.Service
@@ -174,7 +179,7 @@ func (s *Server) Init() (err error) {
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
 	if keystoneAuthURL != "" {
 		var skipPaths []string
-		skipPaths, err = keystone.GetAuthSkipPaths()
+		skipPaths, err = GetAuthSkipPaths()
 		if err != nil {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
@@ -184,8 +189,8 @@ func (s *Server) Init() (err error) {
 	}
 
 	if viper.GetBool("keystone.local") {
-		var k *keystone.Keystone
-		k, err = keystone.Init(s.Echo, endpointStore)
+		var k KeystoneController
+		err = k.Init(s.Echo, endpointStore)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
@@ -466,7 +471,7 @@ func loadServiceUserClientConfig() *asfclient.HTTPConfig {
 	return c
 }
 
-func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keystone.Keystone) (err error) {
+func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth KeystoneController) (err error) {
 	s.VNCReplicator, err = replication.New(endpointStore, auth)
 	if err != nil {
 		return err
