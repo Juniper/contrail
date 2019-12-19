@@ -869,6 +869,30 @@
       "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "30725e30_cf9ef0be",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-19T09:33:41Z",
+      "side": 1,
+      "message": "Sorry for not responding such a long time I just realized today that part of mail from gerrit ended in the spam box.\n\nAnswering your question, the simplest solution you could use is:\n- add to Cluster ContainerPlayer factory function \n- pass a function that constructs true ContainerPlayer to NewCluster in production code \n- in test pass to NewCluster function which constructs mocked player\n- move getContainerPlayer to be a method of Cluster which calls that factory function\n\nIt will add some level of indirection but easily remove that if Test from cluster.go",
+      "parentUuid": "d554de6f_fc0f2a7c",
+      "range": {
+        "startLine": 159,
+        "startChar": 1,
+        "endLine": 160,
+        "endChar": 10
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
