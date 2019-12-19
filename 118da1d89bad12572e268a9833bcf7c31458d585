@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2b555fd6_2e9aea1d",
+        "filename": "pkg/db/cache/cachedb.go.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-19T17:06:00Z",
+      "side": 0,
+      "message": "Where has this been moved?",
+      "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "534d4678_8816656a",
+        "filename": "pkg/db/etcd/locker_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-19T17:06:00Z",
+      "side": 0,
+      "message": "Where has this been moved?",
+      "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "caa17b78_5f9e10d6",
+        "filename": "pkg/services/event_graph.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-19T17:06:00Z",
+      "side": 0,
+      "message": "Where has this been moved?",
+      "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
