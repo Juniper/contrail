@@ -893,6 +893,30 @@
       "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "92de9d80_58b948a1",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-19T17:20:29Z",
+      "side": 1,
+      "message": "For now, I\u0027m fine with moving that to cluster.go file. But it is up to you if you are fine with the current solution or you want to change it.",
+      "parentUuid": "30725e30_cf9ef0be",
+      "range": {
+        "startLine": 159,
+        "startChar": 1,
+        "endLine": 160,
+        "endChar": 10
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
