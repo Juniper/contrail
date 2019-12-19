@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "b6c9a744_14ec0062",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Because in the previous solution the SSH Agent was run only once and its PID and AUTH_SOCK were stored in the config file. Since this is required only in the small part of code I have decided to start it every time we perform provisioning and kill it right after finishing that job.",
+      "parentUuid": "d8745493_340c7c1f",
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e2a090d3_16c95ea2",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 12
@@ -30,6 +48,30 @@
       "writtenOn": "2019-12-18T07:47:24Z",
       "side": 1,
       "message": "This is a sshAgent, why does it run SSHAgent? Isn\u0027t run() sufficient?",
+      "range": {
+        "startLine": 23,
+        "startChar": 22,
+        "endLine": 23,
+        "endChar": 30
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d98ee7dc_ae2d30ff",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e2a090d3_16c95ea2",
       "range": {
         "startLine": 23,
         "startChar": 22,
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "f35363e8_5e228de4",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "711158aa_9581d446",
+      "range": {
+        "startLine": 42,
+        "startChar": 24,
+        "endLine": 42,
+        "endChar": 25
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f99a54be_8cb07c97",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 12
@@ -76,6 +142,30 @@
       "writtenOn": "2019-12-17T16:23:07Z",
       "side": 1,
       "message": "ditto L#42",
+      "range": {
+        "startLine": 48,
+        "startChar": 24,
+        "endLine": 48,
+        "endChar": 25
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de0d06c2_54b9b281",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f99a54be_8cb07c97",
       "range": {
         "startLine": 48,
         "startChar": 24,
@@ -135,6 +225,30 @@
     },
     {
       "key": {
+        "uuid": "df83a114_d23efd95",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "cb697f3d_53d121a1",
+      "range": {
+        "startLine": 14,
+        "startChar": 70,
+        "endLine": 20,
+        "endChar": 42
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4a9e3caa_59e6486c",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 12
@@ -152,6 +266,24 @@
     },
     {
       "key": {
+        "uuid": "eb45d1cd_270d8e1a",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Each time I changed the permissions to 600 and pushed the change it changed back to 644",
+      "parentUuid": "4a9e3caa_59e6486c",
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ef9a3042_1fc5445d",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 12
@@ -163,6 +295,30 @@
       "writtenOn": "2019-12-18T07:47:24Z",
       "side": 1,
       "message": "What exists? I don\u0027t understand. L62-64 does not explain much.",
+      "range": {
+        "startLine": 36,
+        "startChar": 2,
+        "endLine": 36,
+        "endChar": 4
+      },
+      "revId": "c9d46347ce882fd33a3a7914cd80dcea551fe01e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c619314_21956837",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-19T09:29:14Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ef9a3042_1fc5445d",
       "range": {
         "startLine": 36,
         "startChar": 2,
