@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "87cf2d73_761ec0e8",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-20T16:35:59Z",
+      "side": 1,
+      "message": "This field tells the backend to run ansible playbooks on this host. If provision is set to false (default value for boolean) then the playbooks are skipped.",
+      "parentUuid": "02b2b85c_7a7d63be",
+      "range": {
+        "startLine": 264,
+        "startChar": 3,
+        "endLine": 264,
+        "endChar": 22
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "523e673d_343166e9",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 6
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "06bc18ea_9a2109d3",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 306,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-20T16:35:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "523e673d_343166e9",
+      "range": {
+        "startLine": 286,
+        "startChar": 2,
+        "endLine": 306,
+        "endChar": 3
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c2b5a8bb_9c5b4fab",
         "filename": "pkg/cloud/topology.go",
         "patchSetId": 6
@@ -59,6 +107,30 @@
       "writtenOn": "2019-12-20T14:45:00Z",
       "side": 1,
       "message": "Nit: return fileutil.WriteToFile(destination, marshaled, defaultRWOnlyPerm)",
+      "range": {
+        "startLine": 67,
+        "startChar": 1,
+        "endLine": 71,
+        "endChar": 11
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f367772d_6e151a62",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-20T16:35:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c2b5a8bb_9c5b4fab",
       "range": {
         "startLine": 67,
         "startChar": 1,
