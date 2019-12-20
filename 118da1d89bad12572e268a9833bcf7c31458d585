@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "0fb333b9_885e2930",
+        "filename": "pkg/db/cache/cachedb.go.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-20T12:16:07Z",
+      "side": 0,
+      "message": "vendor/github.com/Juniper/asf/pkg/db/cache/cachedb.go.tmpl\n\nAll templates are in ASF now (except RBAC). I forgot to delete pkg/db/cache/cachedb.go.tmpl in previous CR, so I;m doing it here.",
+      "parentUuid": "2b555fd6_2e9aea1d",
+      "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "534d4678_8816656a",
         "filename": "pkg/db/etcd/locker_test.go",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "816d3a95_4be3abfb",
+        "filename": "pkg/db/etcd/locker_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-20T12:16:07Z",
+      "side": 0,
+      "message": "This has been eradicated, because it\u0027s a unused, dead code.",
+      "parentUuid": "534d4678_8816656a",
+      "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "caa17b78_5f9e10d6",
         "filename": "pkg/services/event_graph.go",
         "patchSetId": 2
@@ -50,6 +86,24 @@
       "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "259e1061_88566ee6",
+        "filename": "pkg/services/event_graph.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-20T12:16:07Z",
+      "side": 0,
+      "message": "vendor/github.com/Juniper/asf/pkg/services/event_encoding.go.tmpl line: 674",
+      "parentUuid": "caa17b78_5f9e10d6",
+      "revId": "118da1d89bad12572e268a9833bcf7c31458d585",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
