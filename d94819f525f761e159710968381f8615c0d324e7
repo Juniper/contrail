@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "43b5d7ab_0798bb3d",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-20T12:47:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1291046c_7cdda785",
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2801bb91_ae3b47f7",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 2
@@ -462,6 +480,30 @@
       "side": 1,
       "message": "I disagree that \"marshal\" is redundant - object can be represented in file in multiple ways (yaml, json, plain representation, sql queries).",
       "parentUuid": "03e6f854_efb2b0e6",
+      "range": {
+        "startLine": 73,
+        "startChar": 19,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "642bc540_dcdafef2",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-12-20T12:47:31Z",
+      "side": 1,
+      "message": "Bump, please resolve or answer",
+      "parentUuid": "f2137f59_ec4d92c9",
       "range": {
         "startLine": 73,
         "startChar": 19,
