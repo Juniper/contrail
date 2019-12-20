@@ -1,0 +1,257 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "91109ce4_ef070a31",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "What is the difference between these two parameters?",
+      "range": {
+        "startLine": 73,
+        "startChar": 1,
+        "endLine": 74,
+        "endChar": 25
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5a45d52b_59b271e3",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "This should be a part of pullImage method",
+      "range": {
+        "startLine": 82,
+        "startChar": 1,
+        "endLine": 84,
+        "endChar": 27
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "be89c34a_9c7fad6f",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "if err \u003d p.execCmd(ctx, containerName, workingDirectory, ansibleArgs); err !\u003d nil {\n\treturn errors.Wrap(err, \"container command execution failed\")\n}",
+      "range": {
+        "startLine": 123,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2cc0cd89_0d2e1f01",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "if err \u003d p.cleanContainer(ctx, containerName, keepContainerAlive); err !\u003d nil {\n\treturn errors.Wrap(err, \"container cleaning failed\")\n}",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 136,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "80c666ea_4ebb207d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "Returning an error this way won\u0027t work.\nhttps://play.golang.org/p/U7PllGd97l4\n\nYou need to name returning value\nfunc somefunction() (NAME TYPE) {\n...",
+      "range": {
+        "startLine": 166,
+        "startChar": 3,
+        "endLine": 166,
+        "endChar": 16
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c4ed8b1_515a966d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "Why do we ignore tempErr if err is not nil?",
+      "range": {
+        "startLine": 164,
+        "startChar": 2,
+        "endLine": 167,
+        "endChar": 3
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1181dc15_5138b0cf",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "What\u0027s the point of this?",
+      "range": {
+        "startLine": 170,
+        "startChar": 1,
+        "endLine": 170,
+        "endChar": 32
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e8412f70_305aba1d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "This is redundant.",
+      "range": {
+        "startLine": 171,
+        "startChar": 1,
+        "endLine": 173,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "74474289_8865cf3f",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "if keepContainerAlive {\n   return nil\n}\nTo remove indentation",
+      "range": {
+        "startLine": 277,
+        "startChar": 1,
+        "endLine": 277,
+        "endChar": 25
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c72fb17a_8e134ae9",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "return p.client.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{})",
+      "range": {
+        "startLine": 283,
+        "startChar": 2,
+        "endLine": 285,
+        "endChar": 12
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e7ea25a3_ba7efb87",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "Please follow proper sorting of imports from review.md",
+      "range": {
+        "startLine": 4,
+        "startChar": 1,
+        "endLine": 21,
+        "endChar": 29
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

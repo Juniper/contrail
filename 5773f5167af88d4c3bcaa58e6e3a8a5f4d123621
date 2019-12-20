@@ -777,6 +777,29 @@
     },
     {
       "key": {
+        "uuid": "ba320559_5337b047",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T12:00:59Z",
+      "side": 1,
+      "message": "This could be extracted to separate function.",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 142,
+        "endChar": 2
+      },
+      "revId": "5773f5167af88d4c3bcaa58e6e3a8a5f4d123621",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0258ee34_4f9b6b88",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 5
