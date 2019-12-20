@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "f46a2a64_757c6371",
+        "filename": "pkg/deploy/cluster/templates/instances.tmpl",
+        "patchSetId": 2
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-20T17:03:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ed407a52_22067a36",
+      "revId": "b9962978ae724c5e931a7d83c10384631e229819",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "102f02a1_cd8e3a8b",
         "filename": "pkg/deploy/cluster/templates/openstack_config.tmpl",
         "patchSetId": 2
