@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "02b2b85c_7a7d63be",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T14:45:00Z",
+      "side": 1,
+      "message": "Why do we set this value?",
+      "range": {
+        "startLine": 264,
+        "startChar": 3,
+        "endLine": 264,
+        "endChar": 22
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "523e673d_343166e9",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 306,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T14:45:00Z",
+      "side": 1,
+      "message": "It should return an error if providerType variable was none of them.\nEspecially that UI will soon change \"gcp\" string to \"google\". We could miss this.",
+      "range": {
+        "startLine": 286,
+        "startChar": 2,
+        "endLine": 306,
+        "endChar": 3
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c2b5a8bb_9c5b4fab",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-20T14:45:00Z",
+      "side": 1,
+      "message": "Nit: return fileutil.WriteToFile(destination, marshaled, defaultRWOnlyPerm)",
+      "range": {
+        "startLine": 67,
+        "startChar": 1,
+        "endLine": 71,
+        "endChar": 11
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
