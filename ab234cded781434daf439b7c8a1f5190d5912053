@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b3594b43_ed176cf6",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-20T15:08:57Z",
+      "side": 1,
+      "message": "This cannot be imported in apisrv. What I mentioned earlier was that the other two packages (replication and keystone) can depend on endpoint package.",
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "551c1384_29556314",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-20T15:08:57Z",
+      "side": 1,
+      "message": "Are all those methods required speciffically in apisrv package?",
+      "range": {
+        "startLine": 42,
+        "startChar": 1,
+        "endLine": 51,
+        "endChar": 78
+      },
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6e878367_44eb57b7",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-12-20T15:08:57Z",
+      "side": 1,
+      "message": "We need to find a way to move those two out of this function, out of apisrv package. That will help us limit the interface.",
+      "range": {
+        "startLine": 183,
+        "startChar": 1,
+        "endLine": 196,
+        "endChar": 2
+      },
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
