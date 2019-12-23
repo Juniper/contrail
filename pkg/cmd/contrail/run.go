@@ -149,10 +149,8 @@ func startServer() {
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+	// TODO(Witaut): Move CacheDB outside Server.
 	server.Cache = cacheDB
-	if err = server.Init(); err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
 	if err = server.Run(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
