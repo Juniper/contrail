@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "45d4d46d_b14194de",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-23T17:03:10Z",
+      "side": 1,
+      "message": "What about extracting an e.g. `pkg/baseapisrv` package with just an HTTP+GRPC server instead of moving most of the services/APIs to a new package (e.g. `pkg/contrail`)?",
+      "range": {
+        "startLine": 51,
+        "startChar": 1,
+        "endLine": 52,
+        "endChar": 40
+      },
+      "revId": "a445b0b04fbdea8c9e4d9eff60ddd10e4d351517",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
