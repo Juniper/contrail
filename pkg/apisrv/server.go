@@ -2,17 +2,13 @@ package apisrv
 
 import (
 	"crypto/tls"
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"sync"
-	"time"
 
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
@@ -35,7 +31,6 @@ import (
 	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
-	protocodec "github.com/gogo/protobuf/codec"
 )
 
 // Server HTTP paths.
@@ -48,8 +43,7 @@ const (
 
 // Server represents Intent API Server.
 type Server struct {
-	Echo                       *echo.Echo
-	GRPCServer                 *grpc.Server
+	Server                     *baseapisrv.Server
 	Keystone                   *keystone.Keystone
 	DBService                  *db.Service
 	Proxy                      *proxyService
@@ -70,60 +64,33 @@ type Server struct {
 
 // NewServer makes a server.
 func NewServer() (*Server, error) {
-	server := &Server{
-		Echo: echo.New(),
+	s := &Server{
+		log: logutil.NewLogger("contrail-api-server"),
 	}
-	return server, nil
-}
-
-// Init setups the Server.
-// nolint: gocyclo
-func (s *Server) Init() (err error) {
-	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
-		return err
-	}
-	s.log = logutil.NewLogger("api-server")
-
-	// TODO: integrate Echo's logger with logrus
-	if viper.GetBool("server.log_api") {
-		s.Echo.Use(middleware.Logger())
-	} else {
-		s.Echo.Logger.SetOutput(ioutil.Discard) // Disables Echo's built-in logging.
-	}
-
-	if viper.GetBool("server.log_body") {
-		s.Echo.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
-			if len(responseBody) > 10000 {
-				responseBody = responseBody[0:10000] // trim too long entries
-			}
-			s.log.WithFields(logrus.Fields{
-				"request-body":  string(requestBody),
-				"response-body": string(responseBody),
-			}).Debug("HTTP request handled")
-		}))
-	}
-
-	if viper.GetBool("server.enable_gzip") {
-		s.Echo.Use(middleware.Gzip())
-	}
-
-	s.Echo.Use(middleware.Recover())
-	s.Echo.Binder = &customBinder{}
 
 	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(s.Collector))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	s.DBService = db.NewService(sqlDB)
 
-	if err = s.setupCollector(); err != nil {
-		return err
+	var plugins []baseapisrv.APIPlugin
+
+	collectorPlugin, err := s.setupCollector()
+	if err != nil {
+		return nil, err
 	}
+	plugins = append(plugins, collectorPlugin)
 
 	cs, err := s.setupService()
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		cs.RegisterRESTAPI(bs.Echo)
+		return nil
+	})
 
 	s.Service = cs
 	s.IPAMServer = cs
@@ -135,162 +102,138 @@ func (s *Server) Init() (err error) {
 	s.IDToFQNameServer = cs
 	s.PropCollectionUpdateServer = cs
 
-	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
-	}
-
-	readTimeout := viper.GetInt("server.read_timeout")
-	writeTimeout := viper.GetInt("server.write_timeout")
-	s.Echo.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
-	s.Echo.Server.WriteTimeout = time.Duration(writeTimeout) * time.Second
-
-	cors := viper.GetString("server.cors")
-
-	if cors != "" {
-		s.log.WithField("cors", cors).Debug("Enabling CORS")
-		if cors == "*" {
-			s.log.Warn("cors for * have security issue. DO NOT USE THIS IN PRODUCTION")
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		cs.RegisterRESTAPI(bs.Echo)
+		if bs.GRPCEnabled() {
+			s.registerGRPCServers(bs.GRPCServer)
 		}
-		s.Echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins:  []string{cors},
-			AllowMethods:  []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
-			AllowHeaders:  []string{"X-Auth-Token", "Content-Type"},
-			ExposeHeaders: []string{"X-Total-Count"},
-		}))
+		return nil
+	})
+
+	if viper.GetBool("server.enable_vnc_neutron") {
+		n := s.setupNeutronService(cs)
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			n.RegisterNeutronAPI(bs.Echo)
+			return nil
+		})
 	}
 
-	staticPath := viper.GetStringMapString("server.static_files")
-	for prefix, root := range staticPath {
-		s.Echo.Static(prefix, root)
-	}
-
-	if err = s.registerStaticProxyEndpoints(); err != nil {
-		return errors.Wrap(err, "failed to register static proxy endpoints")
-	}
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		return errors.Wrap(registerStaticProxyEndpoints(bs.Echo), "failed to register static proxy endpoints")
+	})
 
 	endpointStore := endpoint.NewStore()
-	s.serveDynamicProxy(endpointStore)
 
-	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
-	if keystoneAuthURL != "" {
-		var skipPaths []string
-		skipPaths, err = keystone.GetAuthSkipPaths()
-		if err != nil {
-			return errors.Wrap(err, "failed to setup paths skipped from authentication")
-		}
-		s.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
-	} else if viper.GetBool("no_auth") {
-		s.Echo.Use(noAuthMiddleware())
+	config := loadDynamicProxyConfig()
+	s.Proxy = newProxyService(endpointStore, s.DBService, config)
+	s.Proxy.StartEndpointsSync()
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		bs.Echo.Group(config.Path, dynamicProxyMiddleware(endpointStore, config))
+		return nil
+	})
+
+	authPlugins, err := authPlugins()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to set up auth middleware")
 	}
+	plugins = append(plugins, authPlugins...)
 
 	if viper.GetBool("keystone.local") {
 		var k *keystone.Keystone
-		k, err = keystone.Init(s.Echo, endpointStore)
+		k, err = keystone.Init(endpointStore)
 		if err != nil {
-			return errors.Wrap(err, "Failed to init local keystone server")
+			return nil, errors.Wrap(err, "Failed to init local keystone server")
 		}
 		s.Keystone = k
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			k.RegisterEndpoints(bs.Echo)
+			return nil
+		})
 	}
 
 	if viper.GetBool("server.enable_vnc_replication") {
 		if err = s.startVNCReplicator(endpointStore, s.Keystone); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	if viper.GetBool("server.enable_grpc") {
-		if !viper.GetBool("server.tls.enabled") {
-			return errors.New("GRPC support requires TLS configuration")
-		}
-		s.log.Debug("Enabling gRPC server")
-		opts := []grpc.ServerOption{
-			// TODO(Michal): below option potentially breaks compatibility for non golang grpc clients.
-			// Ensure it doesn't or find a better solution for un/marshaling `oneof` fields properly.
-			grpc.CustomCodec(protocodec.New(0)),
-		}
-		if keystoneAuthURL != "" {
-			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(
-				keystoneAuthURL,
-				keystoneInsecure,
-			)))
-		} else if viper.GetBool("no_auth") {
-			opts = append(opts, grpc.UnaryInterceptor(noAuthInterceptor()))
-		}
-		s.GRPCServer = grpc.NewServer(opts...)
-		services.RegisterContrailServiceServer(s.GRPCServer, s.Service)
-		services.RegisterIPAMServer(s.GRPCServer, s.IPAMServer)
-		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
-		services.RegisterSetTagServer(s.GRPCServer, s.SetTagServer)
-		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
-		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
-		services.RegisterIDToFQNameServer(s.GRPCServer, s.IDToFQNameServer)
-		services.RegisterUserAgentKVServer(s.GRPCServer, s.UserAgentKVServer)
-		services.RegisterPropCollectionUpdateServer(s.GRPCServer, s.PropCollectionUpdateServer)
-		s.Echo.Use(gRPCMiddleware(s.GRPCServer))
+	if viper.GetBool("cache.enabled") {
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			bs.Echo.GET(WatchPath, s.watchHandler)
+			return nil
+		})
+	}
+
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		s.setupActionResources(bs, cs)
+		return nil
+	})
+
+	s.Server, err = baseapisrv.NewServer(authGRPCOpts(), plugins)
+	if err != nil {
+		return nil, err
 	}
 
 	if viper.GetBool("homepage.enabled") {
+		// TODO Move this to Server
 		s.setupHomepage()
 	}
 
-	s.setupWatchAPI()
-	s.setupActionResources(cs)
-
-	if viper.GetBool("recorder.enabled") {
-		file := viper.GetString("recorder.file")
-		scenario := &struct {
-			Workflow []*recorderTask `yaml:"workflow,omitempty"`
-		}{}
-		var mutex sync.Mutex
-		s.Echo.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
-			var data interface{}
-			err := json.Unmarshal(requestBody, &data)
-			if err != nil {
-				s.log.WithError(err).Error("Malformed JSON input")
-			}
-			var expected interface{}
-			err = json.Unmarshal(responseBody, &expected)
-			if err != nil {
-				s.log.WithError(err).Error("Malformed JSON response")
-			}
-			task := &recorderTask{
-				Request: &client.Request{
-					Method:   c.Request().Method,
-					Path:     c.Request().URL.Path,
-					Expected: []int{c.Response().Status},
-					Data:     data,
-				},
-				Expect: expected,
-			}
-			mutex.Lock()
-			defer mutex.Unlock()
-			scenario.Workflow = append(scenario.Workflow, task)
-			err = fileutil.SaveFile(file, scenario)
-			if err != nil {
-				s.log.WithError(err).Error("Failed to save scenario to file")
-			}
-		}))
-	}
-
-	return nil
+	return s, nil
 }
 
-func (s *Server) setupCollector() error {
+func authGRPCOpts() (opts []grpc.ServerOption) {
+	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
+	if keystoneAuthURL != "" {
+		opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(
+			keystoneAuthURL,
+			keystoneInsecure,
+		)))
+	} else if viper.GetBool("no_auth") {
+		opts = append(opts, grpc.UnaryInterceptor(noAuthInterceptor()))
+	}
+	return opts
+}
+
+func authPlugins() (plugins []baseapisrv.APIPlugin, err error) {
+	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
+	if keystoneAuthURL != "" {
+		var skipPaths []string
+		skipPaths, err := keystone.GetAuthSkipPaths()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to setup paths skipped from authentication")
+		}
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			bs.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
+			return nil
+		})
+	} else if viper.GetBool("no_auth") {
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			bs.Echo.Use(noAuthMiddleware())
+			return nil
+		})
+	}
+	return plugins, nil
+}
+
+func (s *Server) setupCollector() (baseapisrv.APIPlugin, error) {
 	cfg := &analytics.Config{}
 	var err error
 	if err = viper.UnmarshalKey("collector", cfg); err != nil {
-		return errors.Wrap(err, "failed to unmarshal collector config")
+		return nil, errors.Wrap(err, "failed to unmarshal collector config")
 	}
 	if s.Collector, err = analytics.NewCollector(cfg); err != nil {
-		return errors.Wrap(err, "failed to create collector")
+		return nil, errors.Wrap(err, "failed to create collector")
 	}
 	analytics.AddLoggerHook(s.Collector)
-	s.Echo.Use(middleware.BodyDump(func(
-		ctx echo.Context, reqBody, resBody []byte,
-	) {
-		s.Collector.Send(analytics.RESTAPITrace(ctx, reqBody, resBody))
-	}))
-	return nil
+	return func(bs *baseapisrv.Server) error {
+		bs.Echo.Use(middleware.BodyDump(func(
+			ctx echo.Context, reqBody, resBody []byte,
+		) {
+			s.Collector.Send(analytics.RESTAPITrace(ctx, reqBody, resBody))
+		}))
+		return nil
+	}, nil
 }
 
 func (s *Server) setupService() (*services.ContrailService, error) {
@@ -371,7 +314,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		return nil, err
 	}
 
-	cs := &services.ContrailService{
+	return &services.ContrailService{
 		BaseService:        services.BaseService{},
 		DBService:          s.DBService,
 		TypeValidator:      tv,
@@ -381,14 +324,11 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		RefRelaxer:         s.DBService,
 		UserAgentKVService: s.DBService,
 		Collector:          s.Collector,
-	}
-
-	cs.RegisterRESTAPI(s.Echo)
-	return cs, nil
+	}, nil
 }
 
 func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
-	n := &neutron.Server{
+	return &neutron.Server{
 		ReadService:       cs,
 		WriteService:      cs,
 		UserAgentKV:       s.UserAgentKVServer,
@@ -397,8 +337,6 @@ func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
 		InTransactionDoer: s.DBService,
 		Log:               logutil.NewLogger("neutron-server"),
 	}
-	n.RegisterNeutronAPI(s.Echo)
-	return n
 }
 
 func (s *Server) etcdNotifier() services.Service {
@@ -411,7 +349,7 @@ func (s *Server) etcdNotifier() services.Service {
 	return en
 }
 
-func (s *Server) registerStaticProxyEndpoints() error {
+func registerStaticProxyEndpoints(e *echo.Echo) error {
 	for prefix, targetURLs := range viper.GetStringMapStringSlice("server.proxy") {
 		if len(targetURLs) == 0 {
 			return errors.Errorf("no target URLs provided for prefix %v", prefix)
@@ -423,19 +361,11 @@ func (s *Server) registerStaticProxyEndpoints() error {
 			return errors.Wrapf(err, "bad proxy target URL: %s", targetURLs[0])
 		}
 
-		g := s.Echo.Group(prefix)
+		g := e.Group(prefix)
 		g.Use(removePathPrefixMiddleware(prefix))
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
 	return nil
-}
-
-func (s *Server) serveDynamicProxy(es *endpoint.Store) {
-	config := loadDynamicProxyConfig()
-	s.Echo.Group(config.Path, dynamicProxyMiddleware(es, config))
-
-	s.Proxy = newProxyService(es, s.DBService, config)
-	s.Proxy.StartEndpointsSync()
 }
 
 func loadDynamicProxyConfig() *DynamicProxyConfig {
@@ -508,26 +438,29 @@ func (s *Server) setupHomepage() {
 	// TODO subnet IP count
 	// TODO security policy draft
 
-	s.Echo.GET("/", dh.Handle)
+	s.Server.Echo.GET("/", dh.Handle)
 }
 
-func (s *Server) setupWatchAPI() {
-	if !viper.GetBool("cache.enabled") {
-		return
+func (s *Server) registerGRPCServers(gs *grpc.Server) {
+	services.RegisterContrailServiceServer(gs, s.Service)
+	services.RegisterIPAMServer(gs, s.IPAMServer)
+	services.RegisterChownServer(gs, s.ChownServer)
+	services.RegisterSetTagServer(gs, s.SetTagServer)
+	services.RegisterRefRelaxServer(gs, s.RefRelaxServer)
+	services.RegisterPropCollectionUpdateServer(gs, s.PropCollectionUpdateServer)
+}
+
+func (s *Server) setupActionResources(bs *baseapisrv.Server, cs *services.ContrailService) {
+	bs.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
+	bs.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
+	bs.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
+	bs.Echo.POST(services.UploadCloudKeysPath, cs.RESTUploadCloudKeys)
+
+	if bs.GRPCEnabled() {
+		services.RegisterFQNameToIDServer(bs.GRPCServer, s.FQNameToIDServer)
+		services.RegisterIDToFQNameServer(bs.GRPCServer, s.IDToFQNameServer)
+		services.RegisterUserAgentKVServer(bs.GRPCServer, s.UserAgentKVServer)
 	}
-	s.Echo.GET(WatchPath, s.watchHandler)
-}
-
-func (s *Server) setupActionResources(cs *services.ContrailService) {
-	s.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
-	s.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
-	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
-	s.Echo.POST(services.UploadCloudKeysPath, cs.RESTUploadCloudKeys)
-}
-
-type recorderTask struct {
-	Request *client.Request `yaml:"request,omitempty"`
-	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
 // Run runs Server.
@@ -538,15 +471,7 @@ func (s *Server) Run() error {
 		}
 	}()
 
-	if viper.GetBool("server.tls.enabled") {
-		return s.Echo.StartTLS(
-			viper.GetString("server.address"),
-			viper.GetString("server.tls.cert_file"),
-			viper.GetString("server.tls.key_file"),
-		)
-	}
-
-	return s.Echo.Start(viper.GetString("server.address"))
+	return s.Server.Run()
 }
 
 // Close closes Server.
