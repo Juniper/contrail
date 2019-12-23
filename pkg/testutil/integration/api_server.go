@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"path"
 	"testing"
@@ -97,20 +98,22 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
+	var serverHandler http.Handler
+	ts := testutil.NewTestHTTPServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		serverHandler.ServeHTTP(w, r)
+	}))
+	viper.Set("keystone.authurl", ts.URL+keystone.LocalAuthPath)
+	viper.Set("client.endpoint", ts.URL)
+
 	es := endpoint.NewStore()
 	s, err := apisrv.NewServer(es)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
+	// TODO(Witaut): Don't use Echo - an internal detail of Server.
+	serverHandler = s.Server.Echo
+	// TODO(Witaut): Move CacheDB outside Server.
 	s.Cache = c.CacheDB
-
-	ts := testutil.NewTestHTTPServer(s.Echo)
-	viper.Set("keystone.authurl", ts.URL+keystone.LocalAuthPath)
-	viper.Set("client.endpoint", ts.URL)
-
-	if err = s.Init(); err != nil {
-		return nil, errors.Wrapf(err, "initialization of test API Server failed")
-	}
 
 	if c.EnableVNCReplication {
 		if _, err = startVNCReplicator(s, es); err != nil {
