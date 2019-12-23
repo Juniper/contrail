@@ -8,6 +8,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/constants"
+	"github.com/Juniper/contrail/pkg/contrail"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
@@ -86,7 +87,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
-	s, err := apisrv.NewServer()
+	s, err := contrail.NewServer()
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}

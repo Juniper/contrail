@@ -15,7 +15,6 @@ import (
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/agent"
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/db/cache"
@@ -145,7 +144,7 @@ func startAmqpReplicator() {
 }
 
 func startServer() {
-	server, err := apisrv.NewServer()
+	server, err := contrail.NewServer()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

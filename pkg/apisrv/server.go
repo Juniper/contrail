@@ -66,12 +66,18 @@ type Server struct {
 	Collector                  collector.Collector
 	VNCReplicator              *replication.Replicator
 	log                        *logrus.Entry
+	plugins                    []apiPlugin
+}
+
+type apiPlugin interface {
+	RegisterAPI(*Server)
 }
 
 // NewServer makes a server.
-func NewServer() (*Server, error) {
+func NewServer(plugins ...apiPlugin) (*Server, error) {
 	server := &Server{
-		Echo: echo.New(),
+		Echo:    echo.New(),
+		plugins: plugins,
 	}
 	return server, nil
 }
@@ -135,8 +141,8 @@ func (s *Server) Init() (err error) {
 	s.IDToFQNameServer = cs
 	s.PropCollectionUpdateServer = cs
 
-	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
+	for _, plugin := range s.plugins {
+		plugin.RegisterAPI(s)
 	}
 
 	readTimeout := viper.GetInt("server.read_timeout")
@@ -385,20 +391,6 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 
 	cs.RegisterRESTAPI(s.Echo)
 	return cs, nil
-}
-
-func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
-	n := &neutron.Server{
-		ReadService:       cs,
-		WriteService:      cs,
-		UserAgentKV:       s.UserAgentKVServer,
-		IDToFQNameService: s.IDToFQNameServer,
-		FQNameToIDService: s.FQNameToIDServer,
-		InTransactionDoer: s.DBService,
-		Log:               logutil.NewLogger("neutron-server"),
-	}
-	n.RegisterNeutronAPI(s.Echo)
-	return n
 }
 
 func (s *Server) etcdNotifier() services.Service {
