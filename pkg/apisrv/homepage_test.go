@@ -122,7 +122,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	routes.add(apisrv.UserAgentKVPath)
 	routes.add(services.PropCollectionUpdatePath)
 
-	for _, route := range server.APIServer.Echo.Routes() {
+	for _, route := range server.APIServer.Server.Echo.Routes() {
 		var isPathExcludedFromHomepage bool
 		for _, excludedRegex := range excludedRoutesRegexes {
 			if excludedRegex.MatchString(route.Path) {
