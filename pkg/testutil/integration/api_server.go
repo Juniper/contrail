@@ -92,7 +92,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	}
 	s.Cache = c.CacheDB
 
-	ts := testutil.NewTestHTTPServer(s.Echo)
+	ts := testutil.NewTestHTTPServer(s.BaseServer.Echo)
 	viper.Set("keystone.authurl", ts.URL+keystone.LocalAuthPath)
 	viper.Set("client.endpoint", ts.URL)
 
