@@ -153,10 +153,8 @@ func startServer() {
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+	// TODO(Witaut): Move CacheDB outside Server.
 	server.Cache = cacheDB
-	if err = server.Init(); err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
 	var r *replication.Replicator
 	if r, err = startVNCReplicator(server, es); err != nil {
 		logutil.FatalWithStackTrace(err)
