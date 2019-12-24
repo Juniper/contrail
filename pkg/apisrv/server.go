@@ -89,12 +89,6 @@ func NewServer() (*Server, error) {
 		return nil, err
 	}
 
-	plugins = append(plugins, func(bs *baseapisrv.Server) error {
-		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		cs.RegisterRESTAPI(bs.Echo)
-		return nil
-	})
-
 	s.Service = cs
 	s.IPAMServer = cs
 	s.ChownServer = cs
@@ -108,6 +102,7 @@ func NewServer() (*Server, error) {
 	plugins = append(plugins, func(bs *baseapisrv.Server) error {
 		// TODO(Witaut): Don't use Echo - an internal detail of Server.
 		cs.RegisterRESTAPI(bs.Echo)
+		registerRESTAPIHomepage(bs.HomepageHandler)
 		if bs.GRPCEnabled() {
 			// TODO(Witaut): Don't use GRPCServer - an internal detail of Server.
 			s.registerGRPCServers(bs.GRPCServer)
@@ -182,11 +177,6 @@ func NewServer() (*Server, error) {
 	s.Server, err = baseapisrv.NewServer(authGRPCOpts(), plugins)
 	if err != nil {
 		return nil, err
-	}
-
-	if viper.GetBool("homepage.enabled") {
-		// TODO Move this to Server
-		s.setupHomepage()
 	}
 
 	return s, nil
@@ -419,9 +409,7 @@ func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keyston
 	return s.VNCReplicator.Start()
 }
 
-func (s *Server) setupHomepage() {
-	dh := NewHandler()
-
+func registerRESTAPIHomepage(dh *baseapisrv.HomepageHandler) {
 	services.RegisterSingularPaths(func(path string, name string) {
 		dh.Register(path, "", name, "resource-base")
 	})
@@ -429,9 +417,6 @@ func (s *Server) setupHomepage() {
 		dh.Register(path, "", name, "collection")
 	})
 
-	dh.Register(FQNameToIDPath, "POST", "name-to-id", "action")
-	dh.Register(IDToFQNamePath, "POST", "id-to-name", "action")
-	dh.Register(UserAgentKVPath, "POST", UserAgentKVPath, "action")
 	dh.Register(services.RefUpdatePath, "POST", services.RefUpdatePath, "action")
 	dh.Register(services.RefRelaxForDeletePath, "POST", services.RefRelaxForDeletePath, "action")
 	dh.Register(services.PropCollectionUpdatePath, "POST", services.PropCollectionUpdatePath, "action")
@@ -452,9 +437,6 @@ func (s *Server) setupHomepage() {
 	// TODO VN IP free
 	// TODO subnet IP count
 	// TODO security policy draft
-
-	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	s.Server.Echo.GET("/", dh.Handle)
 }
 
 func (s *Server) registerGRPCServers(gs *grpc.Server) {
@@ -480,6 +462,10 @@ func (s *Server) setupActionResources(bs *baseapisrv.Server, cs *services.Contra
 		services.RegisterIDToFQNameServer(bs.GRPCServer, s.IDToFQNameServer)
 		services.RegisterUserAgentKVServer(bs.GRPCServer, s.UserAgentKVServer)
 	}
+
+	bs.HomepageHandler.Register(FQNameToIDPath, "POST", "name-to-id", "action")
+	bs.HomepageHandler.Register(IDToFQNamePath, "POST", "id-to-name", "action")
+	bs.HomepageHandler.Register(UserAgentKVPath, "POST", UserAgentKVPath, "action")
 }
 
 // Run runs Server.

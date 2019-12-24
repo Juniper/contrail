@@ -20,9 +20,10 @@ import (
 
 // Server is an HTTP and GRPC API server.
 type Server struct {
-	Echo       *echo.Echo
-	GRPCServer *grpc.Server
-	log        *logrus.Entry
+	Echo            *echo.Echo
+	GRPCServer      *grpc.Server
+	HomepageHandler *HomepageHandler
+	log             *logrus.Entry
 }
 
 // APIPlugin registers HTTP endpoints and GRPC services in Server.
@@ -31,7 +32,8 @@ type APIPlugin func(*Server) error
 // NewServer makes a new Server.
 func NewServer(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (*Server, error) {
 	s := &Server{
-		Echo: echo.New(),
+		Echo:            echo.New(),
+		HomepageHandler: NewHomepageHandler(),
 	}
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
@@ -70,7 +72,9 @@ func NewServer(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (*Server, erro
 		}
 	}
 
-	// TODO Setup homepage
+	if viper.GetBool("homepage.enabled") {
+		s.Echo.GET("/", s.HomepageHandler.Handle)
+	}
 
 	if viper.GetBool("recorder.enabled") {
 		s.Echo.Use(recorderMiddleware(s.log))
