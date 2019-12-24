@@ -90,8 +90,6 @@ func (s *Server) Init() (err error) {
 		grpcOpts = append(grpcOpts, grpc.UnaryInterceptor(noAuthInterceptor()))
 	}
 
-	s.BaseServer.Init(grpcOpts)
-
 	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(s.Collector))
 	if err != nil {
 		return err
@@ -117,9 +115,16 @@ func (s *Server) Init() (err error) {
 	s.IDToFQNameServer = cs
 	s.PropCollectionUpdateServer = cs
 
+	var plugins []baseapisrv.APIPlugin
+
 	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
+		n := s.setupNeutronService(cs)
+		plugins = append(plugins, func(bs *baseapisrv.BaseServer) {
+			n.RegisterNeutronAPI(bs.Echo)
+		})
 	}
+
+	s.BaseServer.Init(grpcOpts, plugins)
 
 	if err = s.registerStaticProxyEndpoints(); err != nil {
 		return errors.Wrap(err, "failed to register static proxy endpoints")

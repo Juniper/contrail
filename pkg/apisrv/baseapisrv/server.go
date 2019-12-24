@@ -26,13 +26,15 @@ type BaseServer struct {
 	log        *logrus.Entry
 }
 
+type APIPlugin func(*BaseServer) // TODO Change BaseServer to an interface?
+
 func NewBaseServer() *BaseServer {
 	return &BaseServer{
 		Echo: echo.New(),
 	}
 }
 
-func (s *BaseServer) Init(grpcOpts []grpc.ServerOption) (err error) {
+func (s *BaseServer) Init(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (err error) {
 	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
 		return err
 	}
@@ -63,6 +65,10 @@ func (s *BaseServer) Init(grpcOpts []grpc.ServerOption) (err error) {
 
 	s.Echo.Use(middleware.Recover())
 	s.Echo.Binder = &customBinder{}
+
+	for _, plugin := range plugins {
+		plugin(s)
+	}
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
