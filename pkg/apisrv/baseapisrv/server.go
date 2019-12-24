@@ -2,7 +2,6 @@ package baseapisrv
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"sync"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -26,13 +26,19 @@ type BaseServer struct {
 	log        *logrus.Entry
 }
 
+type APIPlugin func(*BaseServer) error
+
 func NewBaseServer() *BaseServer {
 	return &BaseServer{
 		Echo: echo.New(),
 	}
 }
 
-func (s *BaseServer) Init(grpcOpts []grpc.ServerOption) (err error) {
+func (s *BaseServer) GRPCEnabled() bool {
+	return viper.GetBool("server.enable_grpc")
+}
+
+func (s *BaseServer) Init(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (err error) {
 	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
 		return err
 	}
@@ -103,6 +109,12 @@ func (s *BaseServer) Init(grpcOpts []grpc.ServerOption) (err error) {
 		s.GRPCServer = grpc.NewServer(opts...)
 
 		s.Echo.Use(gRPCMiddleware(s.GRPCServer))
+	}
+
+	for _, plugin := range plugins {
+		if err := plugin(s); err != nil {
+			return errors.Wrap(err, "failed to insert plugin")
+		}
 	}
 
 	// TODO Setup homepage
