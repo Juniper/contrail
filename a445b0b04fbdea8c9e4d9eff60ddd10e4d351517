@@ -22,6 +22,30 @@
       "revId": "a445b0b04fbdea8c9e4d9eff60ddd10e4d351517",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "554ff0e3_f346838c",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-24T14:01:05Z",
+      "side": 1,
+      "message": "Done (WIP change: https://review.opencontrail.org/c/Juniper/contrail/+/55939).",
+      "parentUuid": "45d4d46d_b14194de",
+      "range": {
+        "startLine": 51,
+        "startChar": 1,
+        "endLine": 52,
+        "endChar": 40
+      },
+      "revId": "a445b0b04fbdea8c9e4d9eff60ddd10e4d351517",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
