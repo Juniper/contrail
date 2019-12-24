@@ -92,14 +92,24 @@ func (k *Keystone) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 	r.GET("/keystone/v3/auth/tokens", k.ValidateTokenAPI, baseapisrv.WithNoAuth())
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	r.GET("/keystone/v3/auth/projects", k.ListAuthProjectsAPI, baseapisrv.WithNoAuth())
-	r.GET("/keystone/v3/auth/domains", k.listDomainsAPI)
+	r.GET(
+		"/keystone/v3/auth/projects",
+		k.ListAuthProjectsAPI,
+		baseapisrv.WithNoAuth(),
+		baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint),
+	)
+	r.GET("/keystone/v3/auth/domains", k.listDomainsAPI, baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
 
-	r.GET("/keystone/v3/projects", k.ListProjectsAPI, baseapisrv.WithNoAuth())
+	r.GET(
+		"/keystone/v3/projects",
+		k.ListProjectsAPI,
+		baseapisrv.WithNoAuth(),
+		baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint),
+	)
 	r.GET("/keystone/v3/projects/:id", k.GetProjectAPI)
-	r.GET("/keystone/v3/domains", k.listDomainsAPI)
+	r.GET("/keystone/v3/domains", k.listDomainsAPI, baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
 
-	r.GET("/keystone/v3/users", k.ListUsersAPI)
+	r.GET("/keystone/v3/users", k.ListUsersAPI, baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
 }
 
 // RegisterGRPCAPI does nothing, as Keystone has no GRPC API.
