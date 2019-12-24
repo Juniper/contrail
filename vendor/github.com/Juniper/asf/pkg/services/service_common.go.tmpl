@@ -1042,6 +1042,8 @@ func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 	r.POST(IntPoolsPath, service.RESTCreateIntPool)
 	r.DELETE(IntPoolsPath, service.RESTDeleteIntPool)
 	r.GET(ObjPerms, service.RESTGetObjPerms)
+
+	registerAPIHomepage(r)
 }
 
 // RegisterGRPCAPI registers GRPC services.
