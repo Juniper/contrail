@@ -1,15 +1,14 @@
-package apisrv
+package baseapisrv
 
 import (
 	"net/http"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 )
 
-// Handler which serves a set of registered links.
-type Handler struct {
+// HomepageHandler which serves a set of registered links.
+type HomepageHandler struct {
 	links []*link
 }
 
@@ -24,13 +23,13 @@ type linkDetails struct {
 	Rel    string  `json:"rel"`
 }
 
-// NewHandler creates a new Handler.
-func NewHandler() *Handler {
-	return &Handler{}
+// NewHomepageHandler creates a new HomepageHandler.
+func NewHomepageHandler() *HomepageHandler {
+	return &HomepageHandler{}
 }
 
-// Register adds a new link to the Handler.
-func (h *Handler) Register(path string, method string, name string, rel string) {
+// Register adds a new link to the HomepageHandler.
+func (h *HomepageHandler) Register(path string, method string, name string, rel string) {
 	// path is assumed to be relative with respect to addr
 	path = strings.TrimPrefix(path, "/")
 
@@ -50,9 +49,9 @@ func (h *Handler) Register(path string, method string, name string, rel string) 
 }
 
 // Handle requests to return the links.
-func (h *Handler) Handle(c echo.Context) error {
+func (h *HomepageHandler) Handle(c echo.Context) error {
 	r := c.Request()
-	addr := services.GetRequestSchema(r) + r.Host
+	addr := GetRequestSchema(r) + r.Host
 
 	var reply struct {
 		Addr  string  `json:"href"`
@@ -72,4 +71,12 @@ func (h *Handler) Handle(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, reply)
+}
+
+// GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
+func GetRequestSchema(r *http.Request) string {
+	if r.TLS != nil {
+		return "https://"
+	}
+	return "http://"
 }
