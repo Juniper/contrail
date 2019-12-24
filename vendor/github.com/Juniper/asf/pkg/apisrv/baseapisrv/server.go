@@ -57,8 +57,9 @@ type RouteOption func(*RouteOptions)
 
 // RouteOptions specifies options for handling a route.
 type RouteOptions struct {
-	noAuth     bool
-	middleware []MiddlewareFunc
+	noAuth        bool
+	middleware    []MiddlewareFunc
+	homepageEntry linkDetails
 }
 
 // WithNoAuth makes requests to the route skip authentication.
@@ -74,6 +75,38 @@ func WithMiddleware(m ...MiddlewareFunc) RouteOption {
 		rp.middleware = append(rp.middleware, m...)
 	}
 }
+
+// WithNoHomepageMethod makes the route's entry in the homepage have no "method" field.
+func WithNoHomepageMethod() RouteOption {
+	return func(rp *RouteOptions) {
+		rp.homepageEntry.Method = nil
+	}
+}
+
+// WithHomepageName makes the route's entry in the homepage have the given endpoint name.
+func WithHomepageName(name string) RouteOption {
+	return func(rp *RouteOptions) {
+		rp.homepageEntry.Name = name
+	}
+}
+
+// WithHomepageType makes the route's entry in the homepage have the given endpoint type.
+func WithHomepageType(t EndpointType) RouteOption {
+	return func(rp *RouteOptions) {
+		rp.homepageEntry.Rel = string(t)
+	}
+}
+
+// EndpointType is the value of the "rel" field in a homepage entry.
+type EndpointType string
+
+// Endpoint types.
+const (
+	CollectionEndpoint   EndpointType = "collection"
+	ResourceBaseEndpoint EndpointType = "resource-base"
+	ActionEndpoint       EndpointType = "action"
+	ProxyEndpoint        EndpointType = "proxy"
+)
 
 // GRPCRouter allows registering GRPC services.
 type GRPCRouter interface {
@@ -110,7 +143,8 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	s.setupCORS()
 
 	r := &httpRouter{
-		echo: s.Echo,
+		echo:     s.Echo,
+		homepage: NewHomepageHandler(),
 	}
 	for _, plugin := range plugins {
 		plugin.RegisterHTTPAPI(r)
@@ -133,6 +167,10 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 
 	if err := s.setupGRPC(authGRPCOpts, plugins); err != nil {
 		return nil, err
+	}
+
+	if viper.GetBool("homepage.enabled") {
+		s.Echo.GET("/", r.homepage.Handle)
 	}
 
 	if viper.GetBool("recorder.enabled") {
@@ -264,6 +302,7 @@ func (s *Server) authMiddleware(noAuthPaths []string) (httpMiddleware []Middlewa
 
 type httpRouter struct {
 	echo        *echo.Echo
+	homepage    *HomepageHandler
 	noAuthPaths []string
 }
 
@@ -289,29 +328,31 @@ func (r *httpRouter) DELETE(path string, h HandlerFunc, options ...RouteOption) 
 
 // Add registers a handler for a route.
 func (r *httpRouter) Add(method string, path string, h HandlerFunc, options ...RouteOption) {
-	ro := makeRouteOptions(options)
+	ro := makeRouteOptions(options, method, path)
 	r.applyRouteOptions(ro, path)
 	r.echo.Add(method, path, echo.HandlerFunc(h), echoMiddleware(ro.middleware)...)
 }
 
 // Group makes the middleware specified by options run for all requests with paths starting with prefix.
 func (r *httpRouter) Group(prefix string, options ...RouteOption) {
-	ro := makeRouteOptions(options)
+	ro := makeRouteOptions(options, "", prefix)
 	r.applyRouteOptions(ro, prefix)
 	r.echo.Group(prefix, echoMiddleware(ro.middleware)...)
 }
 
-func makeRouteOptions(options []RouteOption) (rp RouteOptions) {
+func makeRouteOptions(options []RouteOption, method, path string) (ro RouteOptions) {
+	ro.homepageEntry = defaultHomepageEntry(method, path)
 	for _, option := range options {
-		option(&rp)
+		option(&ro)
 	}
-	return rp
+	return ro
 }
 
 func (r *httpRouter) applyRouteOptions(ro RouteOptions, path string) {
 	if ro.noAuth {
 		r.noAuthPaths = append(r.noAuthPaths, path)
 	}
+	r.homepage.Register(ro.homepageEntry)
 }
 
 // Use makes middleware run for all requests.
