@@ -21,8 +21,9 @@ import (
 
 // Server is an HTTP and GRPC API server.
 type Server struct {
-	Echo *echo.Echo
-	log  *logrus.Entry
+	Echo            *echo.Echo
+	HomepageHandler *HomepageHandler
+	log             *logrus.Entry
 }
 
 // APIPlugin registers HTTP endpoints and GRPC services in Server.
@@ -41,6 +42,10 @@ type HTTPRouter interface {
 	Group(prefix string, m ...MiddlewareFunc)
 
 	AddNoAuthPaths(paths ...string)
+
+	// TODO Rename to RegisterHomepage
+	// TODO Merge into GET, ...
+	Register(path string, method string, name string, rel string)
 }
 
 // HandlerFunc handles an HTTP request.
@@ -60,7 +65,8 @@ type GRPCRouter interface {
 // NewServer makes a new Server.
 func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	s := &Server{
-		Echo: echo.New(),
+		Echo:            echo.New(),
+		HomepageHandler: NewHomepageHandler(),
 	}
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
@@ -90,7 +96,8 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	}
 
 	r := &httpRouter{
-		Echo: s.Echo,
+		Echo:            s.Echo,
+		HomepageHandler: s.HomepageHandler,
 	}
 	for _, plugin := range plugins {
 		plugin.RegisterHTTPAPI(r)
@@ -102,6 +109,10 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 
 	if err := s.setupGRPC(authGRPCOpts, plugins); err != nil {
 		return nil, err
+	}
+
+	if viper.GetBool("homepage.enabled") {
+		s.Echo.GET("/", s.HomepageHandler.Handle)
 	}
 
 	if viper.GetBool("recorder.enabled") {
@@ -215,6 +226,7 @@ func (s *Server) authMiddleware(noAuthPaths []string) (httpMiddleware []Middlewa
 
 type httpRouter struct {
 	*echo.Echo
+	*HomepageHandler
 	noAuthPaths []string
 }
 
