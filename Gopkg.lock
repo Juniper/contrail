@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:8572d3cd0ac7ff1bdb0d5dd113a29cab8d4d372b38414f1fd7597dfc943777c2"
+  digest = "1:baa49f91dd16c6a8f1504c1cc6f3ebbce3c0cf6f8dd16d7a837412970378442a"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apisrv/baseapisrv",
@@ -34,7 +34,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "56273cec268315dd5e777659df5b2c654fdaecd0"
+  revision = "f7585869020a8ee73a465142c203c149b04116e3"
 
 [[projects]]
   branch = "2.x"
