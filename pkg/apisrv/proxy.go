@@ -97,7 +97,12 @@ func newDynamicProxyPlugin(es endpointStore, config *DynamicProxyConfig) *dynami
 }
 
 func (p *dynamicProxyPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
-	r.Group(p.config.Path, baseapisrv.WithMiddleware(p.middleware), baseapisrv.WithNoAuth())
+	r.Group(
+		p.config.Path,
+		baseapisrv.WithMiddleware(p.middleware),
+		baseapisrv.WithNoAuth(),
+		baseapisrv.WithHomepageType(baseapisrv.ProxyEndpoint),
+	)
 }
 
 func (p *dynamicProxyPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {

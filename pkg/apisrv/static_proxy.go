@@ -51,7 +51,11 @@ func parseTargetURLs(rawTargetURLs []string) (targetURLs []*url.URL, err error) 
 
 func (p staticProxyPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 	for _, pr := range p.proxies {
-		r.Group(pr.prefix, baseapisrv.WithMiddleware(pr.middleware))
+		r.Group(
+			pr.prefix,
+			baseapisrv.WithMiddleware(pr.middleware),
+			baseapisrv.WithHomepageType(baseapisrv.ProxyEndpoint),
+		)
 	}
 }
 
