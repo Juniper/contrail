@@ -90,8 +90,6 @@ func (s *Server) Init() (err error) {
 		grpcOpts = append(grpcOpts, grpc.UnaryInterceptor(noAuthInterceptor()))
 	}
 
-	s.BaseServer.Init(grpcOpts)
-
 	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(s.Collector))
 	if err != nil {
 		return err
@@ -117,13 +115,21 @@ func (s *Server) Init() (err error) {
 	s.IDToFQNameServer = cs
 	s.PropCollectionUpdateServer = cs
 
+	var plugins []baseapisrv.APIPlugin
+
 	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
+		n := s.setupNeutronService(cs)
+		plugins = append(plugins, func(bs *baseapisrv.BaseServer) error {
+			n.RegisterNeutronAPI(bs.Echo)
+			return nil
+		})
 	}
 
-	if err = s.registerStaticProxyEndpoints(); err != nil {
-		return errors.Wrap(err, "failed to register static proxy endpoints")
-	}
+	plugins = append(plugins, func(bs *baseapisrv.BaseServer) error {
+		return errors.Wrap(registerStaticProxyEndpoints(bs.Echo), "failed to register static proxy endpoints")
+	})
+
+	s.BaseServer.Init(grpcOpts, plugins)
 
 	endpointStore := endpoint.NewStore()
 	s.serveDynamicProxy(endpointStore)
@@ -311,7 +317,7 @@ func (s *Server) etcdNotifier() services.Service {
 	return en
 }
 
-func (s *Server) registerStaticProxyEndpoints() error {
+func registerStaticProxyEndpoints(e *echo.Echo) error {
 	for prefix, targetURLs := range viper.GetStringMapStringSlice("server.proxy") {
 		if len(targetURLs) == 0 {
 			return errors.Errorf("no target URLs provided for prefix %v", prefix)
@@ -323,7 +329,7 @@ func (s *Server) registerStaticProxyEndpoints() error {
 			return errors.Wrapf(err, "bad proxy target URL: %s", targetURLs[0])
 		}
 
-		g := s.BaseServer.Echo.Group(prefix)
+		g := e.Group(prefix)
 		g.Use(removePathPrefixMiddleware(prefix))
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
