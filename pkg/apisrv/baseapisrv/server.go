@@ -21,16 +21,18 @@ import (
 
 // BaseServer is an HTTP and GRPC API server.
 type BaseServer struct {
-	Echo       *echo.Echo
-	GRPCServer *grpc.Server
-	grpcOpts   []grpc.ServerOption
-	log        *logrus.Entry
+	Echo            *echo.Echo
+	GRPCServer      *grpc.Server
+	HomepageHandler *HomepageHandler
+	grpcOpts        []grpc.ServerOption
+	log             *logrus.Entry
 }
 
 // NewBaseServer makes a new BaseServer.
 func NewBaseServer() *BaseServer {
 	return &BaseServer{
-		Echo: echo.New(),
+		Echo:            echo.New(),
+		HomepageHandler: NewHomepageHandler(),
 	}
 }
 
@@ -122,7 +124,9 @@ func (s *BaseServer) Init(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (er
 		}
 	}
 
-	// TODO Setup homepage
+	if viper.GetBool("homepage.enabled") {
+		s.Echo.GET("/", s.HomepageHandler.Handle)
+	}
 
 	s.setupRecorder()
 
