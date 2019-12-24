@@ -1,4 +1,4 @@
-package apisrv
+package baseapisrv
 
 import (
 	"net/http"
@@ -53,9 +53,10 @@ func TestDiscovery(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		dh := NewHandler()
+		dh := NewHomepageHandler()
 
 		for _, l := range tt.registers {
+			// TODO Fix this
 			dh.Register(l.path, l.method, l.name, l.rel)
 		}
 

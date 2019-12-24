@@ -1019,16 +1019,22 @@ func (service *ContrailService) RESTGetObjPerms(c echo.Context) error {
 // RegisterHTTPAPI registers REST API and action endpoints.
 func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-	r.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }})
-	r.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }})
-	r.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }})
-	r.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
-	r.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
+	r.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }},
+		baseapisrv.WithNoHomepageMethod(), baseapisrv.WithHomepageName("{{ schema.Path }}"), baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
+	r.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }},
+		baseapisrv.WithNoHomepageMethod(), baseapisrv.WithHomepageName("{{ schema.Path }}"), baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
+	// TODO Is prefix+path the same as path? if not, then "name" should be changed to just path.
+	r.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }},
+		baseapisrv.WithNoHomepageMethod(), baseapisrv.WithHomepageType(baseapisrv.ResourceBaseEndpoint))
+	r.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }},
+		baseapisrv.WithNoHomepageMethod(), baseapisrv.WithHomepageType(baseapisrv.ResourceBaseEndpoint))
+	r.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }},
+		baseapisrv.WithNoHomepageMethod(), baseapisrv.WithHomepageType(baseapisrv.ResourceBaseEndpoint))
 {% endif %}{% endfor %}
 
 	r.POST(SyncPath, service.RESTSync)
-	r.POST(FQNameToIDPath, service.RESTFQNameToUUID)
-	r.POST(IDToFQNamePath, service.RESTIDToFQName)
+	r.POST(FQNameToIDPath, service.RESTFQNameToUUID, baseapisrv.WithHomepageName("name-to-id"))
+	r.POST(IDToFQNamePath, service.RESTIDToFQName, baseapisrv.WithHomepageName("id-to-name"))
 	r.POST(UserAgentKVPath, service.RESTUserAgentKV)
 	r.POST(RefUpdatePath, service.RESTRefUpdate)
 	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
@@ -1055,22 +1061,6 @@ func (service *ContrailService) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
 	r.RegisterService(&_FQNameToID_serviceDesc, service)
 	r.RegisterService(&_IDToFQName_serviceDesc, service)
 	r.RegisterService(&_UserAgentKV_serviceDesc, service)
-}
-
-type registerFunc func(path string, name string)
-
-//RegisterSingularPaths registers singular paths of resources for discovery.
-func RegisterSingularPaths(register registerFunc) {
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-	register("{{ schema.Prefix }}{{ schema.Path }}", "{{ schema.Path }}")
-{% endif %}{% endfor %}
-}
-
-// RegisterPluralPaths registers plural paths of resources for discovery.
-func RegisterPluralPaths(register registerFunc) {
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-	register("{{ schema.Prefix }}{{ schema.PluralPath }}", "{{ schema.Path }}")
-{% endif %}{% endfor %}
 }
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.
