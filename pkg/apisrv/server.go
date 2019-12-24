@@ -128,11 +128,6 @@ func NewServer(es endpointStore) (*Server, error) {
 		return nil, err
 	}
 
-	if viper.GetBool("homepage.enabled") {
-		// TODO Move this to Server
-		s.setupHomepage()
-	}
-
 	return s, nil
 }
 
@@ -348,44 +343,6 @@ func loadServiceUserClientConfig() *asfclient.HTTPConfig {
 		viper.GetString("keystone.service_user.project_name"),
 	)
 	return c
-}
-
-func (s *Server) setupHomepage() {
-	dh := NewHandler()
-
-	services.RegisterSingularPaths(func(path string, name string) {
-		dh.Register(path, "", name, "resource-base")
-	})
-	services.RegisterPluralPaths(func(path string, name string) {
-		dh.Register(path, "", name, "collection")
-	})
-
-	dh.Register(services.FQNameToIDPath, "POST", "name-to-id", "action")
-	dh.Register(services.IDToFQNamePath, "POST", "id-to-name", "action")
-	dh.Register(services.UserAgentKVPath, "POST", services.UserAgentKVPath, "action")
-	dh.Register(services.RefUpdatePath, "POST", services.RefUpdatePath, "action")
-	dh.Register(services.RefRelaxForDeletePath, "POST", services.RefRelaxForDeletePath, "action")
-	dh.Register(services.PropCollectionUpdatePath, "POST", services.PropCollectionUpdatePath, "action")
-	dh.Register(services.SetTagPath, "POST", services.SetTagPath, "action")
-	dh.Register(services.ChownPath, "POST", services.ChownPath, "action")
-	dh.Register(services.IntPoolPath, "GET", services.IntPoolPath, "action")
-	dh.Register(services.IntPoolPath, "POST", services.IntPoolPath, "action")
-	dh.Register(services.IntPoolPath, "DELETE", services.IntPoolPath, "action")
-	dh.Register(services.IntPoolsPath, "POST", services.IntPoolsPath, "action")
-	dh.Register(services.IntPoolsPath, "DELETE", services.IntPoolsPath, "action")
-	dh.Register(services.ObjPerms, "GET", services.ObjPerms, "action")
-
-	// TODO: register sync?
-
-	// TODO action resources
-	// TODO documentation
-	// TODO VN IP alloc
-	// TODO VN IP free
-	// TODO subnet IP count
-	// TODO security policy draft
-
-	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	s.Server.Echo.GET("/", dh.Handle)
 }
 
 // Run runs Server.
