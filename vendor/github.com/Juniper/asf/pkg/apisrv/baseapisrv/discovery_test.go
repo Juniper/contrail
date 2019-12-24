@@ -1,4 +1,4 @@
-package apisrv
+package baseapisrv
 
 import (
 	"net/http"
@@ -11,10 +11,9 @@ import (
 
 func TestDiscovery(t *testing.T) {
 	type register struct {
-		path   string
-		method string
-		name   string
-		rel    string
+		method  string
+		path    string
+		options []RouteOption
 	}
 
 	tests := []struct {
@@ -25,8 +24,16 @@ func TestDiscovery(t *testing.T) {
 		{
 			"addr",
 			[]register{
-				{"/path1", "GET", "test1", "rel1"},
-				{"path2", "", "test2", "rel2"},
+				{
+					method:  "GET",
+					path:    "/path1",
+					options: []RouteOption{WithHomepageName("test1"), WithHomepageType("rel1")},
+				},
+				{
+					method:  "",
+					path:    "path2",
+					options: []RouteOption{WithHomepageName("test2"), WithHomepageType("rel2")},
+				},
 			},
 			`{
 				"href": "http://addr",
@@ -39,8 +46,16 @@ func TestDiscovery(t *testing.T) {
 		{
 			"localhost:8082",
 			[]register{
-				{"/path1", "GET", "test1", "rel1"},
-				{"path2", "", "test2", "rel2"},
+				{
+					method:  "GET",
+					path:    "/path1",
+					options: []RouteOption{WithHomepageName("test1"), WithHomepageType("rel1")},
+				},
+				{
+					method:  "",
+					path:    "path2",
+					options: []RouteOption{WithHomepageName("test2"), WithHomepageType("rel2")},
+				},
 			},
 			`{
 				"href": "http://localhost:8082",
@@ -53,10 +68,11 @@ func TestDiscovery(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		dh := NewHandler()
+		dh := NewHomepageHandler()
 
-		for _, l := range tt.registers {
-			dh.Register(l.path, l.method, l.name, l.rel)
+		for _, r := range tt.registers {
+			params := makeRouteParameters(r.options, r.method, r.path)
+			dh.Register(params.homepageEntry)
 		}
 
 		e := echo.New()
