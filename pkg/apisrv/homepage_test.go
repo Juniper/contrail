@@ -3,13 +3,13 @@ package apisrv_test
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
@@ -44,6 +44,66 @@ func TestHomepageResources(t *testing.T) {
 					"method": nil,
 				},
 			},
+
+			map[string]interface{}{
+				"link": map[string]interface{}{
+					"href":   resolve(addr, "fqname-to-id"),
+					"name":   "name-to-id",
+					"rel":    "action",
+					"method": "POST",
+				},
+			},
+			map[string]interface{}{
+				"link": map[string]interface{}{
+					"href":   resolve(addr, "id-to-fqname"),
+					"name":   "id-to-name",
+					"rel":    "action",
+					"method": "POST",
+				},
+			},
+			link(addr, "action", "POST", services.SyncPath),
+			link(addr, "action", "POST", services.UserAgentKVPath),
+			link(addr, "action", "POST", services.RefRelaxForDeletePath),
+			link(addr, "action", "POST", services.PropCollectionUpdatePath),
+			link(addr, "action", "POST", services.SetTagPath),
+			link(addr, "action", "POST", services.ChownPath),
+			link(addr, "action", "GET", services.IntPoolPath),
+			link(addr, "action", "POST", services.IntPoolPath),
+			link(addr, "action", "DELETE", services.IntPoolPath),
+			link(addr, "action", "POST", services.IntPoolsPath),
+			link(addr, "action", "DELETE", services.IntPoolsPath),
+			link(addr, "action", "GET", services.ObjPerms),
+
+			link(addr, "action", "POST", services.UploadCloudKeysPath),
+
+			map[string]interface{}{
+				"link": map[string]interface{}{
+					"href":   resolve(addr, apisrv.DefaultDynamicProxyPath),
+					"name":   apisrv.DefaultDynamicProxyPath,
+					"rel":    "proxy",
+					"method": nil,
+				},
+			},
+			// static proxy
+			map[string]interface{}{
+				"link": map[string]interface{}{
+					"href":   resolve(addr, "contrail"),
+					"name":   "contrail",
+					"rel":    "proxy",
+					"method": nil,
+				},
+			},
+
+			link(addr, "action", "GET", cache.WatchPath),
+
+			link(addr, "action", "POST", "keystone/v3/auth/tokens"),
+			link(addr, "action", "GET", "keystone/v3/auth/tokens"),
+			link(addr, "collection", "GET", "keystone/v3/auth/projects"),
+			link(addr, "collection", "GET", "keystone/v3/auth/domains"),
+			link(addr, "collection", "GET", "keystone/v3/projects"),
+			link(addr, "resource-base", "GET", "keystone/v3/projects"),
+			link(addr, "collection", "GET", "keystone/v3/domains"),
+			link(addr, "collection", "GET", "keystone/v3/users"),
 		},
 	}
 
@@ -51,7 +111,20 @@ func TestHomepageResources(t *testing.T) {
 	assert.Equal(t, expected["href"], response["href"])
 
 	require.Contains(t, response, "links")
-	assert.Subset(t, response["links"], expected["links"])
+	for _, link := range expected["links"].([]interface{}) {
+		assert.Contains(t, response["links"], link, "the response does not contain link: %#v", link)
+	}
+}
+
+func link(serverURL, rel, method, path string) map[string]interface{} {
+	return map[string]interface{}{
+		"link": map[string]interface{}{
+			"href":   resolve(serverURL, path),
+			"name":   path,
+			"rel":    rel,
+			"method": method,
+		},
+	}
 }
 
 func TestRoutesAreRegistered(t *testing.T) {
@@ -65,13 +138,6 @@ func TestRoutesAreRegistered(t *testing.T) {
 		set: make(map[string]struct{}),
 	}
 
-	excludedRoutesRegexes, err := compileRegexStrings(
-		[]string{
-			"^/neutron/*",
-		},
-	)
-	assert.NoError(t, err)
-
 	// Not for discovery
 	for _, configKey := range []string{
 		"server.static_files",
@@ -83,6 +149,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		}
 	}
 
+	// TODO(Witaut): Use staticProxyPlugin directly instead.
 	{
 		proxyPath := apisrv.DefaultDynamicProxyPath
 		if p := viper.GetString("server.dynamic_proxy_path"); p != "" {
@@ -92,41 +159,27 @@ func TestRoutesAreRegistered(t *testing.T) {
 		routes.add(resolve(proxyPath))
 		routes.add(resolve(proxyPath, "*"))
 	}
-	if viper.GetBool("cache.enabled") {
-		routes.add(cache.WatchPath)
-	}
-
 	for _, r := range []string{
 		"/",
-
-		"/keystone/v3/projects",
-		"/keystone/v3/domains",
-		"/keystone/v3/projects/:id",
-		"/keystone/v3/auth/projects", // TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-		"/keystone/v3/auth/domains",  // TODO: Remove this, since "/keystone/v3/domains" is a keystone endpoint
-		"/keystone/v3/auth/tokens",
-		"/keystone/v3/users",
-		services.UploadCloudKeysPath,
 	} {
 		routes.add(r)
 	}
 
-	(&services.ContrailService{}).RegisterHTTPAPI(&routes)
+	for _, plugin := range []baseapisrv.APIPlugin{
+		&cache.DB{},
+		&keystone.Keystone{},
+		services.UploadCloudKeysPlugin{},
+		&services.ContrailService{},
+	} {
+		plugin.RegisterHTTPAPI(&routes)
+	}
 
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
 	for _, route := range server.APIServer.Server.Echo.Routes() {
-		var isPathExcludedFromHomepage bool
-		for _, excludedRegex := range excludedRoutesRegexes {
-			if excludedRegex.MatchString(route.Path) {
-				isPathExcludedFromHomepage = true
-				break
-			}
-		}
-		if !isPathExcludedFromHomepage {
-			assert.Truef(t, routes.contains(route.Path),
-				"Route %s has no corresponding link in homepage discovery."+
-					" Register it in APIServer setup code or add it to the set of excluded routes in the test.",
-				route.Path)
+		if !assert.Truef(t, routes.contains(route.Path),
+			"Route %s has no corresponding link in homepage discovery."+
+				" Register it in APIServer setup code or add it to the set of excluded routes in the test.",
+			route.Path) {
 		}
 	}
 }
@@ -172,19 +225,10 @@ func (r *routeSet) Group(prefix string, _ ...baseapisrv.RouteOption) {
 	r.add(prefix)
 }
 
+func (r *routeSet) Register(_, _, _, _ string) {
+}
+
 func resolve(base string, parts ...string) string {
 	base = strings.TrimSuffix(base, "/")
 	return strings.Join(append([]string{base}, parts...), "/")
-}
-
-func compileRegexStrings(stringsToCompile []string) ([]*regexp.Regexp, error) {
-	compiledRegexes := make([]*regexp.Regexp, len(stringsToCompile))
-	var err error
-	for i, str := range stringsToCompile {
-		compiledRegexes[i], err = regexp.Compile(str)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return compiledRegexes, nil
 }
