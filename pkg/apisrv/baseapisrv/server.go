@@ -2,7 +2,6 @@ package baseapisrv
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"sync"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -33,8 +33,16 @@ func NewServer() *Server {
 	}
 }
 
+// GRPCEnabled returns true if GRPC services can be registered.
+func (s *Server) GRPCEnabled() bool {
+	return viper.GetBool("server.enable_grpc")
+}
+
+// APIPlugin registers HTTP endpoints and GRPC services in Server.
+type APIPlugin func(*Server) error
+
 // Init makes the Server ready for serving.
-func (s *Server) Init(grpcOpts []grpc.ServerOption) (err error) {
+func (s *Server) Init(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (err error) {
 	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
 		return err
 	}
@@ -63,6 +71,12 @@ func (s *Server) Init(grpcOpts []grpc.ServerOption) (err error) {
 
 	if err = s.setupGRPC(grpcOpts); err != nil {
 		return err
+	}
+
+	for _, plugin := range plugins {
+		if err := plugin(s); err != nil {
+			return errors.Wrap(err, "failed to insert plugin")
+		}
 	}
 
 	// TODO Setup homepage
