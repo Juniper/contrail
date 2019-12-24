@@ -18,7 +18,7 @@ func NewKeystoneServerFake(t *testing.T, keystoneAuthURL, user, password string)
 	e := echo.New()
 
 	// TODO(dfurman): do not register local Keystone endpoints (/keystone/v3/...) for Keystone fake
-	k, err := keystone.Init(e, nil)
+	k, err := keystone.Init(nil)
 	if err != nil {
 		return nil
 	}
