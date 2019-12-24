@@ -30,7 +30,7 @@ type Server struct {
 
 // RegisterHTTPAPI registers Neutron endpoints.
 func (s *Server) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
-	r.POST("/neutron/:type", s.handleNeutronPostRequest)
+	r.POST("/neutron/:type", s.handleNeutronPostRequest, baseapisrv.WithHomepageName("neutron plugin"))
 }
 
 // RegisterGRPCAPI does nothing, as the Neutron plugin does not use GRPC.
