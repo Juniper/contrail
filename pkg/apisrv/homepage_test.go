@@ -169,6 +169,9 @@ func (r *routeSet) Group(prefix string, _ ...baseapisrv.MiddlewareFunc) {
 	r.add(prefix)
 }
 
+func (r *routeSet) Register(_, _, _, _ string) {
+}
+
 func resolve(base string, parts ...string) string {
 	base = strings.TrimSuffix(base, "/")
 	return strings.Join(append([]string{base}, parts...), "/")
