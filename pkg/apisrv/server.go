@@ -111,6 +111,14 @@ func (s *Server) Init() (err error) {
 
 	plugins = append(plugins, func(bs *baseapisrv.BaseServer) error {
 		cs.RegisterRESTAPI(bs.Echo)
+
+		services.RegisterSingularPaths(func(path string, name string) {
+			bs.HomepageHandler.Register(path, "", name, "resource-base")
+		})
+		services.RegisterPluralPaths(func(path string, name string) {
+			bs.HomepageHandler.Register(path, "", name, "collection")
+		})
+
 		return nil
 	})
 
@@ -194,10 +202,10 @@ func (s *Server) Init() (err error) {
 		})
 	}
 
-	if viper.GetBool("homepage.enabled") {
-		// TODO Move this to BaseServer
-		s.setupHomepage()
-	}
+	plugins = append(plugins, func(bs *baseapisrv.BaseServer) error {
+		setupHomepage(bs)
+		return nil
+	})
 
 	if viper.GetBool("cache.enabled") {
 		plugins = append(plugins, func(bs *baseapisrv.BaseServer) error {
@@ -404,19 +412,10 @@ func (s *Server) startVNCReplicator(endpointStore *endpoint.Store, auth *keyston
 	return s.VNCReplicator.Start()
 }
 
-func (s *Server) setupHomepage() {
-	dh := NewHandler()
+func setupHomepage(bs *baseapisrv.BaseServer) {
+	dh := bs.HomepageHandler
 
-	services.RegisterSingularPaths(func(path string, name string) {
-		dh.Register(path, "", name, "resource-base")
-	})
-	services.RegisterPluralPaths(func(path string, name string) {
-		dh.Register(path, "", name, "collection")
-	})
-
-	dh.Register(FQNameToIDPath, "POST", "name-to-id", "action")
-	dh.Register(IDToFQNamePath, "POST", "id-to-name", "action")
-	dh.Register(UserAgentKVPath, "POST", UserAgentKVPath, "action")
+	// TODO Split these between the individual plugins
 	dh.Register(services.RefUpdatePath, "POST", services.RefUpdatePath, "action")
 	dh.Register(services.RefRelaxForDeletePath, "POST", services.RefRelaxForDeletePath, "action")
 	dh.Register(services.PropCollectionUpdatePath, "POST", services.PropCollectionUpdatePath, "action")
@@ -437,8 +436,6 @@ func (s *Server) setupHomepage() {
 	// TODO VN IP free
 	// TODO subnet IP count
 	// TODO security policy draft
-
-	s.BaseServer.Echo.GET("/", dh.Handle)
 }
 
 func (s *Server) setupActionResources(bs *baseapisrv.BaseServer, cs *services.ContrailService) {
@@ -451,6 +448,10 @@ func (s *Server) setupActionResources(bs *baseapisrv.BaseServer, cs *services.Co
 	services.RegisterFQNameToIDServer(bs.GRPCServer, s.FQNameToIDServer)
 	services.RegisterIDToFQNameServer(bs.GRPCServer, s.IDToFQNameServer)
 	services.RegisterUserAgentKVServer(bs.GRPCServer, s.UserAgentKVServer)
+
+	bs.HomepageHandler.Register(FQNameToIDPath, "POST", "name-to-id", "action")
+	bs.HomepageHandler.Register(IDToFQNamePath, "POST", "id-to-name", "action")
+	bs.HomepageHandler.Register(UserAgentKVPath, "POST", UserAgentKVPath, "action")
 }
 
 // Run runs Server.

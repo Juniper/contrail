@@ -1,4 +1,4 @@
-package apisrv
+package baseapisrv
 
 import (
 	"net/http"
