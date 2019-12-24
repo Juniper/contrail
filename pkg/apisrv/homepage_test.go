@@ -168,6 +168,9 @@ func (r *routeSet) Group(prefix string, _ ...baseapisrv.MiddlewareFunc) {
 	r.add(prefix)
 }
 
+func (r *routeSet) Register(_, _, _, _ string) {
+}
+
 func (r *routeSet) AddNoAuthPaths(_ ...string) {
 }
 
