@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9d50b288_208cc928",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-27T14:56:52Z",
+      "side": 1,
+      "message": "I\u0027d rather take the endpoint store directly (as an argument of `NewServer`) instead of taking it from Keystone.",
+      "range": {
+        "startLine": 175,
+        "startChar": 21,
+        "endLine": 175,
+        "endChar": 50
+      },
+      "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f64b65cf_925a3da4",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-27T14:56:52Z",
+      "side": 1,
+      "message": "This package can depend on pkg/endpoint, so no need for the interface here.",
+      "range": {
+        "startLine": 151,
+        "startChar": 5,
+        "endLine": 151,
+        "endChar": 18
+      },
+      "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ac0e1e8_2a9313f9",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-27T14:56:52Z",
+      "side": 1,
+      "message": "These things also need to be done in https://github.com/Juniper/contrail/blob/master/pkg/testutil/integration/api_server.go#L89 - otherwise, the integration tests that rely on them (e.g. pkg/replication/integration_test.go) fail.\n\nI\u0027ve been thinking about the same problem (having to duplicate the creation of some services in cmd/contrail and testutil/integration (and, potentially, all services if we go forth with the plan to extract this code to cmd/contrail)). While I see that this way we\u0027ll be able to not start some services in tests that don\u0027t need them, without changing the Viper config; I think that having a package/object that initializes all the services (as pkg/apisrv does right now) is more convenient and would keep (some of) the code run in production and integration tests the same.\n\nMy idea is to keep pkg/apisrv in Juniper/contrail and let it depend on contrail-specific packages and extract Juniper/asf/pkg/apisrv that would hold generic HTTP and GRPC server parts. I\u0027ve made the first steps for that  (extracting a Juniper/contrail/pkg/baseapisrv package) here: https://review.opencontrail.org/c/Juniper/contrail/+/55939.",
+      "range": {
+        "startLine": 200,
+        "startChar": 1,
+        "endLine": 205,
+        "endChar": 2
+      },
+      "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
