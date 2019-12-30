@@ -125,6 +125,48 @@
     },
     {
       "key": {
+        "uuid": "94cd6a5f_4fdc168a",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 20
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-30T16:35:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dd19eca3_12af13c4",
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "83790201_ae2d01af",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 20
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-30T16:35:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ddf28498_883ec95c",
+      "range": {
+        "startLine": 238,
+        "startChar": 21,
+        "endLine": 238,
+        "endChar": 36
+      },
+      "revId": "9f86ca26227fef5c000448b91300e0b67632fab6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "579f956d_e7d31d21",
         "filename": "pkg/cmd/contrail/cloud.go",
         "patchSetId": 20
