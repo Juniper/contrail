@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "c11c717b_e8ca2d50",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2019-12-30T09:24:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f64b65cf_925a3da4",
+      "range": {
+        "startLine": 151,
+        "startChar": 5,
+        "endLine": 151,
+        "endChar": 18
+      },
+      "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6d04da8f_c15402e9",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 7
@@ -68,6 +92,30 @@
       "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "01afb5ef_31e4bb67",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2019-12-30T09:24:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6d04da8f_c15402e9",
+      "range": {
+        "startLine": 199,
+        "startChar": 5,
+        "endLine": 199,
+        "endChar": 18
+      },
+      "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
