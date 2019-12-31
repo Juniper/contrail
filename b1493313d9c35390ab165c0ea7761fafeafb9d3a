@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fcb0d5c1_c3760ae0",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2019-12-31T16:14:24Z",
+      "side": 1,
+      "message": "Previously this was fetched from API. IMO it still should be fetched from API rather than hardcoding this information here (especially password).",
+      "range": {
+        "startLine": 17,
+        "startChar": 17,
+        "endLine": 18,
+        "endChar": 16
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
