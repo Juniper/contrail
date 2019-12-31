@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "50ea4049_233454ed",
+        "filename": "Gopkg.lock",
+        "patchSetId": 26
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Update this when Juniper/asf#20 is merged.",
+      "revId": "0108e98f5a82797d83b997473365cf47ea98b8e1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

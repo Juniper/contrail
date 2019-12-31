@@ -1,0 +1,228 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e5a397fb_2feb4722",
+        "filename": "Gopkg.lock",
+        "patchSetId": 33
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Make a pull request to Juniper/asf with the changes here, and then update this commit hash when it\u0027s merged.",
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4fb48c73_a4324f22",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "I\u0027d call it Name instead of ID to avoid confusion with OpenStack\u0027s user ID (a UUID).",
+      "range": {
+        "startLine": 64,
+        "startChar": 12,
+        "endLine": 64,
+        "endChar": 14
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4c3e4c7_931906fd",
+        "filename": "pkg/deploy/base/data.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 1488,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Checking for nil explicitly is not necessary - the length of a nil slice is 0.",
+      "range": {
+        "startLine": 1488,
+        "startChar": 4,
+        "endLine": 1488,
+        "endChar": 16
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90626dd8_57aedbeb",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Why is this changed?",
+      "range": {
+        "startLine": 29,
+        "startChar": 1,
+        "endLine": 30,
+        "endChar": 40
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f7a68aba_e3bf59e4",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Add comments saying that these are used for creating the service user.",
+      "range": {
+        "startLine": 33,
+        "startChar": 1,
+        "endLine": 34,
+        "endChar": 27
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d8b8789_59dddf08",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "I\u0027d make this a method of *Config instead.",
+      "range": {
+        "startLine": 91,
+        "startChar": 5,
+        "endLine": 91,
+        "endChar": 24
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "74badaa3_29e58bf7",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "`Credentials`?",
+      "range": {
+        "startLine": 91,
+        "startChar": 38,
+        "endLine": 91,
+        "endChar": 42
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cb653ed8_4c5d73a3",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Name the return values, so that it\u0027s clear what\u0027s returned just from the function signature.",
+      "range": {
+        "startLine": 91,
+        "startChar": 46,
+        "endLine": 91,
+        "endChar": 60
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8c924b0a_25d9fbb1",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Are there any variables in the config we could use here in order to not hardcode the default domain/project?\nIf not, then let\u0027s at least make constants in the code.",
+      "range": {
+        "startLine": 107,
+        "startChar": 110,
+        "endLine": 107,
+        "endChar": 117
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "379d4b1d_bf8559a3",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "These 2 variables can be inlined.",
+      "range": {
+        "startLine": 309,
+        "startChar": 1,
+        "endLine": 310,
+        "endChar": 14
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

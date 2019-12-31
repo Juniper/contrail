@@ -242,6 +242,23 @@
       "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f0b9337d_45057bf7",
+        "filename": "pkg/client/baseclient/keystone_test.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-12-31T17:29:06Z",
+      "side": 1,
+      "message": "Is moving this to the common group intentional?",
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
