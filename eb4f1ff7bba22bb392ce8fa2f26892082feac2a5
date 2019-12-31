@@ -39,6 +39,63 @@
       "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ecb0b0d0_07943bfb",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T15:19:25Z",
+      "side": 1,
+      "message": "This function seems redundant",
+      "range": {
+        "startLine": 78,
+        "startChar": 5,
+        "endLine": 78,
+        "endChar": 16
+      },
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29ed9625_5031ceab",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T15:19:25Z",
+      "side": 1,
+      "message": "Please move helper functions below their usages.",
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "211c8921_0f5ba0fc",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T15:19:25Z",
+      "side": 1,
+      "message": "Please pass endpointStore and vncReplicator as parameter to NewServer().",
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
