@@ -48,6 +48,54 @@
     },
     {
       "key": {
+        "uuid": "a18e59f3_1ccfdbec",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-31T13:26:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c415fb04_b8f63e64",
+      "range": {
+        "startLine": 23,
+        "startChar": 18,
+        "endLine": 23,
+        "endChar": 40
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "59b4b726_c3d46886",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-31T13:26:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "98bf0c1c_5f0658f3",
+      "range": {
+        "startLine": 23,
+        "startChar": 19,
+        "endLine": 23,
+        "endChar": 22
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "941647d7_50b912fc",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 18
@@ -59,6 +107,30 @@
       "writtenOn": "2019-12-31T10:00:13Z",
       "side": 1,
       "message": "Maybe just \"nonexistant_key\"?",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 42
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e216f9c_995d22f8",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-12-31T13:26:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "941647d7_50b912fc",
       "range": {
         "startLine": 41,
         "startChar": 13,
