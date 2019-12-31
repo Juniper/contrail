@@ -117,6 +117,30 @@
     },
     {
       "key": {
+        "uuid": "312b1f37_3f42c347",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T11:43:51Z",
+      "side": 1,
+      "message": "TIL. I don\u0027t get  your snippet, though.\nThis needs to be fixed.",
+      "parentUuid": "80c666ea_4ebb207d",
+      "range": {
+        "startLine": 166,
+        "startChar": 3,
+        "endLine": 166,
+        "endChar": 16
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3c4ed8b1_515a966d",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -128,6 +152,30 @@
       "writtenOn": "2019-12-20T12:00:59Z",
       "side": 1,
       "message": "Why do we ignore tempErr if err is not nil?",
+      "range": {
+        "startLine": 164,
+        "startChar": 2,
+        "endLine": 167,
+        "endChar": 3
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "172b288c_7efb60fe",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T11:43:51Z",
+      "side": 1,
+      "message": "We don\u0027t want to override ioutil.ReadAll() error (err) with reader.Close() error (tempErr)\nif err \u003d\u003d nil \u0026\u0026 tempErr !\u003d nil then we return tempErr\nif err !\u003d nil \u0026\u0026 tempErr !\u003d nil then we return err",
+      "parentUuid": "3c4ed8b1_515a966d",
       "range": {
         "startLine": 164,
         "startChar": 2,
