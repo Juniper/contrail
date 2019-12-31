@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "91f3cf68_3ed1765b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T15:10:19Z",
+      "side": 1,
+      "message": "\"Decouple pkg/endpoint from pkg/apisrv\" or similar",
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4ec66c8c_f258bef9",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T15:10:19Z",
+      "side": 1,
+      "message": "\"ReadEndpointURLs\"",
+      "range": {
+        "startLine": 45,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 18
+      },
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
