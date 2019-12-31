@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "98bf0c1c_5f0658f3",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T10:00:13Z",
+      "side": 1,
+      "message": "It is an interface of sshAgent struct, so it should be exported, I think. getExportVars(), runCommand() and stop() as well.",
+      "range": {
+        "startLine": 23,
+        "startChar": 19,
+        "endLine": 23,
+        "endChar": 22
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c415fb04_b8f63e64",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T10:00:13Z",
+      "side": 1,
+      "message": "Rename to \"Start()\" here or rename TestAgentStart UT to TestAgentRun.",
+      "range": {
+        "startLine": 23,
+        "startChar": 18,
+        "endLine": 23,
+        "endChar": 40
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "941647d7_50b912fc",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-12-31T10:00:13Z",
+      "side": 1,
+      "message": "Maybe just \"nonexistant_key\"?",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 42
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
