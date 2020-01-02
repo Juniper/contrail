@@ -22,6 +22,30 @@
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f274434_17664362",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-02T11:36:01Z",
+      "side": 1,
+      "message": "If the orchestrator is set to OpenStack it loads its password from the DB. For K8s it\u0027s the default password. It\u0027s the same logic as before, I just moved const values here.\nIt\u0027s not proper to hold these values here but they are not crucial for our security. They will be moved soon to the Python repository so we won\u0027t have to generate them here.",
+      "parentUuid": "fcb0d5c1_c3760ae0",
+      "range": {
+        "startLine": 17,
+        "startChar": 17,
+        "endLine": 18,
+        "endChar": 16
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
