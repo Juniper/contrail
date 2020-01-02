@@ -114,6 +114,29 @@
       "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "80a1e452_16ff88ca",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:11Z",
+      "side": 1,
+      "message": "These functions aren\u0027t used in this package, so they can be removed from the interface.",
+      "range": {
+        "startLine": 47,
+        "startChar": 1,
+        "endLine": 53,
+        "endChar": 103
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

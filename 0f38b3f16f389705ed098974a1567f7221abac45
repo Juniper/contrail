@@ -2,6 +2,46 @@
   "comments": [
     {
       "key": {
+        "uuid": "7ae8e97f_22f5c96f",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:11Z",
+      "side": 1,
+      "message": "This can be moved to be a method of endpointStore (and possibly renamed to removeDeleted), so that the interface has a function with only one argument:\n\nremoveDeleted(endpoints map[string]*models.Endpoint)\n\nThis way, the exported Range() method can be removed.",
+      "range": {
+        "startLine": 267,
+        "startChar": 23,
+        "endLine": 267,
+        "endChar": 35
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b266ee09_e7fdc7d1",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:11Z",
+      "side": 1,
+      "message": "This function can be inlined.",
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "88800aeb_9b132fde",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
@@ -329,6 +369,29 @@
     },
     {
       "key": {
+        "uuid": "254ad7d7_fc4992bf",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:11Z",
+      "side": 1,
+      "message": "What about creating a new logger in NewStore() instead?",
+      "range": {
+        "startLine": 263,
+        "startChar": 95,
+        "endLine": 263,
+        "endChar": 112
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "81efb24a_83a161a7",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
@@ -345,6 +408,29 @@
         "startChar": 1,
         "endLine": 265,
         "endChar": 2
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04164675_ccc891c6",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:11Z",
+      "side": 1,
+      "message": "This always returns true, and the return value is only used to control the Range() in proxyService.checkDeleted(); so it\u0027ll make more sense to remove the return value here and return true explicitly in proxyService.removeDeleted().",
+      "range": {
+        "startLine": 268,
+        "startChar": 2,
+        "endLine": 268,
+        "endChar": 13
       },
       "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
