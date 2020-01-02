@@ -94,6 +94,30 @@
     },
     {
       "key": {
+        "uuid": "5e3d7e56_0f6443eb",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-02T14:07:27Z",
+      "side": 1,
+      "message": "Instances could be either privateInstance or tor. And as these two structs don\u0027t have a common interface, there is no point in introducing one.",
+      "parentUuid": "684a71ca_e86cef46",
+      "range": {
+        "startLine": 20,
+        "startChar": 11,
+        "endLine": 20,
+        "endChar": 25
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b23ea027_7ce2e104",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 6
@@ -128,6 +152,30 @@
       "writtenOn": "2020-01-02T13:20:43Z",
       "side": 1,
       "message": "If this is onPremCloud why do we keep provider variable? It seems pretty obvious that it is \"onprem\".",
+      "range": {
+        "startLine": 53,
+        "startChar": 1,
+        "endLine": 53,
+        "endChar": 22
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c3357e49_00cf5553",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-02T14:07:27Z",
+      "side": 1,
+      "message": "It is required that in topology.yml file provider field is equal to \"onprem\" and this is the only way to marshal that field with value into yml file.",
+      "parentUuid": "29b192c9_3a6f06c5",
       "range": {
         "startLine": 53,
         "startChar": 1,
