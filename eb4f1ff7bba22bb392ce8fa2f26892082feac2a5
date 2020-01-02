@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ee00e105_43059728",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-02T08:48:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "91f3cf68_3ed1765b",
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4ec66c8c_f258bef9",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 9
@@ -39,6 +57,30 @@
       "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9c2acfc4_bfb03148",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-02T08:48:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4ec66c8c_f258bef9",
+      "range": {
+        "startLine": 45,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 18
+      },
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -79,6 +121,24 @@
       "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "754e24ea_c9ecee99",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-02T08:48:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "29ed9625_5031ceab",
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
