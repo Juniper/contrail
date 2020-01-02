@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "b52f5479_d3692d23",
+        "filename": "Gopkg.lock",
+        "patchSetId": 33
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e5a397fb_2feb4722",
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4fb48c73_a4324f22",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 33
@@ -39,6 +57,30 @@
       "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06d3fb7a_d00a2aea",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4fb48c73_a4324f22",
+      "range": {
+        "startLine": 64,
+        "startChar": 12,
+        "endLine": 64,
+        "endChar": 14
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "ef5b3fb9_6e24afe6",
+        "filename": "pkg/deploy/base/data.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 1488,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f4c3e4c7_931906fd",
+      "range": {
+        "startLine": 1488,
+        "startChar": 4,
+        "endLine": 1488,
+        "endChar": 16
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "90626dd8_57aedbeb",
         "filename": "pkg/deploy/base/endpoint.go",
         "patchSetId": 33
@@ -76,6 +142,30 @@
       "writtenOn": "2019-12-31T17:29:06Z",
       "side": 1,
       "message": "Why is this changed?",
+      "range": {
+        "startLine": 29,
+        "startChar": 1,
+        "endLine": 30,
+        "endChar": 40
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "71fdf17b_6adedbd1",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Previous user was not present in OpenStack config and didn\u0027t have admin rights. I used the generic user with admin rights that is used thorough the project.",
+      "parentUuid": "90626dd8_57aedbeb",
       "range": {
         "startLine": 29,
         "startChar": 1,
@@ -108,6 +198,30 @@
       "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cf9eede2_9e4266f0",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f7a68aba_e3bf59e4",
+      "range": {
+        "startLine": 33,
+        "startChar": 1,
+        "endLine": 34,
+        "endChar": 27
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -180,6 +294,78 @@
     },
     {
       "key": {
+        "uuid": "5814c1bf_ab463ea1",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Inlined this function.",
+      "parentUuid": "9d8b8789_59dddf08",
+      "range": {
+        "startLine": 91,
+        "startChar": 5,
+        "endLine": 91,
+        "endChar": 24
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b7e0f2b8_51c3720a",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "74badaa3_29e58bf7",
+      "range": {
+        "startLine": 91,
+        "startChar": 38,
+        "endLine": 91,
+        "endChar": 42
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f3f91b3a_81bec99b",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "cb653ed8_4c5d73a3",
+      "range": {
+        "startLine": 91,
+        "startChar": 46,
+        "endLine": 91,
+        "endChar": 60
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8c924b0a_25d9fbb1",
         "filename": "pkg/deploy/cluster/deploy.go",
         "patchSetId": 33
@@ -203,6 +389,30 @@
     },
     {
       "key": {
+        "uuid": "7bee1ab7_000d5ff4",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8c924b0a_25d9fbb1",
+      "range": {
+        "startLine": 107,
+        "startChar": 110,
+        "endLine": 107,
+        "endChar": 117
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "379d4b1d_bf8559a3",
         "filename": "pkg/keystone/api.go",
         "patchSetId": 33
@@ -223,6 +433,30 @@
       "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dfd9fbf7_61316658",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-02T11:29:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "379d4b1d_bf8559a3",
+      "range": {
+        "startLine": 309,
+        "startChar": 1,
+        "endLine": 310,
+        "endChar": 14
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
