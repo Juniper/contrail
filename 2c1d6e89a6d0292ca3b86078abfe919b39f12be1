@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "6ff478d7_d4684656",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-02T13:19:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9d50b288_208cc928",
+      "range": {
+        "startLine": 175,
+        "startChar": 21,
+        "endLine": 175,
+        "endChar": 50
+      },
+      "revId": "2c1d6e89a6d0292ca3b86078abfe919b39f12be1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f64b65cf_925a3da4",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 7

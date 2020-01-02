@@ -126,6 +126,30 @@
     },
     {
       "key": {
+        "uuid": "d166ebc3_41cbc7d4",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-02T13:19:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3282da3d_5e567870",
+      "range": {
+        "startLine": 45,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 18
+      },
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ecb0b0d0_07943bfb",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 9
