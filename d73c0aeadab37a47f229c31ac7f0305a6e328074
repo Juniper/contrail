@@ -96,6 +96,54 @@
     },
     {
       "key": {
+        "uuid": "05ac7409_f5db225d",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T09:40:58Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a18e59f3_1ccfdbec",
+      "range": {
+        "startLine": 23,
+        "startChar": 18,
+        "endLine": 23,
+        "endChar": 40
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3fe2a867_2afaa76b",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T09:40:58Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "59b4b726_c3d46886",
+      "range": {
+        "startLine": 23,
+        "startChar": 19,
+        "endLine": 23,
+        "endChar": 22
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "941647d7_50b912fc",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 18
@@ -140,6 +188,30 @@
       "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c710612_b02f57e5",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 18
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T09:40:58Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5e216f9c_995d22f8",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 42
+      },
+      "revId": "d73c0aeadab37a47f229c31ac7f0305a6e328074",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
