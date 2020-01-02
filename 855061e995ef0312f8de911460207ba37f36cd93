@@ -1,0 +1,227 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "207e7476_6ee7d3f2",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "These 2 variables can be inlined.",
+      "range": {
+        "startLine": 193,
+        "startChar": 1,
+        "endLine": 196,
+        "endChar": 2
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c7feee9_f01852ca",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "This comment is redundant.",
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b30df4f0_16c49393",
+        "filename": "pkg/keystone/assignment.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "This can be a named return value instead.",
+      "range": {
+        "startLine": 36,
+        "startChar": 1,
+        "endLine": 36,
+        "endChar": 27
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8c7f483e_23aea348",
+        "filename": "pkg/keystone/assignment.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "91db8ccd_42b63c69",
+        "filename": "pkg/keystone/assignment.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "acebc73a_3e767bcb",
+        "filename": "pkg/keystone/assignment.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "Make this the same as the comment on (assignment *StaticAssignment) ListUsers()",
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11f22e87_b7e8fcf7",
+        "filename": "pkg/keystone/assignment.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "ditto (named return value)",
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "32276665_cf4ae9d5",
+        "filename": "pkg/replication/test_config.yml",
+        "patchSetId": 37
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "Remove this trailing whitespace.",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 117,
+        "endChar": 8
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea82f3fd_baebad49",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "What about using a UUID here? This might catch attempts to confuse ID and Name.",
+      "range": {
+        "startLine": 40,
+        "startChar": 23,
+        "endLine": 40,
+        "endChar": 32
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2651b9bb_a4f954e0",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 54,
+        "startChar": 23,
+        "endLine": 54,
+        "endChar": 30
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e5f2f480_3e1aee4d",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 37
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-02T17:47:34Z",
+      "side": 1,
+      "message": "Remove this trailing whitespace.",
+      "range": {
+        "startLine": 118,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 12
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
