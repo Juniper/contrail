@@ -243,6 +243,92 @@
     },
     {
       "key": {
+        "uuid": "bc43725f_0abfc425",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T17:12:47Z",
+      "side": 1,
+      "message": "IMO \"RemoveEndpoints()\" would be better",
+      "range": {
+        "startLine": 263,
+        "startChar": 16,
+        "endLine": 263,
+        "endChar": 29
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6dd71733_7c74a0a1",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T17:12:47Z",
+      "side": 1,
+      "message": "Store and TargetStore store data under keys. Prefixes of those keys are now called interchangeably as \"scope\" and \"prefix\".\nI suggest to name them consistently and use \"prefix\", as we use it only in more places.\nLeave \"scope\" only for private/public scope which is only part of key.",
+      "range": {
+        "startLine": 263,
+        "startChar": 30,
+        "endLine": 263,
+        "endChar": 35
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5bb3b6e5_bb0afd17",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T17:12:47Z",
+      "side": 1,
+      "message": "\"targetStore\"",
+      "range": {
+        "startLine": 263,
+        "startChar": 37,
+        "endLine": 263,
+        "endChar": 42
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "884b8543_5eb16a7e",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T17:12:47Z",
+      "side": 1,
+      "message": "Please put it next to Range(), because they are connected.",
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "81efb24a_83a161a7",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
