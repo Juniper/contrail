@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1e8193d3_13a75732",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 1,
+      "message": "\"es\"",
+      "range": {
+        "startLine": 152,
+        "startChar": 1,
+        "endLine": 152,
+        "endChar": 14
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7f0d4caf_c640e006",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 1,
+      "message": "Could it stay in apisrv in this change?",
+      "range": {
+        "startLine": 172,
+        "startChar": 0,
+        "endLine": 182,
+        "endChar": 1
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "520a18ec_a4468049",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 1,
+      "message": "Please unexport it.",
+      "range": {
+        "startLine": 184,
+        "startChar": 5,
+        "endLine": 184,
+        "endChar": 23
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "db2e99c5_9f206742",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 1,
+      "message": "This is unneeded. And apisrv.VNCReplicator field could be removed now, I believe.",
+      "range": {
+        "startLine": 184,
+        "startChar": 24,
+        "endLine": 184,
+        "endChar": 40
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ba9d532_82a56fa9",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 1,
+      "message": "\"es\"",
+      "range": {
+        "startLine": 184,
+        "startChar": 42,
+        "endLine": 184,
+        "endChar": 55
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

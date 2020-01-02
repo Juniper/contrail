@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "74708c91_8dffd706",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 425,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 0,
+      "message": "Please do not remove this function. I propose to modify it to use es.ReadEndpointURLs and return them as []string.\nThen following methods can be removed from endpoint.Store:\n- GetEndpoints() - IMO redundant,\n- ReadAuthUrls() - it is not responsibility of endpoint.Store. It is contains details of Keystone proxy.",
+      "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6130226_8e5fe789",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 431,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 0,
+      "message": "This TODO is important and should not be deleted",
+      "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4d296b48_881645bf",
+        "filename": "pkg/replication/client.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 0,
+      "message": "Replication package does not need to be decoupled from endpoint. Please remain this file unchanged.",
+      "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2747f9d1_07e1e295",
+        "filename": "pkg/replication/replication.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-02T16:29:13Z",
+      "side": 0,
+      "message": "Replication package does not need to be decoupled from endpoint. Please remain this file unchanged.",
+      "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
