@@ -71,6 +71,30 @@
     },
     {
       "key": {
+        "uuid": "a45a8bd2_1ac1de1b",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e6c4550a_e585d589",
+      "range": {
+        "startLine": 9,
+        "startChar": 1,
+        "endLine": 15,
+        "endChar": 43
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "684a71ca_e86cef46",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 6
@@ -211,6 +235,30 @@
     },
     {
       "key": {
+        "uuid": "a0c594e3_2c9fc2e9",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0b1337f8_8cdb134e",
+      "range": {
+        "startLine": 205,
+        "startChar": 1,
+        "endLine": 210,
+        "endChar": 2
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0e7c5d8e_f026958e",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 6
@@ -222,6 +270,30 @@
       "writtenOn": "2020-01-02T13:20:43Z",
       "side": 1,
       "message": "ditto",
+      "range": {
+        "startLine": 220,
+        "startChar": 1,
+        "endLine": 225,
+        "endChar": 2
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2bca453_df3f5180",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 225,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0e7c5d8e_f026958e",
       "range": {
         "startLine": 220,
         "startChar": 1,
@@ -257,6 +329,30 @@
     },
     {
       "key": {
+        "uuid": "1232f7ec_2ffe3945",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Actually it is used in 2 places and I prefer to keep referencing a specific element of an array with magick number(like 0 in this case) close to a place which explains why I do so(in that case there should be only one element in an array, but because of pure model this is an array instead of single one to one relation).",
+      "parentUuid": "9aa001b6_cf7cacea",
+      "range": {
+        "startLine": 252,
+        "startChar": 1,
+        "endLine": 252,
+        "endChar": 24
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a848a4e1_3c6ffa22",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 6
@@ -268,6 +364,30 @@
       "writtenOn": "2020-01-02T13:20:43Z",
       "side": 1,
       "message": "This check is redundant",
+      "range": {
+        "startLine": 264,
+        "startChar": 1,
+        "endLine": 264,
+        "endChar": 57
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7c81b88_82f98e4c",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a848a4e1_3c6ffa22",
       "range": {
         "startLine": 264,
         "startChar": 1,
@@ -303,6 +423,30 @@
     },
     {
       "key": {
+        "uuid": "386154c2_a3cb4ee5",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "15a8185a_2cb0bbe5",
+      "range": {
+        "startLine": 278,
+        "startChar": 1,
+        "endLine": 282,
+        "endChar": 11
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0c902081_1c8ad13d",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 6
@@ -314,6 +458,30 @@
       "writtenOn": "2020-01-02T13:20:43Z",
       "side": 1,
       "message": "I don\u0027t think it\u0027s good to change provision in fillRoles method. Its not clear that this might happen in this function.",
+      "range": {
+        "startLine": 367,
+        "startChar": 2,
+        "endLine": 367,
+        "endChar": 21
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b277c3aa_03341cad",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 367,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-03T08:38:54Z",
+      "side": 1,
+      "message": "Done. That function has originally different name (copied for now from data.go).",
+      "parentUuid": "0c902081_1c8ad13d",
       "range": {
         "startLine": 367,
         "startChar": 2,
