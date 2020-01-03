@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c0371bd1_ef8e0b18",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-03T15:28:45Z",
+      "side": 1,
+      "message": "Named return value would be better here",
+      "revId": "30cd85bc75f5faa8d4412f538ef21767e6afc30b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
