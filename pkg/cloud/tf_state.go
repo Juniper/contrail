@@ -16,14 +16,31 @@ type terraformState interface {
 
 type cloudTfStateReader struct {
 	cloudUUID string
+	dryRun    bool
 }
 
 func (r cloudTfStateReader) Read() (terraformState, error) {
+	if r.dryRun {
+		return dryRunTfState{}, nil
+	}
 	tfState, err := readStateFile(GetTFStateFile(r.cloudUUID))
 	if err != nil {
 		return nil, err
 	}
 	return &cloudTfState{tfState: tfState}, nil
+}
+
+const dumyIP = "1.2.3.4"
+
+type dryRunTfState struct {
+}
+
+func (s dryRunTfState) GetPublicIP(hostname string) (string, error) {
+	return dumyIP, nil
+}
+
+func (s dryRunTfState) GetPrivateIP(hostname string) (string, error) {
+	return dumyIP, nil
 }
 
 type cloudTfState struct {
