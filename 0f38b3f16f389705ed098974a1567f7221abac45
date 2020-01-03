@@ -97,6 +97,30 @@
     },
     {
       "key": {
+        "uuid": "fcd4a08f_2b7f3d18",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T15:30:20Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0fdafe65_47be2f33",
+      "range": {
+        "startLine": 267,
+        "startChar": 23,
+        "endLine": 267,
+        "endChar": 35
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b266ee09_e7fdc7d1",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 11
@@ -197,6 +221,30 @@
     },
     {
       "key": {
+        "uuid": "6548beef_5525df5a",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T15:30:20Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3725fe47_f0a2f4b4",
+      "range": {
+        "startLine": 168,
+        "startChar": 16,
+        "endLine": 168,
+        "endChar": 28
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6e75ff6e_34426f07",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
@@ -255,6 +303,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "c0c326f4_3e1b0180",
+      "range": {
+        "startLine": 186,
+        "startChar": 16,
+        "endLine": 186,
+        "endChar": 28
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4e27f945_3d9ae012",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T15:30:20Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d8c2c92c_7b1ff237",
       "range": {
         "startLine": 186,
         "startChar": 16,
@@ -355,6 +427,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "449c50d2_937146e0",
+      "range": {
+        "startLine": 209,
+        "startChar": 5,
+        "endLine": 209,
+        "endChar": 25
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0333fdf3_7a9340aa",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T15:30:20Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b9263a04_075bfaca",
       "range": {
         "startLine": 209,
         "startChar": 5,
