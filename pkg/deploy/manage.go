@@ -77,6 +77,7 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 			AnsibleRevision:           deploy.config.AnsibleRevision,
 			ServiceUserID:             deploy.config.ServiceUserID,
 			ServiceUserPassword:       deploy.config.ServiceUserPassword,
+			DryRunDeployer:            deploy.config.DryRunDeployer,
 		}, &osCommandExecutor{})
 		if err != nil {
 			return nil, err

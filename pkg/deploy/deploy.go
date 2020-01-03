@@ -62,6 +62,8 @@ type Config struct { // nolint: maligned
 	AnsibleCherryPickRevision string `yaml:"ansible_cherry_pick_revision"`
 	// Optional ansible deployer revision(commit id)
 	AnsibleRevision string `yaml:"ansible_revision"`
+	// DryRunDeployer indicate if deployer backend will be run or only command logged
+	DryRunDeployer bool `yaml:"dry_run_deployer,omitempty"`
 	// Optional Test var to run command in test mode
 	Test bool `yaml:"test"`
 }
