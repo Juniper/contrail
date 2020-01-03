@@ -1,0 +1,56 @@
+#!/bin/bash
+
+usage(){
+    cat <<EOF
+usage: $(basename $0) [--config_dir dir] [--contrail_dir dir] [--help]
+This script will generate generated-contrail-ui-with-go-multicloud.yml contrail config with agent configured for
+runing multicloud operation.
+
+Where:
+--config_dir dir
+    Specifies dir as directory in which configs for contrail will be saved.
+    Defaults to generated contrail_configs.XXX in current directory(XXX will be filled with random string see: mktemp).
+
+--contrail_dir dir
+    Set directory for contrail repository. Defaults to current directory.
+
+--help
+    Print this help.
+EOF
+}
+
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    --help)
+    usage
+    exit 0
+    ;;
+    --config_dir)
+    CONFIG_DIR=$(realpath $2)
+    shift
+    shift
+    ;;
+    --contrail_dir)
+    CONTRAIL_DIR=$(realpath $2)
+    shift
+    shift
+    ;;
+    *)
+    echo "Unknown $1 parameter"
+    usage
+    exit 1
+    ;;
+esac
+done
+
+SCRIPT_DIR=$(realpath $(dirname $0))
+: ${CONTRAIL_DIR:="$SCRIPT_DIR/../"}
+: ${CONFIG_DIR:=$(realpath $(mktemp -d contrail_configs.XXX))}
+
+[ ! -d $CONFIG_DIR ] && mkdir -p $CONFIG_DIR
+
+sed -e "s|%CONTRAIL_DIR%|$CONTRAIL_DIR|g" -e "s|%CONFIG_DIR%|$CONFIG_DIR|g" $SCRIPT_DIR/contrail-ui-with-go-multicloud.yml.tmpl > generated-contrail-ui-with-go-multicloud.yml

@@ -354,19 +354,6 @@ func genKeyPair(bits int) ([]byte, []byte, error) {
 	return pub, encodedPvtKey.Bytes(), nil
 }
 
-func tfStateOutputExists(cloudID string) bool {
-	tfState, err := readStateFile(GetTFStateFile(cloudID))
-	if err != nil {
-		return false
-	}
-
-	mState := tfState.RootModule()
-	if len(mState.Outputs) == 0 && len(mState.Resources) == 0 {
-		return false
-	}
-	return true
-}
-
 func waitForClusterStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
 	httpClient *client.HTTP, clusterUUID string) error {
 
