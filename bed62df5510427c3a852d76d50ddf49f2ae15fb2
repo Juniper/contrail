@@ -259,6 +259,24 @@
       "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35336558_d6e1d357",
+        "filename": "pkg/client/baseclient/keystone_test.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-03T16:03:21Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f0b9337d_45057bf7",
+      "revId": "bed62df5510427c3a852d76d50ddf49f2ae15fb2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

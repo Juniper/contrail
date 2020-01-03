@@ -86,6 +86,24 @@
       "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7caa82d9_63bde03d",
+        "filename": "pkg/deploy/templates/contrail-deploy-config.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-03T16:03:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "11afba15_0ebe27c3",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

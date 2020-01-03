@@ -16,6 +16,24 @@
       "revId": "0108e98f5a82797d83b997473365cf47ea98b8e1",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e96b39f_de2e6c4c",
+        "filename": "Gopkg.lock",
+        "patchSetId": 26
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-03T16:03:21Z",
+      "side": 1,
+      "message": "Ack, will update when asf#21 is merged",
+      "parentUuid": "50ea4049_233454ed",
+      "revId": "0108e98f5a82797d83b997473365cf47ea98b8e1",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "4acb8b9a_5d887fc3",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-03T16:03:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8156530c_20ccf4e1",
+      "range": {
+        "startLine": 117,
+        "startChar": 27,
+        "endLine": 117,
+        "endChar": 54
+      },
+      "revId": "8964e320512f4e1a6777b77560a3cef3e6eeff2e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "77a483eb_b385880b",
         "filename": "pkg/client/baseclient/keystone.go",
         "patchSetId": 14
