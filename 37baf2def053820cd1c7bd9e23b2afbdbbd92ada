@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "360c819b_28d3cc95",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "69a130a9_1cf615fa",
+      "range": {
+        "startLine": 152,
+        "startChar": 1,
+        "endLine": 152,
+        "endChar": 14
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7f0d4caf_c640e006",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -176,6 +200,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "80a1e452_16ff88ca",
+      "range": {
+        "startLine": 47,
+        "startChar": 1,
+        "endLine": 53,
+        "endChar": 103
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "774f3519_252dce56",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e97b8bd6_192025d5",
       "range": {
         "startLine": 47,
         "startChar": 1,

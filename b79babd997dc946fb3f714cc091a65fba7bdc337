@@ -71,6 +71,24 @@
     },
     {
       "key": {
+        "uuid": "d0771bc4_efe849c7",
+        "filename": "pkg/replication/client.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 0,
+      "message": "Ack",
+      "parentUuid": "422a2d01_10aa5e37",
+      "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2747f9d1_07e1e295",
         "filename": "pkg/replication/replication.go",
         "patchSetId": 11
@@ -100,6 +118,24 @@
       "side": 0,
       "message": "Done",
       "parentUuid": "2747f9d1_07e1e295",
+      "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "035a748a_1f059891",
+        "filename": "pkg/replication/replication.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 0,
+      "message": "Ack",
+      "parentUuid": "983f0841_369e2207",
       "revId": "b79babd997dc946fb3f714cc091a65fba7bdc337",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false

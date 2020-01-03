@@ -37,6 +37,42 @@
     },
     {
       "key": {
+        "uuid": "2b27158c_fce6bf4e",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a97adea2_0ab018af",
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f61ca300_23b92d10",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a97adea2_0ab018af",
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "551c1384_29556314",
         "filename": "pkg/apisrv/proxy.go",
         "patchSetId": 5
@@ -84,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "da43d9e0_bc67d959",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "245e53e5_26bbb0be",
+      "range": {
+        "startLine": 42,
+        "startChar": 1,
+        "endLine": 51,
+        "endChar": 78
+      },
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6e878367_44eb57b7",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 5
@@ -119,6 +179,30 @@
       "side": 1,
       "message": "The code was moved to pkg/cmd/comtrail/run.go",
       "parentUuid": "6e878367_44eb57b7",
+      "range": {
+        "startLine": 183,
+        "startChar": 1,
+        "endLine": 196,
+        "endChar": 2
+      },
+      "revId": "ab234cded781434daf439b7c8a1f5190d5912053",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "40a79232_c181851d",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6b7212bc_67e31d49",
       "range": {
         "startLine": 183,
         "startChar": 1,

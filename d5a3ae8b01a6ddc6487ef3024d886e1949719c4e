@@ -46,6 +46,30 @@
       "revId": "d5a3ae8b01a6ddc6487ef3024d886e1949719c4e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9bcfef0c_7e229972",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9e1683a7_6aff29f7",
+      "range": {
+        "startLine": 171,
+        "startChar": 66,
+        "endLine": 171,
+        "endChar": 75
+      },
+      "revId": "d5a3ae8b01a6ddc6487ef3024d886e1949719c4e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

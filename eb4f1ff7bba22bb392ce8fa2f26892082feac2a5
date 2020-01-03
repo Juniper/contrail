@@ -150,6 +150,30 @@
     },
     {
       "key": {
+        "uuid": "e19625e4_d42dbb5f",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d166ebc3_41cbc7d4",
+      "range": {
+        "startLine": 45,
+        "startChar": 1,
+        "endLine": 45,
+        "endChar": 18
+      },
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ecb0b0d0_07943bfb",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 9
@@ -185,6 +209,30 @@
       "side": 1,
       "message": "Removed.",
       "parentUuid": "ecb0b0d0_07943bfb",
+      "range": {
+        "startLine": 78,
+        "startChar": 5,
+        "endLine": 78,
+        "endChar": 16
+      },
+      "revId": "eb4f1ff7bba22bb392ce8fa2f26892082feac2a5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cd856cae_1c99f745",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T10:01:37Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "353c217b_a4f632d0",
       "range": {
         "startLine": 78,
         "startChar": 5,
