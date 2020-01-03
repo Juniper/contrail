@@ -53,7 +53,8 @@ type Config struct { // nolint: maligned
 	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
-
+	// DryRunDeployer indicate if deployer backend will be run or only command logged
+	DryRunDeployer bool `yaml:"dry_run_deployer,omitempty"`
 	// Optional Test var to run cloud in test mode
 	Test bool `yaml:"test"`
 }
@@ -77,6 +78,7 @@ type Cloud struct {
 	streamServer         *logutil.StreamServer
 	terraformStateReader terraformStateReader
 	ctx                  context.Context
+	deployer             Deployer
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -92,7 +94,7 @@ func NewCloudManager(configPath string, commandExecutor CommandExecutor) (*Cloud
 		return nil, err
 	}
 
-	return NewCloud(&c, cloudTfStateReader{c.CloudID}, commandExecutor)
+	return NewCloud(&c, cloudTfStateReader{c.CloudID, c.DryRunDeployer}, commandExecutor)
 }
 
 // NewCloud returns a new Cloud instance
@@ -129,20 +131,27 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 	if c.CloudID == "" {
 		return nil, fmt.Errorf("cloudID not specified in the config")
 	}
-
+	r := report.NewReporter(
+		s,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
+	)
+	log := logutil.NewFileLogger("cloud", c.LogFile).WithField("cloudID", c.CloudID)
+	deployerConfig := DeployerConfig{GetCloudDir(c.CloudID), GetTopoFile(c.CloudID), GetSecretFile(c.CloudID)}
+	opts := []DeployerOption{}
+	if c.DryRunDeployer {
+		opts = append(opts, DeployerWithDryRun(log))
+	}
 	return &Cloud{
-		APIServer: s,
-		config:    c,
-		log:       logutil.NewFileLogger("cloud", c.LogFile).WithField("cloudID", c.CloudID),
-		reporter: report.NewReporter(
-			s,
-			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
-			logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
-		),
+		APIServer:            s,
+		config:               c,
+		log:                  log,
+		reporter:             r,
 		streamServer:         logutil.NewStreamServer(c.LogFile),
 		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
+		deployer:             NewDeployer(deployerConfig, e, r, opts...),
 	}, nil
 }
 
@@ -307,7 +316,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = c.deployer.UpdateTopology(data.modifiedProviders()); err != nil {
 			return err
 		}
 	}
@@ -409,8 +418,8 @@ func (c *Cloud) update() error {
 		if err = secret.createSecretFile(data.info.GetParentClusterUUID()); err != nil {
 			return err
 		}
-
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		// depending upon the config action, it takes respective terraform action
+		if err = c.deployer.UpdateTopology(data.modifiedProviders()); err != nil {
 			return err
 		}
 	}
@@ -488,7 +497,7 @@ func (c *Cloud) delete() error {
 		if err = secret.createSecretFile(data.info.GetParentClusterUUID()); err != nil {
 			return err
 		}
-		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
+		if err = c.deployer.DestroyTopology(data.modifiedProviders()); err != nil {
 			return err
 		}
 	}

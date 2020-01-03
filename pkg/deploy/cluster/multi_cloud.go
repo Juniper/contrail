@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/cloud"
+	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
@@ -43,7 +44,8 @@ const (
 
 type multiCloudProvisioner struct {
 	contrailAnsibleDeployer
-	workDir string
+	workDir  string
+	deployer cloud.Deployer
 }
 
 // Deploy performs Multicloud provisioning.
@@ -70,7 +72,6 @@ func (m *multiCloudProvisioner) deploy() error {
 		return nil
 	}
 
-	m.updateMCWorkDir()
 	pa := m.clusterData.ClusterInfo.ProvisioningAction
 
 	if m.isMCDeleteRequest() {
@@ -132,10 +133,6 @@ func (m *multiCloudProvisioner) deploy() error {
 	return nil
 }
 
-func (m *multiCloudProvisioner) updateMCWorkDir() {
-	m.workDir = m.getMCWorkingDir(m.getWorkingDir())
-}
-
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
 	return m.clusterData.ClusterInfo.ProvisioningState == statusNoState &&
 		m.clusterData.ClusterInfo.ProvisioningAction == deleteCloud
@@ -175,7 +172,7 @@ func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error 
 	if err != nil {
 		return err
 	}
-	topologyFile := m.getClusterTopoFile(workDir)
+	topologyFile := getClusterTopoFile(workDir)
 	if err = fileutil.CopyFile(cloud.GetTopoFile(pvtCloudID), topologyFile, true); err != nil {
 		return errors.Wrap(err, "topology file is not created for onprem cloud")
 	}
@@ -215,16 +212,16 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 	if err != nil {
 		return errors.Wrapf(err, "couldn't marshal secret to yaml for cluster %s", m.cluster.config.ClusterID)
 	}
-	err = ioutil.WriteFile(m.getClusterSecretFile(), marshaled, defaultFilePermRWOnly)
+	err = ioutil.WriteFile(getClusterSecretFile(m.workDir), marshaled, defaultFilePermRWOnly)
 	return errors.Wrapf(err, "couldn't create secret.yml file for cluster %s", m.cluster.config.ClusterID)
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
-	if _, err := os.Stat(m.getClusterTopoFile(m.workDir)); err != nil {
+	if _, err := os.Stat(getClusterTopoFile(m.workDir)); err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		return false, errors.Wrapf(err, "couldn't read old topology file: %s", m.getClusterTopoFile(m.workDir))
+		return false, errors.Wrapf(err, "couldn't read old topology file: %s", getClusterTopoFile(m.workDir))
 	}
 	if ok, err := m.compareClusterTopologyFile(); err != nil {
 		return true, err
@@ -248,11 +245,11 @@ func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
 	if err = m.createClusterTopologyFile(tmpDir); err != nil {
 		return false, err
 	}
-	newTopology, err := ioutil.ReadFile(m.getClusterTopoFile(tmpDir))
+	newTopology, err := ioutil.ReadFile(getClusterTopoFile(tmpDir))
 	if err != nil {
 		return false, err
 	}
-	oldTopology, err := ioutil.ReadFile(m.getClusterTopoFile(m.workDir))
+	oldTopology, err := ioutil.ReadFile(getClusterTopoFile(m.workDir))
 	if err != nil {
 		return false, err
 	}
@@ -346,39 +343,24 @@ func (m *multiCloudProvisioner) publicCloudID() (string, error) {
 }
 
 func (m *multiCloudProvisioner) provision() error {
-	cmd := multicloudCLI
-	args := []string{
-		"all", "provision", "--topology", m.getClusterTopoFile(m.workDir),
-		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
-	}
-	if m.clusterData.ClusterInfo.ProvisioningAction == updateCloud {
-		args = append(args, "--update")
-	}
+
 	agent, stopAgent, err := m.startSSHAgent()
 	if err != nil {
 		return errors.Wrap(err, "cannot start SSH Agent")
 	}
 	defer stopAgent()
-	return m.cluster.commandExecutor.ExecCmdAndWait(
-		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
-	)
+
+	return m.deployer.Provision(m.clusterData.ClusterInfo.ProvisioningAction == updateCloud, agent.GetExportVars())
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
-	cmd := multicloudCLI
-	mcRepoDir := m.getMCDeployerRepoDir()
-	args := []string{
-		"all", "clean", "--topology", m.getClusterTopoFile(m.workDir),
-		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
-		"--state", filepath.Join(mcRepoDir, "state.yml"),
-	}
 	agent, stopAgent, err := m.startSSHAgent()
 	if err != nil {
 		return err
 	}
 	defer stopAgent()
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+	return m.deployer.CleanupProvisioning(agent.GetExportVars())
 }
 
 func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
@@ -421,8 +403,8 @@ func (m *multiCloudProvisioner) filesToRemove() []string {
 	kfd := services.NewKeyFileDefaults()
 
 	f := []string{
-		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
-		m.getClusterSecretFile(),
+		m.getMCInventoryFile(getMCDeployerRepoDir()),
+		getClusterSecretFile(m.workDir),
 		kfd.GetAzureSubscriptionIDPath(),
 		kfd.GetAzureClientIDPath(),
 		kfd.GetAzureClientSecretPath(),
@@ -517,8 +499,8 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 	return keypairObj.Keypair, nil
 }
 
-func (m *multiCloudProvisioner) getTFStateFile() string {
-	for _, c := range m.clusterData.CloudInfo {
+func getTFStateFile(clusterData *base.Data) string {
+	for _, c := range clusterData.CloudInfo {
 		for _, prov := range c.CloudProviders {
 			if prov.Type != onPrem {
 				return cloud.GetTFStateFile(c.UUID)
@@ -533,18 +515,18 @@ func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
 }
 
 // use topology constant from cloud pkg
-func (m *multiCloudProvisioner) getClusterTopoFile(workDir string) string {
+func getClusterTopoFile(workDir string) string {
 	return filepath.Join(workDir, defaultTopologyFile)
 }
 
-func (m *multiCloudProvisioner) getClusterSecretFile() string {
-	return filepath.Join(m.workDir, defaultSecretFile)
+func getClusterSecretFile(workDir string) string {
+	return filepath.Join(workDir, defaultSecretFile)
 }
 
-func (m *multiCloudProvisioner) getMCDeployerRepoDir() string {
+func getMCDeployerRepoDir() string {
 	return filepath.Join(defaultAnsibleRepoDir, mcRepository)
 }
 
-func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {
+func getMCWorkingDir(clusterWorkDir string) string {
 	return filepath.Join(clusterWorkDir, mcWorkDir)
 }

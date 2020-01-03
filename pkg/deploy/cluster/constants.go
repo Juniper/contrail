@@ -49,6 +49,4 @@ const (
 	orchestratorOpenstack  = "openstack"
 	orchestratorKubernetes = "kubernetes"
 	orchestratorVcenter    = "vcenter"
-
-	multicloudCLI = "deployer"
 )
