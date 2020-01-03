@@ -15,9 +15,11 @@ resource_action: {{ action }}
 provisioner_type: {{ resource.ProvisionerType }}
 log_level: debug
 log_file: /var/log/contrail/deploy.log
-template_root: /usr/share/contrail/templates/
+template_root: {{ deploy_template_root|default:"/usr/share/contrail/templates/" }}
 service_user_id: {{ input.ServiceUserID }}
 service_user_password: {{ input.ServiceUserPassword }}
+dry_run_deployer: {{ dry_run_deployer|default:false }}
+
 # Optional ansible params for dev/test
 #ansible_sudo_pass: secret123
 #ansible_fetch_url: https://review.opencontrail.org/Juniper/contrail-ansible-deployer refs/changes/80/40780/20
