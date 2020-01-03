@@ -1064,6 +1064,30 @@
     },
     {
       "key": {
+        "uuid": "f18aeffb_b71cf607",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T15:33:13Z",
+      "side": 1,
+      "message": "I was wrong here. It removes endpoints thar are not in given endpoints map but are in store. I guess we need function comment.",
+      "parentUuid": "bc43725f_0abfc425",
+      "range": {
+        "startLine": 263,
+        "startChar": 16,
+        "endLine": 263,
+        "endChar": 29
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "81efb24a_83a161a7",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
