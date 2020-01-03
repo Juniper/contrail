@@ -325,7 +325,7 @@ func (v *vncAPI) deletePhysicaInterfaceToPortRefs(portURL, portID string) {
 	// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 	refUpdateURL := strings.Join([]string{
 		"/proxy", v.clusterID, configService, services.RefUpdatePath}, "/")
-	for _, physicalInterface := range response.Port.PhysicalInterfaceBackRefs {
+	for _, physicalInterface := range response.GetPort().GetPhysicalInterfaceBackRefs() {
 		data := services.RefUpdate{
 			Operation: "DELETE",
 			Type:      "physical-interface",
