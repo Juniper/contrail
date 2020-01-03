@@ -189,6 +189,78 @@
     },
     {
       "key": {
+        "uuid": "8a2d20c2_b843bcf4",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T12:57:55Z",
+      "side": 1,
+      "message": "It is used also in integration/api_server.go.",
+      "parentUuid": "520a18ec_a4468049",
+      "range": {
+        "startLine": 184,
+        "startChar": 5,
+        "endLine": 184,
+        "endChar": 23
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54af5ad6_d769af9e",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T12:57:55Z",
+      "side": 1,
+      "message": "Server.VNCReplicator field removed.\ns needed to pass s.Keystone to replication.New.",
+      "parentUuid": "db2e99c5_9f206742",
+      "range": {
+        "startLine": 184,
+        "startChar": 24,
+        "endLine": 184,
+        "endChar": 40
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "96351088_bd4d682e",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T12:57:55Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6ba9d532_82a56fa9",
+      "range": {
+        "startLine": 184,
+        "startChar": 42,
+        "endLine": 184,
+        "endChar": 55
+      },
+      "revId": "37baf2def053820cd1c7bd9e23b2afbdbbd92ada",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "80a1e452_16ff88ca",
         "filename": "pkg/keystone/api.go",
         "patchSetId": 10
