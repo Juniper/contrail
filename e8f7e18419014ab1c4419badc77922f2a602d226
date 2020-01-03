@@ -2,6 +2,46 @@
   "comments": [
     {
       "key": {
+        "uuid": "ac30af6e_91cd8078",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T12:02:55Z",
+      "side": 1,
+      "message": "What about moving all of this into es.ReadEndpointURLs? Then it\u0027ll return ([]string, error).",
+      "range": {
+        "startLine": 142,
+        "startChar": 1,
+        "endLine": 149,
+        "endChar": 20
+      },
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d395f4f_f683a52e",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T12:02:55Z",
+      "side": 1,
+      "message": "Why has the move of keystone initialization to pkg/cmd/contrail been reverted?",
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "dfb86be9_876b31e8",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 12
@@ -19,6 +59,69 @@
     },
     {
       "key": {
+        "uuid": "87486783_13bda416",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T12:02:55Z",
+      "side": 1,
+      "message": "Add a doc comment:\n\n// RemoveDeleted removes all endpoints that do not match the given ones.\n\nAdd doc comments to the rest of the exported functions as well.",
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "84bbd77c_5dede14e",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T12:02:55Z",
+      "side": 1,
+      "message": "This can be done in NewStore() instead, so that it\u0027s only done once.",
+      "range": {
+        "startLine": 158,
+        "startChar": 1,
+        "endLine": 158,
+        "endChar": 43
+      },
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "56583312_8158abad",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T12:02:55Z",
+      "side": 1,
+      "message": "This will panic when ReadEndpoints returns an empty slice (or nil).",
+      "range": {
+        "startLine": 237,
+        "startChar": 8,
+        "endLine": 237,
+        "endChar": 27
+      },
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e4bf5e72_e2d7d272",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 12
@@ -30,6 +133,23 @@
       "writtenOn": "2020-01-03T10:01:37Z",
       "side": 1,
       "message": "This function should start Replicator too.\nSee: comment in pkg/cmd/contrail/run.go:startServer()",
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d42627d2_14503a86",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T12:02:55Z",
+      "side": 1,
+      "message": "This change is unrelated (and unnecessary: these imports should be in one group according to https://github.com/Juniper/contrail/blob/master/REVIEW.md#organizing-imports).",
       "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
