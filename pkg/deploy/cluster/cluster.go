@@ -2,11 +2,13 @@ package cluster
 
 import (
 	"os/exec"
+	"path/filepath"
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/models"
@@ -39,6 +41,8 @@ type Config struct {
 	AnsibleCherryPickRevision string
 	// Optional ansible deployer revision(commit id)
 	AnsibleRevision string
+	// DryRunDeployer indicate if deployer backend will be run or only command logged
+	DryRunDeployer bool `yaml:"dry_run"`
 	// Optional Test var to run command in test mode
 	Test bool
 }
@@ -154,6 +158,29 @@ func newAnsibleDeployer(c *Cluster, cData *base.Data) *contrailAnsibleDeployer {
 
 func newMCProvisioner(c *Cluster, cData *base.Data) *multiCloudProvisioner {
 	d := newDeployCluster(c, cData, "multi-cloud-provisioner")
+
+	clusterWorkDir := d.getWorkingDir()
+	mcRepoDir := getMCDeployerRepoDir()
+	mcWorkDir := getMCWorkingDir(clusterWorkDir)
+
+	deployerConfig := cloud.DeployerConfig{
+		WorkDir:      mcRepoDir,
+		TopologyFile: getClusterTopoFile(mcWorkDir),
+		SecretFile:   getClusterSecretFile(mcWorkDir),
+	}
+	opts := []cloud.DeployerOption{
+		cloud.DeployerWithTfStateFile(getTFStateFile(cData)),
+		cloud.DeployerWithStateFile(filepath.Join(mcRepoDir, "state.yml")),
+	}
+	if c.config.DryRunDeployer {
+		opts = append(opts, cloud.DeployerWithDryRun(c.log))
+	}
+	deployer := cloud.NewDeployer(
+		deployerConfig,
+		c.commandExecutor,
+		d.Reporter,
+		opts...,
+	)
 	return &multiCloudProvisioner{
 		contrailAnsibleDeployer: contrailAnsibleDeployer{
 			deployCluster: *d,
@@ -164,6 +191,7 @@ func newMCProvisioner(c *Cluster, cData *base.Data) *multiCloudProvisioner {
 				c.config.Test,
 			),
 		},
-		workDir: "",
+		workDir:  mcWorkDir,
+		deployer: deployer,
 	}
 }

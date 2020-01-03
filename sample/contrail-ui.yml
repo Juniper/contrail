@@ -111,7 +111,76 @@ client:
   endpoint: https://localhost:9091
 
 agent:
-  enabled: false
+# BEGIN ANSIBLE MANAGED BLOCK
+    tasks:
+    - schema_ids:
+      - contrail_cluster
+      - rhospd_cloud_manager
+      common:
+      - vars:
+          res_type: "{{ resource.schema_id }}"
+          dir: "/home/apasyniuk/tmp/local_test/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+      on_create:
+      - debug: "AGENT creating {{ dir }}"
+      - command: mkdir -p "{{ dir }}"
+      - debug: "AGENT created {{ dir }}"
+      - template:
+          src: "/home/apasyniuk/go_p/src/github.com/Juniper/contrail/pkg/deploy/templates/contrail-deploy-config.tmpl"
+          dest: "{{ dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT creating {{ res_type }}(/home/apasyniuk/go_p/bin/contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
+      - command: "/home/apasyniuk/go_p/bin/contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT {{ res_type }} create complete"
+      on_update:
+      - template:
+          src: "/home/apasyniuk/go_p/src/github.com/Juniper/contrail/pkg/deploy/templates/contrail-deploy-config.tmpl"
+          dest: "{{ dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT updating {{ res_type }}(/home/apasyniuk/go_p/bin/contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
+      - command: "/home/apasyniuk/go_p/bin/contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT {{ res_type }} update complete"
+      on_delete:
+      - template:
+          src: "/home/apasyniuk/go_p/src/github.com/Juniper/contrail/pkg/deploy/templates/contrail-deploy-config.tmpl"
+          dest: "{{ dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT deleting {{ res_type }}(/home/apasyniuk/go_p/bin/contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
+      - command: "/home/apasyniuk/go_p/bin/contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT deleting {{ dir }}"
+      - command: "rm -rf  {{ dir }}"
+      - debug: "AGENT deleted {{ dir }}"
+    - schema_ids:
+      - cloud
+      common:
+      - vars:
+          src_dir: "/home/apasyniuk/go_p/src/github.com/Juniper/contrail/pkg/cloud/configs/contrail-cloud-config.tmpl"
+          dir: "/home/apasyniuk/tmp/local_test/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+      on_create:
+      - debug: "AGENT creating {{ dir }}"
+      - command: mkdir -p "{{ dir }}"
+      - debug: "AGENT created {{ dir }}"
+      - template:
+          src: "{{ src_dir }}"
+          dest: "{{ dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT creating cloud (/home/apasyniuk/go_p/bin/contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
+      - command: /home/apasyniuk/go_p/bin/contrail cloud -c {{ dir }}/contrail-cloud-config.yml
+      - debug: "AGENT cloud create complete"
+      on_update:
+      - template:
+          src: "{{ src_dir }}"
+          dest: "{{ dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT updating cloud (/home/apasyniuk/go_p/bin/contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
+      - command: /home/apasyniuk/go_p/bin/contrail cloud -c {{ dir }}/contrail-cloud-config.yml
+      - debug: "AGENT cloud update complete"
+      on_delete:
+      - template:
+          src: "{{ src_dir }}"
+          dest: "{{ dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT deleting {{ dir }}"
+      - command: "rm -rf  {{ dir }}"
+      - debug: "AGENT deleted {{ dir }}"
+
+    backend: file
+    enabled: true
+    log_level: debug
+    watcher: polling
 
 compilation:
   enabled: false
