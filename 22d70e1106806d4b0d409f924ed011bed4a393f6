@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "05b0b41e_b0b2409e",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T16:44:50Z",
+      "side": 1,
+      "message": "Use integration.ServiceUserID and integration.ServiceUserPassword everywhere in tests.",
+      "range": {
+        "startLine": 274,
+        "startChar": 23,
+        "endLine": 274,
+        "endChar": 30
+      },
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7c80b40e_efb8e0a9",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T16:44:50Z",
+      "side": 1,
+      "message": "Default suggests it is configurable.\nThis is role name of admin user in production. Please add AdminRoleName constant in pkg/keystone/api.go and use it here.",
+      "range": {
+        "startLine": 17,
+        "startChar": 1,
+        "endLine": 17,
+        "endChar": 16
+      },
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
