@@ -268,6 +268,30 @@
     },
     {
       "key": {
+        "uuid": "0028d4c5_6cad6dcd",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T16:56:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6e75ff6e_34426f07",
+      "range": {
+        "startLine": 176,
+        "startChar": 16,
+        "endLine": 176,
+        "endChar": 29
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c0c326f4_3e1b0180",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
@@ -389,6 +413,24 @@
       "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00be7f7b_00ccb0fc",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T16:56:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d3c1986d_be586ce0",
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -1081,6 +1123,30 @@
         "startChar": 16,
         "endLine": 263,
         "endChar": 29
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "08711e49_272c681b",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T16:56:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6dd71733_7c74a0a1",
+      "range": {
+        "startLine": 263,
+        "startChar": 30,
+        "endLine": 263,
+        "endChar": 35
       },
       "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
