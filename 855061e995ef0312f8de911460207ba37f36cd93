@@ -432,6 +432,30 @@
       "revId": "855061e995ef0312f8de911460207ba37f36cd93",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de4b81cc_15d81b20",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 37
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-03T16:04:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e5f2f480_3e1aee4d",
+      "range": {
+        "startLine": 118,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 12
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
