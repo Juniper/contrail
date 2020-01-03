@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa64a6cd_c5fd7e34",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 554,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T14:34:50Z",
+      "side": 1,
+      "message": "How are these logs helpful?",
+      "revId": "1560234a127b19c839fd96fae5dc9bc9cfeaa74f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
