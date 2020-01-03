@@ -173,9 +173,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	if err := m.cleanupProvisioning(); err != nil {
 		return err
 	}
@@ -184,8 +181,6 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 			return err
 		}
 	}
-	// nolint: errcheck
-	defer m.stopSSHAgent()
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
@@ -310,9 +305,6 @@ func (m *multiCloudProvisioner) manageMCCluster() error {
 	if err := m.createFiles(); err != nil {
 		return err
 	}
-	if err := m.manageSSHAgent(); err != nil {
-		return err
-	}
 	return m.provision()
 }
 
@@ -400,12 +392,14 @@ func (m *multiCloudProvisioner) provision() error {
 	if m.clusterData.ClusterInfo.ProvisioningAction == updateCloud {
 		args = append(args, "--update")
 	}
-
-	vars := []string{
-		fmt.Sprintf("SSH_AUTH_SOCK=%s", os.Getenv("SSH_AUTH_SOCK")),
-		fmt.Sprintf("SSH_AGENT_PID=%s", os.Getenv("SSH_AGENT_PID")),
+	agent, stopAgent, err := m.startSSHAgent()
+	if err != nil {
+		return errors.Wrap(err, "cannot start SSH Agent")
 	}
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, m.getMCDeployerRepoDir(), vars...)
+	defer stopAgent()
+	return m.cluster.commandExecutor.ExecCmdAndWait(
+		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
+	)
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
@@ -416,8 +410,36 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
 		"--state", filepath.Join(mcRepoDir, "state.yml"),
 	}
+	agent, stopAgent, err := m.startSSHAgent()
+	if err != nil {
+		return err
+	}
+	defer stopAgent()
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir)
+	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+}
+
+func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
+	kp, err := m.getPublicCloudKeyPair()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "cannot resolve public cloud keypair")
+	}
+	if kp.GetSSHKeyDirPath() == "" || kp.GetName() == "" {
+		return nil, nil, errors.Errorf("credentials %s do not contain SSHKeyDirectory/SSHKeyName", kp.GetUUID())
+	}
+
+	agent := &sshAgent{}
+	stopAgent := func() {
+		if stopErr := agent.Stop(); stopErr != nil {
+			m.Log.Errorf("cannot stop SSH Agent: %v", stopErr)
+		}
+	}
+
+	if err = agent.Run(filepath.Join(kp.GetSSHKeyDirPath(), kp.GetName())); err != nil {
+		stopAgent()
+		return nil, nil, err
+	}
+	return agent, stopAgent, nil
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
