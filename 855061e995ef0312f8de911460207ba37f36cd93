@@ -365,6 +365,30 @@
     },
     {
       "key": {
+        "uuid": "469ba789_3f7cb4a5",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 37
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T17:26:47Z",
+      "side": 1,
+      "message": "I meant that, if any programmer confuses OpenStack project UUID and name in the future, some tests that touch this might fail, catching the mistake.",
+      "parentUuid": "c4260654_4d41d412",
+      "range": {
+        "startLine": 40,
+        "startChar": 23,
+        "endLine": 40,
+        "endChar": 32
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2651b9bb_a4f954e0",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 37
@@ -446,6 +470,30 @@
       "writtenOn": "2020-01-03T16:04:15Z",
       "side": 1,
       "message": "Done",
+      "parentUuid": "e5f2f480_3e1aee4d",
+      "range": {
+        "startLine": 118,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 12
+      },
+      "revId": "855061e995ef0312f8de911460207ba37f36cd93",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a57a94a6_17029642",
+        "filename": "sample/test_config.yml",
+        "patchSetId": 37
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T17:26:47Z",
+      "side": 1,
+      "message": "Ack",
       "parentUuid": "e5f2f480_3e1aee4d",
       "range": {
         "startLine": 118,

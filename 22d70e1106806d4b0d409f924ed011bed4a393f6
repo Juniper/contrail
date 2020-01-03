@@ -45,6 +45,23 @@
       "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "808db470_5da25e8f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/client.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-03T17:26:47Z",
+      "side": 1,
+      "message": "Add a code comment that this is done so that /roles (which is not implemented in mock keystone) is not called when the user already exists (which is true during tests).",
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
