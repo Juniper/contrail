@@ -573,6 +573,30 @@
     },
     {
       "key": {
+        "uuid": "39ecceaf_9d180e15",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T16:14:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6471e736_2b8b0cb3",
+      "range": {
+        "startLine": 102,
+        "startChar": 12,
+        "endLine": 102,
+        "endChar": 55
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5f377f5d_3b58ec68",
         "filename": "pkg/replication/client.go",
         "patchSetId": 13

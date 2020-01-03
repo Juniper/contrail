@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "821b7801_a6060042",
+        "filename": "pkg/deploy/deploy.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T16:14:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7151ffbb_3edd6cf3",
+      "revId": "bdac00fb8f21e9d78a45fe9f187921cfb9fc973c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "11afba15_0ebe27c3",
         "filename": "pkg/deploy/templates/contrail-deploy-config.yml",
         "patchSetId": 15

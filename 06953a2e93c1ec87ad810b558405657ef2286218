@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "98731088_f0c185d1",
+        "filename": "pkg/apisrv/test_data/test_keystone.yml",
+        "patchSetId": 39
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T16:14:06Z",
+      "side": 1,
+      "message": "Do not remove the test.",
+      "revId": "06953a2e93c1ec87ad810b558405657ef2286218",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
