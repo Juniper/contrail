@@ -551,9 +551,12 @@ func (s *Server) Run() error {
 
 // Close closes Server.
 func (s *Server) Close() error {
+	s.log.Info("Closing server")
 	if s.VNCReplicator != nil {
 		s.VNCReplicator.Stop()
 	}
 	s.Proxy.StopEndpointsSync()
-	return s.DBService.Close()
+	err := s.DBService.Close()
+	s.log.Info("Server closed")
+	return err
 }
