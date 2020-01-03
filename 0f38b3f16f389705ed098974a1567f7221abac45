@@ -590,6 +590,48 @@
     },
     {
       "key": {
+        "uuid": "29d55a2e_eaed29f3",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T08:47:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "884b8543_5eb16a7e",
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5bb437d9_92920f04",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T08:47:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "254ad7d7_fc4992bf",
+      "range": {
+        "startLine": 263,
+        "startChar": 95,
+        "endLine": 263,
+        "endChar": 112
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "81efb24a_83a161a7",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
@@ -610,6 +652,30 @@
       "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c861e9ee_fb7aa378",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 265,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-03T08:47:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "81efb24a_83a161a7",
+      "range": {
+        "startLine": 265,
+        "startChar": 1,
+        "endLine": 265,
+        "endChar": 2
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
