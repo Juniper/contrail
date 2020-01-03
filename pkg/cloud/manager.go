@@ -54,7 +54,8 @@ type Config struct { // nolint: maligned
 	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
-
+	// DryRunDeployer indicate if deployer backend will be run or only command logged
+	DryRunDeployer bool `yaml:"dry_run"`
 	// Optional Test var to run cloud in test mode
 	Test bool `yaml:"test"`
 }
@@ -78,6 +79,7 @@ type Cloud struct {
 	streamServer         *logutil.StreamServer
 	terraformStateReader terraformStateReader
 	ctx                  context.Context
+	deployer             deployer
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -93,7 +95,7 @@ func NewCloudManager(configPath string, commandExecutor CommandExecutor) (*Cloud
 		return nil, err
 	}
 
-	return NewCloud(&c, cloudTfStateReader{c.CloudID}, commandExecutor)
+	return NewCloud(&c, cloudTfStateReader{c.CloudID, c.DryRunDeployer}, commandExecutor)
 }
 
 // NewCloud returns a new Cloud instance
@@ -136,20 +138,22 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 	if c.CloudID == "" {
 		return nil, fmt.Errorf("cloudID not specified in the config")
 	}
-
+	r := report.NewReporter(
+		s,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile),
+	)
+	log := logutil.NewFileLogger("cloud", c.LogFile)
 	return &Cloud{
-		APIServer: s,
-		config:    c,
-		log:       logutil.NewFileLogger("cloud", c.LogFile),
-		reporter: report.NewReporter(
-			s,
-			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
-			logutil.NewFileLogger("reporter", c.LogFile),
-		),
+		APIServer:            s,
+		config:               c,
+		log:                  log,
+		reporter:             r,
 		streamServer:         logutil.NewStreamServer(c.LogFile),
 		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
+		deployer:             NewDeployer(c.CloudID, c.DryRunDeployer, e, r, log),
 	}, nil
 }
 
@@ -258,7 +262,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = c.deployer.updateTopology(data.modifiedProviders()); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
@@ -375,7 +379,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = c.deployer.updateTopology(data.modifiedProviders()); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
@@ -467,7 +471,7 @@ func (c *Cloud) delete() error {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
-		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
+		if err = c.deployer.destroyTopology(data.modifiedProviders()); err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
