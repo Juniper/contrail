@@ -16,6 +16,24 @@
       "revId": "06953a2e93c1ec87ad810b558405657ef2286218",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6c9aed8d_c7af330b",
+        "filename": "pkg/apisrv/test_data/test_keystone.yml",
+        "patchSetId": 39
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-03T16:28:22Z",
+      "side": 1,
+      "message": "As disscussed offline, /keystone/v3/projects endpoint has been fixed and we need to write Go test for list operation. YAML tests framework is not sufficient to test that.",
+      "parentUuid": "98731088_f0c185d1",
+      "revId": "06953a2e93c1ec87ad810b558405657ef2286218",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
