@@ -101,12 +101,9 @@ func (t *topology) compareTopoFile() (bool, error) {
 }
 
 func (t *topology) isUpToDate(resource string) (bool, error) {
-	status := map[string]interface{}{}
 	if _, err := os.Stat(GetTopoFile(t.cloud.config.CloudID)); err == nil {
 		ok, err := t.compareTopoFile()
 		if err != nil {
-			status[statusField] = statusUpdateFailed
-			t.reporter.ReportStatus(t.ctx, status, resource)
 			return true, err
 		}
 		if ok {
