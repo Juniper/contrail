@@ -1,0 +1,202 @@
+database:
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail_test
+  max_open_conn: 100
+  connection_retries: 10
+  retry_period: 3s
+  replication_status_timeout: 10s
+  debug: false
+
+log_level: debug
+
+homepage:
+  enabled: false # disable in order not to collide with server.static_files
+
+server:
+  enabled: true
+  read_timeout: 10
+  write_timeout: 5
+  log_api: true
+  log_body: true
+  address: ":9091"
+  enable_vnc_replication: false
+  enable_gzip: false
+  tls:
+    enabled: true
+    key_file: tools/server.key
+    cert_file: tools/server.crt
+  enable_grpc: false
+  enable_vnc_neutron: false
+  static_files:
+    /: public
+  dynamic_proxy_path: proxy
+  service_token_endpoint_prefixes:
+  - swift
+  proxy:
+    /contrail:
+    - http://localhost:8082
+  notify_etcd: false
+
+no_auth: true
+insecure: true
+
+keystone:
+  local: true
+  assignment:
+    type: static
+    data:
+      domains:
+        default: &default
+          id: default
+          name: default
+      projects:
+        admin: &admin
+          id: admin
+          name: admin
+          domain: *default
+        demo: &demo
+          id: demo
+          name: demo
+          domain: *default
+        neutron: &neutron
+          id: aa907485e1f94a14834d8c69ed9cb3b2
+          name: neutron
+          domain: *default
+      users:
+        alice:
+          id: alice
+          name: Alice
+          domain: *default
+          password: alice_password
+          email: alice@juniper.nets
+          roles:
+          - id: admin
+            name: admin
+            project: *admin
+          - id: aa907485e1f94a14834d8c69ed9cb3b2
+            name: neutron
+            project: *neutron
+        bob:
+          id: bob
+          name: Bob
+          domain: *default
+          password: bob_password
+          email: bob@juniper.net
+          roles:
+          - id: Member
+            name: Member
+            project: *demo
+  store:
+    type: memory
+    expire: 3600
+  insecure: true
+  authurl: https://localhost:9091/keystone/v3
+  service_user:
+    id: goapi
+    password: goapi
+    project_name: service
+    domain_id: default
+
+sync:
+  enabled: false
+
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  domain_id: default
+  schema_root: /
+  endpoint: https://localhost:9091
+
+agent:
+# BEGIN ANSIBLE MANAGED BLOCK
+    tasks:
+    - schema_ids:
+      - contrail_cluster
+      common:
+      - vars:
+          res_type: "{{ resource.schema_id }}"
+          config_dir: "%CONFIG_DIR%/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+          contrail_dir: "%CONTRAIL_DIR%"
+          dry_run_deployer: "True"
+      on_create:
+      - debug: "AGENT creating {{ config_dir }}"
+      - command: mkdir -p "{{ config_dir }}"
+      - debug: "AGENT created {{ config_dir }}"
+      - template:
+          src: "{{ contrail_dir }}/pkg/deploy/templates/contrail-deploy-config.yml"
+          dest: "{{ config_dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT creating {{ res_type }}(contrail deploy -c {{ config_dir }}/contrail-deploy-config.yml)"
+      - command: "contrail deploy -c {{ config_dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT {{ res_type }} create complete"
+      on_update:
+      - command: mkdir -p "{{ config_dir }}"
+      - template:
+          src: "{{ contrail_dir }}/pkg/deploy/templates/contrail-deploy-config.yml"
+          dest: "{{ config_dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT updating {{ res_type }}(contrail deploy -c {{ config_dir }}/contrail-deploy-config.yml)"
+      - command: "contrail deploy -c {{ config_dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT {{ res_type }} update complete"
+      on_delete:
+      - command: mkdir -p "{{ config_dir }}"
+      - template:
+          src: "{{ contrail_dir }}/pkg/deploy/templates/contrail-deploy-config.yml"
+          dest: "{{ config_dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT deleting {{ res_type }}(contrail deploy -c {{ config_dir }}/contrail-deploy-config.yml)"
+      - command: "contrail deploy -c {{ config_dir }}/contrail-deploy-config.yml"
+      - debug: "AGENT deleting {{ config_dir }}"
+      - command: "rm -rf  {{ config_dir }}"
+      - debug: "AGENT deleted {{ config_dir }}"
+    - schema_ids:
+      - cloud
+      common:
+      - vars:
+          src_dir: "%CONTRAIL_DIR%/pkg/cloud/configs/contrail-cloud-config.tmpl"
+          config_dir: "%CONFIG_DIR%/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+          dry_run_deployer: "True"
+      on_create:
+      - debug: "AGENT creating {{ config_dir }}"
+      - command: mkdir -p "{{ config_dir }}"
+      - debug: "AGENT created {{ config_dir }}"
+      - template:
+          src: "{{ src_dir }}"
+          dest: "{{ config_dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT creating cloud (contrail cloud -c {{ config_dir }}/contrail-cloud-config.yml)"
+      - command: "contrail cloud -c {{ config_dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT cloud create complete"
+      on_update:
+      - template:
+          src: "{{ src_dir }}"
+          dest: "{{ config_dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT updating cloud (contrail cloud -c {{ config_dir }}/contrail-cloud-config.yml)"
+      - command: "contrail cloud -c {{ config_dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT cloud update complete"
+      on_delete:
+      - template:
+          src: "{{ src_dir }}"
+          dest: "{{ config_dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT deleting cloud (contrail cloud -c {{ config_dir }}/contrail-cloud-config.yml)"
+      - command: "contrail cloud -c {{ config_dir }}/contrail-cloud-config.yml"
+      - debug: "AGENT cloud delete complete"
+      - debug: "AGENT deleting {{ config_dir }}"
+      - command: "rm -rf  {{ config_dir }}"
+      - debug: "AGENT deleted {{ config_dir }}"
+
+    backend: file
+    enabled: true
+    log_level: debug
+    watcher: polling
+
+compilation:
+  enabled: false
+
+cache:
+  enabled: false
+
+replication:
+  cassandra:
+    enabled: false
+  amqp:
+    enabled: false

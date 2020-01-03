@@ -1,0 +1,9 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(cd `dirname $0` && pwd)
+CONTRAIL_DIR="$SCRIPT_DIR/../"
+CONFIG_DIR=${1-:$(mktemp -d contrail_configs.XXX)}
+
+[ ! -d $CONFIG_DIR ] && mkdir -p $CONFIG_DIR
+
+sed -e "s|%CONTRAIL_DIR%|$CONTRAIL_DIR|g" -e "s|%CONFIG_DIR%|$CONFIG_DIR|g" $SCRIPT_DIR/contrail-ui-with-go-multicloud.yml.tmpl > generated-contrail-ui-with-go-multicloud.yml
