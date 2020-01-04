@@ -16,6 +16,24 @@
       "revId": "30cd85bc75f5faa8d4412f538ef21767e6afc30b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "43196da4_6c030011",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-04T13:11:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0371bd1_ef8e0b18",
+      "revId": "30cd85bc75f5faa8d4412f538ef21767e6afc30b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

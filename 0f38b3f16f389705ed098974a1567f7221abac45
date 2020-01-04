@@ -1154,6 +1154,30 @@
     },
     {
       "key": {
+        "uuid": "7ad073a3_0aa9910b",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-04T13:11:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5bb3b6e5_bb0afd17",
+      "range": {
+        "startLine": 263,
+        "startChar": 37,
+        "endLine": 263,
+        "endChar": 42
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "81efb24a_83a161a7",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 11
@@ -1236,6 +1260,30 @@
       "writtenOn": "2020-01-02T17:47:11Z",
       "side": 1,
       "message": "This always returns true, and the return value is only used to control the Range() in proxyService.checkDeleted(); so it\u0027ll make more sense to remove the return value here and return true explicitly in proxyService.removeDeleted().",
+      "range": {
+        "startLine": 268,
+        "startChar": 2,
+        "endLine": 268,
+        "endChar": 13
+      },
+      "revId": "0f38b3f16f389705ed098974a1567f7221abac45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b2cb4392_6ea5a86a",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-04T13:11:14Z",
+      "side": 1,
+      "message": "Return value removed.",
+      "parentUuid": "04164675_ccc891c6",
       "range": {
         "startLine": 268,
         "startChar": 2,
