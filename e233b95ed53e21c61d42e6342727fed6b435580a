@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "622ac7ee_621295bb",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Same name as could be found in these two functions.\n\nworkRoot:\nfunc (p *deployCluster) getWorkRoot() string {\n\tworkRoot :\u003d p.cluster.config.WorkRoot\n\tif workRoot \u003d\u003d \"\" {\n\t\tworkRoot \u003d defaultWorkRoot\n\t}\n\treturn workRoot\n}\n\nworkingDirectory:\nfunc (a *contrailAnsibleDeployer) getAnsibleDeployerRepoInContainer() (ansibleRepoDirInContainer string) {\n\treturn defaultAnsibleRepoInContainer\n}\n\nFollowed the old name in pkg/client.go.",
+      "parentUuid": "91109ce4_ef070a31",
+      "range": {
+        "startLine": 73,
+        "startChar": 1,
+        "endLine": 74,
+        "endChar": 25
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5a45d52b_59b271e3",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -45,6 +69,30 @@
       "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5488ca73_cf7ad7eb",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a45d52b_59b271e3",
+      "range": {
+        "startLine": 82,
+        "startChar": 1,
+        "endLine": 84,
+        "endChar": 27
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "530aa100_ff89a972",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "I followed this guidline, I think this way is more readable.\nhttps://github.com/golang/go/wiki/CodeReviewComments#indent-error-flow",
+      "parentUuid": "be89c34a_9c7fad6f",
+      "range": {
+        "startLine": 123,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2cc0cd89_0d2e1f01",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -82,6 +154,30 @@
       "writtenOn": "2019-12-20T12:00:59Z",
       "side": 1,
       "message": "if err \u003d p.cleanContainer(ctx, containerName, keepContainerAlive); err !\u003d nil {\n\treturn errors.Wrap(err, \"container cleaning failed\")\n}",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 136,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8d338c8f_145992ed",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Also followed this.\nhttps://github.com/golang/go/wiki/CodeReviewComments#indent-error-flow",
+      "parentUuid": "2cc0cd89_0d2e1f01",
       "range": {
         "startLine": 133,
         "startChar": 1,
@@ -141,6 +237,30 @@
     },
     {
       "key": {
+        "uuid": "851f167d_cbe8fd84",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "I used the named returned value method. This link provided some thoughts. https://www.joeshaw.org/dont-defer-close-on-writable-files",
+      "parentUuid": "312b1f37_3f42c347",
+      "range": {
+        "startLine": 166,
+        "startChar": 3,
+        "endLine": 166,
+        "endChar": 16
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3c4ed8b1_515a966d",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -188,6 +308,30 @@
     },
     {
       "key": {
+        "uuid": "64e94c72_2c982bef",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "I tried the logic in go playground and found out that it wouldn\u0027t work as expected. I have changed to named return value method. Also, this link provides some thoughts. https://www.joeshaw.org/dont-defer-close-on-writable-files",
+      "parentUuid": "172b288c_7efb60fe",
+      "range": {
+        "startLine": 164,
+        "startChar": 2,
+        "endLine": 167,
+        "endChar": 3
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1181dc15_5138b0cf",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -208,6 +352,30 @@
       "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e8d3236a_43cc86e5",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "I found that the reader must be fully read to let the pulling succeed. Without this, the pulling  cannot be completed.",
+      "parentUuid": "1181dc15_5138b0cf",
+      "range": {
+        "startLine": 170,
+        "startChar": 1,
+        "endLine": 170,
+        "endChar": 32
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -234,6 +402,30 @@
     },
     {
       "key": {
+        "uuid": "aa1de9ff_b8a0b268",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e8412f70_305aba1d",
+      "range": {
+        "startLine": 171,
+        "startChar": 1,
+        "endLine": 173,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "74474289_8865cf3f",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -254,6 +446,30 @@
       "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8ba6e94f_83df8653",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "74474289_8865cf3f",
+      "range": {
+        "startLine": 277,
+        "startChar": 1,
+        "endLine": 277,
+        "endChar": 25
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -280,6 +496,30 @@
     },
     {
       "key": {
+        "uuid": "196de0b7_8cb9cb04",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c72fb17a_8e134ae9",
+      "range": {
+        "startLine": 283,
+        "startChar": 2,
+        "endLine": 285,
+        "endChar": 12
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e7ea25a3_ba7efb87",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 8
@@ -300,6 +540,30 @@
       "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af465764_d63d6a66",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-07T00:19:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e7ea25a3_ba7efb87",
+      "range": {
+        "startLine": 4,
+        "startChar": 1,
+        "endLine": 21,
+        "endChar": 29
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
