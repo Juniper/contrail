@@ -49,6 +49,10 @@ type Config struct { // nolint: maligned
 	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
+	// Service user name for keystone
+	ServiceUserID string `yaml:"service_user_id"`
+	// Service user password for keystone
+	ServiceUserPassword string `yaml:"service_user_password"`
 
 	// Optional ansible sudo password
 	AnsibleSudoPass string `yaml:"ansible_sudo_pass"`
