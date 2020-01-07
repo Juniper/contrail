@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1f20e9cf_2b30c435",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:45:21Z",
+      "side": 1,
+      "message": "IMO this exposes quite a lot and makes the client package heavily coupled with BaseServer implementation details. I think that here should be an interface with simple methods like:\n\n type Router interface {\n  RegisterHTTP(path, method string, ... whatever is necessary)\n  RegisterGRPC(router GRPCRouter)\n }\n\nwhere GRPCRouter is:\n\n type GRPCRouter interface {\n  RegisterService(sd *grpc.ServiceDesc, ss interface{})\n }",
+      "range": {
+        "startLine": 42,
+        "startChar": 20,
+        "endLine": 42,
+        "endChar": 31
+      },
+      "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d335be6e_e76c166a",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:45:21Z",
+      "side": 1,
+      "message": "All those inline funcs should be defined on the services as methods and then service would implement some kind of Plugin interface. This would move registration code out of the apisrv - the service knows how to register itself.",
+      "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
