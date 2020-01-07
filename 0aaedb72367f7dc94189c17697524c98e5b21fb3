@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "006596c0_dc1bc5af",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Make sure that comments start with function name.",
+      "revId": "0aaedb72367f7dc94189c17697524c98e5b21fb3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9ec90f5_d68e8816",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "It should remain as \"scope\", because URL scope is passed here (\"private\" / \"public\"). And URL scope is not a whole prefix of key, only part of it.\nin newTargetEndpoint() and Next() use \"scope\" too.",
+      "range": {
+        "startLine": 49,
+        "startChar": 29,
+        "endLine": 49,
+        "endChar": 35
+      },
+      "revId": "0aaedb72367f7dc94189c17697524c98e5b21fb3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

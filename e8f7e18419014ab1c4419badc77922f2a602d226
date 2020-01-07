@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "457c942e_62e0dfab",
+        "filename": "pkg/apisrv/proxy.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "554fafb9_34789848",
+      "range": {
+        "startLine": 142,
+        "startChar": 1,
+        "endLine": 149,
+        "endChar": 20
+      },
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0d395f4f_f683a52e",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 12
@@ -78,6 +102,24 @@
       "side": 1,
       "message": "Because I requested it - this change does not involve decoupling pkg/keystone from pkg/apisrv so it is better to do in other CR",
       "parentUuid": "0d395f4f_f683a52e",
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "91953bff_8c3d8d1f",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Resolving.",
+      "parentUuid": "29a77c8f_e8db378e",
       "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -172,6 +214,24 @@
     },
     {
       "key": {
+        "uuid": "300b22cd_b4accb6c",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e725701e_4dd0c6b6",
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "84bbd77c_5dede14e",
         "filename": "pkg/endpoint/store.go",
         "patchSetId": 12
@@ -207,6 +267,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "84bbd77c_5dede14e",
+      "range": {
+        "startLine": 158,
+        "startChar": 1,
+        "endLine": 158,
+        "endChar": 43
+      },
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cdc930a0_6657875d",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "33097eba_becb8b4b",
       "range": {
         "startLine": 158,
         "startChar": 1,
@@ -278,6 +362,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "8c83fbc0_794beaaf",
+      "range": {
+        "startLine": 237,
+        "startChar": 8,
+        "endLine": 237,
+        "endChar": 27
+      },
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "81a8d59b_9a01d028",
+        "filename": "pkg/endpoint/store.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ad068fba_0bf75605",
       "range": {
         "startLine": 237,
         "startChar": 8,
@@ -372,6 +480,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "d42627d2_14503a86",
+      "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a7cea47b_50af4d8b",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-07T10:24:34Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9355b09b_25cfb0cf",
       "revId": "e8f7e18419014ab1c4419badc77922f2a602d226",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
