@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f76498cd_1e05ec06",
+        "filename": "pkg/apisrv/baseapisrv/discovery.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:47:47Z",
+      "side": 1,
+      "message": "+1, for the name change",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c030e117_239d450d",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:47:47Z",
+      "side": 1,
+      "message": "This again leaks implementation details from the `BaseServer` - the endpoint registration should be transparent for the `BaseServer` user.",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
