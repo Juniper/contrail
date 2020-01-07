@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c4a149da_da912719",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-07T12:02:00Z",
+      "side": 1,
+      "message": "My understanding is that the goal is to have asf/pkg/apisrv not depend on the generated services, and the endpoints (including the API endpoints) to be added to it via plugins. This means the DB and the service chain might as well be outside it too. So the only thing that remains is the HTTP and GRPC server.\nThe plan we have includes moving all of the other parts outside and plugging them in in pkg/cmd/contrail. But pkg/testutil/integration also uses apisrv.Server, so we would have to either duplicate all the code that creates the DB/services/endpoints (and connects them together) or make a new object/function to do that. And contrail/pkg/apisrv already does this.\n\nSo just extracting the HTTP and GRPC server part to asf/pkg/apisrv seems to be a simpler way to meet the goal.",
+      "parentUuid": "9d3418b2_beac22a2",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aec7dd56_8f2fc96a",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
