@@ -1,0 +1,225 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "aec7dd56_8f2fc96a",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Name clutter - base is redundant in this context.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "50232fba_2c176bc5",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "What is the point of init function? Please follow RAII and move this to NewBaseServer.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "684b3e07_7995651b",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Please mark as TODO - we definitely shouldn\u0027t access Echo which is an implementation detail.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2b2f7a44_a390663d",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Please mark as TODO - we definitely shouldn\u0027t access Echo which is an implementation detail.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "14e0dc21_17e46de9",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "69cc63d2_b57be8b6",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "This shouldn\u0027t be leaked too - the service should know how to register it\u0027s grpc endpoints and such method should be called by the base server if grpc is enabled. Fix this or mark as todo.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d3dfabbc_c3cd9016",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "67223df6_87739897",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1319c75_bcfc4c52",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dba6832b_7e328ad1",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 409,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6f3df006_c2e1ec22",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 416,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a53ae410_81fc1b3f",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "Ditto L126",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "046fd4b8_9842f6b8",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-07T10:30:32Z",
+      "side": 1,
+      "message": "This looks suspicious. Please mark as todo, since we shouldn\u0027t expose Echo.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
