@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "3900b962_880a446e",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-07T16:09:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "05b0b41e_b0b2409e",
+      "range": {
+        "startLine": 274,
+        "startChar": 23,
+        "endLine": 274,
+        "endChar": 30
+      },
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7c80b40e_efb8e0a9",
         "filename": "pkg/deploy/cluster/deploy.go",
         "patchSetId": 40
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "95badca9_e4c2710b",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-07T16:09:50Z",
+      "side": 1,
+      "message": "Done, added this in ASF because the asf keystone package is imported and the constant is present there.",
+      "parentUuid": "7c80b40e_efb8e0a9",
+      "range": {
+        "startLine": 17,
+        "startChar": 1,
+        "endLine": 17,
+        "endChar": 16
+      },
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "808db470_5da25e8f",
         "filename": "vendor/github.com/Juniper/asf/pkg/keystone/client.go",
         "patchSetId": 40
@@ -62,6 +110,24 @@
       "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0470c98b_72d9b910",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/client.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-07T16:09:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "808db470_5da25e8f",
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

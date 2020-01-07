@@ -226,6 +226,30 @@
     },
     {
       "key": {
+        "uuid": "c6028802_b0f5684f",
+        "filename": "pkg/deploy/base/endpoint.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-07T16:09:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e56a4b5e_4ded639c",
+      "range": {
+        "startLine": 29,
+        "startChar": 1,
+        "endLine": 30,
+        "endChar": 40
+      },
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f7a68aba_e3bf59e4",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 33
