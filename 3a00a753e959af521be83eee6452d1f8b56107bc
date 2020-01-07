@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "fc996b71_24f5ab5e",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-07T11:13:06Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "87cf2d73_761ec0e8",
+      "range": {
+        "startLine": 264,
+        "startChar": 3,
+        "endLine": 264,
+        "endChar": 22
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "523e673d_343166e9",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 6
@@ -96,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "b80db079_53cdd977",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 306,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-07T11:13:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "06bc18ea_9a2109d3",
+      "range": {
+        "startLine": 286,
+        "startChar": 2,
+        "endLine": 306,
+        "endChar": 3
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c2b5a8bb_9c5b4fab",
         "filename": "pkg/cloud/topology.go",
         "patchSetId": 6
@@ -140,6 +188,30 @@
       "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c077b2af_2ed686af",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-07T11:13:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f367772d_6e151a62",
+      "range": {
+        "startLine": 67,
+        "startChar": 1,
+        "endLine": 71,
+        "endChar": 11
+      },
+      "revId": "3a00a753e959af521be83eee6452d1f8b56107bc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
