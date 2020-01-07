@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0bf05108_443f85af",
+        "filename": "pkg/cloud/deployer.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-07T11:32:47Z",
+      "side": 1,
+      "message": "Nit: reverse the check condition to reduce indentation",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "89420a8a_102cd5bd",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-07T11:32:47Z",
+      "side": 1,
+      "message": "Nit: could be reduced to single line",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fc9dc9b7_3949a187",
+        "filename": "sample/contrail-ui.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-07T11:32:47Z",
+      "side": 1,
+      "message": "Nit: this comment is redundant",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "703a43b4_31bc36e0",
+        "filename": "sample/contrail-ui.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-07T11:32:47Z",
+      "side": 1,
+      "message": "Please don\u0027t use absolute paths constrained to specific environment.",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
