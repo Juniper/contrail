@@ -4,7 +4,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/collector"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type doer interface {
@@ -30,4 +33,29 @@ func (d LatencyReportingDoer) Do(req *http.Request) (*http.Response, error) {
 	)
 
 	return resp, err
+}
+
+// BodyDumpPlugin sends HTTP request and response body to Collector.
+type BodyDumpPlugin struct {
+	collector.Collector
+}
+
+// RegisterHTTPAPI registers middleware for all endpoints.
+func (p BodyDumpPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) error {
+	r.Use(fromEchoMiddlewareFunc(middleware.BodyDump(func(ctx echo.Context, reqBody, resBody []byte) {
+		p.Send(RESTAPITrace(ctx, reqBody, resBody))
+	})))
+	return nil
+}
+
+// fromEchoMiddlewareFunc makes a baseapisrv.MiddlewareFunc from echo.MiddlewareFunc.
+func fromEchoMiddlewareFunc(m echo.MiddlewareFunc) baseapisrv.MiddlewareFunc {
+	return func(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+		return baseapisrv.HandlerFunc(m(echo.HandlerFunc(next)))
+	}
+}
+
+// RegisterGRPCAPI does nothing.
+func (BodyDumpPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) error {
+	return nil
 }
