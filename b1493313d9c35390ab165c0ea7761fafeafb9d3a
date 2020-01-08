@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "70ca7240_7c06b338",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "c4db36f0_87d4cf0e",
+      "range": {
+        "startLine": 64,
+        "startChar": 1,
+        "endLine": 64,
+        "endChar": 19
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5756ac04_dc9955a8",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 7
@@ -36,6 +60,24 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "17d9ece6_3acea6b9",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "5756ac04_dc9955a8",
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "f717394b_5d5621b2",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "6711ea3f_783ed63a",
+      "range": {
+        "startLine": 169,
+        "startChar": 0,
+        "endLine": 180,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "37914e10_423f9a28",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 7
@@ -82,6 +148,24 @@
     },
     {
       "key": {
+        "uuid": "6aedbd87_8f379126",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 965,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "37914e10_423f9a28",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "02df6039_0fbf036d",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -93,6 +177,24 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "Nit: Personally I don\u0027t like the name of the file as it suggests commons for all of MC. Consider something like \"mc_ansible_commons.go\".",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "efeeb2c7_53338ed6",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "02df6039_0fbf036d",
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -193,6 +295,30 @@
     },
     {
       "key": {
+        "uuid": "777fcf28_73d0a6e4",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "c6df6c8f_c2ba19f3",
+      "range": {
+        "startLine": 38,
+        "startChar": 0,
+        "endLine": 54,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bdfc4780_da0d8317",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -204,6 +330,24 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "Nit: I\u0027m not sure if this log should be of level Info instead of Debug.",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3fe753e8_dca72dfd",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "bdfc4780_da0d8317",
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -227,6 +371,24 @@
     },
     {
       "key": {
+        "uuid": "d5a7cf15_cfabac4d",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "a003dee9_1df1264c",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "68966971_94a587ac",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -238,6 +400,30 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "Why is this a method of multiCloudProvisioner instead of pure function?",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7bff29ab_fc08a81b",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "68966971_94a587ac",
       "range": {
         "startLine": 109,
         "startChar": 0,
@@ -273,6 +459,30 @@
     },
     {
       "key": {
+        "uuid": "8326a8d0_af77956e",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "e423c2fb_0b3f7fc5",
+      "range": {
+        "startLine": 134,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d43e3f9b_aa310223",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -284,6 +494,24 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "669cfaea_a94c5db2",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "d43e3f9b_aa310223",
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -307,6 +535,24 @@
     },
     {
       "key": {
+        "uuid": "4df2ac27_a5242816",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "11aa2fa9_3122f9b6",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "122e528f_5ade7a76",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -318,6 +564,30 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "Should all of these fields be placed into the yaml even if they are empty?",
+      "range": {
+        "startLine": 223,
+        "startChar": 0,
+        "endLine": 228,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "99a02026_18a80f27",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "122e528f_5ade7a76",
       "range": {
         "startLine": 223,
         "startChar": 0,
@@ -370,6 +640,48 @@
     },
     {
       "key": {
+        "uuid": "45725309_dfbe7a56",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "fac71f2a_288cd779",
+      "range": {
+        "startLine": 231,
+        "startChar": 33,
+        "endLine": 231,
+        "endChar": 36
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "01e0e49b_6c246bc7",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "ea48800e_d4d785bf",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "874b99f2_35f51463",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -381,6 +693,24 @@
       "writtenOn": "2020-01-08T10:48:28Z",
       "side": 1,
       "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1665f22f_a1908ef1",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-08T14:54:39Z",
+      "side": 1,
+      "message": "The goal of the ticket has changed. This code has changed.",
+      "parentUuid": "874b99f2_35f51463",
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
