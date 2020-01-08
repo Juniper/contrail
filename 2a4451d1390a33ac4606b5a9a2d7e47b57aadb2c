@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "2e7cfb0e_7c3ba1c5",
+        "filename": "Gopkg.lock",
+        "patchSetId": 33
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T17:27:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4debf416_31360a0d",
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4fb48c73_a4324f22",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 33

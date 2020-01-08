@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "3028e61f_629e5b78",
+        "filename": "pkg/client/baseclient/keystone.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T17:27:32Z",
+      "side": 1,
+      "message": "It is inconsistent, but GetProject takes token explicitly which is IMO better, so I wouldn\u0027t change that.",
+      "parentUuid": "2e6a3d91_a0472d45",
+      "range": {
+        "startLine": 52,
+        "startChar": 51,
+        "endLine": 52,
+        "endChar": 63
+      },
+      "revId": "c0f1fea8b97e119427b34819e2e124d9a661709b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "fd6ec0c9_202e6cad",
         "filename": "pkg/client/baseclient/keystone.go",
         "patchSetId": 13
