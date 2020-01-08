@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
@@ -47,29 +44,15 @@ const (
 	deleteComputePlaybooksKubernetes      = "./test_data/expected_ansible_delete_kubernetes_compute.yml"
 	allInOneVcenterClusterTemplatePath    = "./test_data/test_all_in_one_vcenter_server.tmpl"
 	upgradePlaybooksvcenter               = "./test_data/expected_ansible_upgrade_playbook_vcenter.yml"
-	allInOneMCClusterTemplatePath         = "./test_data/test_mc_cluster.tmpl"
-	allInOneMCClusterUpdateTemplatePath   = "./test_data/test_mc_update_cluster.tmpl"
-	allInOneMCClusterDeleteTemplatePath   = "./test_data/test_mc_delete_cluster.tmpl"
-	allInOneMCCloudUpdateTemplatePath     = "./test_data/test_mc_update_pvt_cloud.tmpl"
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
-	generatedInstances      = workRoot + "/" + clusterID + "/" + defaultInstanceFile
-	generatedInventory      = workRoot + "/" + clusterID + "/" + defaultInventoryFile
-	generatedVcenterVars    = workRoot + "/" + clusterID + "/" + defaultVcenterFile
-	generatedSecret         = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
-	generatedTopology       = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
-	generatedContrailCommon = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
-	generatedGatewayCommon  = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
-	executedPlaybooks       = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
-	executedMCCommand       = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
+	generatedInstances   = workRoot + "/" + clusterID + "/" + defaultInstanceFile
+	generatedInventory   = workRoot + "/" + clusterID + "/" + defaultInventoryFile
+	generatedVcenterVars = workRoot + "/" + clusterID + "/" + defaultVcenterFile
 
-	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
-	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
-	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
-	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
-	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
-	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
+	executedPlaybooks = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
+	executedCommands  = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
 )
 
 var server *integration.APIServer
@@ -109,24 +92,9 @@ func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
 	return nil
 }
 
-func verifyClusterDeleted() bool {
-	// Make sure working dir is deleted
-	_, err := os.Stat(workRoot + "/" + clusterID)
+func verifyClusterDirDeleted(clusterUUID string) bool {
+	_, err := os.Stat(workRoot + "/" + clusterUUID)
 	return os.IsNotExist(err)
-}
-
-func verifyMCDeleted(httpClient *client.HTTP) bool {
-	// Make sure mc working dir is deleted
-	if _, err := os.Stat(workRoot + "/" + clusterID + "/" + mcWorkDir); err == nil || !os.IsNotExist(err) {
-		// mc working dir not deleted
-		return false
-	}
-	clusterObjResp, err := httpClient.GetContrailCluster(context.Background(),
-		&services.GetContrailClusterRequest{
-			ID: clusterID,
-		},
-	)
-	return err == nil && clusterObjResp.ContrailCluster.CloudRefs == nil
 }
 
 func unmarshalYaml(t *testing.T, yamlFile string) map[string]interface{} {
@@ -183,7 +151,7 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 }
 
 func verifyCommandsExecuted(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, executedMCCommand)
+	return compareFiles(t, expected, executedCommands)
 }
 
 func TestAllInOneCluster(t *testing.T) {
@@ -299,7 +267,7 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 	removeFile(t, executedPlaybooks)
 	manageCluster(t, config)
 	// make sure cluster is removed
-	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
+	assert.True(t, verifyClusterDirDeleted(clusterID), "Instance file is not deleted during cluster delete")
 }
 
 func runClusterCreateUpdateTest(
@@ -329,7 +297,7 @@ func runClusterCreateUpdateTest(
 }
 
 func manageCluster(t *testing.T, c *Config) {
-	clusterDeployer, err := NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err := NewCluster(c, testutil.NewFileWritingExecutor(executedCommands))
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -540,7 +508,7 @@ func TestXflowInBand(t *testing.T) {
 }
 
 func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
-	cluster, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	cluster, err := NewCluster(config, testutil.NewFileWritingExecutor(executedCommands))
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := cluster.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -868,176 +836,12 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 
 	manageCluster(t, config)
 	// make sure cluster is removed
-	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
+	assert.True(t, verifyClusterDirDeleted(clusterID), "Instance file is not deleted during cluster delete")
 }
 func TestWindowsCompute(t *testing.T) {
 	ts, err := integration.LoadTest("./test_data/test_windows_compute.yml", nil)
 	require.NoError(t, err, "failed to load test data")
 	integration.RunCleanTestScenario(t, ts, server)
-}
-
-func TestMCCluster(t *testing.T) {
-	runMCClusterTest(t, pongo2.Context{
-		"CONTROL_NODES": "",
-	})
-}
-
-// nolint: gocyclo
-func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
-	// Create the cluster and related objects
-	ts, err := integration.LoadTest(allInOneMCClusterTemplatePath, pContext)
-	require.NoError(t, err, "failed to load mc cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	defer cleanup()
-
-	s, err := integration.NewAdminHTTPClient(server.URL())
-	assert.NoError(t, err)
-
-	config := &Config{
-		APIServer:                 s,
-		ClusterID:                 clusterID,
-		Action:                    createAction,
-		LogLevel:                  "debug",
-		TemplateRoot:              "templates/",
-		WorkRoot:                  workRoot,
-		Test:                      true,
-		LogFile:                   workRoot + "/deploy.log",
-		AnsibleFetchURL:           "ansibleFetchURL",
-		AnsibleCherryPickRevision: "ansibleCherryPickRevision",
-		AnsibleRevision:           "ansibleRevision",
-		ServiceUserID:             integration.ServiceUserName,
-		ServiceUserPassword:       integration.ServiceUserPassword,
-	}
-
-	cloudFileCleanup := createDummyCloudFiles(t)
-	defer cloudFileCleanup()
-	// create cluster
-	removeFile(t, executedPlaybooks)
-	removeFile(t, executedMCCommand)
-
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
-	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	deployer, err := clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.Error(t, err,
-		"mc deployment should fail because cloud provisioning has failed")
-
-	err = isCloudSecretFilesDeleted()
-	require.NoError(t, err, "failed to delete public cloud secrets during create")
-
-	for _, tt := range []struct {
-		tsPath           string
-		action           string
-		expectedCommands string
-	}{{
-		tsPath:           allInOneMCCloudUpdateTemplatePath,
-		action:           createAction,
-		expectedCommands: expectedMCCreateCmdExecuted,
-	}, {
-		tsPath:           allInOneMCClusterUpdateTemplatePath,
-		action:           updateAction,
-		expectedCommands: expectedMCUpdateCmdExecuted,
-	}} {
-		//cleanup all the files
-		removeFile(t, executedMCCommand)
-		removeFile(t, generatedTopology)
-		removeFile(t, generatedSecret)
-		removeFile(t, generatedContrailCommon)
-		removeFile(t, generatedGatewayCommon)
-
-		config.Action = tt.action
-
-		ts, err = integration.LoadTest(tt.tsPath, pContext)
-		require.NoErrorf(t, err, "failed to load MC test data for cluster %s", tt.action)
-		_ = integration.RunDirtyTestScenario(t, ts, server)
-
-		manageCluster(t, config)
-		err = isCloudSecretFilesDeleted()
-		require.NoErrorf(t, err, "failed to delete public cloud secrets during %s", tt.action)
-
-		assert.Truef(t, compareFiles(t, expectedMCClusterTopology, generatedTopology),
-			"Topolgy file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, compareFiles(t, expectedContrailCommon, generatedContrailCommon),
-			"Contrail common file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, compareFiles(t, expectedGatewayCommon, generatedGatewayCommon),
-			"Gateway common file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, verifyCommandsExecuted(t, tt.expectedCommands),
-			"MC commands executed during cluster %s are not as expected", tt.action)
-	}
-
-	// delete cloud secanrio
-	//cleanup all the files
-	removeFile(t, executedPlaybooks)
-	removeFile(t, executedMCCommand)
-
-	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
-	require.NoError(t, err, "failed to load mc cluster test data")
-	_ = integration.RunDirtyTestScenario(t, ts, server)
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
-	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
-	deployer, err = clusterDeployer.GetDeployer()
-	assert.NoError(t, err, "failed to create deployer")
-	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to manage(delete) cloud")
-	err = isCloudSecretFilesDeleted()
-	require.NoError(t, err, "failed to delete public cloud secrets during delete")
-	assert.True(t, verifyCommandsExecuted(t, expectedMCDeleteCmdExecuted),
-		"commands executed during cluster delete are not as expected")
-	// make sure cluster is removed
-	assert.True(t, verifyMCDeleted(clusterDeployer.APIServer), "MC folder is not deleted during cluster delete")
-
-	// delete cluster itself
-	config.Action = deleteAction
-	manageCluster(t, config)
-	err = isCloudSecretFilesDeleted()
-	require.NoError(t, err, "failed to delete cloud secrets during delete")
-	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
-}
-
-func createDummyCloudFiles(t *testing.T) func() {
-	files := []struct {
-		src  string
-		dest string
-	}{{
-		src:  "./test_data/public_cloud_topology.yml",
-		dest: "/var/tmp/cloud/public_cloud_uuid/topology.yml",
-	}, {
-		src:  "./test_data/pvt_cloud_topology.yml",
-		dest: "/var/tmp/cloud/pvt_cloud_uuid/topology.yml",
-	}}
-
-	for _, f := range files {
-		err := fileutil.CopyFile(f.src, f.dest, true)
-		assert.NoErrorf(t, err, "Couldn't copy file %s to %s", f.src, f.dest)
-	}
-
-	return func() {
-		for _, f := range files {
-			assert.NoError(t, os.Remove(f.dest), "Couldn't cleanup file %s", f.dest)
-		}
-	}
-}
-
-func isCloudSecretFilesDeleted() error {
-	errstrings := []string{}
-	for _, secret := range []string{
-		"/var/tmp/cloud/public_cloud_uuid/secret.yml",
-		generatedSecret,
-	} {
-		if _, err := os.Stat(secret); err != nil {
-			if !os.IsNotExist(err) {
-				errstrings = append(errstrings, fmt.Sprintf(
-					"Unable to verify the non existence of secret file: %s is not deleted: %v", secret, err))
-			}
-		} else {
-			errstrings = append(errstrings, fmt.Sprintf("secret file: %s is not deleted: %v", secret, err))
-		}
-	}
-	if len(errstrings) != 0 {
-		return fmt.Errorf(strings.Join(errstrings, "\n"))
-	}
-	return nil
 }
 
 func TestTripleoClusterImport(t *testing.T) {
@@ -1078,7 +882,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	// create cluster
 	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedCommands))
 	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1104,7 +908,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 	// delete cluster
 	config.Action = deleteAction
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedCommands))
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")

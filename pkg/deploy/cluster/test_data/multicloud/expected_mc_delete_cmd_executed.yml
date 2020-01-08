@@ -1,0 +1,1 @@
+deployer all clean --topology /tmp/contrail_cluster/test_mc_cluster_uuid/multi-cloud/topology.yml --secret /tmp/contrail_cluster/test_mc_cluster_uuid/multi-cloud/secret.yml --tf_state /var/tmp/cloud/public_cloud_uuid/terraform.tfstate --state /usr/share/contrail/contrail-multi-cloud/state.yml
