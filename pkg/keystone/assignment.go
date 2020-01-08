@@ -30,6 +30,14 @@ type StaticAssignment struct {
 	Users    map[string]*keystone.User    `json:"users"`
 }
 
+func NewStaticAssignment(domains map[string]*keystone.Domain, projects map[string]*keystone.Project, users map[string]*keystone.User) *StaticAssignment {
+	return &StaticAssignment{
+		Domains:  domains,
+		Projects: projects,
+		Users:    users,
+	}
+}
+
 //ListUsers is used to fetch all users
 func (assignment *StaticAssignment) ListUsers() map[string]*keystone.User {
 	return assignment.Users

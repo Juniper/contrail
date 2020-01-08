@@ -254,7 +254,7 @@ func TestDynamicProxyServiceInjectsServiceToken(t *testing.T) {
 	cleanupCC := createContrailCluster(t, hc, clusterName)
 	defer cleanupCC()
 
-	authURL := server.URL() + keystone.LocalAuthPath
+	authURL := server.URL() + LocalAuthPath
 	clusterKeystone := integration.NewKeystoneServerFake(t, authURL, serviceUserUsername, serviceUserPassword)
 	defer clusterKeystone.Close()
 
@@ -470,7 +470,7 @@ func TestKeystoneProxy(t *testing.T) {
 		passwordC, passwordD = "test-password-C", "test-password-D"
 	)
 	clusterCName, clusterDName := contrailClusterName(t, "C"), contrailClusterName(t, "D")
-	authURL := server.URL() + keystone.LocalAuthPath
+	authURL := server.URL() + LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
 	hcUserC := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       usernameC,
@@ -548,7 +548,7 @@ func TestKeystoneProxyRetriesRequestWhenTargetKeystoneServerIsClosed(t *testing.
 		password                         = "test-password"
 	)
 	clusterName := contrailClusterName(t, "")
-	authURL := server.URL() + keystone.LocalAuthPath
+	authURL := server.URL() + LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
 	hcTest := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       username,
@@ -621,7 +621,7 @@ func TestKeystoneProxyRetriesRequestWhenTargetKeystoneServerReturnsServerError(t
 		password              = "test-password"
 	)
 	clusterName := contrailClusterName(t, "")
-	authURL := server.URL() + keystone.LocalAuthPath
+	authURL := server.URL() + LocalAuthPath
 	hcBob := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
 	hcTest := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       username,
@@ -723,7 +723,7 @@ func verifyFiveReadTokenRequests(ctx context.Context, t *testing.T, hc *client.H
 
 func verifyReadTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
 	var response kstypes.ValidateTokenResponse
-	_, err := hc.Read(ctx, path.Join(keystone.LocalAuthPath, "auth/tokens"), &response)
+	_, err := hc.Read(ctx, path.Join(LocalAuthPath, "auth/tokens"), &response)
 
 	msg = fmt.Sprintf("%s, HTTP client ID: %s", msg, hc.ID)
 	assert.NoError(t, err, msg)
@@ -742,7 +742,7 @@ func verifyFiveReadTokenRequestsFail(ctx context.Context, t *testing.T, hc *clie
 
 func verifyReadTokenRequestFails(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
 	var response interface{}
-	_, err := hc.Read(ctx, path.Join(keystone.LocalAuthPath, "auth/tokens"), &response)
+	_, err := hc.Read(ctx, path.Join(LocalAuthPath, "auth/tokens"), &response)
 
 	assert.Error(t, err, "%s, HTTP client ID: %s", msg, hc.ID)
 	assert.Nil(t, response, "%s, HTTP client ID: %s", msg, hc.ID)
