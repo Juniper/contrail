@@ -149,12 +149,10 @@ func startAmqpReplicator() {
 
 func startServer() {
 	es := endpoint.NewStore()
-	server, err := apisrv.NewServer(es)
+	server, err := apisrv.NewServer(es, cacheDB)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	// TODO(Witaut): Move CacheDB outside Server.
-	server.Cache = cacheDB
 	var r *replication.Replicator
 	if r, err = startVNCReplicator(server, es); err != nil {
 		logutil.FatalWithStackTrace(err)
