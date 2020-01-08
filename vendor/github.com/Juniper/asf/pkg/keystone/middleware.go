@@ -18,76 +18,86 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
-//AuthMiddleware is a keystone v3 authentication middleware for REST API.
-//nolint: gocyclo
-func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.MiddlewareFunc {
-	auth := newKeystoneAuth(authURL, insecure)
+// AuthMiddleware provides HTTP and GRPC middleware to authenticate requests with Keystone.
+type AuthMiddleware struct {
+	auth      *keystone.Auth
+	skipPaths []string
+}
 
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			for _, pathQuery := range skipPath {
-				switch c.Request().URL.Path {
-				case "/":
-					return next(c)
-				default:
-					if strings.Contains(pathQuery, "?") {
-						paths := strings.Split(pathQuery, "?")
-						if strings.Contains(c.Request().URL.Path, paths[0]) &&
-							strings.Compare(c.Request().URL.RawQuery, paths[1]) == 0 {
-							return next(c)
-						}
-					} else if strings.Contains(c.Request().URL.Path, pathQuery) {
-						return next(c)
-					}
-				}
-			}
-			r := c.Request()
-			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-				// Skip grpc
-				return next(c)
-			}
-			tokenString := r.Header.Get("X-Auth-Token")
-			if tokenString == "" {
-				cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
-				if cookie != nil {
-					tokenString = cookie.Value
-				}
-				if tokenString == "" {
-					tokenString = c.QueryParam("auth_token")
-				}
-			}
-			ctx, err := authenticate(r.Context(), auth, tokenString)
-			if err != nil {
-				logrus.Errorf("Authentication failure: %s", err)
-				return errutil.ToHTTPError(err)
-			}
-			newRequest := r.WithContext(ctx)
-			c.SetRequest(newRequest)
-			return next(c)
-		}
+// NewAuthMiddleware returns an AuthMiddleware.
+func NewAuthMiddleware(authURL string, insecure bool, skipPaths []string) *AuthMiddleware {
+	return &AuthMiddleware{
+		auth:      newKeystoneAuth(authURL, insecure),
+		skipPaths: skipPaths,
 	}
 }
 
-//AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor {
-	auth := newKeystoneAuth(authURL, insecure)
+type HandlerFunc = func(echo.Context) error
 
-	return func(ctx context.Context, req interface{},
-		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return nil, errutil.ErrorUnauthenticated
+// HTTPMiddleware is a keystone v3 authentication middleware for REST API.
+//nolint: gocyclo
+func (p *AuthMiddleware) HTTPMiddleware(next HandlerFunc) HandlerFunc {
+	return func(c echo.Context) error {
+		for _, pathQuery := range p.skipPaths {
+			switch c.Request().URL.Path {
+			case "/":
+				return next(c)
+			default:
+				if strings.Contains(pathQuery, "?") {
+					paths := strings.Split(pathQuery, "?")
+					if strings.Contains(c.Request().URL.Path, paths[0]) &&
+						strings.Compare(c.Request().URL.RawQuery, paths[1]) == 0 {
+						return next(c)
+					}
+				} else if strings.Contains(c.Request().URL.Path, pathQuery) {
+					return next(c)
+				}
+			}
 		}
-		token := md["x-auth-token"]
-		if len(token) == 0 {
-			return nil, errutil.ErrorUnauthenticated
+		r := c.Request()
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			// Skip grpc
+			return next(c)
 		}
-		newCtx, err := authenticate(ctx, auth, token[0])
+		tokenString := r.Header.Get("X-Auth-Token")
+		if tokenString == "" {
+			cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
+			if cookie != nil {
+				tokenString = cookie.Value
+			}
+			if tokenString == "" {
+				tokenString = c.QueryParam("auth_token")
+			}
+		}
+		ctx, err := authenticate(r.Context(), p.auth, tokenString)
 		if err != nil {
-			return nil, err
+			logrus.Errorf("Authentication failure: %s", err)
+			return errutil.ToHTTPError(err)
 		}
-		return handler(newCtx, req)
+		newRequest := r.WithContext(ctx)
+		c.SetRequest(newRequest)
+		return next(c)
 	}
+}
+
+// GRPCInterceptor for Auth process for gRPC based apps.
+func (p *AuthMiddleware) GRPCInterceptor(
+	ctx context.Context, req interface{},
+	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+) (interface{}, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errutil.ErrorUnauthenticated
+	}
+	token := md["x-auth-token"]
+	if len(token) == 0 {
+		return nil, errutil.ErrorUnauthenticated
+	}
+	newCtx, err := authenticate(ctx, p.auth, token[0])
+	if err != nil {
+		return nil, err
+	}
+	return handler(newCtx, req)
 }
 
 func newKeystoneAuth(authURL string, insecure bool) *keystone.Auth {

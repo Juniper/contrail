@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
@@ -81,46 +82,61 @@ func newProxyService(es endpointStore, dbService services.Service, config *Dynam
 	}
 }
 
-func dynamicProxyMiddleware(
-	es endpointStore, config *DynamicProxyConfig,
-) func(next echo.HandlerFunc) echo.HandlerFunc {
-	log := logutil.NewLogger("dynamic-proxy-mw")
+type dynamicProxyPlugin struct {
+	es     endpointStore
+	config *DynamicProxyConfig
+	log    *logrus.Entry
+}
 
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ctx echo.Context) error {
-			r := ctx.Request()
+func newDynamicProxyPlugin(es endpointStore, config *DynamicProxyConfig) *dynamicProxyPlugin {
+	return &dynamicProxyPlugin{
+		es:     es,
+		config: config,
+		log:    logutil.NewLogger("dynamic-proxy-mw"),
+	}
+}
 
-			clusterID, err := clusterID(r.URL.Path, config.Path)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-			}
-			setClusterIDHeader(r, clusterID)
+func (p *dynamicProxyPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+	r.Group(p.config.Path, baseapisrv.WithMiddleware(p.middleware), baseapisrv.WithNoAuth())
+}
 
-			pp := proxyPrefix(r.URL.Path, urlScope(r.URL.Path))
-			scope := urlScope(r.URL.Path)
-			r.URL.Path = withNoProxyPrefix(r.URL.Path, pp)
+func (p *dynamicProxyPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+}
 
-			if shouldInjectServiceToken(pp, config) {
-				var token string
-				token, err = obtainServiceToken(r.Context(), clusterID, config)
-				if err != nil {
-					log.WithError(err).Error("Failed to obtain service token - not adding it to the request")
-				} else {
-					setServiceTokenHeader(r, token)
-				}
-			}
+func (p *dynamicProxyPlugin) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+	return func(ctx echo.Context) error {
+		r := ctx.Request()
 
-			t, err := readTargets(es, scope, pp)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-			}
-
-			if err = proxy.HandleRequest(ctx, t, log); err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to handle proxy request: %v", err))
-			}
-
-			return nil
+		clusterID, err := clusterID(r.URL.Path, p.config.Path)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+		setClusterIDHeader(r, clusterID)
+
+		pp := proxyPrefix(r.URL.Path, urlScope(r.URL.Path))
+		scope := urlScope(r.URL.Path)
+		r.URL.Path = withNoProxyPrefix(r.URL.Path, pp)
+
+		if shouldInjectServiceToken(pp, p.config) {
+			var token string
+			token, err = obtainServiceToken(r.Context(), clusterID, p.config)
+			if err != nil {
+				p.log.WithError(err).Error("Failed to obtain service token - not adding it to the request")
+			} else {
+				setServiceTokenHeader(r, token)
+			}
+		}
+
+		t, err := readTargets(p.es, scope, pp)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+
+		if err = proxy.HandleRequest(ctx, t, p.log); err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to handle proxy request: %v", err))
+		}
+
+		return nil
 	}
 }
 
