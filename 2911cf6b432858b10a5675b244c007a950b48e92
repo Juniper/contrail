@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bc921f70_04a295a2",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T13:38:27Z",
+      "side": 0,
+      "message": "Why was it removed?",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
