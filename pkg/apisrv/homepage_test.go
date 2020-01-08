@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/labstack/echo"
@@ -92,7 +93,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		routes.add(resolve(proxyPath, "*"))
 	}
 	if viper.GetBool("cache.enabled") {
-		routes.add(apisrv.WatchPath)
+		routes.add(cache.WatchPath)
 	}
 
 	for _, r := range []string{
@@ -117,9 +118,9 @@ func TestRoutesAreRegistered(t *testing.T) {
 
 	// Action resources are registered in server.go:setupActionResources()
 	// and in service_common.tmpl:RegisterRESTAPI().
-	routes.add(apisrv.FQNameToIDPath)
-	routes.add(apisrv.IDToFQNamePath)
-	routes.add(apisrv.UserAgentKVPath)
+	routes.add(services.FQNameToIDPath)
+	routes.add(services.IDToFQNamePath)
+	routes.add(services.UserAgentKVPath)
 	routes.add(services.PropCollectionUpdatePath)
 
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.

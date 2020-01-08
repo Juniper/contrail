@@ -25,8 +25,34 @@ type Server struct {
 	log        *logrus.Entry
 }
 
+// APIPlugin registers HTTP endpoints and GRPC services in Server.
+type APIPlugin interface {
+	RegisterHTTPAPI(HTTPRouter) error
+	RegisterGRPCAPI(GRPCRouter) error
+}
+
+// HTTPRouter allows registering HTTP endpoints.
+type HTTPRouter interface {
+	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	Use(middleware ...echo.MiddlewareFunc)
+	Group(prefix string, m ...echo.MiddlewareFunc) *echo.Group
+}
+
+// GRPCRouter allows registering GRPC services.
+type GRPCRouter interface {
+	RegisterService(sd *grpc.ServiceDesc, ss interface{})
+}
+
+type router struct {
+	*echo.Echo
+	*grpc.Server
+}
+
 // NewServer makes a new Server.
-func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
+func NewServer(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (*Server, error) {
 	s := &Server{
 		Echo: echo.New(),
 	}
@@ -59,6 +85,22 @@ func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
 
 	if err := s.setupGRPC(grpcOpts); err != nil {
 		return nil, err
+	}
+
+	router := router{
+		Echo:   s.Echo,
+		Server: s.GRPCServer,
+	}
+	for _, plugin := range plugins {
+		if err := plugin.RegisterHTTPAPI(router); err != nil {
+			return nil, errors.Wrap(err, "failed to register HTTP API for a plugin")
+		}
+
+		if viper.GetBool("server.enable_grpc") {
+			if err := plugin.RegisterGRPCAPI(router); err != nil {
+				return nil, errors.Wrap(err, "failed to register GRPC API for a plugin")
+			}
+		}
 	}
 
 	// TODO Setup homepage
