@@ -14,6 +14,8 @@ import (
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
+	// TODO(Witaut): Move baseapisrv to asf/pkg/apisrv.
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -30,6 +32,9 @@ import (
 //API Path definitions.
 const (
 	SyncPath                 = "sync"
+	FQNameToIDPath           = "fqname-to-id"
+	IDToFQNamePath           = "id-to-fqname"
+	UserAgentKVPath          = "useragent-kv"
 	RefUpdatePath            = "ref-update"
 	PropCollectionUpdatePath = "prop-collection-update"
 	RefRelaxForDeletePath    = "ref-relax-for-delete"
@@ -604,13 +609,6 @@ func (service *ContrailService) DeallocateInt(
 	return &types.Empty{}, nil
 }
 
-type routeRegistry interface {
-	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-}
-
 // GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
 func GetRequestSchema(r *http.Request) string {
 	if r.TLS != nil {
@@ -1019,8 +1017,8 @@ func (service *ContrailService) RESTGetObjPerms(c echo.Context) error {
 	return c.JSON(http.StatusOK, auth.GetIdentity(c.Request().Context()).GetObjPerms())
 }
 
-//RegisterRESTAPI register REST API service for path.
-func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
+// RegisterHTTPAPI registers REST API and action endpoints.
+func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	r.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }})
 	r.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }})
@@ -1030,6 +1028,9 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 {% endif %}{% endfor %}
 
 	r.POST(SyncPath, service.RESTSync)
+	r.POST(FQNameToIDPath, service.RESTFQNameToUUID)
+	r.POST(IDToFQNamePath, service.RESTIDToFQName)
+	r.POST(UserAgentKVPath, service.RESTUserAgentKV)
 	r.POST(RefUpdatePath, service.RESTRefUpdate)
 	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
 	r.POST(PropCollectionUpdatePath, service.RESTPropCollectionUpdate)
@@ -1041,6 +1042,20 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.POST(IntPoolsPath, service.RESTCreateIntPool)
 	r.DELETE(IntPoolsPath, service.RESTDeleteIntPool)
 	r.GET(ObjPerms, service.RESTGetObjPerms)
+}
+
+// RegisterGRPCAPI registers GRPC services.
+func (service *ContrailService) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+	r.RegisterService(&_ContrailService_serviceDesc, service)
+	r.RegisterService(&_IPAM_serviceDesc, service)
+	r.RegisterService(&_Chown_serviceDesc, service)
+	r.RegisterService(&_SetTag_serviceDesc, service)
+	r.RegisterService(&_RefRelax_serviceDesc, service)
+	r.RegisterService(&_PropCollectionUpdate_serviceDesc, service)
+
+	r.RegisterService(&_FQNameToID_serviceDesc, service)
+	r.RegisterService(&_IDToFQName_serviceDesc, service)
+	r.RegisterService(&_UserAgentKV_serviceDesc, service)
 }
 
 type registerFunc func(path string, name string)
