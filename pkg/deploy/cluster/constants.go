@@ -50,4 +50,6 @@ const (
 	orchestratorVcenter    = "vcenter"
 
 	multicloudCLI = "deployer"
+
+	oneShot = "oneshot"
 )
