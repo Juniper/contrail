@@ -1,0 +1,11 @@
+package baseapisrv
+
+import (
+	"github.com/labstack/echo"
+	"google.golang.org/grpc"
+)
+
+type BaseServer struct {
+	Echo       *echo.Echo
+	GRPCServer *grpc.Server
+}

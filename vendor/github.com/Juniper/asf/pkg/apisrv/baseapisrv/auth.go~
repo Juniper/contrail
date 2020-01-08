@@ -1,0 +1,45 @@
+package baseapisrv
+
+import (
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+)
+
+func (s *Server) authPlugins() (plugins []baseapisrv.APIPlugin, err error) {
+	if viper.GetString("keystone.authurl") != "" {
+		skipPaths, err := s.authSkipPaths()
+		if err != nil {
+			return nil, err
+		}
+		plugins = append(plugins, NewAuthPluginByViper(skipPaths))
+	} else if viper.GetBool("no_auth") {
+		plugins = append(plugins, noAuthPlugin{})
+	}
+	return plugins, nil
+}
+
+// AuthPlugin authenticates requests to the server with Keystone.
+type AuthPlugin struct {
+	m *asfkeystone.AuthMiddleware
+}
+
+// NewAuthPluginByViper creates an AuthPlugin based on global Viper configuration.
+func NewAuthPluginByViper(skipPaths []string) *AuthPlugin {
+	authURL := viper.GetString("keystone.authurl")
+	insecure := viper.GetBool("keystone.insecure")
+
+	return &AuthPlugin{
+		m: asfkeystone.NewAuthMiddleware(authURL, insecure, skipPaths),
+	}
+}
+
+// RegisterHTTPAPI registers authentication middleware for most endpoints in the server.
+func (p *AuthPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+	r.Use(p.m.HTTPMiddleware)
+}
+
+// RegisterGRPCAPI registers an authentication interceptor for GRPC.
+func (p *AuthPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+	r.AddServerOptions(grpc.UnaryInterceptor(p.m.GRPCInterceptor))
+}
