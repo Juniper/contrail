@@ -7,10 +7,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
-	"github.com/labstack/echo"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -92,7 +93,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		routes.add(resolve(proxyPath, "*"))
 	}
 	if viper.GetBool("cache.enabled") {
-		routes.add(apisrv.WatchPath)
+		routes.add(cache.WatchPath)
 	}
 
 	for _, r := range []string{
@@ -110,18 +111,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		routes.add(r)
 	}
 
-	// Service resources are registered in server.go:setupHomepage().
-	{
-		contrailService := services.ContrailService{}
-		contrailService.RegisterRESTAPI(&routes)
-	}
-
-	// Action resources are registered in server.go:setupActionResources()
-	// and in service_common.tmpl:RegisterRESTAPI().
-	routes.add(apisrv.FQNameToIDPath)
-	routes.add(apisrv.IDToFQNamePath)
-	routes.add(apisrv.UserAgentKVPath)
-	routes.add(services.PropCollectionUpdatePath)
+	(&services.ContrailService{}).RegisterHTTPAPI(&routes)
 
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
 	for _, route := range server.APIServer.Server.Echo.Routes() {
@@ -155,24 +145,31 @@ func (r *routeSet) contains(path string) bool {
 }
 
 // mock an Echo server
-func (r *routeSet) GET(path string, _ echo.HandlerFunc, _ ...echo.MiddlewareFunc) *echo.Route {
+func (r *routeSet) GET(path string, _ baseapisrv.HandlerFunc, _ ...baseapisrv.RouteOptionFunc) {
 	r.add(path)
-	return nil
 }
 
-func (r *routeSet) POST(path string, _ echo.HandlerFunc, _ ...echo.MiddlewareFunc) *echo.Route {
+func (r *routeSet) POST(path string, _ baseapisrv.HandlerFunc, _ ...baseapisrv.RouteOptionFunc) {
 	r.add(path)
-	return nil
 }
 
-func (r *routeSet) PUT(path string, _ echo.HandlerFunc, _ ...echo.MiddlewareFunc) *echo.Route {
+func (r *routeSet) PUT(path string, _ baseapisrv.HandlerFunc, _ ...baseapisrv.RouteOptionFunc) {
 	r.add(path)
-	return nil
 }
 
-func (r *routeSet) DELETE(path string, _ echo.HandlerFunc, _ ...echo.MiddlewareFunc) *echo.Route {
+func (r *routeSet) DELETE(path string, _ baseapisrv.HandlerFunc, _ ...baseapisrv.RouteOptionFunc) {
 	r.add(path)
-	return nil
+}
+
+func (r *routeSet) Add(_, path string, _ baseapisrv.HandlerFunc, _ ...baseapisrv.RouteOptionFunc) {
+	r.add(path)
+}
+
+func (r *routeSet) Use(_ ...baseapisrv.MiddlewareFunc) {
+}
+
+func (r *routeSet) Group(prefix string, _ ...baseapisrv.RouteOptionFunc) {
+	r.add(prefix)
 }
 
 func resolve(base string, parts ...string) string {
