@@ -1,15 +1,32 @@
-package apisrv
+package cache
 
 import (
 	"encoding/json"
 
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/labstack/echo"
 	"golang.org/x/net/websocket"
 )
 
-func (s *Server) watchHandler(c echo.Context) error {
+// TODO Move this to a template in asf
+
+// WatchPath is the path of the watch HTTP endpoint.
+const WatchPath = "watch"
+
+// RegisterHTTPAPI registers the watch HTTP endpoint.
+func (cache *DB) RegisterHTTPAPI(r baseapisrv.HTTPRouter) error {
+	r.GET(WatchPath, cache.watchHandler)
+	return nil
+}
+
+// RegisterGRPCAPI does nothing, as there is no GRPC watch API.
+func (cache *DB) RegisterGRPCAPI(r baseapisrv.GRPCRouter) error {
+	return nil
+}
+
+func (cache *DB) watchHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 	authCtx := auth.GetIdentity(ctx)
 	if !authCtx.IsAdmin() {
@@ -17,7 +34,7 @@ func (s *Server) watchHandler(c echo.Context) error {
 	}
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer closeConnection(ws, c.Logger())
-		watcher, err := s.Cache.AddWatcher(ctx, 0)
+		watcher, err := cache.AddWatcher(ctx, 0)
 		if err != nil {
 			errorJSON, _ := json.Marshal(map[string]interface{}{ // nolint: errcheck
 				"error": err,

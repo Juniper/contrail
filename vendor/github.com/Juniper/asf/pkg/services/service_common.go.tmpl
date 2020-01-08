@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -605,10 +606,10 @@ func (service *ContrailService) DeallocateInt(
 }
 
 type routeRegistry interface {
-	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
-	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+	GET(path string, h baseapisrv.HandlerFunc, m ...baseapisrv.MiddlewareFunc)
+	POST(path string, h baseapisrv.HandlerFunc, m ...baseapisrv.MiddlewareFunc)
+	PUT(path string, h baseapisrv.HandlerFunc, m ...baseapisrv.MiddlewareFunc)
+	DELETE(path string, h baseapisrv.HandlerFunc, m ...baseapisrv.MiddlewareFunc)
 }
 
 // GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
