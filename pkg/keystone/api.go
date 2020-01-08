@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/proxy"
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/Juniper/contrail/pkg/endpoint"
@@ -51,7 +52,7 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
+func Init(es *endpoint.Store) (*Keystone, error) {
 	keystone := &Keystone{
 		endpointStore: es,
 		apiClient:     client.NewHTTPFromConfig(),
@@ -72,18 +73,29 @@ func Init(e *echo.Echo, es *endpoint.Store) (*Keystone, error) {
 		expire := viper.GetInt64("keystone.store.expire")
 		keystone.store = MakeInMemoryStore(time.Duration(expire) * time.Second)
 	}
-	e.POST("/keystone/v3/auth/tokens", keystone.CreateTokenAPI)
-	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
-
-	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	e.GET("/keystone/v3/auth/projects", keystone.ListProjectsAPI)
-	e.GET("/keystone/v3/auth/domains", keystone.listDomainsAPI)
-
-	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
-	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
-	e.GET("/keystone/v3/domains", keystone.listDomainsAPI)
 
 	return keystone, nil
+}
+
+// RegisterHTTPAPI registers local Keystone endpoints.
+func (k *Keystone) RegisterHTTPAPI(r baseapisrv.HTTPRouter) error {
+	r.POST("/keystone/v3/auth/tokens", k.CreateTokenAPI)
+	r.GET("/keystone/v3/auth/tokens", k.ValidateTokenAPI)
+
+	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
+	r.GET("/keystone/v3/auth/projects", k.ListProjectsAPI)
+	r.GET("/keystone/v3/auth/domains", k.listDomainsAPI)
+
+	r.GET("/keystone/v3/projects", k.ListProjectsAPI)
+	r.GET("/keystone/v3/projects/:id", k.GetProjectAPI)
+	r.GET("/keystone/v3/domains", k.listDomainsAPI)
+
+	return nil
+}
+
+// RegisterGRPCAPI does nothing, as Keystone has no GRPC API.
+func (*Keystone) RegisterGRPCAPI(r baseapisrv.GRPCRouter) error {
+	return nil
 }
 
 //GetProjectAPI is an API handler to list projects.
