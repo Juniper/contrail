@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
-	google_protobuf3 "github.com/gogo/protobuf/types"
-	"github.com/labstack/echo"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
+	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/labstack/echo"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	google_protobuf3 "github.com/gogo/protobuf/types"
 )
 
 // Server implementation.
@@ -27,9 +28,13 @@ type Server struct {
 	Log               *logrus.Entry
 }
 
-// RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
-func (s *Server) RegisterNeutronAPI(r routeRegistry) {
+// RegisterHTTPAPI registers Neutron endpoints.
+func (s *Server) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 	r.POST("/neutron/:type", s.handleNeutronPostRequest)
+}
+
+// RegisterGRPCAPI does nothing, as the Neutron plugin does not use GRPC.
+func (s *Server) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
 }
 
 func (s *Server) handleNeutronPostRequest(c echo.Context) error {
@@ -103,8 +108,4 @@ type userAgentKVServer interface {
 	RetrieveValues(context.Context, *services.RetrieveValuesRequest) (*services.RetrieveValuesResponse, error)
 	RetrieveKVPs(context.Context, *google_protobuf3.Empty) (*services.RetrieveKVPsResponse, error)
 	DeleteKey(context.Context, *services.DeleteKeyRequest) (*google_protobuf3.Empty, error)
-}
-
-type routeRegistry interface {
-	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 }

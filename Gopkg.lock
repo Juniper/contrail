@@ -10,9 +10,10 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:b6c124a4cf4de1168ff522269c2232d8a0c8a17ea581c96461facb059cc628a8"
+  digest = "1:8572d3cd0ac7ff1bdb0d5dd113a29cab8d4d372b38414f1fd7597dfc943777c2"
   name = "github.com/Juniper/asf"
   packages = [
+    "pkg/apisrv/baseapisrv",
     "pkg/auth",
     "pkg/client",
     "pkg/constants",
@@ -33,7 +34,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "b4247b718eba7b034ced81df4d1522bc55904274"
+  revision = "56273cec268315dd5e777659df5b2c654fdaecd0"
 
 [[projects]]
   branch = "2.x"
@@ -1357,6 +1358,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Juniper/asf/pkg/apisrv/baseapisrv",
     "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/db/basedb",
