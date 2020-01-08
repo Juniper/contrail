@@ -874,6 +874,30 @@
       "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9174194e_c7f67336",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T16:18:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b76db0e3_00ffe56f",
+      "range": {
+        "startLine": 46,
+        "startChar": 0,
+        "endLine": 46,
+        "endChar": 80
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
