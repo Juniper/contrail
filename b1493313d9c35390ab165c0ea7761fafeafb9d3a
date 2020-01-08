@@ -347,6 +347,29 @@
     },
     {
       "key": {
+        "uuid": "fac71f2a_288cd779",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T11:18:26Z",
+      "side": 1,
+      "message": "Eiter remove logs or add log in case of the error to be consistent with logs which this function print(consider all function in this file).",
+      "range": {
+        "startLine": 231,
+        "startChar": 33,
+        "endLine": 231,
+        "endChar": 36
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "874b99f2_35f51463",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
