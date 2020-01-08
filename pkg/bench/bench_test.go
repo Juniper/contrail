@@ -10,7 +10,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -23,6 +22,10 @@ import (
 
 // We haven't used standard Go benchmark because we need more
 //	detailed reporting such as error rate.
+
+const (
+	LocalAuthPath = "/keystone/v3"
+)
 
 func TestBenchAPI(t *testing.T) {
 	ctx := context.Background()
@@ -39,7 +42,7 @@ func TestBenchAPI(t *testing.T) {
 		ID:       testName,
 		Password: testName,
 		Endpoint: host,
-		AuthURL:  host + keystone.LocalAuthPath,
+		AuthURL:  host + LocalAuthPath,
 		Scope:    kstypes.NewScope("", "default", "", testName),
 		Insecure: true,
 	})

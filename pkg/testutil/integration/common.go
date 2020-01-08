@@ -19,7 +19,6 @@ import (
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/coreos/etcd/clientv3"
@@ -39,6 +38,7 @@ import (
 const (
 	collectTimeout  = 5 * time.Second
 	DefaultClientID = "default"
+	LocalAuthPath = "/keystone/v3"
 )
 
 // TestMain is a function that can be called inside package specific TestMain
@@ -374,7 +374,7 @@ func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server 
 			ID:       c.ID,
 			Password: c.Password,
 			Endpoint: server.URL(),
-			AuthURL:  server.URL() + keystone.LocalAuthPath,
+			AuthURL:  server.URL() + LocalAuthPath,
 			Scope:    c.Scope,
 			Insecure: c.Insecure,
 		})

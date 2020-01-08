@@ -448,3 +448,33 @@ func rawAuthURLs(targets []*endpoint.Endpoint) []string {
 func withAPIVersionSuffix(url string) string {
 	return fmt.Sprintf("%s/%s", url, authAPIVersion)
 }
+
+func (k *Keystone) Assign(testID string, domainID string) {
+	assignment := k.Assignment.(*StaticAssignment) // nolint: errcheck
+	assignment.Projects[testID] = &keystone.Project{
+		Domain: assignment.Domains[domainID],
+		ID:     testID,
+		Name:   testID,
+	}
+
+	assignment.Users[testID] = &keystone.User{
+		Domain:   assignment.Domains[domainID],
+		ID:       testID,
+		Name:     testID,
+		Password: testID,
+		Roles: []*keystone.Role{
+			{
+				ID:      "member",
+				Name:    "Member",
+				Project: assignment.Projects[testID],
+			},
+		},
+	}
+}
+
+func (k *Keystone) SetStaticAssignment(domains map[string]*keystone.Domain, projects map[string]*keystone.Project, users map[string]*keystone.User) {
+	if k == nil {
+		k = new(Keystone)
+	}
+	k.Assignment = NewStaticAssignment(domains, projects, users)
+}
