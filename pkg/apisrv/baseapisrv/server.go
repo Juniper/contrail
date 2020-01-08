@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -20,13 +21,44 @@ import (
 
 // Server is an HTTP and GRPC API server.
 type Server struct {
-	Echo       *echo.Echo
-	GRPCServer *grpc.Server
-	log        *logrus.Entry
+	Echo *echo.Echo
+	log  *logrus.Entry
+}
+
+// APIPlugin registers HTTP endpoints and GRPC services in Server.
+type APIPlugin interface {
+	RegisterHTTPAPI(HTTPRouter)
+	RegisterGRPCAPI(GRPCRouter)
+}
+
+// HTTPRouter allows registering HTTP endpoints.
+type HTTPRouter interface {
+	GET(path string, h HandlerFunc, m ...MiddlewareFunc)
+	POST(path string, h HandlerFunc, m ...MiddlewareFunc)
+	PUT(path string, h HandlerFunc, m ...MiddlewareFunc)
+	DELETE(path string, h HandlerFunc, m ...MiddlewareFunc)
+	Use(m ...MiddlewareFunc)
+	Group(prefix string, m ...MiddlewareFunc)
+
+	AddNoAuthPaths(paths ...string)
+}
+
+// HandlerFunc handles an HTTP request.
+// This is a type alias so that users can make one without importing this package if needed.
+// TODO(Witaut): Don't require importing echo to make a HandlerFunc.
+type HandlerFunc = func(echo.Context) error
+
+// MiddlewareFunc returns a HandlerFunc that processes a request, possibly leaving further processing to next.
+// This is a type alias so that users can make one without importing this package if needed.
+type MiddlewareFunc = func(next HandlerFunc) HandlerFunc
+
+// GRPCRouter allows registering GRPC services.
+type GRPCRouter interface {
+	RegisterService(description *grpc.ServiceDesc, service interface{})
 }
 
 // NewServer makes a new Server.
-func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
+func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	s := &Server{
 		Echo: echo.New(),
 	}
@@ -57,11 +89,20 @@ func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
 		s.Echo.Static(prefix, root)
 	}
 
-	if err := s.setupGRPC(grpcOpts); err != nil {
+	r := &httpRouter{
+		Echo: s.Echo,
+	}
+	for _, plugin := range plugins {
+		plugin.RegisterHTTPAPI(r)
+	}
+	noAuthPaths = append(noAuthPaths, r.noAuthPaths...)
+
+	httpMiddleware, authGRPCOpts := s.authMiddleware(noAuthPaths)
+	r.Use(httpMiddleware...)
+
+	if err := s.setupGRPC(authGRPCOpts, plugins); err != nil {
 		return nil, err
 	}
-
-	// TODO Setup homepage
 
 	if viper.GetBool("recorder.enabled") {
 		s.Echo.Use(recorderMiddleware(s.log))
@@ -130,25 +171,100 @@ func (s *Server) setupCORS() {
 	}))
 }
 
-func (s *Server) setupGRPC(grpcOpts []grpc.ServerOption) error {
+func (s *Server) setupGRPC(grpcOpts []grpc.ServerOption, plugins []APIPlugin) error {
 	if !viper.GetBool("server.enable_grpc") {
 		return nil
 	}
-
 	if !viper.GetBool("server.tls.enabled") {
 		return errors.New("GRPC support requires TLS configuration")
 	}
+
 	s.log.Debug("Enabling gRPC server")
+
 	opts := []grpc.ServerOption{
 		// TODO(Michal): below option potentially breaks compatibility for non golang grpc clients.
 		// Ensure it doesn't or find a better solution for un/marshaling `oneof` fields properly.
 		grpc.CustomCodec(protocodec.New(0)),
 	}
 	opts = append(opts, grpcOpts...)
-	s.GRPCServer = grpc.NewServer(opts...)
+	server := grpc.NewServer(opts...)
 
-	s.Echo.Use(gRPCMiddleware(s.GRPCServer))
+	for _, plugin := range plugins {
+		plugin.RegisterGRPCAPI(server)
+	}
+
+	s.Echo.Use(gRPCMiddleware(server))
+
 	return nil
+}
+
+func (s *Server) authMiddleware(noAuthPaths []string) (httpMiddleware []MiddlewareFunc, grpcOpts []grpc.ServerOption) {
+	authURL := viper.GetString("keystone.authurl")
+	if authURL != "" {
+		insecure := viper.GetBool("keystone.insecure")
+
+		m := keystone.NewAuthMiddleware(authURL, insecure, noAuthPaths)
+		httpMiddleware = append(httpMiddleware, m.HTTPMiddleware)
+		grpcOpts = append(grpcOpts, grpc.UnaryInterceptor(m.GRPCInterceptor))
+	} else if viper.GetBool("no_auth") {
+		httpMiddleware = append(httpMiddleware, noAuthHTTPMiddleware)
+		grpcOpts = append(grpcOpts, grpc.UnaryInterceptor(noAuthGRPCInterceptor))
+	}
+	return httpMiddleware, grpcOpts
+}
+
+type httpRouter struct {
+	*echo.Echo
+	noAuthPaths []string
+}
+
+// GET registers a GET handler.
+func (r *httpRouter) GET(path string, h HandlerFunc, m ...MiddlewareFunc) {
+	r.Echo.GET(path, echo.HandlerFunc(h), echoMiddleware(m)...)
+}
+
+// POST registers a POST handler.
+func (r *httpRouter) POST(path string, h HandlerFunc, m ...MiddlewareFunc) {
+	r.Echo.POST(path, echo.HandlerFunc(h), echoMiddleware(m)...)
+}
+
+// PUT registers a PUT handler.
+func (r *httpRouter) PUT(path string, h HandlerFunc, m ...MiddlewareFunc) {
+	r.Echo.PUT(path, echo.HandlerFunc(h), echoMiddleware(m)...)
+}
+
+// DELETE registers a DELETE handler.
+func (r *httpRouter) DELETE(path string, h HandlerFunc, m ...MiddlewareFunc) {
+	r.Echo.DELETE(path, echo.HandlerFunc(h), echoMiddleware(m)...)
+}
+
+// Use makes middleware run for all requests.
+func (r *httpRouter) Use(m ...MiddlewareFunc) {
+	r.Echo.Use(echoMiddleware(m)...)
+}
+
+// Group makes the middleware run for all requests under prefix.
+func (r *httpRouter) Group(prefix string, m ...MiddlewareFunc) {
+	r.Echo.Group(prefix, echoMiddleware(m)...)
+}
+
+// AddNoAuthPaths makes requests to paths skip authentication.
+func (r *httpRouter) AddNoAuthPaths(paths ...string) {
+	r.noAuthPaths = append(r.noAuthPaths, paths...)
+}
+
+func echoMiddleware(ms []MiddlewareFunc) []echo.MiddlewareFunc {
+	echoMiddleware := make([]echo.MiddlewareFunc, 0, len(ms))
+	for _, m := range ms {
+		echoMiddleware = append(echoMiddleware, echoMiddlewareFunc(m))
+	}
+	return echoMiddleware
+}
+
+func echoMiddlewareFunc(m MiddlewareFunc) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return echo.HandlerFunc(m(HandlerFunc(next)))
+	}
 }
 
 // Run starts serving the APIs to clients.
