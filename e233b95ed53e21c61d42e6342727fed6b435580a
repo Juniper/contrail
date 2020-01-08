@@ -261,6 +261,30 @@
     },
     {
       "key": {
+        "uuid": "12a5fefa_d6d6fdee",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T16:09:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "851f167d_cbe8fd84",
+      "range": {
+        "startLine": 166,
+        "startChar": 3,
+        "endLine": 166,
+        "endChar": 16
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3c4ed8b1_515a966d",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -320,6 +344,30 @@
       "side": 1,
       "message": "I tried the logic in go playground and found out that it wouldn\u0027t work as expected. I have changed to named return value method. Also, this link provides some thoughts. https://www.joeshaw.org/dont-defer-close-on-writable-files",
       "parentUuid": "172b288c_7efb60fe",
+      "range": {
+        "startLine": 164,
+        "startChar": 2,
+        "endLine": 167,
+        "endChar": 3
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b05aa4fb_8b7edc0c",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T16:09:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "64e94c72_2c982bef",
       "range": {
         "startLine": 164,
         "startChar": 2,
