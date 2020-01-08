@@ -85,8 +85,7 @@ func TestUploadCloudKeys(t *testing.T) {
 				GoogleAccount:       base64.StdEncoding.EncodeToString([]byte(tt.googleAccount)),
 			}
 
-			cs := services.ContrailService{}
-			require.NoError(t, cs.UploadCloudKeys(request, defaults))
+			require.NoError(t, services.UploadCloudKeys(request, defaults))
 
 			for keyPath, content := range map[string]string{
 				defaults.GetAWSSecretPath():           tt.awsSecretKey,

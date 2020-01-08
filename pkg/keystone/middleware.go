@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
@@ -22,8 +23,30 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
-// GetAuthSkipPaths returns the list of paths which need not be authenticated.
-func GetAuthSkipPaths() ([]string, error) {
+// AuthPlugin authenticates requests to the server with Keystone.
+type AuthPlugin struct {
+	auth      *keystone.Auth
+	skipPaths []string
+}
+
+// NewAuthPluginByViper creates an AuthPlugin based on global Viper configuration.
+func NewAuthPluginByViper() (*AuthPlugin, error) {
+	skipPaths, err := getAuthSkipPaths()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to setup paths skipped from authentication")
+	}
+
+	authURL := viper.GetString("keystone.authurl")
+	insecure := viper.GetBool("keystone.insecure")
+
+	return &AuthPlugin{
+		auth:      newKeystoneAuth(authURL, insecure),
+		skipPaths: skipPaths,
+	}, nil
+}
+
+// getAuthSkipPaths returns the list of paths which need not be authenticated.
+func getAuthSkipPaths() ([]string, error) {
 	skipPaths := []string{
 		"/contrail-clusters?fields=uuid,name",
 		"/keystone/v3/auth/tokens",
@@ -51,76 +74,80 @@ func GetAuthSkipPaths() ([]string, error) {
 	return skipPaths, nil
 }
 
+// RegisterHTTPAPI registers authentication middleware for most endpoints in the server.
+func (p *AuthPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+	r.Use(p.middleware)
+}
+
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
 //nolint: gocyclo
-func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.MiddlewareFunc {
-	auth := newKeystoneAuth(authURL, insecure)
-
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			for _, pathQuery := range skipPath {
-				switch c.Request().URL.Path {
-				case "/":
-					return next(c)
-				default:
-					if strings.Contains(pathQuery, "?") {
-						paths := strings.Split(pathQuery, "?")
-						if strings.Contains(c.Request().URL.Path, paths[0]) &&
-							strings.Compare(c.Request().URL.RawQuery, paths[1]) == 0 {
-							return next(c)
-						}
-					} else if strings.Contains(c.Request().URL.Path, pathQuery) {
+func (p *AuthPlugin) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+	return func(c echo.Context) error {
+		for _, pathQuery := range p.skipPaths {
+			switch c.Request().URL.Path {
+			case "/":
+				return next(c)
+			default:
+				if strings.Contains(pathQuery, "?") {
+					paths := strings.Split(pathQuery, "?")
+					if strings.Contains(c.Request().URL.Path, paths[0]) &&
+						strings.Compare(c.Request().URL.RawQuery, paths[1]) == 0 {
 						return next(c)
 					}
+				} else if strings.Contains(c.Request().URL.Path, pathQuery) {
+					return next(c)
 				}
 			}
-			r := c.Request()
-			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-				// Skip grpc
-				return next(c)
-			}
-			tokenString := r.Header.Get("X-Auth-Token")
-			if tokenString == "" {
-				cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
-				if cookie != nil {
-					tokenString = cookie.Value
-				}
-				if tokenString == "" {
-					tokenString = c.QueryParam("auth_token")
-				}
-			}
-			ctx, err := authenticate(r.Context(), auth, tokenString)
-			if err != nil {
-				logrus.Errorf("Authentication failure: %s", err)
-				return errutil.ToHTTPError(err)
-			}
-			newRequest := r.WithContext(ctx)
-			c.SetRequest(newRequest)
+		}
+		r := c.Request()
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			// Skip grpc
 			return next(c)
 		}
+		tokenString := r.Header.Get("X-Auth-Token")
+		if tokenString == "" {
+			cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
+			if cookie != nil {
+				tokenString = cookie.Value
+			}
+			if tokenString == "" {
+				tokenString = c.QueryParam("auth_token")
+			}
+		}
+		ctx, err := authenticate(r.Context(), p.auth, tokenString)
+		if err != nil {
+			logrus.Errorf("Authentication failure: %s", err)
+			return errutil.ToHTTPError(err)
+		}
+		newRequest := r.WithContext(ctx)
+		c.SetRequest(newRequest)
+		return next(c)
 	}
 }
 
-//AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor {
-	auth := newKeystoneAuth(authURL, insecure)
+// RegisterGRPCAPI registers an authentication interceptor for GRPC.
+func (p *AuthPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+	r.AddServerOptions(grpc.UnaryInterceptor(p.interceptor))
+}
 
-	return func(ctx context.Context, req interface{},
-		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return nil, errutil.ErrorUnauthenticated
-		}
-		token := md["x-auth-token"]
-		if len(token) == 0 {
-			return nil, errutil.ErrorUnauthenticated
-		}
-		newCtx, err := authenticate(ctx, auth, token[0])
-		if err != nil {
-			return nil, err
-		}
-		return handler(newCtx, req)
+// interceptor for Auth process for gRPC based apps.
+func (p *AuthPlugin) interceptor(
+	ctx context.Context, req interface{},
+	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+) (interface{}, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errutil.ErrorUnauthenticated
 	}
+	token := md["x-auth-token"]
+	if len(token) == 0 {
+		return nil, errutil.ErrorUnauthenticated
+	}
+	newCtx, err := authenticate(ctx, p.auth, token[0])
+	if err != nil {
+		return nil, err
+	}
+	return handler(newCtx, req)
 }
 
 func newKeystoneAuth(authURL string, insecure bool) *keystone.Auth {
