@@ -919,7 +919,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
-	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, statusCreateFailed)
+	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, false)
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during create")
 
@@ -927,17 +927,14 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		tsPath           string
 		action           string
 		expectedCommands string
-		expectedStatus   string
 	}{{
 		tsPath:           allInOneMCCloudUpdateTemplatePath,
 		action:           createAction,
 		expectedCommands: expectedMCCreateCmdExecuted,
-		expectedStatus:   statusCreated,
 	}, {
 		tsPath:           allInOneMCClusterUpdateTemplatePath,
 		action:           updateAction,
 		expectedCommands: expectedMCUpdateCmdExecuted,
-		expectedStatus:   statusUpdated,
 	}} {
 		//cleanup all the files
 		removeFile(t, executedMCCommand)
@@ -951,12 +948,12 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		_ = integration.RunDirtyTestScenario(t, ts, server)
 
 		manageCluster(t, config)
-		verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, tt.expectedStatus)
+		verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, true)
 		err = isCloudSecretFilesDeleted()
 		require.NoErrorf(t, err, "failed to delete public cloud secrets during %s", tt.action)
 
 		assert.Truef(t, compareFiles(t, expectedMCClusterTopology, generatedTopology),
-			"Topolgy file created during cluster %s is not as expected", tt.action)
+			"Topology file created during cluster %s is not as expected", tt.action)
 		assert.Truef(t, verifyCommandsExecuted(t, tt.expectedCommands),
 			"MC commands executed during cluster %s are not as expected", tt.action)
 	}
@@ -977,7 +974,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to manage(delete) cloud")
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during delete")
-	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, statusUpdated)
+	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, true)
 	assert.True(t, verifyCommandsExecuted(t, expectedMCDeleteCmdExecuted),
 		"commands executed during cluster delete are not as expected")
 	// make sure cluster is removed
@@ -992,13 +989,17 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 }
 
 func verifyClusterProvisioningStatus(
-	ctx context.Context, t *testing.T, apiServer *client.HTTP, clusterUUID, expectedStatus string,
+	ctx context.Context, t *testing.T, apiServer *client.HTTP, clusterUUID string, provisioningSucceeded bool,
 ) {
 	c, err := apiServer.GetContrailCluster(ctx, &services.GetContrailClusterRequest{
 		ID: clusterUUID,
 	})
 	require.NoError(t, err)
-	assert.Equal(t, expectedStatus, c.ContrailCluster.ProvisioningState)
+	if provisioningSucceeded {
+		assert.Equal(t, statusUpdated, c.ContrailCluster.ProvisioningState)
+	} else {
+		assert.Equal(t, statusUpdateFailed, c.ContrailCluster.ProvisioningState)
+	}
 }
 
 func createDummyCloudFiles(t *testing.T) func() {
