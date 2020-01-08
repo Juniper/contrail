@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "ef020e1d_2dd30a83",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "I like Witaut\u0027s solution, but I think that pkg/baseapisrv code should be placed in asf/pkg/apisrv int this CR. It would avoid hassle with synchronizing code to ASF. What do you think?",
+      "parentUuid": "c4a149da_da912719",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aec7dd56_8f2fc96a",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "89ad773d_cbaefd9d",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f3b8e143_9ac3f6cf",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "50232fba_2c176bc5",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
@@ -83,6 +119,47 @@
       "writtenOn": "2020-01-07T10:30:32Z",
       "side": 1,
       "message": "What is the point of init function? Please follow RAII and move this to NewBaseServer.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b45b01ab_ea868aa4",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "50232fba_2c176bc5",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a384d4c9_d42afa8e",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "Could you place this and recorderTask in middleware.go?",
+      "range": {
+        "startLine": 138,
+        "startChar": 2,
+        "endLine": 169,
+        "endChar": 4
+      },
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -106,6 +183,24 @@
     },
     {
       "key": {
+        "uuid": "78044acb_df7152cd",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "I think that Echo field should be unexported. A TODO there would be better.",
+      "parentUuid": "684b3e07_7995651b",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2b2f7a44_a390663d",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 4
@@ -117,6 +212,24 @@
       "writtenOn": "2020-01-07T10:30:32Z",
       "side": 1,
       "message": "Please mark as TODO - we definitely shouldn\u0027t access Echo which is an implementation detail.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e89ba61b_c6aebb55",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "I think that Echo field should be unexported. A TODO there would be better.",
+      "parentUuid": "2b2f7a44_a390663d",
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -151,6 +264,24 @@
       "writtenOn": "2020-01-07T10:30:32Z",
       "side": 1,
       "message": "This shouldn\u0027t be leaked too - the service should know how to register it\u0027s grpc endpoints and such method should be called by the base server if grpc is enabled. Fix this or mark as todo.",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6fa836be_d7c89908",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T12:45:25Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "69cc63d2_b57be8b6",
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
