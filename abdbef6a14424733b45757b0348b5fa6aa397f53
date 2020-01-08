@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5f16449e_467eb3e5",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "IMO redundant variable. Alternatively it could be named \"n\" as its scope is limited.",
+      "range": {
+        "startLine": 295,
+        "startChar": 1,
+        "endLine": 295,
+        "endChar": 13
+      },
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0ce5c8c5_0e061630",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "\"u\"",
+      "range": {
+        "startLine": 297,
+        "startChar": 9,
+        "endLine": 297,
+        "endChar": 13
+      },
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5dbc3ed7_464c6c22",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "It should be the same as in test_config.yaml files. It is \"admin\" there but it would be better to have it \"admin-uuid\" to differentiate from name and avoid several possible bugs.",
+      "range": {
+        "startLine": 57,
+        "startChar": 23,
+        "endLine": 57,
+        "endChar": 32
+      },
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b225e376_46fe1502",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "Please put it next to AdminUser*, just like in configs and keystoneAssignment() func.",
+      "range": {
+        "startLine": 57,
+        "startChar": 1,
+        "endLine": 57,
+        "endChar": 14
+      },
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8f6a157_7e1cb677",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "KS means KeyStone, right? IMO it would be better to reneme Alice* constants name. Not insisting though.",
+      "range": {
+        "startLine": 58,
+        "startChar": 1,
+        "endLine": 58,
+        "endChar": 16
+      },
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87c2fcac_85830a1a",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "Please also add \"goapi\" user just like in YAML configs, to avoid inconsistency and future confusion.",
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

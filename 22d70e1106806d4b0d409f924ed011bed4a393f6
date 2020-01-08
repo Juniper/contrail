@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "269588a4_4b6b1658",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3900b962_880a446e",
+      "range": {
+        "startLine": 274,
+        "startChar": 23,
+        "endLine": 274,
+        "endChar": 30
+      },
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7c80b40e_efb8e0a9",
         "filename": "pkg/deploy/cluster/deploy.go",
         "patchSetId": 40
@@ -84,6 +108,30 @@
       "side": 1,
       "message": "Done, added this in ASF because the asf keystone package is imported and the constant is present there.",
       "parentUuid": "7c80b40e_efb8e0a9",
+      "range": {
+        "startLine": 17,
+        "startChar": 1,
+        "endLine": 17,
+        "endChar": 16
+      },
+      "revId": "22d70e1106806d4b0d409f924ed011bed4a393f6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d6c5377d_2f9b09bc",
+        "filename": "pkg/deploy/cluster/deploy.go",
+        "patchSetId": 40
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T11:34:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "95badca9_e4c2710b",
       "range": {
         "startLine": 17,
         "startChar": 1,
