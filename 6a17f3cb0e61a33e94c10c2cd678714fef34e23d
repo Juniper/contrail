@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "c7c1d7e9_ee0616da",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "75eff577_50002245",
+      "range": {
+        "startLine": 92,
+        "startChar": 1,
+        "endLine": 95,
+        "endChar": 2
+      },
+      "revId": "6a17f3cb0e61a33e94c10c2cd678714fef34e23d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ed3394bf_c49cb0cc",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 9
@@ -42,6 +66,24 @@
     },
     {
       "key": {
+        "uuid": "b538835f_b1c5fc47",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ed3394bf_c49cb0cc",
+      "revId": "6a17f3cb0e61a33e94c10c2cd678714fef34e23d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a058b734_2b85e7f4",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 9
@@ -53,6 +95,30 @@
       "writtenOn": "2020-01-08T11:56:17Z",
       "side": 1,
       "message": "move this to new line",
+      "range": {
+        "startLine": 257,
+        "startChar": 54,
+        "endLine": 257,
+        "endChar": 60
+      },
+      "revId": "6a17f3cb0e61a33e94c10c2cd678714fef34e23d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f664620_9827d88e",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a058b734_2b85e7f4",
       "range": {
         "startLine": 257,
         "startChar": 54,
@@ -88,6 +154,30 @@
     },
     {
       "key": {
+        "uuid": "8cd4ac37_0991f5a9",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0a9aac69_cedea573",
+      "range": {
+        "startLine": 294,
+        "startChar": 58,
+        "endLine": 294,
+        "endChar": 64
+      },
+      "revId": "6a17f3cb0e61a33e94c10c2cd678714fef34e23d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5ba6c8d6_0fcd46cd",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 9
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "77bb670d_8b5d2e0d",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 308,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5ba6c8d6_0fcd46cd",
+      "range": {
+        "startLine": 308,
+        "startChar": 58,
+        "endLine": 308,
+        "endChar": 64
+      },
+      "revId": "6a17f3cb0e61a33e94c10c2cd678714fef34e23d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "15e26fb8_9bf3b1ed",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 9
@@ -122,6 +236,30 @@
       "writtenOn": "2020-01-08T11:56:17Z",
       "side": 1,
       "message": "ditto L#257",
+      "range": {
+        "startLine": 336,
+        "startChar": 55,
+        "endLine": 336,
+        "endChar": 61
+      },
+      "revId": "6a17f3cb0e61a33e94c10c2cd678714fef34e23d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7980fe3a_c3f6cd4e",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 336,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "15e26fb8_9bf3b1ed",
       "range": {
         "startLine": 336,
         "startChar": 55,
