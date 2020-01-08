@@ -1,7 +1,6 @@
 package baseapisrv
 
 import (
-	"errors"
 	"io/ioutil"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -23,8 +23,11 @@ type Server struct {
 	log        *logrus.Entry
 }
 
+// APIPlugin registers HTTP endpoints and GRPC services in Server.
+type APIPlugin func(*Server) error
+
 // NewServer makes a new Server.
-func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
+func NewServer(grpcOpts []grpc.ServerOption, plugins []APIPlugin) (*Server, error) {
 	s := &Server{
 		Echo: echo.New(),
 	}
@@ -59,6 +62,12 @@ func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
 		return nil, err
 	}
 
+	for _, plugin := range plugins {
+		if err := plugin(s); err != nil {
+			return nil, errors.Wrap(err, "failed to insert plugin")
+		}
+	}
+
 	// TODO Setup homepage
 
 	if viper.GetBool("recorder.enabled") {
@@ -66,6 +75,11 @@ func NewServer(grpcOpts []grpc.ServerOption) (*Server, error) {
 	}
 
 	return s, nil
+}
+
+// GRPCEnabled returns true if GRPC services can be registered.
+func (s *Server) GRPCEnabled() bool {
+	return viper.GetBool("server.enable_grpc")
 }
 
 func (s *Server) setupLoggingMiddleware() {
