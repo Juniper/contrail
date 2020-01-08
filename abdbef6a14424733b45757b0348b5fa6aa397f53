@@ -383,6 +383,24 @@
       "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23163985_7b86fe5f",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-08T16:39:26Z",
+      "side": 1,
+      "message": "L230* sorry, a.Users[ServiceUserID] \u003d \u0026kstypes.User{ and so on",
+      "parentUuid": "90229300_8b416e23",
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
