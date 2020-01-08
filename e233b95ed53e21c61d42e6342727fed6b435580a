@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "4e746c1c_522b568d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-08T22:02:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "622ac7ee_621295bb",
+      "range": {
+        "startLine": 73,
+        "startChar": 1,
+        "endLine": 74,
+        "endChar": 25
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a45d52b_59b271e3",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -143,6 +167,30 @@
     },
     {
       "key": {
+        "uuid": "9bdcddab_c3fba418",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-08T22:02:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "530aa100_ff89a972",
+      "range": {
+        "startLine": 123,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2cc0cd89_0d2e1f01",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
@@ -187,6 +235,30 @@
       "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "44d54531_35e33561",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-08T22:02:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8d338c8f_145992ed",
+      "range": {
+        "startLine": 133,
+        "startChar": 1,
+        "endLine": 136,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
