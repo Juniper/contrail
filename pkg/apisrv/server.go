@@ -275,6 +275,10 @@ func (s *Server) Init() (err error) {
 	return nil
 }
 
+func (s *Server) SetKeystoneStaticAssignment(domains map[string]*kstypes.Domain, projects map[string]*kstypes.Project, users map[string]*kstypes.User) {
+	s.Keystone.SetStaticAssignment(domains, projects, users)
+}
+
 func (s *Server) setupCollector() error {
 	cfg := &analytics.Config{}
 	var err error

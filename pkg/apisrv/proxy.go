@@ -34,6 +34,7 @@ const (
 
 	limit         = 100
 	pathSeparator = "/"
+	LocalAuthPath = "/keystone/v3"
 )
 
 // proxyService provides dynamic HTTP and WebSockets proxy capabilities.

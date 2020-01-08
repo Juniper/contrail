@@ -13,7 +13,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
@@ -70,7 +69,7 @@ func TestChownGRPC(t *testing.T) {
 		defer cleanup(t)
 
 		otherProjectName := uuid.NewV4().String()
-		addKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		server.SetKeystoneAssignment(otherProjectName)
 		otherProjectCTX := metadata.NewOutgoingContext(firstProjectCTX,
 			metadata.Pairs("X-Auth-Token", restLogin(firstProjectCTX, t, otherProjectName)))
 
@@ -410,7 +409,7 @@ func testProjectRead(ctx context.Context, c services.ContrailServiceClient, proj
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
-	addKeystoneProjectAndUser(server.APIServer, testName)
+	server.SetKeystoneAssignment(testName)
 	authToken := restLogin(ctx, t, testName)
 
 	conn, err := grpc.Dial(
@@ -429,38 +428,12 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 	)
 }
 
-// addKeystoneProjectAndUser adds Keystone project and user in Server internal state.
-// TODO: Remove that, because it modifies internal state of SUT.
-// TODO: Use pre-created Server's keystone assignment.
-func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
-	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
-	assignment.Projects[testID] = &kstypes.Project{
-		Domain: assignment.Domains[integration.DefaultDomainID],
-		ID:     testID,
-		Name:   testID,
-	}
-
-	assignment.Users[testID] = &kstypes.User{
-		Domain:   assignment.Domains[integration.DefaultDomainID],
-		ID:       testID,
-		Name:     testID,
-		Password: testID,
-		Roles: []*kstypes.Role{
-			{
-				ID:      "member",
-				Name:    "Member",
-				Project: assignment.Projects[testID],
-			},
-		},
-	}
-}
-
 func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
 	c := client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       projectName,
 		Password: projectName,
 		Endpoint: server.URL(),
-		AuthURL:  server.URL() + keystone.LocalAuthPath,
+		AuthURL:  server.URL() + apisrv.LocalAuthPath,
 		Scope:    kstypes.NewScope("", "default", "", projectName),
 		Insecure: true,
 	})

@@ -9,7 +9,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/cache"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -58,6 +57,10 @@ type APIServer struct {
 	log        *logrus.Entry
 }
 
+func (s *APIServer) SetKeystoneAssignment(testID string) {
+	s.APIServer.Keystone.Assign(testID, DefaultDomainID)
+}
+
 // APIServerConfig contains parameters for test API Server.
 type APIServerConfig struct {
 	CacheDB            *cache.DB
@@ -90,10 +93,11 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
+	setViperKeystoneAssignment(s)
 	s.Cache = c.CacheDB
 
 	ts := testutil.NewTestHTTPServer(s.Echo)
-	viper.Set("keystone.authurl", ts.URL+keystone.LocalAuthPath)
+	viper.Set("keystone.authurl", ts.URL + LocalAuthPath)
 	viper.Set("client.endpoint", ts.URL)
 
 	if err = s.Init(); err != nil {
@@ -120,8 +124,6 @@ func setViperConfig(c *APIServerConfig) {
 		"database.debug":              false,
 		constants.ETCDPathVK:          integrationetcd.Prefix,
 		"keystone.local":              true,
-		"keystone.assignment.type":    "static",
-		"keystone.assignment.data":    keystoneAssignment(),
 		"keystone.store.type":         "memory",
 		"keystone.store.expire":       3600,
 		"keystone.insecure":           true,
@@ -137,6 +139,12 @@ func setViperConfig(c *APIServerConfig) {
 	})
 }
 
+func setViperKeystoneAssignment(s *apisrv.Server) {
+	setKeystoneAssignment(s)
+	viper.SetDefault("keystone.assignment.type", "static")
+	viper.SetDefault("keystone.assignment.data", s.Keystone.Assignment)
+}
+
 func rbacConfig(enableRBAC bool) string {
 	if enableRBAC {
 		return "rbac"
@@ -144,34 +152,31 @@ func rbacConfig(enableRBAC bool) string {
 	return ""
 }
 
-func keystoneAssignment() *keystone.StaticAssignment {
-	a := keystone.StaticAssignment{
-		Domains: map[string]*kstypes.Domain{
-			DefaultDomainID: {
-				ID:   DefaultDomainID,
-				Name: DefaultDomainName,
-			},
-		},
-		Projects: make(map[string]*kstypes.Project),
-		Users:    make(map[string]*kstypes.User),
+func setKeystoneAssignment(s *apisrv.Server) {
+	domains := make(map[string]*kstypes.Domain)
+	domains[DefaultDomainID] = &kstypes.Domain{
+		ID: DefaultDomainID,
+		Name: DefaultDomainName,
 	}
-	a.Projects[AdminProjectID] = &kstypes.Project{
-		Domain: a.Domains[DefaultDomainID],
+	projects := make(map[string]*kstypes.Project)
+	projects[AdminProjectID] = &kstypes.Project{
+		Domain: domains[DefaultDomainID],
 		ID:     AdminProjectID,
 		Name:   AdminProjectName,
 	}
-	a.Projects[DemoProjectID] = &kstypes.Project{
-		Domain: a.Domains[DefaultDomainID],
+	projects[DemoProjectID] = &kstypes.Project{
+		Domain: domains[DefaultDomainID],
 		ID:     DemoProjectID,
 		Name:   DemoProjectName,
 	}
-	a.Projects[NeutronProjectID] = &kstypes.Project{
-		Domain: a.Domains[DefaultDomainID],
+	projects[NeutronProjectID] = &kstypes.Project{
+		Domain: domains[DefaultDomainID],
 		ID:     NeutronProjectID,
 		Name:   NeutronProjectName,
 	}
-	a.Users[AdminUserID] = &kstypes.User{
-		Domain:   a.Domains[DefaultDomainID],
+	users := make(map[string]*kstypes.User)
+	users[AdminUserID] = &kstypes.User{
+		Domain:   domains[DefaultDomainID],
 		ID:       AdminUserID,
 		Name:     AdminUserName,
 		Password: AdminUserPassword,
@@ -179,17 +184,17 @@ func keystoneAssignment() *keystone.StaticAssignment {
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,
-				Project: a.Projects[AdminProjectID],
+				Project: projects[AdminProjectID],
 			},
 			{
 				ID:      NeutronRoleID,
 				Name:    NeutronRoleName,
-				Project: a.Projects[NeutronProjectID],
+				Project: projects[NeutronProjectID],
 			},
 		},
 	}
-	a.Users[BobUserID] = &kstypes.User{
-		Domain:   a.Domains[DefaultDomainID],
+	users[BobUserID] = &kstypes.User{
+		Domain:   domains[DefaultDomainID],
 		ID:       BobUserID,
 		Name:     BobUserName,
 		Password: BobUserPassword,
@@ -197,11 +202,11 @@ func keystoneAssignment() *keystone.StaticAssignment {
 			{
 				ID:      MemberRoleID,
 				Name:    MemberRoleName,
-				Project: a.Projects[DemoProjectID],
+				Project: projects[DemoProjectID],
 			},
 		},
 	}
-	return &a
+	s.SetKeystoneStaticAssignment(domains, projects, users)
 }
 
 func setViper(config map[string]interface{}) {

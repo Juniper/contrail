@@ -8,7 +8,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/client"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
@@ -85,7 +84,7 @@ func AdminHTTPConfig(apiServerURL string) *asfclient.HTTPConfig {
 		ID:       AdminUserID,
 		Password: AdminUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + keystone.LocalAuthPath,
+		AuthURL:  apiServerURL + LocalAuthPath,
 		Scope: kstypes.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
@@ -102,7 +101,7 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		ID:       BobUserID,
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
-		AuthURL:  apiServerURL + keystone.LocalAuthPath,
+		AuthURL:  apiServerURL + LocalAuthPath,
 		Scope: kstypes.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
