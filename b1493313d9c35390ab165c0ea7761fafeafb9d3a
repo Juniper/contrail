@@ -46,6 +46,30 @@
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8d070aea_fcde5b27",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T10:29:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1f274434_17664362",
+      "range": {
+        "startLine": 17,
+        "startChar": 17,
+        "endLine": 18,
+        "endChar": 16
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
