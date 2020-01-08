@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/proxy"
@@ -60,7 +61,7 @@ type Keystone struct {
 
 //Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo, es endpointStore) (*Keystone, error) {
+func Init(es endpointStore) (*Keystone, error) {
 	keystone := &Keystone{
 		endpointStore: es,
 		apiClient:     client.NewHTTPFromConfig(),
@@ -81,29 +82,28 @@ func Init(e *echo.Echo, es endpointStore) (*Keystone, error) {
 		expire := viper.GetInt64("keystone.store.expire")
 		keystone.store = MakeInMemoryStore(time.Duration(expire) * time.Second)
 	}
-	e.POST("/keystone/v3/auth/tokens", keystone.CreateTokenAPI)
-	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
-
-	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	e.GET("/keystone/v3/auth/projects", keystone.ListAuthProjectsAPI)
-	e.GET("/keystone/v3/auth/domains", keystone.listDomainsAPI)
-
-	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
-	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
-	e.GET("/keystone/v3/domains", keystone.listDomainsAPI)
-
-	e.GET("/keystone/v3/users", keystone.ListUsersAPI)
 
 	return keystone, nil
 }
 
-// NoAuthPaths returns paths that require no authentication.
-func (k *Keystone) NoAuthPaths() []string {
-	return []string{
-		"/keystone/v3/auth/tokens",
-		"/keystone/v3/projects",
-		"/keystone/v3/auth/projects",
-	}
+// RegisterHTTPAPI registers local Keystone endpoints.
+func (k *Keystone) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+	r.POST("/keystone/v3/auth/tokens", k.CreateTokenAPI, baseapisrv.WithNoAuth())
+	r.GET("/keystone/v3/auth/tokens", k.ValidateTokenAPI, baseapisrv.WithNoAuth())
+
+	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
+	r.GET("/keystone/v3/auth/projects", k.ListAuthProjectsAPI, baseapisrv.WithNoAuth())
+	r.GET("/keystone/v3/auth/domains", k.listDomainsAPI)
+
+	r.GET("/keystone/v3/projects", k.ListProjectsAPI, baseapisrv.WithNoAuth())
+	r.GET("/keystone/v3/projects/:id", k.GetProjectAPI)
+	r.GET("/keystone/v3/domains", k.listDomainsAPI)
+
+	r.GET("/keystone/v3/users", k.ListUsersAPI)
+}
+
+// RegisterGRPCAPI does nothing, as Keystone has no GRPC API.
+func (*Keystone) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
 }
 
 //GetProjectAPI is an API handler to list projects.
