@@ -65,7 +65,6 @@ MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/fqname_to_id.go \
 	pkg/services/mock/id_to_fqname.go \
 	pkg/types/ipam/mock/address_manager.go \
-	pkg/neutron/mock/server.go \
 	pkg/cloud/mock/tf_state.go
 
 define create-generate-mock-target
