@@ -2,6 +2,103 @@
   "comments": [
     {
       "key": {
+        "uuid": "c4db36f0_87d4cf0e",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Please use `generatedTORCommon`\nhttps://github.com/golang/go/wiki/CodeReviewComments#initialisms",
+      "range": {
+        "startLine": 64,
+        "startChar": 1,
+        "endLine": 64,
+        "endChar": 19
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5756ac04_dc9955a8",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6711ea3f_783ed63a",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Isn\u0027t this a duplication of function from line 155?",
+      "range": {
+        "startLine": 169,
+        "startChar": 0,
+        "endLine": 180,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "37914e10_423f9a28",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 965,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Why this line isn\u0027t compared as yaml file?",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02df6039_0fbf036d",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Nit: Personally I don\u0027t like the name of the file as it suggests commons for all of MC. Consider something like \"mc_ansible_commons.go\".",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "fcb0d5c1_c3760ae0",
         "filename": "pkg/deploy/cluster/mc_commons.go",
         "patchSetId": 7
@@ -70,6 +167,200 @@
       "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c6df6c8f_c2ba19f3",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Should all of these fields be placed into the yaml even if they are empty?",
+      "range": {
+        "startLine": 38,
+        "startChar": 0,
+        "endLine": 54,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bdfc4780_da0d8317",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Nit: I\u0027m not sure if this log should be of level Info instead of Debug.",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a003dee9_1df1264c",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "68966971_94a587ac",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Why is this a method of multiCloudProvisioner instead of pure function?",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e423c2fb_0b3f7fc5",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Should all of these fields be placed into the yaml even if they are empty?",
+      "range": {
+        "startLine": 134,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d43e3f9b_aa310223",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11aa2fa9_3122f9b6",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "ditt L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "122e528f_5ade7a76",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "Should all of these fields be placed into the yaml even if they are empty?",
+      "range": {
+        "startLine": 223,
+        "startChar": 0,
+        "endLine": 228,
+        "endChar": 1
+      },
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea48800e_d4d785bf",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "874b99f2_35f51463",
+        "filename": "pkg/deploy/cluster/mc_commons.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-08T10:48:28Z",
+      "side": 1,
+      "message": "ditto L#64",
+      "revId": "b1493313d9c35390ab165c0ea7761fafeafb9d3a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
