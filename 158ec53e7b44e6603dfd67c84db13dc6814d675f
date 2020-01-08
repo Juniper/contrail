@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "5349efa9_f20db979",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T11:22:44Z",
+      "side": 1,
+      "message": "Will be covered by CEM-11697 ticket.",
+      "parentUuid": "56d00cd2_b9fe2084",
+      "range": {
+        "startLine": 222,
+        "startChar": 0,
+        "endLine": 222,
+        "endChar": 32
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3bf649bd_3089243c",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 6
@@ -36,6 +60,30 @@
       "writtenOn": "2020-01-02T13:20:43Z",
       "side": 1,
       "message": "Same as create.",
+      "range": {
+        "startLine": 335,
+        "startChar": 0,
+        "endLine": 335,
+        "endChar": 32
+      },
+      "revId": "158ec53e7b44e6603dfd67c84db13dc6814d675f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fc4a1d99_970f9c23",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-08T11:22:44Z",
+      "side": 1,
+      "message": "Will be covered by CEM-11697 ticket.",
+      "parentUuid": "3bf649bd_3089243c",
       "range": {
         "startLine": 335,
         "startChar": 0,
