@@ -9,6 +9,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/labstack/echo"
 )
 
@@ -106,18 +107,30 @@ func (defaults *KeyFileDefaults) GetGoogleAccountPath() string {
 	return path.Join(defaults.KeyHomeDir, defaults.AccountFileName)
 }
 
+// UploadCloudKeysPlugin allows storing cloud secrets through an HTTP API.
+type UploadCloudKeysPlugin struct{}
+
+// RegisterHTTPAPI registers the upload-cloud-keys endpoint.
+func (UploadCloudKeysPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+	r.POST(UploadCloudKeysPath, RESTUploadCloudKeys)
+}
+
+// RegisterGRPCAPI does nothing, as the API is HTTP-only.
+func (UploadCloudKeysPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+}
+
 // RESTUploadCloudKeys handles an /upload-cloud-keys REST request.
-func (service *ContrailService) RESTUploadCloudKeys(c echo.Context) error {
+func RESTUploadCloudKeys(c echo.Context) error {
 	var request *UploadCloudKeysBody
 	if err := c.Bind(&request); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Sprintf("invalid JSON format: %v", err))
 	}
-	return service.UploadCloudKeys(request, NewKeyFileDefaults())
+	return UploadCloudKeys(request, NewKeyFileDefaults())
 }
 
 // UploadCloudKeys stores specified cloud secrets
-func (service *ContrailService) UploadCloudKeys(request *UploadCloudKeysBody, keyDefaults *KeyFileDefaults) error {
+func UploadCloudKeys(request *UploadCloudKeysBody, keyDefaults *KeyFileDefaults) error {
 	keyPaths := []string{}
 	for _, secret := range []struct {
 		keyType string
