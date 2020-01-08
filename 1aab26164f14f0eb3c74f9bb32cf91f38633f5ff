@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1fc8a539_739a05e7",
+        "filename": "pkg/apisrv/baseapisrv/middleware.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-08T14:47:06Z",
+      "side": 1,
+      "message": "Why is a binder in middleware? Pls move it to server.",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "96f4c36d_d413fb9b",
+        "filename": "pkg/apisrv/baseapisrv/middleware.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-08T14:47:06Z",
+      "side": 1,
+      "message": "Where is recorderTask definition?",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

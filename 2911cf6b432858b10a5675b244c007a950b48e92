@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "d75382e8_d4088947",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-08T14:47:06Z",
+      "side": 1,
+      "message": "\"... asf/pkg/apisrv later.\nThis is an intermediate step before removing contrail/pkg/apisrv package completely.\"",
+      "parentUuid": "4822868a_0a034e42",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aec7dd56_8f2fc96a",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
