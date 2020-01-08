@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/labstack/echo"
 	"google.golang.org/grpc"
 )
 
-func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
+func removePathPrefixMiddleware(prefix string) baseapisrv.MiddlewareFunc {
+	return func(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
 		return func(c echo.Context) error {
 			req := c.Request()
 			req.URL.Path = strings.TrimPrefix(req.URL.Path, prefix)
@@ -25,7 +26,7 @@ func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
 	}
 }
 
-func proxyMiddleware(target *url.URL, insecure bool) func(next echo.HandlerFunc) echo.HandlerFunc {
+func proxyMiddleware(target *url.URL, insecure bool) baseapisrv.MiddlewareFunc {
 	server := httputil.NewSingleHostReverseProxy(target)
 	if target.Scheme == "https" {
 		server.Transport = &http.Transport{
@@ -37,7 +38,7 @@ func proxyMiddleware(target *url.URL, insecure bool) func(next echo.HandlerFunc)
 			TLSHandshakeTimeout: 10 * time.Second,
 		}
 	}
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
 			w := c.Response()
@@ -47,22 +48,32 @@ func proxyMiddleware(target *url.URL, insecure bool) func(next echo.HandlerFunc)
 	}
 }
 
-func noAuthMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			r := c.Request()
-			ctx := auth.NoAuth(r.Context())
-			newRequest := r.WithContext(ctx)
-			c.SetRequest(newRequest)
-			return next(c)
-		}
+type noAuthPlugin struct{}
+
+func (p noAuthPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) error {
+	r.Use(p.middleware)
+	return nil
+}
+
+func (noAuthPlugin) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+	return func(c echo.Context) error {
+		r := c.Request()
+		ctx := auth.NoAuth(r.Context())
+		newRequest := r.WithContext(ctx)
+		c.SetRequest(newRequest)
+		return next(c)
 	}
 }
 
-func noAuthInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{},
-		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		newCtx := auth.NoAuth(ctx)
-		return handler(newCtx, req)
-	}
+func (p noAuthPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) error {
+	r.AddServerOptions(grpc.UnaryInterceptor(p.interceptor))
+	return nil
+}
+
+func (p noAuthPlugin) interceptor(
+	ctx context.Context, req interface{},
+	info *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+) (interface{}, error) {
+	newCtx := auth.NoAuth(ctx)
+	return handler(newCtx, req)
 }
