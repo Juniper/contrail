@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "4debf416_31360a0d",
+        "filename": "Gopkg.lock",
+        "patchSetId": 33
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-08T13:11:35Z",
+      "side": 1,
+      "message": "There will be a commit coming to ASF repo, I want to iron out the bugs on this change and then fix up this file.",
+      "parentUuid": "79aeaad0_40ef7ed6",
+      "revId": "2a4451d1390a33ac4606b5a9a2d7e47b57aadb2c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4fb48c73_a4324f22",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 33

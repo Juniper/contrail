@@ -117,6 +117,30 @@
     },
     {
       "key": {
+        "uuid": "d40bd955_65ddfde1",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-08T13:11:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c8f6a157_7e1cb677",
+      "range": {
+        "startLine": 58,
+        "startChar": 1,
+        "endLine": 58,
+        "endChar": 16
+      },
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "87c2fcac_85830a1a",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 42
@@ -131,6 +155,24 @@
       "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "89e88b68_0eb1bc3c",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 42
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 867
+      },
+      "writtenOn": "2020-01-08T13:11:35Z",
+      "side": 1,
+      "message": "goapi user is added at L204.",
+      "parentUuid": "87c2fcac_85830a1a",
+      "revId": "abdbef6a14424733b45757b0348b5fa6aa397f53",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
