@@ -8,10 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	nonExistingKeyPath = "./test_data/multicloud/non_existing_key"
+	fakeKeyPath        = "./test_data/multicloud/test_pvt_key_fake"
+	realKeyPath        = "./test_data/multicloud/test_pvt_key_real"
+)
+
 func TestStoppingSSHAgent(t *testing.T) {
 	agent := &sshAgent{}
-	setProperKeyPermissions(t, "./test_data/test_pvt_key_real")
-	assert.NoError(t, agent.Run("./test_data/test_pvt_key_real"))
+	setProperKeyPermissions(t, realKeyPath)
+	assert.NoError(t, agent.Run(realKeyPath))
 	assert.True(t, processExists(agent.pid))
 	assert.NoError(t, agent.Stop())
 	assert.False(t, processExists(agent.pid))
@@ -38,18 +44,18 @@ func TestRunSSHAgentWithKey(t *testing.T) {
 		},
 		{
 			name:  "Non Existing key",
-			key:   "./non_existing_key",
+			key:   nonExistingKeyPath,
 			fails: true,
 		},
 		{
 			name:      "Existing fake key",
-			key:       "./test_data/test_pvt_key_fake",
+			key:       fakeKeyPath,
 			fails:     true,
 			keyExists: true,
 		},
 		{
 			name:      "Existing real key",
-			key:       "./test_data/test_pvt_key_real",
+			key:       realKeyPath,
 			keyExists: true,
 		},
 	}

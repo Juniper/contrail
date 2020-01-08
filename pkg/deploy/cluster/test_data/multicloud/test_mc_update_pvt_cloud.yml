@@ -9,7 +9,7 @@ test_data:
       - uuid: pvt_cloud_user_uuid
     provisioning_state: CREATED
   all_in_one_cluster: &all_in_one_cluster
-    uuid: test_cluster_uuid
+    uuid: test_mc_cluster_uuid
     provisioning_state: NOSTATE
     provisioning_action: ADD_CLOUD
 
@@ -34,7 +34,7 @@ workflow:
     cloud: *pvt_cloud
 - name: update cluster
   request:
-    path: /contrail-cluster/test_cluster_uuid
+    path: /contrail-cluster/test_mc_cluster_uuid
     method: PUT
     expected:
     - 200
