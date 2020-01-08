@@ -1007,6 +1007,8 @@ func createDummyCloudFiles(t *testing.T) func() {
 		dest: "/var/tmp/cloud/pvt_cloud_uuid/topology.yml",
 	}}
 
+	cleanKey := createPrivateKeyAtDestination(t, "test_data/test_pvt_key")
+
 	for _, f := range files {
 		err := fileutil.CopyFile(f.src, f.dest, true)
 		assert.NoErrorf(t, err, "Couldn't copy file %s to %s", f.src, f.dest)
@@ -1016,6 +1018,16 @@ func createDummyCloudFiles(t *testing.T) func() {
 		for _, f := range files {
 			assert.NoError(t, os.Remove(f.dest), "Couldn't cleanup file %s", f.dest)
 		}
+		cleanKey()
+	}
+}
+
+func createPrivateKeyAtDestination(t *testing.T, dst string) func() {
+	name, clean := createPrivateKey(t)
+	assert.NoError(t, fileutil.CopyFile(name, dst, false), "cannot move key to the desired destination")
+	clean()
+	return func() {
+		assert.NoError(t, os.Remove(dst), "couldn't remove created key file")
 	}
 }
 
