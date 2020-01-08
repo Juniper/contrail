@@ -106,14 +106,12 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	viper.Set("client.endpoint", ts.URL)
 
 	es := endpoint.NewStore()
-	s, err := apisrv.NewServer(es)
+	s, err := apisrv.NewServer(es, c.CacheDB)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
 	serverHandler = s.Server.Echo
-	// TODO(Witaut): Move CacheDB outside Server.
-	s.Cache = c.CacheDB
 
 	if c.EnableVNCReplication {
 		if _, err = startVNCReplicator(s, es); err != nil {
