@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/cloud"
+	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
@@ -42,16 +43,28 @@ const (
 )
 
 type multiCloudProvisioner struct {
-	contrailAnsibleDeployer
+	clusterUUID string
+	clusterProvisioningState string
+	mcAction string
+	clouds []cloudRef
 	workDir string
+	authorizedRegistry *cloud.AuthorizedRegistry
+	reporter *report.Reporter
+	log *logrus.Entry
+	exec CommandExecutor
+	apiServer *client.HTTP
+	test bool
 }
 
 // Deploy performs Multicloud provisioning.
 func (m *multiCloudProvisioner) Deploy() error {
+	m.reportStatus(statusUpdateProgress)
 	deployErr := m.deploy()
 	if deployErr != nil {
-		m.Log.Errorf("Multi-Cloud provisioning failed with error: %v", deployErr)
+		m.reportStatus(statusUpdateFailed)
+		m.log.Errorf("Multi-Cloud provisioning failed with error: %v", deployErr)
 	}
+	m.reportStatus(statusUpdated)
 	if err := m.removeVulnerableFiles(); err != nil {
 		return errors.Errorf("failed to delete vulnerable files: %v; deploy error (if any): %v", err, deployErr)
 	}
@@ -65,85 +78,28 @@ func (m *multiCloudProvisioner) Deploy() error {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) deploy() error {
-	if m.clusterData.ClusterInfo.ProvisioningState != statusNoState {
+	if m.clusterProvisioningState != statusNoState {
 		return nil
 	}
 
-	m.updateMCWorkDir()
-	pa := m.clusterData.ClusterInfo.ProvisioningAction
-
-	if m.isMCDeleteRequest() {
-		m.reportStatus(statusUpdateProgress)
+	if m.mcAction == deleteAction {
 		if err := m.deleteMCCluster(); err != nil {
-			m.reportStatus(statusUpdateFailed)
-			return errors.Wrapf(err, "%s failed", pa)
+			return err
 		}
-		m.reportStatus(statusUpdated)
 		return nil
-	}
-
-	if pa != addCloud && pa != updateCloud {
-		return nil
-	}
-
-	if pa == addCloud {
-		if m.cluster.config.AnsibleFetchURL != "" {
-			if err := m.fetchAnsibleDeployer(); err != nil {
-				return err
-			}
-		}
-		if m.cluster.config.AnsibleCherryPickRevision != "" {
-			if err := m.cherryPickAnsibleDeployer(); err != nil {
-				return err
-			}
-		}
-		if m.cluster.config.AnsibleRevision != "" {
-			if err := m.resetAnsibleDeployer(); err != nil {
-				return err
-			}
-		}
 	}
 
 	if updated, err := m.isMCUpdated(); err != nil {
-		return errors.Wrapf(err, "%s failed", pa)
+		return err
 	} else if updated {
 		return nil
 	}
 
-	if m.action == createAction {
-		m.reportStatus(statusCreateProgress)
-	} else {
-		m.reportStatus(statusUpdateProgress)
-	}
-
-	if err := m.manageMCCluster(); err != nil {
-		if m.action == createAction {
-			m.reportStatus(statusCreateFailed)
-		} else {
-			m.reportStatus(statusUpdateFailed)
-		}
-		return errors.Wrapf(err, "%s failed", pa)
-	}
-
-	if m.action == createAction {
-		m.reportStatus(statusCreated)
-	} else {
-		m.reportStatus(statusUpdated)
-	}
-	return nil
-}
-
-func (m *multiCloudProvisioner) updateMCWorkDir() {
-	m.workDir = m.getMCWorkingDir(m.getWorkingDir())
-}
-
-func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
-	return m.clusterData.ClusterInfo.ProvisioningState == statusNoState &&
-		m.clusterData.ClusterInfo.ProvisioningAction == deleteCloud
+	return m.manageMCCluster()
 }
 
 func (m *multiCloudProvisioner) reportStatus(status string) {
-	m.Reporter.ReportStatus(context.Background(), map[string]interface{}{statusField: status}, defaultResource)
+	m.reporter.ReportStatus(context.Background(), map[string]interface{}{statusField: status}, defaultResource)
 }
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
@@ -153,10 +109,8 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err := m.cleanupProvisioning(); err != nil {
 		return err
 	}
-	if m.action != deleteAction {
-		if err := m.removeCloudRefFromCluster(); err != nil {
-			return err
-		}
+	if err := m.removeCloudRefFromCluster(); err != nil {
+		return err
 	}
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
@@ -195,6 +149,11 @@ func appendFile(src, dest string) error {
 	return fileutil.AppendToFile(dest, content, defaultFilePermRWOnly)
 }
 
+type cloudRef struct {
+	uuid string
+	provider string
+}
+
 func (m *multiCloudProvisioner) createClusterSecretFile() error {
 	pubCloudKeyPair, err := m.getPublicCloudKeyPair()
 	if err != nil {
@@ -206,18 +165,18 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 		return errors.Wrap(err, "failed to to update secret file config")
 	}
 
-	reg, err := cloud.NewAuthorizedRegistry(m.clusterData.ClusterInfo)
-	if err != nil {
-		return err
-	}
-	sfc.AuthorizedRegistries = []*cloud.AuthorizedRegistry{reg}
+	// reg, err := cloud.NewAuthorizedRegistry(m.clusterData.ClusterInfo)
+	// if err != nil {
+	// 	return err
+	// }
+	// sfc.AuthorizedRegistries = []*cloud.AuthorizedRegistry{reg}
 
 	marshaled, err := yaml.Marshal(sfc)
 	if err != nil {
-		return errors.Wrapf(err, "couldn't marshal secret to yaml for cluster %s", m.cluster.config.ClusterID)
+		return errors.Wrapf(err, "couldn't marshal secret to yaml for cluster %s", m.clusterUUID)
 	}
 	err = ioutil.WriteFile(m.getClusterSecretFile(), marshaled, defaultFilePermRWOnly)
-	return errors.Wrapf(err, "couldn't create secret.yml file for cluster %s", m.cluster.config.ClusterID)
+	return errors.Wrapf(err, "couldn't create secret.yml file for cluster %s", m.clusterUUID)
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
@@ -232,7 +191,7 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 		m.reportStatus(statusUpdateFailed)
 		return true, err
 	} else if ok {
-		m.Log.Infof("%s topology file is already up-to-date", defaultResource)
+		m.log.Infof("%s topology file is already up-to-date", defaultResource)
 		return true, nil
 	}
 	return false, nil
@@ -246,7 +205,7 @@ func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
 
 	// nolint: errcheck
 	defer os.RemoveAll(tmpDir)
-	m.Log.Debugf("Creating temperory topology at dir %s", tmpDir)
+	m.log.Debugf("Creating temperory topology at dir %s", tmpDir)
 
 	if err = m.createClusterTopologyFile(tmpDir); err != nil {
 		return false, err
@@ -263,9 +222,7 @@ func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
 }
 
 func (m *multiCloudProvisioner) manageMCCluster() error {
-	m.Log.Infof("Starting %s of contrail cluster: %s",
-		m.clusterData.ClusterInfo.ProvisioningAction,
-		m.clusterData.ClusterInfo.FQName)
+	m.log.Infof("Starting %s of contrail cluster: %s", m.mcAction, m.clusterUUID)
 
 	if err := m.verifyCloudStatus(); err != nil {
 		return err
@@ -277,21 +234,17 @@ func (m *multiCloudProvisioner) manageMCCluster() error {
 }
 
 func (m *multiCloudProvisioner) verifyCloudStatus() error {
-	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
-		if err := waitForCloudStatusToBeUpdated(
-			context.Background(), m.cluster.log, m.cluster.APIServer, cloudRef.UUID,
-		); err != nil {
+	for _, cloudRef := range m.clouds {
+		if err := m.waitForCloudStatusToBeUpdated(context.Background(), cloudRef.uuid); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func waitForCloudStatusToBeUpdated(
-	ctx context.Context, log *logrus.Entry, httpClient *client.HTTP, cloudUUID string,
-) error {
+func (m *multiCloudProvisioner) waitForCloudStatusToBeUpdated(ctx context.Context, cloudUUID string) error {
 	return retry.Do(func() (retry bool, err error) {
-		cloudResp, err := httpClient.GetCloud(ctx, &services.GetCloudRequest{ID: cloudUUID})
+		cloudResp, err := m.apiServer.GetCloud(ctx, &services.GetCloudRequest{ID: cloudUUID})
 		if err != nil {
 			return false, err
 		}
@@ -313,7 +266,7 @@ func waitForCloudStatusToBeUpdated(
 			return false, fmt.Errorf("cloud %s status has failed in updating", cloudUUID)
 		}
 		return false, fmt.Errorf("unknown cloud status %s for cloud %s", cloudResp.Cloud.ProvisioningState, cloudUUID)
-	}, retry.WithLog(log.Logger), retry.WithInterval(statusRetryInterval))
+	}, retry.WithLog(m.log.Logger), retry.WithInterval(statusRetryInterval))
 }
 
 func (m *multiCloudProvisioner) publicAndPrivateCloudIDs() (string, string, error) {
@@ -330,22 +283,18 @@ func (m *multiCloudProvisioner) publicAndPrivateCloudIDs() (string, string, erro
 }
 
 func (m *multiCloudProvisioner) privateCloudID() (string, error) {
-	for _, cloudRef := range m.clusterData.CloudInfo {
-		for _, p := range cloudRef.CloudProviders {
-			if p.Type == onPrem {
-				return cloudRef.UUID, nil
-			}
+	for _, cloudRef := range m.clouds {
+		if cloudRef.provider == onPrem {
+			return cloudRef.uuid, nil
 		}
 	}
 	return "", errors.New("no private cloud in Cluster")
 }
 
 func (m *multiCloudProvisioner) publicCloudID() (string, error) {
-	for _, cloudRef := range m.clusterData.CloudInfo {
-		for _, p := range cloudRef.CloudProviders {
-			if p.Type == aws || p.Type == azure || p.Type == gcp {
-				return cloudRef.UUID, nil
-			}
+	for _, cloudRef := range m.clouds {
+		if cloudRef.provider == aws || cloudRef.provider == azure || cloudRef.provider == gcp {
+			return cloudRef.uuid, nil
 		}
 	}
 	return "", errors.New("no public cloud in Cluster")
@@ -357,7 +306,7 @@ func (m *multiCloudProvisioner) provision() error {
 		"all", "provision", "--topology", m.getClusterTopoFile(m.workDir),
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
 	}
-	if m.clusterData.ClusterInfo.ProvisioningAction == updateCloud {
+	if m.mcAction == updateCloud {
 		args = append(args, "--update")
 	}
 	agent, stopAgent, err := m.startSSHAgent()
@@ -365,9 +314,7 @@ func (m *multiCloudProvisioner) provision() error {
 		return errors.Wrap(err, "cannot start SSH Agent")
 	}
 	defer stopAgent()
-	return m.cluster.commandExecutor.ExecCmdAndWait(
-		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
-	)
+	return m.exec.ExecCmdAndWait(m.reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...)
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
@@ -384,7 +331,7 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	}
 	defer stopAgent()
 	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+	return m.exec.ExecCmdAndWait(m.reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
 }
 
 func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
@@ -399,7 +346,7 @@ func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
 	agent := &sshAgent{}
 	stopAgent := func() {
 		if stopErr := agent.Stop(); stopErr != nil {
-			m.Log.Errorf("cannot stop SSH Agent: %v", stopErr)
+			m.log.Errorf("cannot stop SSH Agent: %v", stopErr)
 		}
 	}
 
@@ -411,7 +358,7 @@ func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
 }
 
 func (m *multiCloudProvisioner) removeVulnerableFiles() error {
-	removeErr := osutil.ForceRemoveFiles(m.filesToRemove(), m.Log)
+	removeErr := osutil.ForceRemoveFiles(m.filesToRemove(), m.log)
 	return errors.Wrap(removeErr, "failed to remove credential files")
 }
 
@@ -440,7 +387,7 @@ func (m *multiCloudProvisioner) unsetMulticloudProvisioningFlag() error {
 		return errors.Wrap(err, "failed to to get public Cloud ID")
 	}
 
-	if _, err = m.cluster.APIServer.UpdateCloud(
+	if _, err = m.apiServer.UpdateCloud(
 		context.Background(),
 		&services.UpdateCloudRequest{
 			Cloud: &models.Cloud{
@@ -452,16 +399,18 @@ func (m *multiCloudProvisioner) unsetMulticloudProvisioningFlag() error {
 		return errors.Wrapf(err, "failed to update Cloud with UUID: %s", pubCloudID)
 	}
 
-	m.Log.WithField("public-cloud-id", pubCloudID).Debug("Successfully unset cloud.is_multicloud_provisioning flag")
+	m.log.WithField("public-cloud-id", pubCloudID).Debug("Successfully unset cloud.is_multicloud_provisioning flag")
 	return nil
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
-	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
-		if _, err := m.cluster.APIServer.DeleteContrailClusterCloudRef(
+	for _, cloudRef := range m.clouds {
+		if _, err := m.apiServer.DeleteContrailClusterCloudRef(
 			context.Background(), &services.DeleteContrailClusterCloudRefRequest{
-				ID:                      m.clusterData.ClusterInfo.UUID,
-				ContrailClusterCloudRef: cloudRef,
+				ID:                      m.clusterUUID,
+				ContrailClusterCloudRef: &models.ContrailClusterCloudRef {
+					UUID: cloudRef.uuid,
+				},
 			},
 		); err != nil {
 			return err
@@ -477,12 +426,12 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 	}
 
 	ctx := context.Background()
-	cloudObj, err := cloud.GetCloud(ctx, m.cluster.APIServer, pubCloudID)
+	cloudObj, err := cloud.GetCloud(ctx, m.apiServer, pubCloudID)
 	if err != nil {
 		return nil, err
 	}
 
-	cloudUserObj, err := m.cluster.APIServer.GetCloudUser(
+	cloudUserObj, err := m.apiServer.GetCloudUser(
 		ctx,
 		&services.GetCloudUserRequest{
 			ID: cloudObj.CloudUserRefs[0].UUID,
@@ -492,7 +441,7 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 		return nil, err
 	}
 
-	credentialObj, err := m.cluster.APIServer.GetCredential(
+	credentialObj, err := m.apiServer.GetCredential(
 		ctx,
 		&services.GetCredentialRequest{
 			ID: cloudUserObj.CloudUser.CredentialRefs[0].UUID,
@@ -502,7 +451,7 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 		return nil, err
 	}
 
-	keypairObj, err := m.cluster.APIServer.GetKeypair(
+	keypairObj, err := m.apiServer.GetKeypair(
 		ctx,
 		&services.GetKeypairRequest{
 			ID: credentialObj.Credential.KeypairRefs[0].UUID,
@@ -516,11 +465,9 @@ func (m *multiCloudProvisioner) getPublicCloudKeyPair() (*models.Keypair, error)
 }
 
 func (m *multiCloudProvisioner) getTFStateFile() string {
-	for _, c := range m.clusterData.CloudInfo {
-		for _, prov := range c.CloudProviders {
-			if prov.Type != onPrem {
-				return cloud.GetTFStateFile(c.UUID)
-			}
+	for _, cloudRef := range m.clouds {
+		if cloudRef.provider != onPrem {
+			return cloud.GetTFStateFile(cloudRef.uuid)
 		}
 	}
 	return ""
@@ -541,8 +488,4 @@ func (m *multiCloudProvisioner) getClusterSecretFile() string {
 
 func (m *multiCloudProvisioner) getMCDeployerRepoDir() string {
 	return filepath.Join(defaultAnsibleRepoDir, mcRepository)
-}
-
-func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {
-	return filepath.Join(clusterWorkDir, mcWorkDir)
 }

@@ -257,6 +257,18 @@ schema:
       view:
       - create
       - detail
+    is_multicloud:
+      description: Describes if Cluster belongs to the MultiCloud
+      default: false
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Contrail MultiCloud
+      type: "boolean"
+      view:
+      - create
+      - detail
     datapath_encryption:
       description: Enable Contrail Datapath Encryption
       default: false
