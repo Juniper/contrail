@@ -64,21 +64,19 @@ type Server struct {
 
 // NewServer makes a server.
 func NewServer() (*Server, error) {
-	baseServer, err := baseapisrv.NewServer(authGRPCOpts())
-	if err != nil {
-		return nil, err
-	}
-
 	s := &Server{
-		Server: baseServer,
-		log:    logutil.NewLogger("contrail-api-server"),
+		log: logutil.NewLogger("contrail-api-server"),
 	}
 
+	var plugins []baseapisrv.APIPlugin
+
+	var err error
 	s.Collector, err = makeCollector()
 	if err != nil {
 		return nil, err
 	}
-	s.registerCollector(s.Collector)
+	analytics.AddLoggerHook(s.Collector)
+	plugins = append(plugins, collectorPlugin(s.Collector))
 
 	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(s.Collector))
 	if err != nil {
@@ -91,6 +89,12 @@ func NewServer() (*Server, error) {
 		return nil, err
 	}
 
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		// TODO(Witaut): Don't use Echo - an internal detail of Server.
+		cs.RegisterRESTAPI(bs.Echo)
+		return nil
+	})
+
 	s.Service = cs
 	s.IPAMServer = cs
 	s.ChownServer = cs
@@ -101,31 +105,59 @@ func NewServer() (*Server, error) {
 	s.IDToFQNameServer = cs
 	s.PropCollectionUpdateServer = cs
 
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		// TODO(Witaut): Don't use Echo - an internal detail of Server.
+		cs.RegisterRESTAPI(bs.Echo)
+		if bs.GRPCEnabled() {
+			// TODO(Witaut): Don't use GRPCServer - an internal detail of Server.
+			s.registerGRPCServers(bs.GRPCServer)
+		}
+		return nil
+	})
+
 	if viper.GetBool("server.enable_vnc_neutron") {
 		n := s.setupNeutronService(cs)
-		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		n.RegisterNeutronAPI(s.Server.Echo)
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			// TODO(Witaut): Don't use Echo - an internal detail of Server.
+			n.RegisterNeutronAPI(bs.Echo)
+			return nil
+		})
 	}
 
-	if err = s.registerStaticProxyEndpoints(); err != nil {
-		return nil, errors.Wrap(err, "failed to register static proxy endpoints")
-	}
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		// TODO(Witaut): Don't use Echo - an internal detail of Server.
+		return errors.Wrap(registerStaticProxyEndpoints(bs.Echo), "failed to register static proxy endpoints")
+	})
 
 	endpointStore := endpoint.NewStore()
-	s.serveDynamicProxy(endpointStore)
 
-	if err = s.setupAuthMiddleware(); err != nil {
+	config := loadDynamicProxyConfig()
+	s.Proxy = newProxyService(endpointStore, s.DBService, config)
+	s.Proxy.StartEndpointsSync()
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		// TODO(Witaut): Don't use Echo - an internal detail of Server.
+		bs.Echo.Group(config.Path, dynamicProxyMiddleware(endpointStore, config))
+		return nil
+	})
+
+	authPlugins, err := authPlugins()
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to set up auth middleware")
 	}
+	plugins = append(plugins, authPlugins...)
 
 	if viper.GetBool("keystone.local") {
 		var k *keystone.Keystone
-		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		k, err = keystone.Init(s.Server.Echo, endpointStore)
+		k, err = keystone.Init(endpointStore)
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to init local keystone server")
 		}
 		s.Keystone = k
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			// TODO(Witaut): Don't use Echo - an internal detail of Server.
+			k.RegisterEndpoints(bs.Echo)
+			return nil
+		})
 	}
 
 	if viper.GetBool("server.enable_vnc_replication") {
@@ -134,26 +166,28 @@ func NewServer() (*Server, error) {
 		}
 	}
 
-	if viper.GetBool("server.enable_grpc") {
-		// TODO(Witaut): Don't use GRPCServer - an internal detail of Server.
-		services.RegisterContrailServiceServer(s.Server.GRPCServer, s.Service)
-		services.RegisterIPAMServer(s.Server.GRPCServer, s.IPAMServer)
-		services.RegisterChownServer(s.Server.GRPCServer, s.ChownServer)
-		services.RegisterSetTagServer(s.Server.GRPCServer, s.SetTagServer)
-		services.RegisterRefRelaxServer(s.Server.GRPCServer, s.RefRelaxServer)
-		services.RegisterFQNameToIDServer(s.Server.GRPCServer, s.FQNameToIDServer)
-		services.RegisterIDToFQNameServer(s.Server.GRPCServer, s.IDToFQNameServer)
-		services.RegisterUserAgentKVServer(s.Server.GRPCServer, s.UserAgentKVServer)
-		services.RegisterPropCollectionUpdateServer(s.Server.GRPCServer, s.PropCollectionUpdateServer)
+	if viper.GetBool("cache.enabled") {
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			// TODO(Witaut): Don't use Echo - an internal detail of Server.
+			bs.Echo.GET(WatchPath, s.watchHandler)
+			return nil
+		})
+	}
+
+	plugins = append(plugins, func(bs *baseapisrv.Server) error {
+		s.setupActionResources(bs, cs)
+		return nil
+	})
+
+	s.Server, err = baseapisrv.NewServer(authGRPCOpts(), plugins)
+	if err != nil {
+		return nil, err
 	}
 
 	if viper.GetBool("homepage.enabled") {
 		// TODO Move this to Server
 		s.setupHomepage()
 	}
-
-	s.setupWatchAPI()
-	s.setupActionResources(cs)
 
 	return s, nil
 }
@@ -171,21 +205,27 @@ func authGRPCOpts() (opts []grpc.ServerOption) {
 	return opts
 }
 
-func (s *Server) setupAuthMiddleware() error {
+func authPlugins() (plugins []baseapisrv.APIPlugin, err error) {
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
 	if keystoneAuthURL != "" {
 		var skipPaths []string
 		skipPaths, err := keystone.GetAuthSkipPaths()
 		if err != nil {
-			return errors.Wrap(err, "failed to setup paths skipped from authentication")
+			return nil, errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
-		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		s.Server.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			// TODO(Witaut): Don't use Echo - an internal detail of Server.
+			bs.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
+			return nil
+		})
 	} else if viper.GetBool("no_auth") {
-		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		s.Server.Echo.Use(noAuthMiddleware())
+		plugins = append(plugins, func(bs *baseapisrv.Server) error {
+			// TODO(Witaut): Don't use Echo - an internal detail of Server.
+			bs.Echo.Use(noAuthMiddleware())
+			return nil
+		})
 	}
-	return nil
+	return plugins, nil
 }
 
 func makeCollector() (c collector.Collector, err error) {
@@ -199,14 +239,16 @@ func makeCollector() (c collector.Collector, err error) {
 	return c, nil
 }
 
-func (s *Server) registerCollector(c collector.Collector) {
-	analytics.AddLoggerHook(c)
-	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	s.Server.Echo.Use(middleware.BodyDump(func(
-		ctx echo.Context, reqBody, resBody []byte,
-	) {
-		c.Send(analytics.RESTAPITrace(ctx, reqBody, resBody))
-	}))
+func collectorPlugin(c collector.Collector) baseapisrv.APIPlugin {
+	return func(bs *baseapisrv.Server) error {
+		// TODO(Witaut): Don't use Echo - an internal detail of Server.
+		bs.Echo.Use(middleware.BodyDump(func(
+			ctx echo.Context, reqBody, resBody []byte,
+		) {
+			c.Send(analytics.RESTAPITrace(ctx, reqBody, resBody))
+		}))
+		return nil
+	}
 }
 
 func (s *Server) setupService() (*services.ContrailService, error) {
@@ -287,7 +329,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		return nil, err
 	}
 
-	cs := &services.ContrailService{
+	return &services.ContrailService{
 		BaseService:        services.BaseService{},
 		DBService:          s.DBService,
 		TypeValidator:      tv,
@@ -297,11 +339,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		RefRelaxer:         s.DBService,
 		UserAgentKVService: s.DBService,
 		Collector:          s.Collector,
-	}
-
-	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	cs.RegisterRESTAPI(s.Server.Echo)
-	return cs, nil
+	}, nil
 }
 
 func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
@@ -326,7 +364,7 @@ func (s *Server) etcdNotifier() services.Service {
 	return en
 }
 
-func (s *Server) registerStaticProxyEndpoints() error {
+func registerStaticProxyEndpoints(e *echo.Echo) error {
 	for prefix, targetURLs := range viper.GetStringMapStringSlice("server.proxy") {
 		if len(targetURLs) == 0 {
 			return errors.Errorf("no target URLs provided for prefix %v", prefix)
@@ -338,21 +376,11 @@ func (s *Server) registerStaticProxyEndpoints() error {
 			return errors.Wrapf(err, "bad proxy target URL: %s", targetURLs[0])
 		}
 
-		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		g := s.Server.Echo.Group(prefix)
+		g := e.Group(prefix)
 		g.Use(removePathPrefixMiddleware(prefix))
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
 	return nil
-}
-
-func (s *Server) serveDynamicProxy(es *endpoint.Store) {
-	config := loadDynamicProxyConfig()
-	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	s.Server.Echo.Group(config.Path, dynamicProxyMiddleware(es, config))
-
-	s.Proxy = newProxyService(es, s.DBService, config)
-	s.Proxy.StartEndpointsSync()
 }
 
 func loadDynamicProxyConfig() *DynamicProxyConfig {
@@ -429,20 +457,29 @@ func (s *Server) setupHomepage() {
 	s.Server.Echo.GET("/", dh.Handle)
 }
 
-func (s *Server) setupWatchAPI() {
-	if !viper.GetBool("cache.enabled") {
-		return
-	}
-	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	s.Server.Echo.GET(WatchPath, s.watchHandler)
+func (s *Server) registerGRPCServers(gs *grpc.Server) {
+	// TODO(Witaut): Don't use GRPCServer - an internal detail of Server.
+	services.RegisterContrailServiceServer(gs, s.Service)
+	services.RegisterIPAMServer(gs, s.IPAMServer)
+	services.RegisterChownServer(gs, s.ChownServer)
+	services.RegisterSetTagServer(gs, s.SetTagServer)
+	services.RegisterRefRelaxServer(gs, s.RefRelaxServer)
+	services.RegisterPropCollectionUpdateServer(gs, s.PropCollectionUpdateServer)
 }
 
-func (s *Server) setupActionResources(cs *services.ContrailService) {
+func (s *Server) setupActionResources(bs *baseapisrv.Server, cs *services.ContrailService) {
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	s.Server.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
-	s.Server.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
-	s.Server.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
-	s.Server.Echo.POST(services.UploadCloudKeysPath, cs.RESTUploadCloudKeys)
+	bs.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
+	bs.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
+	bs.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
+	bs.Echo.POST(services.UploadCloudKeysPath, cs.RESTUploadCloudKeys)
+
+	if bs.GRPCEnabled() {
+		// TODO(Witaut): Don't use GRPCServer - an internal detail of Server.
+		services.RegisterFQNameToIDServer(bs.GRPCServer, s.FQNameToIDServer)
+		services.RegisterIDToFQNameServer(bs.GRPCServer, s.IDToFQNameServer)
+		services.RegisterUserAgentKVServer(bs.GRPCServer, s.UserAgentKVServer)
+	}
 }
 
 // Run runs Server.
