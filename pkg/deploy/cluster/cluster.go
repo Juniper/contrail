@@ -2,6 +2,8 @@ package cluster
 
 import (
 	"os/exec"
+	"context"
+	"path/filepath"
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
@@ -10,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -70,6 +73,10 @@ func NewCluster(c *Config, commandExecutor CommandExecutor) (*Cluster, error) {
 // GetDeployer creates new deployer based on the type
 // TODO(Daniel): this should not be Cluster's method
 func (c *Cluster) GetDeployer() (base.Deployer, error) {
+	if c.isMultiCloudRequest() {
+		return c.newMCProvisioner()
+	}
+
 	cData, err := data(c)
 	if err != nil {
 		return nil, err
@@ -80,14 +87,26 @@ func (c *Cluster) GetDeployer() (base.Deployer, error) {
 		return newOvercloudDeployer(c)
 	case "ansible", "tripleo":
 		return newAnsibleDeployer(c, cData), nil
-	case mCProvisioner:
-		return newMCProvisioner(c, cData), nil
 	}
 	return nil, errors.New("unsupported deployer type")
 }
 
+func (c *Cluster) isMultiCloudRequest() bool {
+	if c.config.Action == deleteAction {
+		return false
+	}
+	resp, err := c.APIServer.GetContrailCluster(context.Background(), &services.GetContrailClusterRequest{
+		ID: c.config.ClusterID,
+		Fields: []string{models.ContrailClusterFieldIsMulticloud},
+	})
+	if err != nil {
+		return false
+	}
+	return resp.GetContrailCluster().GetIsMulticloud()
+}
+
 func data(c *Cluster) (*base.Data, error) {
-	if c.config.Action == "delete" {
+	if c.config.Action == deleteAction {
 		return &base.Data{Reader: c.APIServer}, nil
 	}
 	return base.NewResourceManager(c.APIServer, c.config.LogFile).GetClusterDetails(c.config.ClusterID)
@@ -98,29 +117,7 @@ func deployerType(cData *base.Data, action string) string {
 		return cData.ClusterInfo.ProvisionerType
 	}
 
-	if action != deleteAction && isMCProvisioner(cData) {
-		return mCProvisioner
-	}
-
 	return defaultDeployer
-}
-
-func isMCProvisioner(cData *base.Data) bool {
-	if hasCloudRefs(cData) && hasMCGWNodes(cData.ClusterInfo) {
-		switch cData.ClusterInfo.ProvisioningAction {
-		case addCloud, updateCloud, deleteCloud:
-			return true
-		}
-	}
-	return false
-}
-
-func hasCloudRefs(d *base.Data) bool {
-	return d.CloudInfo != nil
-}
-
-func hasMCGWNodes(cc *models.ContrailCluster) bool {
-	return cc.ContrailMulticloudGWNodes != nil
 }
 
 func newOvercloudDeployer(c *Cluster) (base.Deployer, error) {
@@ -152,18 +149,44 @@ func newAnsibleDeployer(c *Cluster, cData *base.Data) *contrailAnsibleDeployer {
 	}
 }
 
-func newMCProvisioner(c *Cluster, cData *base.Data) *multiCloudProvisioner {
-	d := newDeployCluster(c, cData, "multi-cloud-provisioner")
-	return &multiCloudProvisioner{
-		contrailAnsibleDeployer: contrailAnsibleDeployer{
-			deployCluster: *d,
-			ansibleClient: ansible.NewCLIClient(
-				d.Reporter,
-				c.config.LogFile,
-				d.getWorkingDir(),
-				c.config.Test,
-			),
+func (c *Cluster) newMCProvisioner() (*multiCloudProvisioner, error) {
+	resp, err := c.APIServer.GetContrailCluster(context.Background(), &services.GetContrailClusterRequest{
+		ID: c.config.ClusterID,
+		Fields: []string{
+			models.ContrailClusterFieldProvisioningState,
+			models.ContrailClusterFieldProvisioningAction,
+			models.ContrailClusterFieldContainerRegistry,
 		},
-		workDir: "",
+	})
+	if err != nil {
+		return nil, err
 	}
+	// registry, err := cloud.NewAuthorizedRegistry(c.config.)
+	// if err != nil {
+
+	// }
+	return &multiCloudProvisioner{
+		workDir: filepath.Join(c.getWorkRoot(), mcWorkDir),
+		clusterUUID: c.config.ClusterID,
+		clusterProvisioningState: resp.GetContrailCluster().GetProvisioningState(),
+		mcAction: resp.GetContrailCluster().GetProvisioningAction(),
+		reporter: newReporter(c),
+		log:      logutil.NewFileLogger("multi-cloud-provisioner", c.config.LogFile),
+		test: c.config.Test,
+		apiServer: c.APIServer,
+		clouds: c.getCloudRefs(),
+		// contrailRegistries: resp.GetContrailCluster().GetContainerRegistry(),
+	}, nil
+}
+
+func (c *Cluster) getCloudRefs() []cloudRef {
+
+}
+
+func (c *Cluster) getWorkRoot() string {
+	workRoot := c.config.WorkRoot
+	if workRoot == "" {
+		workRoot = defaultWorkRoot
+	}
+	return workRoot
 }

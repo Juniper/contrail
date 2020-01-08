@@ -3,15 +3,14 @@ package deploy
 import (
 	"os/exec"
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // manager inerface to manage resources
@@ -53,8 +52,7 @@ func newOneShotManager(deploy *Deploy) (*oneShotManager, error) {
 }
 
 func newManager(deploy *Deploy) (manager, error) {
-	switch deploy.managerType {
-	case "oneshot":
+	if deploy.managerType == "oneshot" {
 		return newOneShotManager(deploy)
 	}
 	//TODO(ijohnson) Support daemon manager with etcd
