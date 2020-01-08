@@ -10,7 +10,6 @@ const (
 	defaultInstanceFile                   = "instances.yml"
 	defaultVcenterTemplate                = "vcenter_vars.tmpl"
 	defaultVcenterFile                    = "vcenter_vars.yml"
-	mCProvisioner                         = "multi-cloud"
 	defaultDeployer                       = "ansible"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"

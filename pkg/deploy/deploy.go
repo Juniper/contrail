@@ -15,6 +15,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+const oneShotMgr = "oneshot"
+
 // Config represents Deploy configuration.
 type Config struct { // nolint: maligned
 	// ID of Deploy account.
@@ -111,17 +113,15 @@ func NewDeploy(c *Config) (*Deploy, error) {
 		Insecure: c.InSecure,
 	})
 
-	t := "daemon"
-	if c.ResourceID != "" && c.Action != "" {
-		t = "oneshot"
-	} else if c.ResourceID != "" && c.Action == "" {
+	if c.ResourceID != "" {
 		return nil, fmt.Errorf("action not specified in the config for oneshot manager")
-	} else if c.Action != "" && c.ResourceID == "" {
+	}
+	if c.Action != "" {
 		return nil, fmt.Errorf("resource ID not specified in the config for oneshot manager")
 	}
 
 	return &Deploy{
-		managerType:  t,
+		managerType:  oneShotMgr,
 		APIServer:    s,
 		config:       c,
 		log:          logutil.NewFileLogger("deploy", c.LogFile),
