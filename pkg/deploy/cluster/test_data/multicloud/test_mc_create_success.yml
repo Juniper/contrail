@@ -1,0 +1,230 @@
+name: Multi cloud cluster successful create test
+description: multi cloud cluster successful create test
+cleanup:
+- path: /contrail-multicloud-gw-node/contrail_multicloud_gw_node_uuid
+- path: /contrail-cluster/test_mc_cluster_uuid
+- path: /node/cloud_node_gw_uuid
+- path: /cloud-provider/pvt_cloud_provider_uuid
+- path: /cloud-provider/public_cloud_provider_uuid
+- path: /cloud/pvt_cloud_uuid
+- path: /cloud/public_cloud_uuid
+
+test_data:
+  cloud_node_gw: &cloud_node_gw
+    name: cloud_node_gw
+    uuid: cloud_node_gw_uuid
+    hostname: cloud_node_gw
+    interface_name: cloud_node_gw
+    ip_address: 2.2.2.2
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  pvt_cloud: &pvt_cloud
+    name: pvt_cloud
+    uuid: pvt_cloud_uuid
+    organization: pvt_unit_test
+    cloud_user_refs:
+      - uuid: pvt_cloud_user_uuid
+    provisioning_state: CREATED
+  public_cloud: &public_cloud
+    name: public_cloud
+    uuid: public_cloud_uuid
+    organization: public_unit_test
+    cloud_user_refs:
+      - uuid: public_cloud_user_uuid
+    provisioning_state: CREATED
+  pvt_cloud_provider: &pvt_cloud_provider
+    name: pvt_cloud_provider
+    uuid: pvt_cloud_provider_uuid
+    type: private
+    project: pvt_test2
+    parent_type: cloud
+    parent_uuid: pvt_cloud_uuid
+  cloud_provider: &public_cloud_provider
+    name: public_cloud_provider
+    uuid: public_cloud_provider_uuid
+    type: azure
+    project: public_test2
+    parent_type: cloud
+    parent_uuid: public_cloud_uuid
+  all_in_one_cluster: &all_in_one_cluster
+    uuid: test_mc_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    provisioning_state: NOSTATE
+    provisioning_action: ADD_CLOUD
+    container_registry: test_registry
+    registry_private_insecure: false
+    container_registry_username: user1
+    container_registry_password: password
+    contrail_version: ocata-5.0-x
+    orchestrator: kubernetes
+    default_gateway: 127.0.0.254
+    ntp_server: 10.1.1.100
+    mc_gw_info:
+      AS: 65000
+      openvpn_port: 443
+      vpn_lo_network: 100.65.0.0/16
+      vpn_network: 100.64.0.0/16
+      bfd_interval: 200ms
+      bfd_multiplier: 5
+      bfd_interval_multihop: 500ms
+      bfd_multiplier_multihop: 5
+    cloud_refs:
+      - uuid: pvt_cloud_uuid
+      - uuid: public_cloud_uuid
+    contrail_configuration:
+      key_value_pair:
+        - key: CONTRAIL_CONTAINER_TAG
+          value: "master.100"
+  contrail_multicloud_gw_node: &contrail_multicloud_gw_node
+    uuid: contrail_multicloud_gw_node_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_mc_cluster_uuid
+    node_refs:
+      - uuid: cloud_node_gw_uuid
+    protocols_mode:
+      - ssl_client
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create pvt cloud
+  request:
+    path: /clouds
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud: *pvt_cloud
+  expect:
+    cloud:
+      perms2:
+        owner: admin
+      name: pvt_cloud
+      uuid: pvt_cloud_uuid
+      organization: pvt_unit_test
+      cloud_user_refs:
+        - uuid: pvt_cloud_user_uuid
+- name: create public cloud
+  request:
+    path: /clouds
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud: *public_cloud
+  expect:
+    cloud:
+      name: public_cloud
+      uuid: public_cloud_uuid
+      organization: public_unit_test
+      cloud_user_refs:
+        - uuid: public_cloud_user_uuid
+- name: create pvt cloud provider
+  request:
+    path: /cloud-providers
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-provider: *pvt_cloud_provider
+  expect:
+    cloud-provider:
+      perms2:
+        owner: admin
+      uuid: pvt_cloud_provider_uuid
+      type: private
+      project: pvt_test2
+      parent_type: cloud
+      parent_uuid: pvt_cloud_uuid
+- name: create public cloud provider
+  request:
+    path: /cloud-providers
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-provider: *public_cloud_provider
+  expect:
+    cloud-provider:
+      perms2:
+        owner: admin
+      uuid: public_cloud_provider_uuid
+      type: azure
+      project: public_test2
+      parent_type: cloud
+      parent_uuid: public_cloud_uuid
+
+- name: create cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *all_in_one_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      provisioning_action: ADD_CLOUD
+      provisioning_state: NOSTATE
+      uuid: test_mc_cluster_uuid
+      container_registry: test_registry
+      container_registry_password: password
+      container_registry_username: user1
+      contrail_version: ocata-5.0-x
+      orchestrator: kubernetes
+      default_gateway: 127.0.0.254
+      ntp_server: 10.1.1.100
+      cloud_refs:
+        - uuid: pvt_cloud_uuid
+        - uuid: public_cloud_uuid
+- name: create gateway node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *cloud_node_gw
+  expect:
+    node:
+      perms2:
+        owner: admin
+      name: cloud_node_gw
+      uuid: cloud_node_gw_uuid
+      hostname: cloud_node_gw
+      interface_name: cloud_node_gw
+      ip_address: 2.2.2.2
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+- name: create multi cloud gateway node
+  request:
+    path: /contrail-multicloud-gw-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-multicloud-gw-node: *contrail_multicloud_gw_node
+  expect:
+    contrail-multicloud-gw-node:
+      uuid: contrail_multicloud_gw_node_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_mc_cluster_uuid
+      node_refs:
+        - uuid: cloud_node_gw_uuid
+      protocols_mode:
+        - ssl_client

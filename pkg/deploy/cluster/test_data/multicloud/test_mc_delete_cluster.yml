@@ -1,33 +1,21 @@
-name: Multi cloud cluster update test
-description: multi cloud cluster update test
+name: Multi cloud cluster delete test
+description: multi cloud cluster delete test
 test_data:
   all_in_one_cluster: &all_in_one_cluster
-    uuid: test_cluster_uuid
+    uuid: test_mc_cluster_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     provisioning_state: NOSTATE
-    provisioning_action: UPDATE_CLOUD
+    provisioning_action: DELETE_CLOUD
     container_registry: test_registry
     registry_private_insecure: false
     contrail_version: ocata-5.0-x
     orchestrator: kubernetes
     default_gateway: 127.0.0.254
     ntp_server: 10.1.1.100
-    kubernetes_cluster_refs:
-      - uuid: test_kubernetes_cluster_uuid
     cloud_refs:
       - uuid: pvt_cloud_uuid
       - uuid: public_cloud_uuid
-    {% if CONTROL_NODES %}
-    contrail_configuration:
-    key_value_pair:
-      - key: CONTROL_NODES
-        value: {{CONTROL_NODES}}
-      {% if CONTROLLER_NODES %}
-      - key: CONTROLLER_NODES
-        value: {{CONTROLLER_NODES}}
-      {%endif%}
-    {%endif%}
 clients:
   default:
     id: alice
@@ -37,9 +25,9 @@ clients:
       project:
         name: admin
 workflow:
-- name: update cluster
+- name: delete cluster
   request:
-    path: /contrail-cluster/test_cluster_uuid
+    path: /contrail-cluster/test_mc_cluster_uuid
     method: PUT
     expected:
     - 200
@@ -49,9 +37,9 @@ workflow:
     contrail-cluster:
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-      provisioning_action: UPDATE_CLOUD
+      provisioning_action: DELETE_CLOUD
       provisioning_state: NOSTATE
-      uuid: test_cluster_uuid
+      uuid: test_mc_cluster_uuid
       container_registry: test_registry
       contrail_version: ocata-5.0-x
       orchestrator: kubernetes
