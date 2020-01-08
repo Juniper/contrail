@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7aba162e_07117cd7",
+        "filename": "pkg/apisrv/baseapisrv/middleware.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T16:50:36Z",
+      "side": 1,
+      "message": "You could alternatively rename middleware.go to utils.go. It would contain small functions/types that do not deserve their own package.",
+      "parentUuid": "1fc8a539_739a05e7",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "96f4c36d_d413fb9b",
         "filename": "pkg/apisrv/baseapisrv/middleware.go",
         "patchSetId": 10
@@ -30,6 +48,70 @@
       "writtenOn": "2020-01-08T14:47:06Z",
       "side": 1,
       "message": "Where is recorderTask definition?",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04599ceb_3bed9488",
+        "filename": "pkg/apisrv/baseapisrv/middleware.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T16:50:36Z",
+      "side": 1,
+      "message": "In server.go It should be moved here, too.",
+      "parentUuid": "96f4c36d_d413fb9b",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b67fca57_9503e1bd",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T16:50:36Z",
+      "side": 1,
+      "message": "Please move struct literal initialization to the end of this function.",
+      "range": {
+        "startLine": 28,
+        "startChar": 6,
+        "endLine": 30,
+        "endChar": 2
+      },
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "85c6c9ff_08998f70",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T16:50:36Z",
+      "side": 1,
+      "message": "Please move struct literal initialization to the end of this function. If it is too much work, skip it.",
+      "range": {
+        "startLine": 72,
+        "startChar": 6,
+        "endLine": 72,
+        "endChar": 14
+      },
       "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
