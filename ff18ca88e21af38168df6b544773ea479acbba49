@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0850e5ef_a0f75703",
+        "filename": "pkg/apisrv/grpc_test.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T14:42:34Z",
+      "side": 1,
+      "message": "Please split it to 2 lines. It confused me.",
+      "revId": "ff18ca88e21af38168df6b544773ea479acbba49",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d145e31e_b138da9e",
+        "filename": "pkg/apisrv/grpc_test.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 413,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-08T14:42:34Z",
+      "side": 1,
+      "message": "Ditto L73",
+      "revId": "ff18ca88e21af38168df6b544773ea479acbba49",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
