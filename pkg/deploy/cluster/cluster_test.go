@@ -1002,10 +1002,13 @@ func createDummyCloudFiles(t *testing.T) func() {
 		assert.NoErrorf(t, err, "Couldn't copy file %s to %s", f.src, f.dest)
 	}
 
+	cleanKey := createPrivateKey(t, "test_data/test_pvt_key_real")
+
 	return func() {
 		for _, f := range files {
 			assert.NoError(t, os.Remove(f.dest), "Couldn't cleanup file %s", f.dest)
 		}
+		cleanKey()
 	}
 }
 
