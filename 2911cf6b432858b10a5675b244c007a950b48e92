@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "4822868a_0a034e42",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "I talked offline with Michał and came to an agreement that the client projects (e.g. Juniper/contrail) just using asf/pkg/apisrv as an HTTP/GRPC server is not the endgame, because then the client projects would each have a huge package like contrail/pkg/apisrv, which would likely be duplicated+modified in each of them. The endgame is providing an API server (with a similar functionality to contrail/pkg/apisrv) that can be used in a few lines of code.\n\n@Michal, do you have a suggestion for what to write in the commit message to \"admit this is a temporary solution\"?\n\n@Daniel, I think moving this to asf can be done when the 3 CRs in this patch queue are finished.",
+      "parentUuid": "ef020e1d_2dd30a83",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aec7dd56_8f2fc96a",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
@@ -143,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "2ee40319_42642607",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "50232fba_2c176bc5",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a384d4c9_d42afa8e",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
@@ -163,6 +199,30 @@
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f8bee31e_03db6abb",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a384d4c9_d42afa8e",
+      "range": {
+        "startLine": 138,
+        "startChar": 2,
+        "endLine": 169,
+        "endChar": 4
+      },
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -201,6 +261,24 @@
     },
     {
       "key": {
+        "uuid": "eac99c3d_bfd2f9be",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "78044acb_df7152cd",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2b2f7a44_a390663d",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 4
@@ -236,6 +314,24 @@
     },
     {
       "key": {
+        "uuid": "912823cb_ddc9cea4",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e89ba61b_c6aebb55",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "14e0dc21_17e46de9",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 4
@@ -250,6 +346,24 @@
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1156470f_c19f9ca9",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "14e0dc21_17e46de9",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -288,6 +402,24 @@
     },
     {
       "key": {
+        "uuid": "19b66266_56189d7a",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6fa836be_d7c89908",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d3dfabbc_c3cd9016",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 4
@@ -302,6 +434,24 @@
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "14bad3d6_bbd55a8d",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d3dfabbc_c3cd9016",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -322,6 +472,24 @@
     },
     {
       "key": {
+        "uuid": "3c44ac8a_ca587f69",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "67223df6_87739897",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e1319c75_bcfc4c52",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 4
@@ -336,6 +504,24 @@
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9850bb75_e681bb7c",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e1319c75_bcfc4c52",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -356,6 +542,24 @@
     },
     {
       "key": {
+        "uuid": "e3938d69_85b7fbd3",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 409,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dba6832b_7e328ad1",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6f3df006_c2e1ec22",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 4
@@ -370,6 +574,24 @@
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fb804664_a15d31e0",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 416,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6f3df006_c2e1ec22",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -390,6 +612,24 @@
     },
     {
       "key": {
+        "uuid": "f5aaa3f4_d89b82e1",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a53ae410_81fc1b3f",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "046fd4b8_9842f6b8",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 4
@@ -404,6 +644,24 @@
       "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26a68e90_1da188cf",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-08T14:10:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "046fd4b8_9842f6b8",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
