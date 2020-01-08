@@ -899,6 +899,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		AnsibleRevision:           "ansibleRevision",
 	}
 
+	assert.NoError(t, os.Chmod("test_data/test_pvt_key", keyPermissions), "cannot set proper permissions")
+
 	cloudFileCleanup := createDummyCloudFiles(t)
 	defer cloudFileCleanup()
 	// create cluster
