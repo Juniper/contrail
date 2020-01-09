@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bd6f9bfd_3ed5a76f",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-09T14:09:16Z",
+      "side": 1,
+      "message": "Sort these functions.",
+      "range": {
+        "startLine": 198,
+        "startChar": 0,
+        "endLine": 216,
+        "endChar": 1
+      },
+      "revId": "efed24d03c66aaab085bf4449b051d5e80b30c5f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
