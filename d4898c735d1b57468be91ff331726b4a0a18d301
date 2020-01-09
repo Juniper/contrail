@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "2bde113b_14626f0f",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-09T12:25:55Z",
+      "side": 1,
+      "message": "Actually this line is a \"safety measure\" to inform user that he is using insecure mode. We aren\u0027t setting \"*\" here, we are just doing what user configured.\n\nSecondly I believe that CORS \"*\" is heavily used in developer environments (eg. UI guys).",
+      "parentUuid": "60853d6b_27ed05cb",
+      "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d724a40b_6969541c",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 12
@@ -30,6 +48,24 @@
       "writtenOn": "2020-01-09T12:20:42Z",
       "side": 1,
       "message": "I understand that all those TODOs will be done in other tasks/will be done after other tasks merge and you can\u0027t do them right now?",
+      "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "206453d9_060df942",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-09T12:25:55Z",
+      "side": 1,
+      "message": "I partly suggested to add many TODOs in this change, because this review contained ready to merge parts of code. Implementing things left as TODO would increase the CR scope quite dramatically.",
+      "parentUuid": "d724a40b_6969541c",
       "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
