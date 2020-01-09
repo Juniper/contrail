@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "37452bf2_7b324320",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T11:54:01Z",
+      "side": 1,
+      "message": "I\u0027ve replaced *BaseServer with a Router interface. Next, I\u0027ll split the func(Router) error into an interface with methods for HTTP and GRPC, so that the GRPCEnabled() method can be removed.",
+      "parentUuid": "779df819_4b772790",
+      "range": {
+        "startLine": 42,
+        "startChar": 20,
+        "endLine": 42,
+        "endChar": 31
+      },
+      "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d335be6e_e76c166a",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 8
