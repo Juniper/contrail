@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "557b2015_e04ce653",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-09T09:54:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "43b56546_1be215b1",
+      "range": {
+        "startLine": 114,
+        "startChar": 0,
+        "endLine": 118,
+        "endChar": 2
+      },
+      "revId": "d3d425a5b8a325bdee8f74e40c5ba7ba333fd102",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "24b010b0_7f2a9f2a",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 11
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "c1c5c8c4_bb3d5a66",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-09T09:54:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "24b010b0_7f2a9f2a",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 2
+      },
+      "revId": "d3d425a5b8a325bdee8f74e40c5ba7ba333fd102",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "01a8a8bb_5b922ef4",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 11
@@ -59,6 +107,30 @@
       "writtenOn": "2020-01-09T09:16:13Z",
       "side": 1,
       "message": "Why is this a raw string? This error message will have a newline and indentation.",
+      "range": {
+        "startLine": 332,
+        "startChar": 20,
+        "endLine": 334,
+        "endChar": 41
+      },
+      "revId": "d3d425a5b8a325bdee8f74e40c5ba7ba333fd102",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffe49994_a509f8df",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-09T09:54:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "01a8a8bb_5b922ef4",
       "range": {
         "startLine": 332,
         "startChar": 20,
