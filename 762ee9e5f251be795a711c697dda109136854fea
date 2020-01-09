@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9cbf7802_ed21ef73",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T14:24:22Z",
+      "side": 1,
+      "message": "nit: None of them weren\u0027t",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 20
+      },
+      "revId": "762ee9e5f251be795a711c697dda109136854fea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "64ea262f_fa74fe62",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T14:24:22Z",
+      "side": 1,
+      "message": "This is actually MC repository directory not MC ansible",
+      "range": {
+        "startLine": 27,
+        "startChar": 1,
+        "endLine": 27,
+        "endChar": 4
+      },
+      "revId": "762ee9e5f251be795a711c697dda109136854fea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
