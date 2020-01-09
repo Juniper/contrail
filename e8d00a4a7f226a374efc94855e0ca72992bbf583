@@ -2,6 +2,75 @@
   "comments": [
     {
       "key": {
+        "uuid": "73599f5b_05b3f585",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "This if statement can be inlined",
+      "range": {
+        "startLine": 82,
+        "startChar": 1,
+        "endLine": 85,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ff2fc525_2e69c0bc",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "This if statement can be inlined",
+      "range": {
+        "startLine": 104,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "13c465c0_88682987",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "ditto L#105",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 113,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a7d2c4b3_06be7a4a",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -48,6 +117,86 @@
     },
     {
       "key": {
+        "uuid": "e08db5f1_b59bdd2b",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "What\u0027s the use for returned bool? Wouldn\u0027t returning nil container be enough?",
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f11fb8df_0a79fbb0",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "What in the case when there are multiple instances of container based on the same image?",
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f1a217de_f5192296",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "ditto L#105",
+      "range": {
+        "startLine": 190,
+        "startChar": 2,
+        "endLine": 193,
+        "endChar": 3
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bc9e604e_f6432653",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "ditto L#105",
+      "range": {
+        "startLine": 226,
+        "startChar": 1,
+        "endLine": 229,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "eb6a77d7_8bc1c3af",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -64,6 +213,76 @@
         "startChar": 84,
         "endLine": 281,
         "endChar": 107
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "09058d77_da143d05",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "eb6a77d7_8bc1c3af",
+      "range": {
+        "startLine": 281,
+        "startChar": 84,
+        "endLine": 281,
+        "endChar": 107
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "89b92d2d_80249ccc",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "Nit: Personally I feel the cleanContainer function would reset existing container to its clean state.",
+      "range": {
+        "startLine": 281,
+        "startChar": 26,
+        "endLine": 281,
+        "endChar": 40
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d1f45cb2_c6a84716",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "Isn\u0027t stopping container with 0 seconds timeout the same thing as forced container removal?\nIf so, this could be written as:\n return p.client.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{Force: true})",
+      "range": {
+        "startLine": 290,
+        "startChar": 0,
+        "endLine": 296,
+        "endChar": 84
       },
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
@@ -134,6 +353,23 @@
         "endLine": 444,
         "endChar": 48
       },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5d4d97ed_ee606d4b",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T16:55:00Z",
+      "side": 1,
+      "message": "This is redundant since MC provisioner doesn\u0027t call Play().",
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
