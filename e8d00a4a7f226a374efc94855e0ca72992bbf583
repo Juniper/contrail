@@ -134,6 +134,24 @@
     },
     {
       "key": {
+        "uuid": "78fcf687_409c69fa",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-09T22:49:09Z",
+      "side": 1,
+      "message": "Yeah, I also thought of that way. But I want the result of found or not distinct, easy to be figured out, like ele, ok :\u003d map[key]. That\u0027s why I choose to return a found boolean value in addition.",
+      "parentUuid": "e08db5f1_b59bdd2b",
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f11fb8df_0a79fbb0",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -148,6 +166,24 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "474f1f59_3ef97b38",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-09T22:49:09Z",
+      "side": 1,
+      "message": "You can use any one of them, their state doesn\u0027t change. You can think of them as a function that awaits arguments.",
+      "parentUuid": "f11fb8df_0a79fbb0",
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -267,6 +303,54 @@
     },
     {
       "key": {
+        "uuid": "327faca9_f67119b0",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-09T22:49:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "09058d77_da143d05",
+      "range": {
+        "startLine": 281,
+        "startChar": 84,
+        "endLine": 281,
+        "endChar": 107
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cbd793c4_c8174d08",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-09T22:49:09Z",
+      "side": 1,
+      "message": "Good notice, I changed it to remove container instead.",
+      "parentUuid": "89b92d2d_80249ccc",
+      "range": {
+        "startLine": 281,
+        "startChar": 26,
+        "endLine": 281,
+        "endChar": 40
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d1f45cb2_c6a84716",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -333,6 +417,30 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d85d82e4_1dffff85",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-09T22:49:09Z",
+      "side": 1,
+      "message": "This image is for deploying contrail products, not responsible for DataEncryptionPath, XFlow, and MC, since their ansible deployer images are not ready yet.",
+      "parentUuid": "9ac131b8_23b95ef9",
+      "range": {
+        "startLine": 387,
+        "startChar": 5,
+        "endLine": 387,
+        "endChar": 36
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
