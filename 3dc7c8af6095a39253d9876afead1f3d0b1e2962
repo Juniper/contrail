@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "f5967741_a0c0b022",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3323d0a8_84d7dcde",
+      "range": {
+        "startLine": 95,
+        "startChar": 0,
+        "endLine": 96,
+        "endChar": 36
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0ccac485_083ba117",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2020-01-09T11:22:15Z",
       "side": 1,
       "message": "Since we separate this test from the rest of Cluster tests we shouldn\u0027t use its workRoot",
+      "range": {
+        "startLine": 28,
+        "startChar": 27,
+        "endLine": 28,
+        "endChar": 35
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a4c1949d_cf499630",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0ccac485_083ba117",
       "range": {
         "startLine": 28,
         "startChar": 27,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "4d4d8259_68bd5ce2",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d8563fd2_142d274a",
+      "range": {
+        "startLine": 43,
+        "startChar": 11,
+        "endLine": 43,
+        "endChar": 12
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c3e4503a_f6b3ae5c",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 1
@@ -82,6 +154,30 @@
       "writtenOn": "2020-01-09T11:22:15Z",
       "side": 1,
       "message": "I think it should happen before entering \"update mc\" section",
+      "range": {
+        "startLine": 68,
+        "startChar": 1,
+        "endLine": 68,
+        "endChar": 18
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3df7d559_84a54311",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "This step is basically a prerequisite for the test case, same as the makeRequest() call line above.",
+      "parentUuid": "c3e4503a_f6b3ae5c",
       "range": {
         "startLine": 68,
         "startChar": 1,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "d1fde428_64387450",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "same as above",
+      "parentUuid": "4d5df8d8_eee4ea13",
+      "range": {
+        "startLine": 80,
+        "startChar": 1,
+        "endLine": 80,
+        "endChar": 18
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ea5df523_bad8ae35",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 1
@@ -140,6 +260,30 @@
     },
     {
       "key": {
+        "uuid": "cd804d35_db957c2c",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "TestMC{Operation}Fail functions are bases for future test cases. Ideally in future patches this function will test multiple scenarios when create should fail. Constraining the reason of failure in the test function name may limit future usage.",
+      "parentUuid": "ea5df523_bad8ae35",
+      "range": {
+        "startLine": 95,
+        "startChar": 5,
+        "endLine": 95,
+        "endChar": 21
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "18e04b11_1a9b9d49",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 1
@@ -151,6 +295,30 @@
       "writtenOn": "2020-01-09T11:22:15Z",
       "side": 1,
       "message": "If we specify the LogFile we could actually test if this file contains anything after the test",
+      "range": {
+        "startLine": 188,
+        "startChar": 2,
+        "endLine": 188,
+        "endChar": 54
+      },
+      "revId": "3dc7c8af6095a39253d9876afead1f3d0b1e2962",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1a550c5e_0ea535f6",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Wouldn\u0027t this just test logrus functionality?",
+      "parentUuid": "18e04b11_1a9b9d49",
       "range": {
         "startLine": 188,
         "startChar": 2,

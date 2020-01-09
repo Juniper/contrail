@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "d6d6ae65_8a5c5c83",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8d331e65_dc267692",
+      "range": {
+        "startLine": 43,
+        "startChar": 9,
+        "endLine": 43,
+        "endChar": 19
+      },
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "06f510da_4c4b063c",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 2
@@ -36,6 +60,24 @@
       "writtenOn": "2020-01-09T11:14:23Z",
       "side": 1,
       "message": "If linter do not warn about not assigning result from function call to a variable then remove this assignment.",
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1ba02537_d29a9d72",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "06f510da_4c4b063c",
       "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -59,6 +101,24 @@
     },
     {
       "key": {
+        "uuid": "9bc87c91_8a47b4ed",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ab27eb63_d71d0a84",
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7fa785ab_55d7f377",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 2
@@ -70,6 +130,24 @@
       "writtenOn": "2020-01-09T11:14:23Z",
       "side": 1,
       "message": "All failing scenarios look almost identically can you make from these 3 scenarios one table test?",
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5a244cc_26ccf08c",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "TestMC{Operation}Fail functions are bases for future test cases. Ideally in future patches this function will test multiple scenarios when create should fail - same with Update and Delete tests.",
+      "parentUuid": "7fa785ab_55d7f377",
       "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -93,6 +171,24 @@
     },
     {
       "key": {
+        "uuid": "e7e1cb8c_1e072933",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a35bc5f4_d0d8b02b",
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "be4b541b_00526303",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 2
@@ -104,6 +200,24 @@
       "writtenOn": "2020-01-09T11:14:23Z",
       "side": 1,
       "message": "ditto 66",
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c344b654_37e5044e",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "be4b541b_00526303",
       "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -133,6 +247,30 @@
     },
     {
       "key": {
+        "uuid": "0b960119_624be169",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "539377fc_0f48cc33",
+      "range": {
+        "startLine": 205,
+        "startChar": 1,
+        "endLine": 209,
+        "endChar": 24
+      },
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c6d82bb4_44e3d123",
         "filename": "pkg/deploy/cluster/mc_test.go",
         "patchSetId": 2
@@ -144,6 +282,30 @@
       "writtenOn": "2020-01-09T11:14:23Z",
       "side": 1,
       "message": "Compare as yaml instead as raw files.",
+      "range": {
+        "startLine": 214,
+        "startChar": 24,
+        "endLine": 221,
+        "endChar": 16
+      },
+      "revId": "08f61f704a171bfe957162c13ef58304e21104b6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af9aa867_97dff883",
+        "filename": "pkg/deploy/cluster/mc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T13:59:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c6d82bb4_44e3d123",
       "range": {
         "startLine": 214,
         "startChar": 24,
