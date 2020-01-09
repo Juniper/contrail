@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "257f8445_63a26d16",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-09T09:15:02Z",
+      "side": 1,
+      "message": "It is \u0027to open\u0027 rather than \u0027bigger\u0027.",
+      "range": {
+        "startLine": 10,
+        "startChar": 3,
+        "endLine": 10,
+        "endChar": 9
+      },
+      "revId": "0b11edf4b68ba2ab769b14c57bae603dddbe031a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
