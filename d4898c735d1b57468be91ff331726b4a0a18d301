@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "dd535e7e_ecccef98",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-09T13:00:51Z",
+      "side": 1,
+      "message": "@vozhyk I think this message should be improved (\"cors for *\" is a bit cryptic) and Marcin thinks it should be rewritten and all uppercase. Please decide.",
+      "parentUuid": "2bde113b_14626f0f",
+      "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d724a40b_6969541c",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 12
