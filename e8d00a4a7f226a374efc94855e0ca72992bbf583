@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a7d2c4b3_06be7a4a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "An error could appear below in ReadAll function for some reason. In that case IMHO we shouldn\u0027t ignore reader.Close() error but wrap it.",
+      "range": {
+        "startLine": 148,
+        "startChar": 2,
+        "endLine": 151,
+        "endChar": 3
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6da167df_aa9ebc1d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "return err",
+      "range": {
+        "startLine": 155,
+        "startChar": 1,
+        "endLine": 159,
+        "endChar": 11
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eb6a77d7_8bc1c3af",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "Instead of passing this argument do not call cleanContainer if it should stay alive.",
+      "range": {
+        "startLine": 281,
+        "startChar": 84,
+        "endLine": 281,
+        "endChar": 107
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24f511b4_56555c4e",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "This is redundant.",
+      "range": {
+        "startLine": 171,
+        "startChar": 71,
+        "endLine": 171,
+        "endChar": 96
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9ac131b8_23b95ef9",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "Why exactly this image?",
+      "range": {
+        "startLine": 387,
+        "startChar": 5,
+        "endLine": 387,
+        "endChar": 36
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5cb6679c_9610f1aa",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "Why do we accept only first two arguments?",
+      "range": {
+        "startLine": 444,
+        "startChar": 33,
+        "endLine": 444,
+        "endChar": 48
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

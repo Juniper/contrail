@@ -191,6 +191,30 @@
     },
     {
       "key": {
+        "uuid": "cd8f8168_9ef2f088",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-09T14:30:52Z",
+      "side": 1,
+      "message": "This guideline refers to the situation when you initialize a variable that is required in the rest of the code. The err variable\u0027s scope belongs only to this error handling that\u0027s why you should initialize this in the statement.",
+      "parentUuid": "9bdcddab_c3fba418",
+      "range": {
+        "startLine": 123,
+        "startChar": 1,
+        "endLine": 126,
+        "endChar": 2
+      },
+      "revId": "e233b95ed53e21c61d42e6342727fed6b435580a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2cc0cd89_0d2e1f01",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 8
