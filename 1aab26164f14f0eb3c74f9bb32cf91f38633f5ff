@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "e04a121c_27cf9b32",
+        "filename": "pkg/apisrv/baseapisrv/middleware.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T09:52:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7aba162e_07117cd7",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "96f4c36d_d413fb9b",
         "filename": "pkg/apisrv/baseapisrv/middleware.go",
         "patchSetId": 10
@@ -69,6 +87,24 @@
       "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f1cb947_be9ceff5",
+        "filename": "pkg/apisrv/baseapisrv/middleware.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T09:52:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "04599ceb_3bed9488",
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -111,6 +147,29 @@
         "startChar": 6,
         "endLine": 72,
         "endChar": 14
+      },
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5c37bab_17ea0a0d",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T09:52:30Z",
+      "side": 1,
+      "message": "Turns out that s.Collector is nil at this point, and it\u0027s apparently not caught by pkg/apisrv tests.\n\nI\u0027ll change this to call s.setupCollector() before using s.Collector.",
+      "range": {
+        "startLine": 77,
+        "startChar": 69,
+        "endLine": 77,
+        "endChar": 80
       },
       "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",

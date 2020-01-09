@@ -91,6 +91,24 @@
     },
     {
       "key": {
+        "uuid": "873a9b6b_b9d622ae",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T09:52:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d75382e8_d4088947",
+      "revId": "2911cf6b432858b10a5675b244c007a950b48e92",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "aec7dd56_8f2fc96a",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 4
