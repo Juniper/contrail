@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "92c0d377_fdb16936",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T14:16:52Z",
+      "side": 1,
+      "message": "use const",
+      "range": {
+        "startLine": 20,
+        "startChar": 21,
+        "endLine": 20,
+        "endChar": 52
+      },
+      "revId": "da8e5643967580d39fabf21a8b086b82d0406c44",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "966ee3c6_5510d72f",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T14:16:52Z",
+      "side": 1,
+      "message": "ditto L#41",
+      "range": {
+        "startLine": 32,
+        "startChar": 1,
+        "endLine": 32,
+        "endChar": 7
+      },
+      "revId": "da8e5643967580d39fabf21a8b086b82d0406c44",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2b87386a_21c0792c",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T14:16:52Z",
+      "side": 1,
+      "message": "Since completion of this step is necessary for test success shouldn\u0027t this \"assert\" be actually \"require\"?",
+      "range": {
+        "startLine": 41,
+        "startChar": 1,
+        "endLine": 41,
+        "endChar": 7
+      },
+      "revId": "da8e5643967580d39fabf21a8b086b82d0406c44",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5ec87eeb_ddba267a",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-09T14:16:52Z",
+      "side": 1,
+      "message": "ditto L#41",
+      "range": {
+        "startLine": 48,
+        "startChar": 1,
+        "endLine": 48,
+        "endChar": 7
+      },
+      "revId": "da8e5643967580d39fabf21a8b086b82d0406c44",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
