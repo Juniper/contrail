@@ -1,0 +1,140 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "665c536c_60e806d2",
+        "filename": "pkg/apisrv/middleware.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "The code should be moved, not copied to avoid duplication.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b92ef9f5_e4d8bea7",
+        "filename": "pkg/apisrv/middleware.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "I think we should leave in pkg/keystone, but make skipPaths extendable.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec452d3a_42fc94d6",
+        "filename": "pkg/apisrv/middleware.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "It should stay in pkg/keystone.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eb16f50c_04c56c28",
+        "filename": "pkg/apisrv/middleware.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "It should stay in pkg/keystone.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54ed8a23_924a8b0b",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "Please revert changes.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23c24a0c_f8c18b37",
+        "filename": "pkg/replication/client.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "There is no need to remove pkg/keystone dependency from pkg/replication. Please revert changes.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d3df68c4_c811f770",
+        "filename": "pkg/replication/replication.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "There is no need to remove pkg/keystone dependency from pkg/replication. Please revert changes.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "73c7682b_4a1fe652",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-09T11:21:13Z",
+      "side": 1,
+      "message": "Please revert changes.",
+      "revId": "cbae729af289e4442c5f0668bc98ecf174d189cd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
