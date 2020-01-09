@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "15420c61_11f5abfe",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T19:51:27Z",
+      "side": 1,
+      "message": "Done.\n\nAlso, partially resolved https://review.opencontrail.org/c/Juniper/contrail/+/55941/14/pkg/apisrv/baseapisrv/server.go#34. Still, baseapisrv.HandlerFunc uses echo.Context, and many users of it also use it, and changing that would be a large change. I\u0027ve added a TODO for this.",
+      "parentUuid": "37452bf2_7b324320",
+      "range": {
+        "startLine": 42,
+        "startChar": 20,
+        "endLine": 42,
+        "endChar": 31
+      },
+      "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d335be6e_e76c166a",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 8
@@ -87,6 +111,24 @@
       "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e2423485_99c4ef5a",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T19:51:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d335be6e_e76c166a",
+      "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
