@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "c945721d_45e5b0fe",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T16:30:27Z",
+      "side": 1,
+      "message": "I\u0027ve only moved this code from pkg/apisrv/server.go. I\u0027d keep this as is.",
+      "parentUuid": "dd535e7e_ecccef98",
+      "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d724a40b_6969541c",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 12
@@ -84,6 +102,24 @@
       "side": 1,
       "message": "I partly suggested to add many TODOs in this change, because this review contained ready to merge parts of code. Implementing things left as TODO would increase the CR scope quite dramatically.",
       "parentUuid": "d724a40b_6969541c",
+      "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3d135b27_66756085",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T16:30:27Z",
+      "side": 1,
+      "message": "I\u0027ve left this particular TODO here so that other people don\u0027t think this code is fine. Doing this is included in another task.",
+      "parentUuid": "206453d9_060df942",
       "revId": "d4898c735d1b57468be91ff331726b4a0a18d301",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
