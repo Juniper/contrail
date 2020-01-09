@@ -34,6 +34,24 @@
       "revId": "2a559e3a450dbc03b2f2a011151265e1f96e136d",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "22e40551_9ee5120e",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-09T14:14:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5c0c777c_7fc66d24",
+      "revId": "2a559e3a450dbc03b2f2a011151265e1f96e136d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
