@@ -131,6 +131,30 @@
     },
     {
       "key": {
+        "uuid": "4a9fb4fa_101ac3f1",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T10:37:24Z",
+      "side": 1,
+      "message": "The setup* functions called below use and set fields of s, so this would be a significant change.",
+      "parentUuid": "b67fca57_9503e1bd",
+      "range": {
+        "startLine": 28,
+        "startChar": 6,
+        "endLine": 30,
+        "endChar": 2
+      },
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "85c6c9ff_08998f70",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 10
@@ -142,6 +166,30 @@
       "writtenOn": "2020-01-08T16:50:36Z",
       "side": 1,
       "message": "Please move struct literal initialization to the end of this function. If it is too much work, skip it.",
+      "range": {
+        "startLine": 72,
+        "startChar": 6,
+        "endLine": 72,
+        "endChar": 14
+      },
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a8ab2338_7b80c0b2",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T10:37:24Z",
+      "side": 1,
+      "message": "Same as in baseapisrv/server.go - I\u0027d prefer to keep it as is.",
+      "parentUuid": "85c6c9ff_08998f70",
       "range": {
         "startLine": 72,
         "startChar": 6,
@@ -174,6 +222,30 @@
       "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3037b9d8_a1857dc2",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-09T10:37:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c5c37bab_17ea0a0d",
+      "range": {
+        "startLine": 77,
+        "startChar": 69,
+        "endLine": 77,
+        "endChar": 80
+      },
+      "revId": "1aab26164f14f0eb3c74f9bb32cf91f38633f5ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
