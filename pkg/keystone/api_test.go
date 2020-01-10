@@ -320,7 +320,7 @@ func verifyBasicAuthProjects(
 	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
 	url string, projects []string) bool {
 	for _, client := range testScenario.Clients {
-		projectList := keystone.ProjectListResponse{}
+		projectList := kstypes.ProjectListResponse{}
 		_, err := client.Read(ctx, url, &projectList)
 		if err != nil {
 			fmt.Printf("Reading: %s, Response: %v", url, err)
@@ -346,7 +346,7 @@ func verifyBasicAuthDomains(
 	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
 	url string, domains []string) bool {
 	for _, client := range testScenario.Clients {
-		domainList := keystone.DomainListResponse{}
+		domainList := kstypes.DomainListResponse{}
 		_, err := client.Read(ctx, url, &domainList)
 		if err != nil {
 			fmt.Printf("Reading: %s, Response: %s", url, err)
