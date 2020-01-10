@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b0f93cb3_a5aa6021",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-10T09:55:21Z",
+      "side": 1,
+      "message": "This function now has isCloudPrivate being checked 4 times. Maybe its time to split it into createPublic and createPrivate? No wonder it has //nolint: gocyclo",
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a34a9d4_dcf295e4",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-10T09:55:21Z",
+      "side": 1,
+      "message": "Ditto L275",
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b1a636c7_29634ea4",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-10T09:55:21Z",
+      "side": 1,
+      "message": "Which of those methods are entrypoints? Which should be used by other objects? If there is such method please make it public (I guess fill method should be public). The struct is already private so you don\u0027t need to have every method private (it can\u0027t be used outside the package). Please don\u0027t follow \"always private\" rule, IMO it\u0027s sign of poorly designed API.",
+      "range": {
+        "startLine": 66,
+        "startChar": 0,
+        "endLine": 153,
+        "endChar": 1
+      },
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
