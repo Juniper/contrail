@@ -90,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "79a66b62_00bc3f35",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-10T09:59:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "43b5d7ab_0798bb3d",
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2801bb91_ae3b47f7",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 2
@@ -513,6 +531,30 @@
       "revId": "d94819f525f761e159710968381f8615c0d324e7",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a74bdb7_c68c7010",
+        "filename": "pkg/cloud/topology.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-10T09:59:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "642bc540_dcdafef2",
+      "range": {
+        "startLine": 73,
+        "startChar": 19,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "d94819f525f761e159710968381f8615c0d324e7",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
