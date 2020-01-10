@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -56,7 +56,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	server.ForceProxyUpdate()
 
 	// Fetch cluster keystone token
-	k := &kstypes.Client{
+	k := &asfkeystone.Client{
 		URL:      ksPrivate.URL + "/v3",
 		HTTPDoer: &http.Client{},
 	}
@@ -90,13 +90,13 @@ func TestClusterTokenMethod(t *testing.T) {
 }
 
 func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
-	dataJSON, err := json.Marshal(&kstypes.UnScopedAuthRequest{
-		Auth: &kstypes.UnScopedAuth{
-			Identity: &kstypes.Identity{
+	dataJSON, err := json.Marshal(&asfkeystone.UnScopedAuthRequest{
+		Auth: &asfkeystone.UnScopedAuth{
+			Identity: &asfkeystone.Identity{
 				Methods: []string{"cluster_token"},
-				Cluster: &kstypes.Cluster{
+				Cluster: &asfkeystone.Cluster{
 					ID: clusterID,
-					Token: &kstypes.UserToken{
+					Token: &asfkeystone.UserToken{
 						ID: clusterToken,
 					},
 				},
@@ -105,7 +105,7 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 	})
 	assert.NoError(t, err, "failed to marshal cluster_token request")
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	k := &kstypes.Client{
+	k := &asfkeystone.Client{
 		URL: keystoneAuthURL,
 		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
@@ -187,7 +187,7 @@ func TestClusterLogin(t *testing.T) {
 			for _, client := range clients {
 				ctx = auth.WithXClusterID(ctx, clusterID)
 				if tt.token != "" {
-					ctx = kstypes.WithXAuthToken(ctx, tt.token)
+					ctx = asfkeystone.WithXAuthToken(ctx, tt.token)
 				}
 				client.ID = tt.id
 				client.Password = tt.password
@@ -320,7 +320,7 @@ func verifyBasicAuthProjects(
 	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
 	url string, projects []string) bool {
 	for _, client := range testScenario.Clients {
-		projectList := keystone.ProjectListResponse{}
+		projectList := asfkeystone.ProjectListResponse{}
 		_, err := client.Read(ctx, url, &projectList)
 		if err != nil {
 			fmt.Printf("Reading: %s, Response: %v", url, err)
@@ -346,7 +346,7 @@ func verifyBasicAuthDomains(
 	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
 	url string, domains []string) bool {
 	for _, client := range testScenario.Clients {
-		domainList := keystone.DomainListResponse{}
+		domainList := asfkeystone.DomainListResponse{}
 		_, err := client.Read(ctx, url, &domainList)
 		if err != nil {
 			fmt.Printf("Reading: %s, Response: %s", url, err)
