@@ -20,6 +20,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 // Keystone constants.
@@ -49,7 +51,7 @@ type endpointStore interface {
 type Keystone struct {
 	store            Store
 	Assignment       Assignment
-	staticAssignment *StaticAssignment
+	staticAssignment *asfkeystone.StaticAssignment
 	endpointStore    endpointStore
 	apiClient        *client.HTTP
 
@@ -66,7 +68,7 @@ func Init(e *echo.Echo, es endpointStore) (*Keystone, error) {
 	}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
-		var staticAssignment StaticAssignment
+		var staticAssignment asfkeystone.StaticAssignment
 		err := config.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
 			return nil, err
@@ -111,7 +113,7 @@ func (k *Keystone) GetProjectAPI(c echo.Context) error {
 	// TODO(dfurman): prevent panic: use fields without pointers in models and/or provide getters with nil checks
 	for _, role := range token.User.Roles {
 		if role.Project.ID == c.Param("id") {
-			return c.JSON(http.StatusOK, &ProjectResponse{
+			return c.JSON(http.StatusOK, &asfkeystone.ProjectResponse{
 				Project: role.Project,
 			})
 		}
@@ -155,7 +157,7 @@ func (k *Keystone) listDomainsAPI(c echo.Context) error {
 		return err
 	}
 	domains := k.Assignment.ListDomains()
-	domainsResponse := &DomainListResponse{
+	domainsResponse := &asfkeystone.DomainListResponse{
 		Domains: domains,
 	}
 	return c.JSON(http.StatusOK, domainsResponse)
@@ -190,7 +192,7 @@ func (k *Keystone) ListAuthProjectsAPI(c echo.Context) error {
 	} else {
 		userProjects = append(userProjects, projects...)
 	}
-	projectsResponse := &ProjectListResponse{
+	projectsResponse := &asfkeystone.ProjectListResponse{
 		Projects: userProjects,
 	}
 	return c.JSON(http.StatusOK, projectsResponse)
@@ -210,7 +212,7 @@ func (k *Keystone) ListProjectsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, &ProjectListResponse{
+	return c.JSON(http.StatusOK, &asfkeystone.ProjectListResponse{
 		Projects: k.Assignment.ListProjects(),
 	})
 }
