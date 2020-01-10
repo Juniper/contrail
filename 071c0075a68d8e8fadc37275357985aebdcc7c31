@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "405d2b94_d70e8296",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-10T09:36:11Z",
+      "side": 1,
+      "message": "pls no hardcoded paths, only TempFile https://golang.org/pkg/io/ioutil/#TempFile",
+      "revId": "071c0075a68d8e8fadc37275357985aebdcc7c31",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
