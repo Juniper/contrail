@@ -27,7 +27,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 	protocodec "github.com/gogo/protobuf/codec"
 	uuid "github.com/satori/go.uuid"
 )
@@ -435,19 +435,19 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 // TODO: Remove that, because it modifies internal state of SUT.
 // TODO: Use pre-created Server's keystone assignment.
 func addKeystoneProjectAndUser(s *apisrv.Server, testID string) func() {
-	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
-	assignment.Projects[testID] = &kstypes.Project{
+	assignment := s.Keystone.Assignment.(*asfkeystone.StaticAssignment) // nolint: errcheck
+	assignment.Projects[testID] = &asfkeystone.Project{
 		Domain: assignment.Domains[integration.DefaultDomainID],
 		ID:     testID,
 		Name:   testID,
 	}
 
-	assignment.Users[testID] = &kstypes.User{
+	assignment.Users[testID] = &asfkeystone.User{
 		Domain:   assignment.Domains[integration.DefaultDomainID],
 		ID:       testID,
 		Name:     testID,
 		Password: testID,
-		Roles: []*kstypes.Role{
+		Roles: []*asfkeystone.Role{
 			{
 				ID:      "member",
 				Name:    "Member",
@@ -468,7 +468,7 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 		Password: projectName,
 		Endpoint: server.URL(),
 		AuthURL:  server.URL() + keystone.LocalAuthPath,
-		Scope:    kstypes.NewScope("", "default", "", projectName),
+		Scope:    asfkeystone.NewScope("", "default", "", projectName),
 		Insecure: true,
 	})
 
