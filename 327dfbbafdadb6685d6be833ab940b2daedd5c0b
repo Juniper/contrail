@@ -36,6 +36,23 @@
     },
     {
       "key": {
+        "uuid": "aee564f4_691fbf2f",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-10T10:16:48Z",
+      "side": 1,
+      "message": "It\u0027s cloud package, please rename to private.go",
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b1a636c7_29634ea4",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 12
