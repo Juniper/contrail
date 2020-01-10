@@ -433,7 +433,7 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 // TODO: Remove that, because it modifies internal state of SUT.
 // TODO: Use pre-created Server's keystone assignment.
 func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
-	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
+	assignment := s.Keystone.Assignment.(*kstypes.StaticAssignment) // nolint: errcheck
 	assignment.Projects[testID] = &kstypes.Project{
 		Domain: assignment.Domains[integration.DefaultDomainID],
 		ID:     testID,

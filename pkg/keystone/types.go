@@ -1,23 +1,6 @@
 package keystone
 
-import (
-	"github.com/Juniper/asf/pkg/keystone"
-)
 
-//ProjectResponse represents a project get response.
-type ProjectResponse struct {
-	Project *keystone.Project `json:"project"`
-}
-
-//DomainListResponse represents a domain list response.
-type DomainListResponse struct {
-	Domains []*keystone.Domain `json:"domains"`
-}
-
-//ProjectListResponse represents a project list response.
-type ProjectListResponse struct {
-	Projects []*keystone.Project `json:"projects"`
-}
 
 //VncProjectListResponse represents a project list response.
 type VncProjectListResponse struct {

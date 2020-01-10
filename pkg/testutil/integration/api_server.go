@@ -144,8 +144,8 @@ func rbacConfig(enableRBAC bool) string {
 	return ""
 }
 
-func keystoneAssignment() *keystone.StaticAssignment {
-	a := keystone.StaticAssignment{
+func keystoneAssignment() *kstypes.StaticAssignment {
+	a := kstypes.StaticAssignment{
 		Domains: map[string]*kstypes.Domain{
 			DefaultDomainID: {
 				ID:   DefaultDomainID,

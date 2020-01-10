@@ -23,48 +23,6 @@ type Assignment interface {
 	ListDomains() []*keystone.Domain
 }
 
-//StaticAssignment is an implementation of Assignment based on static file.
-type StaticAssignment struct {
-	Domains  map[string]*keystone.Domain  `json:"domains"`
-	Projects map[string]*keystone.Project `json:"projects"`
-	Users    map[string]*keystone.User    `json:"users"`
-}
-
-//ListUsers is used to fetch all users
-func (assignment *StaticAssignment) ListUsers() map[string]*keystone.User {
-	return assignment.Users
-}
-
-//FetchUser is used to fetch a user by ID and Password.
-func (assignment *StaticAssignment) FetchUser(name, password string) (*keystone.User, error) {
-	user, ok := assignment.Users[name]
-	if !ok {
-		return nil, fmt.Errorf("user %s not found", name)
-	}
-	if user.Password != "" && format.InterfaceToString(user.Password) != password {
-		return nil, fmt.Errorf("invalid credentials")
-	}
-	return user, nil
-}
-
-//ListDomains is used to list domains
-func (assignment *StaticAssignment) ListDomains() []*keystone.Domain {
-	domains := []*keystone.Domain{}
-	for _, domain := range assignment.Domains {
-		domains = append(domains, domain)
-	}
-	return domains
-}
-
-//ListProjects is used to list projects
-func (assignment *StaticAssignment) ListProjects() []*keystone.Project {
-	var projects []*keystone.Project
-	for _, project := range assignment.Projects {
-		projects = append(projects, project)
-	}
-	return projects
-}
-
 //VNCAPIAssignment is an implementation of Assignment based on vnc api-server.
 type VNCAPIAssignment struct {
 	Domains   map[string]*keystone.Domain  `json:"domains"`

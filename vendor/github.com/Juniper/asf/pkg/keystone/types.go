@@ -191,3 +191,18 @@ type Endpoint struct {
 type ValidateTokenResponse struct {
 	Token *Token `json:"token"`
 }
+
+//ProjectResponse represents a project get response.
+type ProjectResponse struct {
+	Project *Project `json:"project"`
+}
+
+//DomainListResponse represents a domain list response.
+type DomainListResponse struct {
+	Domains []*Domain `json:"domains"`
+}
+
+//ProjectListResponse represents a project list response.
+type ProjectListResponse struct {
+	Projects []*Project `json:"projects"`
+}
