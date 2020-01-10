@@ -199,3 +199,18 @@ type CreateUserRequest struct {
 
 // CreateUserResponse represents a keystone user creation response.
 type CreateUserResponse CreateUserRequest
+
+//ProjectResponse represents a project get response.
+type ProjectResponse struct {
+	Project *Project `json:"project"`
+}
+
+//ProjectListResponse represents a project list response.
+type ProjectListResponse struct {
+	Projects []*Project `json:"projects"`
+}
+
+//DomainListResponse represents a domain list response.
+type DomainListResponse struct {
+	Domains []*Domain `json:"domains"`
+}
