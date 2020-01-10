@@ -32,7 +32,7 @@ func NewKeystoneServerFake(t *testing.T, keystoneAuthURL, user, password string)
 }
 
 func withKeystoneUser(k *keystone.Keystone, user, password string) (*keystone.Keystone, error) {
-	sa, ok := k.Assignment.(*keystone.StaticAssignment)
+	sa, ok := k.Assignment.(*kstypes.StaticAssignment)
 	if !ok {
 		return nil, errors.New("failed to add user to Keystone fake: wrong Assignment type")
 	}
