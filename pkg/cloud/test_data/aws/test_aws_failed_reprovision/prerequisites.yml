@@ -135,7 +135,7 @@ test_data:
       operating_system: rhel7
       instance_type: t2.xlarge
       roles:
-        - compute
+        - compute_node
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_uuid
     cloud_security_group_refs:

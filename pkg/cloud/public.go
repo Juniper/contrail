@@ -332,13 +332,9 @@ func (i *publicInstance) Fill(ctx context.Context, cli *client.HTTP, instanceUUI
 
 func (i *publicInstance) fillRoles(roles []string) {
 	for _, r := range roles {
-		switch r {
-		case "compute":
-			i.Roles = append(i.Roles, computeNodeInstanceRole)
-		case string(bareInstanceRole):
+		if instanceRole(r) == bareInstanceRole {
 			i.Roles = []instanceRole{bareInstanceRole}
-			break
-		default:
+		} else {
 			i.Roles = append(i.Roles, instanceRole(r))
 		}
 	}

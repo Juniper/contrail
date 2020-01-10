@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	computeRole = "compute"
+	computeRole = "compute_node"
 	gatewayRole = "gateway"
 
 	privatePortName = "private"

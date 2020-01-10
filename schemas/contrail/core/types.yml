@@ -668,8 +668,7 @@ definitions:
     properties:
       vlan_tag:
         $ref: types.json#/definitions/Dot1QTagType
-        description: VLAN tag of the incoming packet that maps the                      virtual-machine-interface
-          to bridge domain
+        description: VLAN tag of the incoming packet that maps the virtual-machine-interface to bridge domain
     type: object
   CloudInstanceInfo:
     properties:
@@ -680,19 +679,17 @@ definitions:
         description: size of instance
         type: string
       operating_system:
-        description: Name of operating system, ex - centos7 or ubuntu16
+        description: Name of operating system, ex - centos7 or ubuntu18
         enum:
-        - ubuntu16
         - ubuntu18
         - centos7
-        - redhat
         - rhel7
         type: string
       roles:
         description: Roles of the cloud instance
         items:
           enum:
-          - compute
+          - compute_node
           - controller
           - gateway
           - k8s_master
