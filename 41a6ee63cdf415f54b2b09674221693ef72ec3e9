@@ -51,6 +51,24 @@
       "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08423c63_34472bb8",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-10T12:53:34Z",
+      "side": 1,
+      "message": "I\u0027ve hidden this method behind the baseapisrv.HTTPRouter interface and also moved this code to pkg/services.\n\nHowever, I suppose you mean that baseapisrv.Server\u0027s user should not need to register parts of the homepage explicitly and that it should be done as part of the normal GET(), POST(), Group(), etc. interface.\n\nIt seems that the homepage only makes sense for ContrailService as it is now, so, to do the above, we would need to think of how to represent the other endpoints in VNC API\u0027s framework of descriptions. See the research I\u0027ve done below:\n\n* How is this used?\n** r.Register(path, method, name, rel) \n*** // Register adds a new link to the HomepageHandler.\n*** Used only in (*ContrailService).RegisterHTTPAPI()\n*** _path_ and _method_ can be taken from a normal call, e.g. r.GET(path, handler)\n**** although an empty _method_ is used for Contrail CRUD endpoints right now.\n*** _rel_ can be \"action\", \"resource-base\", or \"collection\".\n**** vnc_cfg_api_server.py also has \"root\" and \"documentation\"\n* What endpoints aren\u0027t added to the homepage right now?\n** dynamic proxy\n** static proxy\n** watch API\n** local keystone API\n** neutron plugin API\n** sync (bulk create/update) API\n** UploadCloudKeys\n* What values of _rel_ to use for the above endpoints?",
+      "parentUuid": "188045b1_1dc1a713",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
