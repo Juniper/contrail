@@ -116,11 +116,7 @@
               roles:
               {% if instance.roles %}{% set roles = instance.roles %}{% else %}{% set roles = instance.info.CloudInfo.Roles %}{% endif %}
               {% for role in roles %}
-                {% if "compute" in role %}
-                - compute_node
-                {% else %}
                 - {{ role }}
-                {% endif %}
               {% endfor %}
               provision: {{ instance.provision }}
               username: {{ instance.username }}
