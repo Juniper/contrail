@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9b7a8a61_7e9506e2",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-10T11:21:29Z",
+      "side": 1,
+      "message": "Removal of private/public checks is the goal of the future patch:\nhttps://contrail-jws.atlassian.net/browse/CEM-11697",
+      "parentUuid": "383d8c8e_64ee4a58",
+      "revId": "fce3e4eb7a7bafd7ea3eaa321c5521f575225eb3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c70e3581_fabff4a5",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 9
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "cd5e6f80_ab515ddd",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 363,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-10T11:21:29Z",
+      "side": 1,
+      "message": "answered above",
+      "parentUuid": "c70e3581_fabff4a5",
+      "revId": "fce3e4eb7a7bafd7ea3eaa321c5521f575225eb3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "59745b3a_57b561ce",
         "filename": "pkg/cloud/public_cloud.go",
         "patchSetId": 9
@@ -47,6 +83,24 @@
       "writtenOn": "2020-01-10T10:17:14Z",
       "side": 1,
       "message": "See comments in https://review.opencontrail.org/c/Juniper/contrail/+/55846/12/pkg/cloud/private_cloud.go#153s",
+      "revId": "fce3e4eb7a7bafd7ea3eaa321c5521f575225eb3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "032b56f6_0a8aef29",
+        "filename": "pkg/cloud/public_cloud.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-10T11:21:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "59745b3a_57b561ce",
       "revId": "fce3e4eb7a7bafd7ea3eaa321c5521f575225eb3",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
