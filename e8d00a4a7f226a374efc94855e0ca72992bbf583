@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "1b1364a2_657990b9",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "I read through this one. To be honest, I think not-inlining is still better because of the readability and no need to change style when you need a var not in the if scope. I think this is merely personal preference, so I am gonna keep the old way. But thanks for pointing this out, gave me a good chance to think it through.",
+      "parentUuid": "73599f5b_05b3f585",
+      "range": {
+        "startLine": 82,
+        "startChar": 1,
+        "endLine": 85,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ff2fc525_2e69c0bc",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -45,6 +69,30 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "815171e5_05f54216",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ff2fc525_2e69c0bc",
+      "range": {
+        "startLine": 104,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "41efef84_a96d7647",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "13c465c0_88682987",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 113,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a7d2c4b3_06be7a4a",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -82,6 +154,30 @@
       "writtenOn": "2020-01-09T14:30:52Z",
       "side": 1,
       "message": "An error could appear below in ReadAll function for some reason. In that case IMHO we shouldn\u0027t ignore reader.Close() error but wrap it.",
+      "range": {
+        "startLine": 148,
+        "startChar": 2,
+        "endLine": 151,
+        "endChar": 3
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "41fafb55_7579545a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "I didn\u0027t fully catch your statement. If ReadAll error appears, the func would return its error. If ReadAll has no error, then the error result of reader.Closer() will be returned. I think that solved the error handling already.",
+      "parentUuid": "a7d2c4b3_06be7a4a",
       "range": {
         "startLine": 148,
         "startChar": 2,
@@ -114,6 +210,30 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5af0fe20_fd434bc3",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6da167df_aa9ebc1d",
+      "range": {
+        "startLine": 155,
+        "startChar": 1,
+        "endLine": 159,
+        "endChar": 11
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -210,6 +330,30 @@
     },
     {
       "key": {
+        "uuid": "f88a10c5_a84d3621",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f1a217de_f5192296",
+      "range": {
+        "startLine": 190,
+        "startChar": 2,
+        "endLine": 193,
+        "endChar": 3
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bc9e604e_f6432653",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -230,6 +374,30 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fccb8f2b_3379bbdb",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bc9e604e_f6432653",
+      "range": {
+        "startLine": 226,
+        "startChar": 1,
+        "endLine": 229,
+        "endChar": 2
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -374,6 +542,30 @@
     },
     {
       "key": {
+        "uuid": "4623b29b_65c1ccca",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1f45cb2_c6a84716",
+      "range": {
+        "startLine": 290,
+        "startChar": 0,
+        "endLine": 296,
+        "endChar": 84
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "24f511b4_56555c4e",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 13
@@ -394,6 +586,30 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5f0fb82b_26530c21",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "24f511b4_56555c4e",
+      "range": {
+        "startLine": 171,
+        "startChar": 71,
+        "endLine": 171,
+        "endChar": 96
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -467,6 +683,30 @@
     },
     {
       "key": {
+        "uuid": "89e789fb_3402b76d",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Lemme ask Ignatious about that.",
+      "parentUuid": "5cb6679c_9610f1aa",
+      "range": {
+        "startLine": 444,
+        "startChar": 33,
+        "endLine": 444,
+        "endChar": 48
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5d4d97ed_ee606d4b",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 13
@@ -481,6 +721,24 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "67049e62_b7409210",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-10T22:20:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5d4d97ed_ee606d4b",
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
