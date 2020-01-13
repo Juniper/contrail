@@ -16,6 +16,24 @@
       "revId": "87670f37ac8f7f8abbff9f5095a964c497240561",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02cde37d_f846bc83",
+        "filename": "pkg/cloud/private.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-13T12:23:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f2a9f57a_3c23f5a5",
+      "revId": "87670f37ac8f7f8abbff9f5095a964c497240561",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
