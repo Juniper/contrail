@@ -33,7 +33,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "488efac4c733a4a8db42259f2110a09876a4f1c6"
+  revision = "b4247b718eba7b034ced81df4d1522bc55904274"
 
 [[projects]]
   branch = "2.x"
@@ -1379,7 +1379,6 @@
     "github.com/coreos/etcd/clientv3/concurrency",
     "github.com/coreos/etcd/mvcc/mvccpb",
     "github.com/coreos/etcd/pkg/transport",
-    "github.com/databus23/keystone",
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/container",
     "github.com/docker/docker/api/types/network",
@@ -1396,7 +1395,6 @@
     "github.com/golang/dep/cmd/dep",
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
-    "github.com/hashicorp/go-cleanhttp",
     "github.com/hashicorp/terraform/terraform",
     "github.com/jackc/pgx",
     "github.com/jackc/pgx/pgtype",
