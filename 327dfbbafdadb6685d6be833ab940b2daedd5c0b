@@ -125,6 +125,24 @@
     },
     {
       "key": {
+        "uuid": "adea49c8_0db79835",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-13T09:47:21Z",
+      "side": 1,
+      "message": "Is it?",
+      "parentUuid": "0a0d3340_224db9fd",
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b1a636c7_29634ea4",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 12
