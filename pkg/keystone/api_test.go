@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
@@ -185,7 +184,7 @@ func TestClusterLogin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			for _, client := range clients {
-				ctx = auth.WithXClusterID(ctx, clusterID)
+				ctx = keystone.WithXClusterID(ctx, clusterID)
 				if tt.token != "" {
 					ctx = asfkeystone.WithXAuthToken(ctx, tt.token)
 				}
@@ -264,7 +263,7 @@ func TestMultiClusterAuth(t *testing.T) {
 
 	// verify basic auth
 	for clusterName, cluster := range clusters {
-		ctx := auth.WithXClusterID(context.Background(), cluster.id)
+		ctx := keystone.WithXClusterID(context.Background(), cluster.id)
 		url := "/keystone/v3/auth/projects"
 		ok := verifyBasicAuthProjects(ctx, t, ts, url, cluster.expectedProjects)
 		assert.True(t, ok, "failed to get project list from cluster: %s", clusterName)

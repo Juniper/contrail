@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/labstack/echo"
 	"google.golang.org/grpc"
 )
