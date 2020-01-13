@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -20,9 +20,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	asfauth "github.com/Juniper/asf/pkg/auth"
 	asfclient "github.com/Juniper/asf/pkg/client"
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -65,7 +64,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
 	}
 	if authType != basicAuth {
-		config.Scope = &kstypes.Scope{Project: &kstypes.Project{Domain: kstypes.DefaultDomain()}}
+		config.Scope = &asfkeystone.Scope{Project: &asfkeystone.Project{Domain: asfkeystone.DefaultDomain()}}
 		// get keystone endpoint
 		var e *endpoint.Endpoint
 		e, err = h.readAuthEndpoint(ep.ParentUUID)
@@ -127,19 +126,20 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) context.Context {
 	var err error
 	var projectID string
-	ctx := auth.WithXClusterID(context.Background(), clusterID)
+	ctx := keystone.WithXClusterID(context.Background(), clusterID)
 	if apiClient.Scope.Project.Name == "" && apiClient.Scope.Project.ID == "" {
 		projectID, err = h.getProjectIDByName(ctx, apiClient)
 		if err == nil {
-			apiClient.Scope = kstypes.NewScope(
-				kstypes.DefaultDomainID, kstypes.DefaultDomainName,
+			apiClient.Scope = asfkeystone.NewScope(
+				asfkeystone.DefaultDomainID, asfkeystone.DefaultDomainName,
 				projectID, defaultProjectName)
 		}
 	}
 	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(kstypes.DefaultDomainID, projectID,
-		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
-	return asfauth.WithIdentity(ctx, varCtx)
+	varCtx := asfkeystone.NewAuthIdentity(
+		asfkeystone.DefaultDomainID, projectID, apiClient.ID, []string{defaultProjectName},
+	)
+	return auth.WithIdentity(ctx, varCtx)
 }
 
 func (h *vncAPIHandle) getProjectIDByName(ctx context.Context, apiClient *client.HTTP) (string, error) {
@@ -149,7 +149,7 @@ func (h *vncAPIHandle) getProjectIDByName(ctx context.Context, apiClient *client
 	if err != nil {
 		return "", err
 	}
-	ctx = kstypes.WithXAuthToken(ctx, token)
+	ctx = asfkeystone.WithXAuthToken(ctx, token)
 	return apiClient.Keystone.GetProjectIDByName(
 		ctx, defaultProjectName, apiClient.Scope.Project.Domain,
 	)
