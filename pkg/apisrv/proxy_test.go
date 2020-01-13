@@ -15,7 +15,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
@@ -25,7 +24,7 @@ import (
 	"golang.org/x/net/websocket"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -689,7 +688,7 @@ func newKeystoneServerStub(statusToReturn int) *httptest.Server {
 	return httptest.NewServer(e)
 }
 func ctxWithXClusterID(clusterName string) context.Context {
-	return auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterName))
+	return keystone.WithXClusterID(context.Background(), contrailClusterUUID(clusterName))
 }
 
 func verifyFiveCreateTokenRequests(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
@@ -721,7 +720,7 @@ func verifyFiveReadTokenRequests(ctx context.Context, t *testing.T, hc *client.H
 }
 
 func verifyReadTokenRequest(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {
-	var response kstypes.ValidateTokenResponse
+	var response asfkeystone.ValidateTokenResponse
 	_, err := hc.Read(ctx, path.Join(keystone.LocalAuthPath, "auth/tokens"), &response)
 
 	msg = fmt.Sprintf("%s, HTTP client ID: %s", msg, hc.ID)

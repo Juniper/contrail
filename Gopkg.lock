@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:204575dc3c3560d7106d71e8778290096dcf05e872d19425f01c5988c77331a3"
+  digest = "1:950036b1c37ff75913e28b2b7322781550419b176db687b32a7b2806dc3dd42f"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -33,7 +33,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "b04c479564e6ede17497f3acc1b689d4628dba6e"
+  revision = "16f8409d6841a5dce02e54fc68c36ba491926c65"
 
 [[projects]]
   branch = "2.x"
@@ -1379,7 +1379,6 @@
     "github.com/coreos/etcd/clientv3/concurrency",
     "github.com/coreos/etcd/mvcc/mvccpb",
     "github.com/coreos/etcd/pkg/transport",
-    "github.com/databus23/keystone",
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/container",
     "github.com/docker/docker/api/types/network",
@@ -1396,7 +1395,6 @@
     "github.com/golang/dep/cmd/dep",
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
-    "github.com/hashicorp/go-cleanhttp",
     "github.com/hashicorp/terraform/terraform",
     "github.com/jackc/pgx",
     "github.com/jackc/pgx/pgtype",
