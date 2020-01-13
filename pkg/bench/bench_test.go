@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 // We haven't used standard Go benchmark because we need more
@@ -40,7 +40,7 @@ func TestBenchAPI(t *testing.T) {
 		Password: testName,
 		Endpoint: host,
 		AuthURL:  host + keystone.LocalAuthPath,
-		Scope:    kstypes.NewScope("", "default", "", testName),
+		Scope:    asfkeystone.NewScope("", "default", "", testName),
 		Insecure: true,
 	})
 
