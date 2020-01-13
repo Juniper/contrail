@@ -77,7 +77,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 
 	c := client.NewHTTP(config)
 
-	ctx := auth.NoAuth(context.Background())
+	ctx := asfauth.NoAuth(context.Background())
 	if viper.GetString("keystone.authurl") != "" {
 		ctx = h.getAuthContext(ep.ParentUUID, c)
 	}
@@ -137,8 +137,7 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 		}
 	}
 	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(kstypes.DefaultDomainID, projectID,
-		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
+	varCtx := kstypes.NewAuthIdentity(kstypes.DefaultDomainID, projectID, apiClient.ID, []string{defaultProjectName})
 	return asfauth.WithIdentity(ctx, varCtx)
 }
 

@@ -95,6 +95,15 @@ func Init(e *echo.Echo, es endpointStore) (*Keystone, error) {
 	return keystone, nil
 }
 
+// NoAuthPaths returns paths that require no authentication.
+func (k *Keystone) NoAuthPaths() []string {
+	return []string{
+		"/keystone/v3/auth/tokens",
+		"/keystone/v3/projects",
+		"/keystone/v3/auth/projects", // TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
+	}
+}
+
 //GetProjectAPI is an API handler to list projects.
 func (k *Keystone) GetProjectAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)

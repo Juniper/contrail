@@ -20,6 +20,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	asfauth "github.com/Juniper/asf/pkg/auth"
 	asfclient "github.com/Juniper/asf/pkg/client"
 )
 
@@ -229,7 +230,7 @@ func (p *proxyService) updateEndpoints() {
 
 func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 	endpoints := make(map[string]*models.Endpoint)
-	ctx := auth.NoAuth(context.Background())
+	ctx := asfauth.NoAuth(context.Background())
 	spec := baseservices.ListSpec{Limit: limit}
 	for {
 		request := &services.ListEndpointRequest{Spec: &spec}
