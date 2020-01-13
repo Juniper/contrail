@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "25ce8e64_bc8aa43d",
+        "filename": "sample/contrail.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-13T14:49:06Z",
+      "side": 1,
+      "message": "What is this for?",
+      "revId": "0c713a7b4d9e88c09baa151e8d0ef7838a462609",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
