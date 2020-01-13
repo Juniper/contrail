@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/asf/pkg/osutil"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -19,7 +19,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	asfauth "github.com/Juniper/asf/pkg/auth"
 	asfclient "github.com/Juniper/asf/pkg/client"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -118,15 +117,9 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 
 	ctx := auth.NoAuth(context.Background())
 	if c.AuthURL != "" {
-		ctx = asfauth.WithIdentity(
+		ctx = auth.WithIdentity(
 			context.Background(),
-			auth.NewContext(
-				c.DomainID,
-				c.ProjectID,
-				c.ID,
-				[]string{c.ProjectName},
-				"", auth.NewObjPerms(nil),
-			),
+			keystone.NewAuthIdentity(c.DomainID, c.ProjectID, c.ID, []string{c.ProjectName}),
 		)
 	}
 
