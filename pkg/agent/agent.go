@@ -62,9 +62,9 @@ type Config struct {
 	// Enabled
 	Enabled bool `yaml:"enabled"`
 	// Service user name for keystone
-	ServiceUserID string `yaml:"id"`
+	ServiceUserID string `yaml:"service_user_id"`
 	// Service user password for keystone
-	ServiceUserPassword string `yaml:"password"`
+	ServiceUserPassword string `yaml:"service_user_password"`
 }
 
 // Agent represents Agent service.

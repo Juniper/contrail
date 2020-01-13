@@ -55,7 +55,6 @@ server:
 no_auth: true
 insecure: true
 
-
 keystone:
   local: true
   assignment:
@@ -127,7 +126,12 @@ client:
   endpoint: http://localhost:9091
 
 agent:
-  enabled: false
+  enabled: true
+  backend: file
+  watcher: polling
+  schema_root: /
+  log_level: debug
+  tasks:
 
 compilation:
   enabled: true
