@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
@@ -22,7 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 const (
@@ -56,7 +55,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	server.ForceProxyUpdate()
 
 	// Fetch cluster keystone token
-	k := &kstypes.Client{
+	k := &asfkeystone.Client{
 		URL:      ksPrivate.URL + "/v3",
 		HTTPDoer: &http.Client{},
 	}
@@ -90,13 +89,13 @@ func TestClusterTokenMethod(t *testing.T) {
 }
 
 func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
-	dataJSON, err := json.Marshal(&kstypes.UnScopedAuthRequest{
-		Auth: &kstypes.UnScopedAuth{
-			Identity: &kstypes.Identity{
+	dataJSON, err := json.Marshal(&asfkeystone.UnScopedAuthRequest{
+		Auth: &asfkeystone.UnScopedAuth{
+			Identity: &asfkeystone.Identity{
 				Methods: []string{"cluster_token"},
-				Cluster: &kstypes.Cluster{
+				Cluster: &asfkeystone.Cluster{
 					ID: clusterID,
-					Token: &kstypes.UserToken{
+					Token: &asfkeystone.UserToken{
 						ID: clusterToken,
 					},
 				},
@@ -105,7 +104,7 @@ func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string
 	})
 	assert.NoError(t, err, "failed to marshal cluster_token request")
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	k := &kstypes.Client{
+	k := &asfkeystone.Client{
 		URL: keystoneAuthURL,
 		HTTPDoer: &http.Client{
 			Transport: &http.Transport{
@@ -185,9 +184,9 @@ func TestClusterLogin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			for _, client := range clients {
-				ctx = auth.WithXClusterID(ctx, clusterID)
+				ctx = keystone.WithXClusterID(ctx, clusterID)
 				if tt.token != "" {
-					ctx = kstypes.WithXAuthToken(ctx, tt.token)
+					ctx = asfkeystone.WithXAuthToken(ctx, tt.token)
 				}
 				client.ID = tt.id
 				client.Password = tt.password
@@ -264,7 +263,7 @@ func TestMultiClusterAuth(t *testing.T) {
 
 	// verify basic auth
 	for clusterName, cluster := range clusters {
-		ctx := auth.WithXClusterID(context.Background(), cluster.id)
+		ctx := keystone.WithXClusterID(context.Background(), cluster.id)
 		url := "/keystone/v3/auth/projects"
 		ok := verifyBasicAuthProjects(ctx, t, ts, url, cluster.expectedProjects)
 		assert.True(t, ok, "failed to get project list from cluster: %s", clusterName)

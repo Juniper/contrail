@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 // NewKeystoneServerFake creates started Keystone server fake.
@@ -37,13 +37,13 @@ func withKeystoneUser(k *keystone.Keystone, user, password string) (*keystone.Ke
 		return nil, errors.New("failed to add user to Keystone fake: wrong Assignment type")
 	}
 
-	sa.Users = map[string]*kstypes.User{}
-	sa.Users[user] = &kstypes.User{
+	sa.Users = map[string]*asfkeystone.User{}
+	sa.Users[user] = &asfkeystone.User{
 		Domain:   sa.Domains[DefaultDomainID],
 		ID:       user,
 		Name:     user,
 		Password: password,
-		Roles: []*kstypes.Role{
+		Roles: []*asfkeystone.Role{
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,
