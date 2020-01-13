@@ -123,6 +123,7 @@ schema:
       - ansible
       - helm
       - tripleo
+      - juju
       permission:
       - create
       - update
