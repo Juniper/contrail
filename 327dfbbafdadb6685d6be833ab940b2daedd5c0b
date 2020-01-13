@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "e2ea5973_e06038eb",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-13T09:43:51Z",
+      "side": 1,
+      "message": "That\u0027s a bit strange for me, but ok.",
+      "parentUuid": "b7c1342b_c8d70f76",
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6a34a9d4_dcf295e4",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 12
