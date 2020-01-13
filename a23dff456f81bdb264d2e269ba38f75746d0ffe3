@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "00418991_abc096c2",
+        "filename": "pkg/cloud/public.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-13T12:12:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "52dd8f4a_dc0947d2",
+      "revId": "a23dff456f81bdb264d2e269ba38f75746d0ffe3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "68f9c9d7_40b5ab57",
         "filename": "pkg/cloud/public.go",
         "patchSetId": 10
@@ -30,6 +48,24 @@
       "writtenOn": "2020-01-13T09:52:42Z",
       "side": 1,
       "message": "Please avoid private methods in interfaces, unless having a good reason for it.",
+      "revId": "a23dff456f81bdb264d2e269ba38f75746d0ffe3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eed2f7dc_afb15a66",
+        "filename": "pkg/cloud/public.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-13T12:12:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "68f9c9d7_40b5ab57",
       "revId": "a23dff456f81bdb264d2e269ba38f75746d0ffe3",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
