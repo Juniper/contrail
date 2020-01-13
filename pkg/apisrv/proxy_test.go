@@ -15,7 +15,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
@@ -689,7 +688,7 @@ func newKeystoneServerStub(statusToReturn int) *httptest.Server {
 	return httptest.NewServer(e)
 }
 func ctxWithXClusterID(clusterName string) context.Context {
-	return auth.WithXClusterID(context.Background(), contrailClusterUUID(clusterName))
+	return keystone.WithXClusterID(context.Background(), contrailClusterUUID(clusterName))
 }
 
 func verifyFiveCreateTokenRequests(ctx context.Context, t *testing.T, hc *client.HTTP, msg string) {

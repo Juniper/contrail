@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -20,7 +20,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	asfauth "github.com/Juniper/asf/pkg/auth"
 	asfclient "github.com/Juniper/asf/pkg/client"
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 )
@@ -127,7 +126,7 @@ func (h *vncAPIHandle) readAuthEndpoint(clusterID string) (authEndpoint *endpoin
 func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) context.Context {
 	var err error
 	var projectID string
-	ctx := auth.WithXClusterID(context.Background(), clusterID)
+	ctx := keystone.WithXClusterID(context.Background(), clusterID)
 	if apiClient.Scope.Project.Name == "" && apiClient.Scope.Project.ID == "" {
 		projectID, err = h.getProjectIDByName(ctx, apiClient)
 		if err == nil {
@@ -137,9 +136,10 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 		}
 	}
 	// as auth is enabled, create ctx with auth
-	varCtx := auth.NewContext(kstypes.DefaultDomainID, projectID,
-		apiClient.ID, []string{defaultProjectName}, "", auth.NewObjPerms(nil))
-	return asfauth.WithIdentity(ctx, varCtx)
+	varCtx := kstypes.NewAuthIdentity(
+		kstypes.DefaultDomainID, projectID, apiClient.ID, []string{defaultProjectName},
+	)
+	return auth.WithIdentity(ctx, varCtx)
 }
 
 func (h *vncAPIHandle) getProjectIDByName(ctx context.Context, apiClient *client.HTTP) (string, error) {
