@@ -143,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "17e114e2_c48e3647",
+        "filename": "pkg/cloud/private_cloud.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-13T09:48:44Z",
+      "side": 1,
+      "message": "Oh, it is. Got confused by wrong patchset.",
+      "parentUuid": "adea49c8_0db79835",
+      "revId": "327dfbbafdadb6685d6be833ab940b2daedd5c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b1a636c7_29634ea4",
         "filename": "pkg/cloud/private_cloud.go",
         "patchSetId": 12
