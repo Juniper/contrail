@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
@@ -167,41 +167,41 @@ func rbacConfig(enableRBAC bool) string {
 
 func keystoneAssignment() *keystone.StaticAssignment {
 	a := keystone.StaticAssignment{
-		Domains: map[string]*kstypes.Domain{
+		Domains: map[string]*asfkeystone.Domain{
 			DefaultDomainID: {
 				ID:   DefaultDomainID,
 				Name: DefaultDomainName,
 			},
 		},
-		Projects: make(map[string]*kstypes.Project),
-		Users:    make(map[string]*kstypes.User),
+		Projects: make(map[string]*asfkeystone.Project),
+		Users:    make(map[string]*asfkeystone.User),
 	}
-	a.Projects[AdminProjectID] = &kstypes.Project{
+	a.Projects[AdminProjectID] = &asfkeystone.Project{
 		Domain: a.Domains[DefaultDomainID],
 		ID:     AdminProjectID,
 		Name:   AdminProjectName,
 	}
-	a.Projects[DemoProjectID] = &kstypes.Project{
+	a.Projects[DemoProjectID] = &asfkeystone.Project{
 		Domain: a.Domains[DefaultDomainID],
 		ID:     DemoProjectID,
 		Name:   DemoProjectName,
 	}
-	a.Projects[NeutronProjectID] = &kstypes.Project{
+	a.Projects[NeutronProjectID] = &asfkeystone.Project{
 		Domain: a.Domains[DefaultDomainID],
 		ID:     NeutronProjectID,
 		Name:   NeutronProjectName,
 	}
-	a.Projects[ServiceProjectID] = &kstypes.Project{
+	a.Projects[ServiceProjectID] = &asfkeystone.Project{
 		Domain: a.Domains[DefaultDomainID],
 		ID:     ServiceProjectID,
 		Name:   ServiceProjectName,
 	}
-	a.Users[AdminUserID] = &kstypes.User{
+	a.Users[AdminUserID] = &asfkeystone.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       AdminUserID,
 		Name:     AdminUserName,
 		Password: AdminUserPassword,
-		Roles: []*kstypes.Role{
+		Roles: []*asfkeystone.Role{
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,
@@ -214,12 +214,12 @@ func keystoneAssignment() *keystone.StaticAssignment {
 			},
 		},
 	}
-	a.Users[KSAdminUserID] = &kstypes.User{
+	a.Users[KSAdminUserID] = &asfkeystone.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       KSAdminUserID,
 		Name:     KSAdminUserName,
 		Password: KSAdminUserPassword,
-		Roles: []*kstypes.Role{
+		Roles: []*asfkeystone.Role{
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,
@@ -227,12 +227,12 @@ func keystoneAssignment() *keystone.StaticAssignment {
 			},
 		},
 	}
-	a.Users[BobUserID] = &kstypes.User{
+	a.Users[BobUserID] = &asfkeystone.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       BobUserID,
 		Name:     BobUserName,
 		Password: BobUserPassword,
-		Roles: []*kstypes.Role{
+		Roles: []*asfkeystone.Role{
 			{
 				ID:      MemberRoleID,
 				Name:    MemberRoleName,
@@ -240,12 +240,12 @@ func keystoneAssignment() *keystone.StaticAssignment {
 			},
 		},
 	}
-	a.Users[ServiceUserID] = &kstypes.User{
+	a.Users[ServiceUserID] = &asfkeystone.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       ServiceUserID,
 		Name:     ServiceUserName,
 		Password: ServiceUserPassword,
-		Roles: []*kstypes.Role{
+		Roles: []*asfkeystone.Role{
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,

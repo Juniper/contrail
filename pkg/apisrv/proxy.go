@@ -8,12 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/proxy"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
@@ -176,7 +177,7 @@ func shouldInjectServiceToken(proxyPrefix string, config *DynamicProxyConfig) bo
 func obtainServiceToken(ctx context.Context, clusterID string, config *DynamicProxyConfig) (string, error) {
 	apiClient := client.NewHTTP(config.ServiceUserClientConfig)
 
-	ctx = auth.WithXClusterID(ctx, clusterID)
+	ctx = keystone.WithXClusterID(ctx, clusterID)
 	if err := apiClient.Login(ctx); err != nil {
 		return "", errors.Wrap(err, "failed to log in as service user")
 	}
