@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
-	kstypes "github.com/Juniper/asf/pkg/keystone"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 // Resource constants
@@ -86,7 +86,7 @@ func AdminHTTPConfig(apiServerURL string) *asfclient.HTTPConfig {
 		Password: AdminUserPassword,
 		Endpoint: apiServerURL,
 		AuthURL:  apiServerURL + keystone.LocalAuthPath,
-		Scope: kstypes.NewScope(
+		Scope: asfkeystone.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			AdminProjectID,
@@ -103,7 +103,7 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		Password: BobUserPassword,
 		Endpoint: apiServerURL,
 		AuthURL:  apiServerURL + keystone.LocalAuthPath,
-		Scope: kstypes.NewScope(
+		Scope: asfkeystone.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			DemoProjectID,

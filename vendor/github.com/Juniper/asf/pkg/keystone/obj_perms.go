@@ -1,4 +1,4 @@
-package auth
+package keystone
 
 import (
 	"time"
@@ -6,28 +6,16 @@ import (
 	"github.com/databus23/keystone"
 )
 
-// identification is struct that describe the identity of resource
-type identification struct {
-	ID   string `yaml:"id" json:"id"`
-	Name string `yaml:"name" json:"name"`
-}
-
-// fullIdentification is struct that describe the full identity of resource
-type fullIdentification struct {
-	identification
-	Domain identification `json:"domain"`
-}
-
 // token is used in ObjectPerms to store token related information.
 type token struct {
-	IsDomain  bool               `json:"is_domain"`
-	AuthToken string             `json:"auth_token"`
-	ExpiresAt string             `json:"expires_at"`
-	IssuedAt  string             `json:"issued_at"`
-	Version   string             `json:"version"`
-	Roles     []identification   `json:"roles"`
-	Project   fullIdentification `json:"project"`
-	User      fullIdentification `json:"user"`
+	IsDomain  bool     `json:"is_domain"`
+	AuthToken string   `json:"auth_token"`
+	ExpiresAt string   `json:"expires_at"`
+	IssuedAt  string   `json:"issued_at"`
+	Version   string   `json:"version"`
+	Roles     []*Role  `json:"roles"`
+	Project   *Project `json:"project"`
+	User      *User    `json:"user"`
 }
 
 // ObjectPerms holds information get from Keystone module.
@@ -57,22 +45,18 @@ func NewObjPerms(kt *keystone.Token) ObjectPerms {
 				IssuedAt:  kt.IssuedAt.Format(time.RFC3339),
 				Version:   "", // TODO(pawel.drapiewski): find the way to get this information if needed
 				Roles:     tokenRolesToObjectPermsRoles(kt.Roles),
-				Project: fullIdentification{
-					identification: identification{
-						ID:   kt.Project.ID,
-						Name: kt.Project.Name,
-					},
-					Domain: identification{
+				Project: &Project{
+					ID:   kt.Project.ID,
+					Name: kt.Project.Name,
+					Domain: &Domain{
 						ID:   kt.Project.Domain.ID,
 						Name: kt.Project.Domain.Name,
 					},
 				},
-				User: fullIdentification{
-					identification: identification{
-						ID:   kt.User.ID,
-						Name: kt.User.Name,
-					},
-					Domain: identification{
+				User: &User{
+					ID:   kt.User.ID,
+					Name: kt.User.Name,
+					Domain: &Domain{
 						ID:   kt.User.Domain.ID,
 						Name: kt.User.Domain.Name,
 					},
@@ -90,10 +74,10 @@ func NewObjPerms(kt *keystone.Token) ObjectPerms {
 func tokenRolesToObjectPermsRoles(tokenRoles []struct {
 	ID   string
 	Name string
-}) []identification {
-	var identifications []identification
+}) []*Role {
+	var roles []*Role
 	for _, role := range tokenRoles {
-		identifications = append(identifications, identification{ID: role.ID, Name: role.Name})
+		roles = append(roles, &Role{ID: role.ID, Name: role.Name})
 	}
-	return identifications
+	return roles
 }
