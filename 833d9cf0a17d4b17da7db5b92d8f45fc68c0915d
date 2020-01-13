@@ -16,6 +16,24 @@
       "revId": "833d9cf0a17d4b17da7db5b92d8f45fc68c0915d",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a413bcaf_53a24830",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-13T12:02:41Z",
+      "side": 1,
+      "message": "I\u0027ve talked to Ignatious and yes, the changes should be replicated there. Created the PR in contrail-api-client: https://review.opencontrail.org/c/Juniper/contrail-api-client/+/56064",
+      "parentUuid": "1cdf65a9_f5553587",
+      "revId": "833d9cf0a17d4b17da7db5b92d8f45fc68c0915d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
