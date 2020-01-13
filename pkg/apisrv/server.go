@@ -2,8 +2,10 @@ package apisrv
 
 import (
 	"crypto/tls"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/db/basedb"
@@ -113,10 +115,6 @@ func NewServer(es endpointStore) (*Server, error) {
 
 	s.serveDynamicProxy(s.endpointStore)
 
-	if err = s.setupAuthMiddleware(); err != nil {
-		return nil, errors.Wrap(err, "failed to set up auth middleware")
-	}
-
 	if viper.GetBool("keystone.local") {
 		// TODO(Witaut): Don't use Echo - an internal detail of Server.
 		var k *keystone.Keystone
@@ -125,6 +123,10 @@ func NewServer(es endpointStore) (*Server, error) {
 			return nil, errors.Wrap(err, "Failed to init local keystone server")
 		}
 		s.Keystone = k
+	}
+
+	if err = s.setupAuthMiddleware(); err != nil {
+		return nil, errors.Wrap(err, "failed to set up auth middleware")
 	}
 
 	if viper.GetBool("server.enable_grpc") {
@@ -154,7 +156,7 @@ func NewServer(es endpointStore) (*Server, error) {
 func authGRPCOpts() (opts []grpc.ServerOption) {
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
 	if keystoneAuthURL != "" {
-		opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(
+		opts = append(opts, grpc.UnaryInterceptor(kstypes.AuthInterceptor(
 			keystoneAuthURL,
 			keystoneInsecure,
 		)))
@@ -167,13 +169,12 @@ func authGRPCOpts() (opts []grpc.ServerOption) {
 func (s *Server) setupAuthMiddleware() error {
 	keystoneAuthURL, keystoneInsecure := viper.GetString("keystone.authurl"), viper.GetBool("keystone.insecure")
 	if keystoneAuthURL != "" {
-		var skipPaths []string
-		skipPaths, err := keystone.GetAuthSkipPaths()
+		skipPaths, err := s.getAuthSkipPaths()
 		if err != nil {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
 		// TODO(Witaut): Don't use Echo - an internal detail of Server.
-		s.Server.Echo.Use(keystone.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
+		s.Server.Echo.Use(kstypes.AuthMiddleware(keystoneAuthURL, keystoneInsecure, skipPaths))
 	} else if viper.GetBool("no_auth") {
 		// TODO(Witaut): Don't use Echo - an internal detail of Server.
 		s.Server.Echo.Use(noAuthMiddleware())
@@ -359,6 +360,34 @@ func loadDynamicProxyConfig() *DynamicProxyConfig {
 		ServiceTokenEndpointPrefixes: viper.GetStringSlice("server.service_token_endpoint_prefixes"),
 		ServiceUserClientConfig:      loadServiceUserClientConfig(),
 	}
+}
+
+func (s *Server) getAuthSkipPaths() ([]string, error) {
+	// TODO(mblotniak): When plugins are introduced, figure out how to specify plugin's no auth paths.
+	skipPaths := []string{
+		"/v3/auth/tokens", // TODO(mblotniak): Is this ever used?
+		// TODO(mblotniak): below path belongs to ContrailService and should be defined by it
+		"/contrail-clusters?fields=uuid,name",
+	}
+	skipPaths = append(skipPaths, viper.GetString("server.dynamic_proxy_path"))
+	if s.Keystone != nil {
+		skipPaths = append(skipPaths, s.Keystone.NoAuthPaths()...)
+	}
+	// skip auth for all the static fileutil
+	for prefix, root := range viper.GetStringMap("server.static_files") {
+		if prefix == "/" {
+			staticFiles, err := ioutil.ReadDir(root.(string))
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			for _, staticFile := range staticFiles {
+				skipPaths = append(skipPaths, filepath.Join(prefix, staticFile.Name()))
+			}
+		} else {
+			skipPaths = append(skipPaths, prefix)
+		}
+	}
+	return skipPaths, nil
 }
 
 func loadServiceUserClientConfig() *asfclient.HTTPConfig {
