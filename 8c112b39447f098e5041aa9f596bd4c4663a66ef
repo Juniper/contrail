@@ -1,0 +1,182 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "321a9f17_fd2c8b97",
+        "filename": "pkg/apisrv/grpc_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Please use \"asfkeystone\" alias for this import.",
+      "range": {
+        "startLine": 30,
+        "startChar": 1,
+        "endLine": 30,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a008b340_6d4483af",
+        "filename": "pkg/keystone/api.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Please use \"asfkeystone\" alias for this import.",
+      "range": {
+        "startLine": 24,
+        "startChar": 1,
+        "endLine": 24,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec2350f4_f2f63773",
+        "filename": "pkg/keystone/api_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Please use \"asfkeystone\" alias for this import.",
+      "range": {
+        "startLine": 25,
+        "startChar": 1,
+        "endLine": 25,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "320328f4_b534d02b",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Please use \"asfkeystone\" alias for this import.",
+      "range": {
+        "startLine": 23,
+        "startChar": 1,
+        "endLine": 23,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "784519ad_752b0327",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Please use \"asfkeystone\" alias for this import.",
+      "range": {
+        "startLine": 12,
+        "startChar": 1,
+        "endLine": 12,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "072b1be4_e0af2ab1",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/assignment.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Rename receiver to \"sa\" for all methods.",
+      "range": {
+        "startLine": 25,
+        "startChar": 6,
+        "endLine": 25,
+        "endChar": 16
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "96a63b07_493f9c12",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/assignment.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "Please use github.com/pkg/errors lib instead of fmt. Below too.",
+      "range": {
+        "startLine": 28,
+        "startChar": 14,
+        "endLine": 28,
+        "endChar": 17
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f9d02a88_8c20b8cd",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/types.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T14:18:29Z",
+      "side": 1,
+      "message": "This could be next to ProjectResponse",
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
