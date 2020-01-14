@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0debd021_a7cfe8a3",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T15:30:20Z",
+      "side": 1,
+      "message": "typo: `require`",
+      "range": {
+        "startLine": 13,
+        "startChar": 22,
+        "endLine": 13,
+        "endChar": 30
+      },
+      "revId": "0542f21497da0e2f53bc4dbab34f7ff8ec0a6fc6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "18023383_8bae0673",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T15:30:20Z",
+      "side": 1,
+      "message": "nit: `authSkipPaths`",
+      "range": {
+        "startLine": 365,
+        "startChar": 17,
+        "endLine": 365,
+        "endChar": 33
+      },
+      "revId": "0542f21497da0e2f53bc4dbab34f7ff8ec0a6fc6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "79ad1109_4ff03480",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 376,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T15:30:20Z",
+      "side": 1,
+      "message": "`files`?",
+      "range": {
+        "startLine": 376,
+        "startChar": 33,
+        "endLine": 376,
+        "endChar": 41
+      },
+      "revId": "0542f21497da0e2f53bc4dbab34f7ff8ec0a6fc6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bd51e79a_f5bd94a2",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T15:30:20Z",
+      "side": 1,
+      "message": "nit: It would make more sense to put the empty line before authToken instead.",
+      "range": {
+        "startLine": 15,
+        "startChar": 1,
+        "endLine": 17,
+        "endChar": 24
+      },
+      "revId": "0542f21497da0e2f53bc4dbab34f7ff8ec0a6fc6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
