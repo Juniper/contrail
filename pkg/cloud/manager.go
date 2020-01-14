@@ -302,12 +302,10 @@ func (c *Cloud) create() error {
 		return err
 	}
 
-	if !data.isCloudPrivate() {
-		if err = c.removeModifiedStatus(); err != nil {
-			return err
-		}
+	if err = c.resetPublicCloudModifiedStatus(data); err != nil {
+		return err
 	}
-	c.log.Debug("Created")
+	c.log.Debugf("Created cloud %s", c.config.CloudID)
 	return nil
 }
 
@@ -325,7 +323,10 @@ func (d *Data) modifiedProviders() []string {
 	return s
 }
 
-func (c *Cloud) removeModifiedStatus() error {
+func (c *Cloud) resetPublicCloudModifiedStatus(data *Data) error {
+	if data.isCloudPrivate() {
+		return nil
+	}
 	_, err := c.APIServer.UpdateCloud(c.ctx, &services.UpdateCloudRequest{
 		Cloud: &models.Cloud{
 			UUID: c.config.CloudID,
@@ -362,7 +363,7 @@ func (c *Cloud) update() error {
 
 	if topoUpToDate {
 		c.log.Debug("Topology is already up to date - skipping update")
-		return nil
+		return c.resetPublicCloudModifiedStatus(data)
 	}
 
 	var secret *secret
@@ -393,12 +394,11 @@ func (c *Cloud) update() error {
 		return err
 	}
 
-	if !data.isCloudPrivate() {
-		if err = c.removeModifiedStatus(); err != nil {
-			return err
-		}
+	if err = c.resetPublicCloudModifiedStatus(data); err != nil {
+		return err
 	}
-	c.log.Debug("Updated")
+
+	c.log.Debugf("Updated cloud %s", c.config.CloudID)
 	return nil
 }
 
