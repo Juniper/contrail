@@ -105,6 +105,24 @@
       "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3a4fa318_a5a57039",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-14T12:39:10Z",
+      "side": 1,
+      "message": "I mean that we should call Register every time we call Put, Post, Get, etc. As you\u0027ve mentioned you can easily fill path and method. Then name can fallback to path and rel can fallback to action. For custom cases where you need to set custom rel or action, you can introduce functional options into those methods.",
+      "parentUuid": "5b43d15a_da62c227",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
