@@ -94,6 +94,30 @@
     },
     {
       "key": {
+        "uuid": "0dd1a419_7f06c08b",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:15:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "320328f4_b534d02b",
+      "range": {
+        "startLine": 23,
+        "startChar": 1,
+        "endLine": 23,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "784519ad_752b0327",
         "filename": "pkg/testutil/integration/keystone_fake.go",
         "patchSetId": 5
@@ -114,6 +138,30 @@
       "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da18aa55_9f218036",
+        "filename": "pkg/testutil/integration/keystone_fake.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:15:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "784519ad_752b0327",
+      "range": {
+        "startLine": 12,
+        "startChar": 1,
+        "endLine": 12,
+        "endChar": 8
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -140,6 +188,30 @@
     },
     {
       "key": {
+        "uuid": "cd904a98_598a9521",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/assignment.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:15:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "072b1be4_e0af2ab1",
+      "range": {
+        "startLine": 25,
+        "startChar": 6,
+        "endLine": 25,
+        "endChar": 16
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "96a63b07_493f9c12",
         "filename": "vendor/github.com/Juniper/asf/pkg/keystone/assignment.go",
         "patchSetId": 5
@@ -163,6 +235,30 @@
     },
     {
       "key": {
+        "uuid": "fa0764d1_75f5fb21",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/assignment.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:15:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "96a63b07_493f9c12",
+      "range": {
+        "startLine": 28,
+        "startChar": 14,
+        "endLine": 28,
+        "endChar": 17
+      },
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f9d02a88_8c20b8cd",
         "filename": "vendor/github.com/Juniper/asf/pkg/keystone/types.go",
         "patchSetId": 5
@@ -177,6 +273,24 @@
       "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0e4d13d3_7e07238a",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/types.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:15:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f9d02a88_8c20b8cd",
+      "revId": "8c112b39447f098e5041aa9f596bd4c4663a66ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
