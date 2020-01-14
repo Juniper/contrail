@@ -26,6 +26,7 @@ import (
 func GetAuthSkipPaths() ([]string, error) {
 	skipPaths := []string{
 		"/contrail-clusters?fields=uuid,name",
+		"/contrail-clusters?fields=uuid,name,annotations",
 		"/keystone/v3/auth/tokens",
 		// TODO(dfurman): "server.dynamic_proxy_path" or DefaultDynamicProxyPath should be used
 		"/proxy/",
