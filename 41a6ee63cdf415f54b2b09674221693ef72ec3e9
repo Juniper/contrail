@@ -87,6 +87,24 @@
       "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b43d15a_da62c227",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T12:22:55Z",
+      "side": 1,
+      "message": "\u003e there is no known user of homepage today.\n\nIn that case, are we sure there are going to be any users of it in the future? This (having a generic instead of a Contrail-only homepage) might not be worth adding extra arguments to all the methods in the interface.\n\n\u003e Please hide the registration in other methods.\n\nWhat do you mean by this?",
+      "parentUuid": "d8b352d3_6ac00589",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
