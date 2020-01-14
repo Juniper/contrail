@@ -1,0 +1,164 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "464e5ac9_e7a590c2",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "kstypes -\u003e asfkeystone",
+      "range": {
+        "startLine": 32,
+        "startChar": 1,
+        "endLine": 32,
+        "endChar": 8
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "76d9b0e8_8cbfccf1",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "This value could be added in slice initializer.",
+      "range": {
+        "startLine": 372,
+        "startChar": 11,
+        "endLine": 372,
+        "endChar": 19
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "60c1a8c7_5d78e5d2",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "If user does not specify this, it should default to DefaultDynamicProxyPath, not \"\".",
+      "range": {
+        "startLine": 372,
+        "startChar": 31,
+        "endLine": 372,
+        "endChar": 75
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86a64837_3d13497c",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 376,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "dd",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "791032f6_7d22fcb6",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 389,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "Please extract staticFilesPaths() function and append its return value to skipPaths here.",
+      "range": {
+        "startLine": 377,
+        "startChar": 2,
+        "endLine": 389,
+        "endChar": 2
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0cfba5e9_c25e1a0f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "dd",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d1948a10_88efe6a1",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "Please remove those useless comments and put one over \"const (\", like \"Auth constants\"",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a3349b7c_6a98616d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:11:00Z",
+      "side": 1,
+      "message": "Could you do it know? Below too.",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
