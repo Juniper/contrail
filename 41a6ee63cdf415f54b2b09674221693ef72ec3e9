@@ -69,6 +69,24 @@
       "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d8b352d3_6ac00589",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-14T11:52:17Z",
+      "side": 1,
+      "message": "You can place whatever makes sense for you as long as the subset of original values are preserved, because there is no known user of homepage today. You can even add your own values and fields - it won\u0027t break anything. \n\nPlease hide the registration in other methods.",
+      "parentUuid": "08423c63_34472bb8",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
