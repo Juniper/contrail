@@ -95,6 +95,30 @@
     },
     {
       "key": {
+        "uuid": "16b206a2_2c21904a",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T16:11:18Z",
+      "side": 1,
+      "message": "It should always be added to skipPaths, not only when ProxyPath is customized",
+      "parentUuid": "60c1a8c7_5d78e5d2",
+      "range": {
+        "startLine": 372,
+        "startChar": 31,
+        "endLine": 372,
+        "endChar": 75
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "86a64837_3d13497c",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 5
@@ -109,6 +133,24 @@
       "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a4f62e39_447d27b6",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 376,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T16:11:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "86a64837_3d13497c",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -132,6 +174,30 @@
       "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b7db15cd_2727dce7",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 389,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T16:11:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "791032f6_7d22fcb6",
+      "range": {
+        "startLine": 377,
+        "startChar": 2,
+        "endLine": 389,
+        "endChar": 2
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -164,6 +230,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "0cfba5e9_c25e1a0f",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "acefd72b_a8cf7565",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T16:11:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a7ce4f71_ce85d2c6",
       "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
@@ -205,6 +289,24 @@
     },
     {
       "key": {
+        "uuid": "7e98dbde_ada54158",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T16:11:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "eb7c734d_0ad6423c",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a3349b7c_6a98616d",
         "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
         "patchSetId": 5
@@ -237,6 +339,24 @@
       "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "96dfeac1_b40ce647",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T16:11:18Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "da81ef85_a47175cd",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
