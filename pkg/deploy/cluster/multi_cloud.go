@@ -127,6 +127,10 @@ func (m *multiCloudProvisioner) deploy() error {
 		}
 	}
 
+	if err := m.waitForCloudsToBeUpdated(); err != nil {
+		return err
+	}
+
 	if updated, err := m.isMCUpdated(); err != nil {
 		return errors.Wrapf(err, "%s failed", pa)
 	} else if updated {
@@ -299,16 +303,13 @@ func (m *multiCloudProvisioner) manageMCCluster() error {
 		m.clusterData.ClusterInfo.ProvisioningAction,
 		m.clusterData.ClusterInfo.FQName)
 
-	if err := m.verifyCloudStatus(); err != nil {
-		return err
-	}
 	if err := m.createFiles(); err != nil {
 		return err
 	}
 	return m.provision()
 }
 
-func (m *multiCloudProvisioner) verifyCloudStatus() error {
+func (m *multiCloudProvisioner) waitForCloudsToBeUpdated() error {
 	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
 		if err := waitForCloudStatusToBeUpdated(
 			context.Background(), m.cluster.log, m.cluster.APIServer, cloudRef.UUID,
