@@ -152,6 +152,24 @@
     },
     {
       "key": {
+        "uuid": "a7ce4f71_ce85d2c6",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-14T16:05:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0cfba5e9_c25e1a0f",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d1948a10_88efe6a1",
         "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
         "patchSetId": 5
@@ -169,6 +187,24 @@
     },
     {
       "key": {
+        "uuid": "eb7c734d_0ad6423c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-14T16:05:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1948a10_88efe6a1",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a3349b7c_6a98616d",
         "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
         "patchSetId": 5
@@ -180,6 +216,24 @@
       "writtenOn": "2020-01-14T15:11:00Z",
       "side": 1,
       "message": "Could you do it know? Below too.",
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da81ef85_a47175cd",
+        "filename": "vendor/github.com/Juniper/asf/pkg/keystone/auth.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-14T16:05:51Z",
+      "side": 1,
+      "message": "I would rather do this in a separate patch, because it changes behavior a bit. In auth.Identity when we have a nil identity we are using a default one. The default one is based on the previous nil check behavior. The problem is that legacy defaults had IsAdmin \u003d\u003d true while Roles \u003d\u003d nil, which won\u0027t be the case if we start using funcs.\n\nI agree that we can try refactoring this into funcs, but IMO it should be done in separate patch to help isolating possible bug and to not impede this CR.",
+      "parentUuid": "a3349b7c_6a98616d",
       "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
