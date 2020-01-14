@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c18614b2_e255ed69",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 308,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:30:34Z",
+      "side": 1,
+      "message": "I encourage you to use WithField() method to improve log readability.",
+      "revId": "6e0c7f00c41b1a4eaf29a6bf8afb93761e6ddfe9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90541092_2525d4d1",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:30:34Z",
+      "side": 1,
+      "message": "Is this log precise now? Isn\u0027t",
+      "revId": "6e0c7f00c41b1a4eaf29a6bf8afb93761e6ddfe9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
