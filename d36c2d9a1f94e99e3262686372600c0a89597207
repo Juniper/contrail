@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "64938b45_86beb69e",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T12:12:39Z",
+      "side": 1,
+      "message": "It is used only in staticProxyPlugin - Making it not return an error would make that plugin a bit more complex (storing a list of routes and registering all of them at the end). Do you think doing that is worth it?",
+      "parentUuid": "6e800ee1_c929264e",
+      "range": {
+        "startLine": 30,
+        "startChar": 29,
+        "endLine": 30,
+        "endChar": 34
+      },
+      "revId": "d36c2d9a1f94e99e3262686372600c0a89597207",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8f7fd9fd_601cfd2a",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 27
@@ -48,6 +72,47 @@
     },
     {
       "key": {
+        "uuid": "839c81b4_8105b93a",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T12:12:39Z",
+      "side": 1,
+      "message": "Indeed, it is not used. I kept it to be the same as RegisterHTTPAPI.",
+      "parentUuid": "8f7fd9fd_601cfd2a",
+      "range": {
+        "startLine": 31,
+        "startChar": 29,
+        "endLine": 31,
+        "endChar": 34
+      },
+      "revId": "d36c2d9a1f94e99e3262686372600c0a89597207",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87fa5524_bf31c523",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T12:12:39Z",
+      "side": 1,
+      "message": "s.Cache is nil at this point. Make the users pass it explicitly instead of setting it after creation to fix this.",
+      "revId": "d36c2d9a1f94e99e3262686372600c0a89597207",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d84b9806_533f2baf",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 27
@@ -59,6 +124,30 @@
       "writtenOn": "2020-01-14T11:44:51Z",
       "side": 1,
       "message": "I\u0027m not sure if those should be defined as plugins. Both middlewares are going to be placed in ASF and IMO they can be embedded in the server.",
+      "range": {
+        "startLine": 128,
+        "startChar": 0,
+        "endLine": 138,
+        "endChar": 20
+      },
+      "revId": "d36c2d9a1f94e99e3262686372600c0a89597207",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b236892_7a6400b0",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-14T12:12:39Z",
+      "side": 1,
+      "message": "This make sense; although they should be decoupled from generated code to do this.\n\nWhat do you think about removing the ability to add GRPC server options in plugins (to simplify GRPCRouter) if we do this?",
+      "parentUuid": "d84b9806_533f2baf",
       "range": {
         "startLine": 128,
         "startChar": 0,
