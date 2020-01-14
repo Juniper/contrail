@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "a885050f_15bf0b03",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-14T15:12:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "464e5ac9_e7a590c2",
+      "range": {
+        "startLine": 32,
+        "startChar": 1,
+        "endLine": 32,
+        "endChar": 8
+      },
+      "revId": "3efb2b70ff91e36037a5c03c7244480bb3ae21e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "76d9b0e8_8cbfccf1",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 5
