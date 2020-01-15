@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3186002d_2888edd6",
+        "filename": "pkg/collector/analytics/http.go",
+        "patchSetId": 29
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:49:31Z",
+      "side": 1,
+      "message": "Maybe just middlewareFunc() ?",
+      "range": {
+        "startLine": 51,
+        "startChar": 5,
+        "endLine": 51,
+        "endChar": 27
+      },
+      "revId": "8517d4899eacc634c9f49c6e2aa958ced155f175",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26a5d54d_709065db",
+        "filename": "pkg/keystone/middleware.go",
+        "patchSetId": 29
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:49:31Z",
+      "side": 1,
+      "message": "Please do not use viper in Keystone library. Pass it to NewAuthPlugin() func instead. Below too.",
+      "range": {
+        "startLine": 39,
+        "startChar": 12,
+        "endLine": 39,
+        "endChar": 17
+      },
+      "revId": "8517d4899eacc634c9f49c6e2aa958ced155f175",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

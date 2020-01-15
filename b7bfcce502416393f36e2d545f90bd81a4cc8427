@@ -2,6 +2,92 @@
   "comments": [
     {
       "key": {
+        "uuid": "7789ac05_85f78c04",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:49:31Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 93,
+        "startChar": 1,
+        "endLine": 93,
+        "endChar": 2
+      },
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7d747e82_91e21ade",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:49:31Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 182,
+        "startChar": 1,
+        "endLine": 182,
+        "endChar": 7
+      },
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bec4368d_09ea0bd0",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:49:31Z",
+      "side": 1,
+      "message": "\"with paths containing given prefix\"?",
+      "range": {
+        "startLine": 218,
+        "startChar": 51,
+        "endLine": 218,
+        "endChar": 63
+      },
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04391046_0ed62151",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:49:31Z",
+      "side": 1,
+      "message": "Nit: this is router\u0027s interface method (i. e. not a helper), so IMO it should be exported.",
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4fa22d9b_25790962",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
         "patchSetId": 28
