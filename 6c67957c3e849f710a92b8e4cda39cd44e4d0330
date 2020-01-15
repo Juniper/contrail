@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "402d57cb_25903517",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 12
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-15T13:58:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6acefcad_c2171144",
+      "range": {
+        "startLine": 13,
+        "startChar": 43,
+        "endLine": 13,
+        "endChar": 55
+      },
+      "revId": "6c67957c3e849f710a92b8e4cda39cd44e4d0330",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "afe35d43_88b5eb26",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 12
@@ -36,6 +60,30 @@
       "writtenOn": "2020-01-15T10:53:44Z",
       "side": 1,
       "message": "This can be a named return value",
+      "range": {
+        "startLine": 387,
+        "startChar": 5,
+        "endLine": 387,
+        "endChar": 10
+      },
+      "revId": "6c67957c3e849f710a92b8e4cda39cd44e4d0330",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1d03376f_4a192389",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-15T13:58:42Z",
+      "side": 1,
+      "message": "I think it shouldn\u0027t",
+      "parentUuid": "afe35d43_88b5eb26",
       "range": {
         "startLine": 387,
         "startChar": 5,
