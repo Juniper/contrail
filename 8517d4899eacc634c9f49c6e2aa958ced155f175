@@ -69,6 +69,30 @@
       "revId": "8517d4899eacc634c9f49c6e2aa958ced155f175",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8775244c_c75bb3f5",
+        "filename": "pkg/keystone/middleware.go",
+        "patchSetId": 29
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-15T13:53:28Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b6ae4cbe_6d0c50e8",
+      "range": {
+        "startLine": 39,
+        "startChar": 12,
+        "endLine": 39,
+        "endChar": 17
+      },
+      "revId": "8517d4899eacc634c9f49c6e2aa958ced155f175",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
