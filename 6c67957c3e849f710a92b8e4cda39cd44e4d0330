@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6acefcad_c2171144",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 12
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-15T10:53:44Z",
+      "side": 1,
+      "message": "typo: `authorization`",
+      "range": {
+        "startLine": 13,
+        "startChar": 43,
+        "endLine": 13,
+        "endChar": 55
+      },
+      "revId": "6c67957c3e849f710a92b8e4cda39cd44e4d0330",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "afe35d43_88b5eb26",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-15T10:53:44Z",
+      "side": 1,
+      "message": "This can be a named return value",
+      "range": {
+        "startLine": 387,
+        "startChar": 5,
+        "endLine": 387,
+        "endChar": 10
+      },
+      "revId": "6c67957c3e849f710a92b8e4cda39cd44e4d0330",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
