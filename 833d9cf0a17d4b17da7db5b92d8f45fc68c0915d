@@ -34,6 +34,24 @@
       "revId": "833d9cf0a17d4b17da7db5b92d8f45fc68c0915d",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d5731c84_fa3a5f42",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-15T11:04:33Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a413bcaf_53a24830",
+      "revId": "833d9cf0a17d4b17da7db5b92d8f45fc68c0915d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
