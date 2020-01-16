@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "31511719_b9064a19",
+        "filename": "pkg/cloud/deployer.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-16T14:43:04Z",
+      "side": 1,
+      "message": "What about using \"deployer topology destroy --secret SECRET_FILE\" instead of applying clean topology? It would require leaving tfstate files after provisioning, but AFAIK they don\u0027t contain any sensitive information.\nAlso, in that case naming of the method would actually be consistent with terraform operation.",
+      "parentUuid": "02ed8f28_04fa4493",
+      "range": {
+        "startLine": 80,
+        "startChar": 4,
+        "endLine": 80,
+        "endChar": 83
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e6382880_54806ca0",
         "filename": "pkg/cloud/tf_state.go",
         "patchSetId": 11

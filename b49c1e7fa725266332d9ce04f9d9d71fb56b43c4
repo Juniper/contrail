@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "42c7ed89_42f754a0",
+        "filename": "pkg/cloud/deployer.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-16T14:43:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0bf05108_443f85af",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "89420a8a_102cd5bd",
         "filename": "pkg/cloud/tf_state.go",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2020-01-07T11:32:47Z",
       "side": 1,
       "message": "Nit: could be reduced to single line",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6d2182dd_016523cc",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-16T14:43:04Z",
+      "side": 1,
+      "message": "bump",
+      "parentUuid": "89420a8a_102cd5bd",
       "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "a5fbafa2_ac90c144",
+        "filename": "sample/contrail-ui.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-16T14:43:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fc9dc9b7_3949a187",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "703a43b4_31bc36e0",
         "filename": "sample/contrail-ui.yml",
         "patchSetId": 3
@@ -67,6 +121,24 @@
       "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2debf144_3ae57d82",
+        "filename": "sample/contrail-ui.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-16T14:43:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "703a43b4_31bc36e0",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
