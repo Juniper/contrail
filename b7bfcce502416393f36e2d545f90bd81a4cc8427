@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "1544ba3b_83b7a4b1",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-16T12:08:51Z",
+      "side": 1,
+      "message": "Not anymore in the latest patchset.",
+      "parentUuid": "7789ac05_85f78c04",
+      "range": {
+        "startLine": 93,
+        "startChar": 1,
+        "endLine": 93,
+        "endChar": 2
+      },
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7d747e82_91e21ade",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 28
@@ -36,6 +60,30 @@
       "writtenOn": "2020-01-15T13:49:31Z",
       "side": 1,
       "message": "Redundant variable",
+      "range": {
+        "startLine": 182,
+        "startChar": 1,
+        "endLine": 182,
+        "endChar": 7
+      },
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "40de8807_743dd487",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-16T12:08:51Z",
+      "side": 1,
+      "message": "Not anymore in the latest patchset.",
+      "parentUuid": "7d747e82_91e21ade",
       "range": {
         "startLine": 182,
         "startChar": 1,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "f29619ce_5efc00c4",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-16T12:08:51Z",
+      "side": 1,
+      "message": "Changed, see the latest patchset.",
+      "parentUuid": "bec4368d_09ea0bd0",
+      "range": {
+        "startLine": 218,
+        "startChar": 51,
+        "endLine": 218,
+        "endChar": 63
+      },
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "04391046_0ed62151",
         "filename": "pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 28
@@ -85,6 +157,24 @@
       "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "750871b9_d7ace697",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-16T12:08:51Z",
+      "side": 1,
+      "message": "This is a method that\u0027s intended to be used only in baseapisrv, that\u0027s why it was unexported.\nBut I\u0027ve already removed grpcRouter anyway.",
+      "parentUuid": "04391046_0ed62151",
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

@@ -295,6 +295,30 @@
       "revId": "d36c2d9a1f94e99e3262686372600c0a89597207",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c4cb01f1_96d9e16d",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-16T12:08:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5cc81a98_faa84b0b",
+      "range": {
+        "startLine": 128,
+        "startChar": 0,
+        "endLine": 138,
+        "endChar": 20
+      },
+      "revId": "d36c2d9a1f94e99e3262686372600c0a89597207",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
