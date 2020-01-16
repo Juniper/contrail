@@ -81,6 +81,20 @@ test_data:
         - key: kolla_enable_tls_external
           value: "yes"
     {%endif%}
+    {% if PROVISIONER_TYPE == "juju" %}
+    annotations:
+      key_value_pair:
+        - key: keystone_vip
+          value: {{KEYSTONE_VIP}}
+        - key: nova_vip
+          value: {{NOVA_VIP}}
+        - key: glance_vip
+          value: {{GLANCE_VIP}}
+        - key: swift_vip
+          value: {{SWIFT_VIP}}
+        - key: ironic_vip
+          value: {{IRONIC_VIP}}
+    {%endif%}
   openstack_control_nodes: &openstack_control_nodes
     uuid: openstack_control_nodes_uuid
     parent_type: openstack-cluster

@@ -92,7 +92,23 @@ func (e *EndpointData) getkeystoneAdminCredential() (adminUser, adminPassword st
 	return e.ClusterData.KeystoneAdminCredential()
 }
 
+func (e *EndpointData) getJUJUOpenstackEndpointNodes() (endpointNodes map[string][]string) {
+	endpointNodes = make(map[string][]string)
+    o := e.ClusterData.getOpenstackClusterData()
+    vips := o.getOpenstackVipsFromAnnotation()
+    endpointNodes[identity] = []string{vips[identity]}
+    endpointNodes[nova] = []string{vips[nova]}
+    endpointNodes[ironic] = []string{vips[ironic]}
+    endpointNodes[glance] = []string{vips[glance]}
+    endpointNodes[swift] = []string{vips[swift]}
+
+	return endpointNodes
+}
+
 func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]string) {
+	if e.ClusterData.ClusterInfo.ProvisionerType == "juju" {
+		return e.getJUJUOpenstackEndpointNodes()
+	}
 	var k []*models.KeyValuePair
 	if o := e.ClusterData.GetOpenstackClusterInfo(); o != nil {
 		if g := o.GetKollaGlobals(); g != nil {
