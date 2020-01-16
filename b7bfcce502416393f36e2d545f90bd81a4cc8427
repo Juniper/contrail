@@ -192,6 +192,24 @@
       "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f990c075_584cc103",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 28
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-16T12:46:32Z",
+      "side": 1,
+      "message": "Done: https://github.com/Juniper/asf/pull/26",
+      "parentUuid": "4fa22d9b_25790962",
+      "revId": "b7bfcce502416393f36e2d545f90bd81a4cc8427",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
