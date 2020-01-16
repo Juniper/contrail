@@ -563,6 +563,26 @@ func (o *OpenstackData) getOpenstackPublicVip() (vip string) {
 	return vip
 }
 
+func (o *OpenstackData) getOpenstackVipsFromAnnotation() (vips map[string]string) {
+	vips = make(map[string]string)
+    if a := o.ClusterInfo.GetAnnotations(); a != nil {
+        for _, keyValuePair := range a.GetKeyValuePair() {
+            switch keyValuePair.Key {
+            case "keystone_vip":
+                vips[identity] = keyValuePair.Value
+            case "swift_vip":
+                vips[swift] = keyValuePair.Value
+            case "glance_vip":
+                vips[glance] = keyValuePair.Value
+            case "nova_vip":
+                vips[nova] = keyValuePair.Value
+            case "ironic_vip":
+                vips[ironic] = keyValuePair.Value
+            }
+        }
+    }
+    return vips
+}
 func (o *OpenstackData) isSSLEnabled() bool {
 	if g := o.ClusterInfo.GetKollaGlobals(); g != nil {
 		for _, keyValuePair := range g.GetKeyValuePair() {

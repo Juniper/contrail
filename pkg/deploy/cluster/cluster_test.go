@@ -1109,5 +1109,81 @@ func TestTripleoClusterImport(t *testing.T) {
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
-	assert.NoError(t, err, "failed to delete triple0 cluster")
+	assert.NoError(t, err, "failed to delete tripleo cluster")
+}
+
+func TestJUJUClusterImport(t *testing.T) {
+	// Create the cluster and related objects
+	ts, err := integration.LoadTest(
+		allInOneClusterTemplatePath,
+		pongo2.Context{
+			"TYPE":                   "kernel",
+			"MGMT_INT_IP":            "127.0.0.1",
+			"KEYSTONE_VIP":           "10.10.10.100",
+			"NOVA_VIP":               "20.20.20.100",
+			"SWIFT_VIP":              "30.30.30.100",
+			"IRONIC_VIP":             "40.40.40.100",
+			"GLANCE_VIP":             "50.50.50.100",
+			"CONTRAIL_EXTERNAL_VIP":  "overcloud.localdomain",
+			"SSL_ENABLE":             "yes",
+			"PROVISIONER_TYPE":       "juju",
+			"PROVISIONING_STATE":     "CREATED",
+			"PROVISIONING_ACTION":    "",
+			"CLUSTER_NAME":           t.Name(),
+		},
+	)
+	require.NoError(t, err, "failed to load cluster test data")
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
+	defer cleanup()
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
+	config := &Config{
+		APIServer:           s,
+		ClusterID:           clusterID,
+		Action:              createAction,
+		LogLevel:            "debug",
+		TemplateRoot:        "templates/",
+		WorkRoot:            workRoot,
+		Test:                true,
+		LogFile:             workRoot + "/deploy.log",
+		ServiceUserID:       integration.ServiceUserName,
+		ServiceUserPassword: integration.ServiceUserPassword,
+	}
+	// create cluster
+	removeFile(t, executedPlaybooks)
+
+	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	assert.NoError(t, err, "failed to create cluster manager to import juju cluster")
+	deployer, err := clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(import) juju cluster")
+
+	// Wait for the in-memory endpoint cache to get updated
+	server.ForceProxyUpdate()
+	// make sure all endpoints are created as part of import
+	err = verifyEndpoints(
+		t, ts,
+		map[string]string{
+			"config":    "https://overcloud.localdomain:8082",
+			"nodejs":    "https://overcloud.localdomain:8143",
+			"telemetry": "https://overcloud.localdomain:8081",
+			"baremetal": "https://40.40.40.100:6385",
+			"swift":     "https://30.30.30.100:8081",
+			"glance":    "https://50.50.50.100:9292",
+			"compute":   "https://20.20.20.100:8774",
+			"keystone":  "https://10.10.10.100:5000",
+		},
+	)
+	assert.NoError(t, err)
+	// delete cluster
+	config.Action = deleteAction
+	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
+	deployer, err = clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to delete juju cluster")
 }
