@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "e4b8f78e_bac2b5d7",
+        "filename": "pkg/cloud/configs/contrail-cloud-config.tmpl",
+        "patchSetId": 11
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-16T14:56:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c792018_060d4169",
+      "range": {
+        "startLine": 17,
+        "startChar": 46,
+        "endLine": 17,
+        "endChar": 53
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "02ed8f28_04fa4493",
         "filename": "pkg/cloud/deployer.go",
         "patchSetId": 11
@@ -146,6 +170,24 @@
       "writtenOn": "2020-01-16T12:36:37Z",
       "side": 1,
       "message": "This script will work only on the desired machine. What if someone will prepare the .yml file on his local machine and then move this to the remote machine to use this but it won\u0027t work because of different locations?\n\nIMHO we should pass contrail_dir and config_dir as arguments and add echo with explanation of usage.",
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d1f43d27_d9982ea4",
+        "filename": "sample/generate_contrail_ui_sample",
+        "patchSetId": 11
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-16T14:56:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ceed1fe3_fb0d181f",
       "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
