@@ -4,24 +4,26 @@ import (
 	"context"
 
 	"github.com/Juniper/asf/pkg/auth"
-	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/rbac"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/rbac"
 )
 
 // TODO(dfurman): move non-template code out of template
 
-func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*models.APIAccessList {
-	noAuthCtx := auth.NoAuth(ctx)
-	listRequest := &ListAPIAccessListRequest{
-		Spec: &baseservices.ListSpec{},
-	}
-	// Use a context with No auth for internal calls
-	result, err := service.ReadService.ListAPIAccessList(noAuthCtx, listRequest)
-	if err != nil {
-		return nil
-	}
-	return result.APIAccessLists
+// RBACService will RBAC check on resource opeations.
+type RBACService struct {
+	BaseService
+	ReadService  ReadService
+	AAAMode      string
+	AccessGetter AccessGetter
+}
+
+type AccessGetter interface {
+	GetAccessLists(ctx context.Context)	[]*rbac.APIAccessList
+}
+
+func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*rbac.APIAccessList {
+	return service.AccessGetter.GetAccessLists(ctx)
 }
 
 
@@ -37,7 +39,7 @@ func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
         return nil,err
     }
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionCreate) ; err != nil {
 		    return nil,err
 	    }
@@ -56,12 +58,12 @@ func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
     }
 
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionUpdate); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID )
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionUpdate) ; err != nil {
 		    return nil,err
 	    }
@@ -80,12 +82,12 @@ func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
     }
 
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionDelete); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionDelete) ; err != nil {
 		    return nil,err
 	    }
@@ -105,12 +107,12 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 
     if  !allowed  {
 
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
 		    return nil,err
 	    }
@@ -131,12 +133,12 @@ func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 
     if  !allowed  {
 
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID)
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
 		    return nil,err
 	    }
@@ -151,4 +153,5 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}Perms2(ctx context.Contex
 	}
 	return nil
 }
+
 {% endif %}{% endfor %}
