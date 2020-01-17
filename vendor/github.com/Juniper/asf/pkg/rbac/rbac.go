@@ -4,33 +4,20 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	// TODO(dfurman): Decouple from below packages
-	//"github.com/Juniper/asf/pkg/auth"
 )
 
-// CRUD operations rune constants
 const (
-	UpperCaseC rune = 'C'
-	UpperCaseR rune = 'R'
-	UpperCaseU rune = 'U'
-	UpperCaseD rune = 'D'
-)
-
-const aaaModeRBAC = "rbac"
-
-// Action enumerates CRUD actions.
-type Action int
-
-// Enumeration of Actions.
-const (
-	ActionInvalid Action = iota
-	ActionCreate
-	ActionRead
-	ActionUpdate
-	ActionDelete
+	aaaModeRBAC                  = "rbac"
+	domainScope                  = "domain"
+	projectScope                 = "project"
+	globalSystemConfigScope      = "global-system-config"
+	upperCaseC              rune = 'C'
+	upperCaseR              rune = 'R'
+	upperCaseU              rune = 'U'
+	upperCaseD              rune = 'D'
 )
 
 // CheckCommonPermissions checks checks whether access is based on RBAC configuration or user roles..
@@ -42,7 +29,7 @@ func CheckCommonPermissions(ctx context.Context, aaaMode string, kind string, op
 		return false, errutil.ErrorForbidden("invalid context. access denied")
 	}
 
-	authCtx := auth.GetAuthCTX(ctx)
+	authCtx := auth.GetIdentity(ctx)
 
 	if authCtx == nil {
 		return false, errutil.ErrorForbidden("invalid auth context. access denied ")
@@ -64,7 +51,7 @@ func isRBACEnabled(aaaMode string) bool {
 }
 
 // isROAccessAllowed checks whether is Read only  Resource access is allowed if operation is READ.
-func isROAccessAllowed(ctx *auth.Context, op Action) bool {
+func isROAccessAllowed(ctx auth.Identity, op Action) bool {
 	if op != ActionRead {
 		return false
 	}
@@ -76,7 +63,7 @@ func isROAccessAllowed(ctx *auth.Context, op Action) bool {
 }
 
 // CheckPermissions checks whether resource operation is allowed based on RBAC config.
-func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode string, kind string, op Action) error {
+func CheckPermissions(ctx context.Context, l []*APIAccessList, aaaMode string, kind string, op Action) error {
 	if len(l) == 0 {
 		return errutil.ErrorForbidden("no API access list rules present.access denied ")
 	}
@@ -97,7 +84,7 @@ func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode st
 }
 
 // CheckObjectPermissions checks object level (perms2) permissions.
-func CheckObjectPermissions(ctx context.Context, p *models.PermType2, aaaMode string, kind string, op Action) error {
+func CheckObjectPermissions(ctx context.Context, p *PermType2, aaaMode string, kind string, op Action) error {
 	rq := newRequest(ctx, kind, op)
 
 	if p == nil {
@@ -105,13 +92,13 @@ func CheckObjectPermissions(ctx context.Context, p *models.PermType2, aaaMode st
 	}
 
 	// Check whether resource global access permissions allows  the Action.
-	if permsAccessAllowed(rq, p.GetGlobalAccess()) {
+	if permsAccessAllowed(rq, p.getGlobalAccess()) {
 		return nil
 	}
 
 	// Check whether resource owner access  permissions allows the Action.
-	if rq.project == p.GetOwner() {
-		if !permsAccessAllowed(rq, p.GetOwnerAccess()) {
+	if rq.project == p.getOwner() {
+		if !permsAccessAllowed(rq, p.getOwnerAccess()) {
 			return errutil.ErrorForbidden("object access not allowed. access denied ")
 		}
 		return nil
@@ -131,7 +118,7 @@ type request struct {
 // newRequest creates a new request Object. This object will be initialized with user roles
 // project,domain ,objectKind info.
 func newRequest(ctx context.Context, kind string, op Action) *request {
-	authCtx := auth.GetAuthCTX(ctx)
+	authCtx := auth.GetIdentity(ctx)
 	n := request{
 		kind:    kind,
 		op:      op,
@@ -149,7 +136,7 @@ func getUserRoles(ctx context.Context) map[string]bool {
 		return nil
 	}
 
-	aCtx := auth.GetAuthCTX(ctx)
+	aCtx := auth.GetIdentity(ctx)
 	if aCtx == nil {
 		return nil
 	}
@@ -161,16 +148,16 @@ func getUserRoles(ctx context.Context) map[string]bool {
 	return rset
 }
 
-func checkObjectSharePermissions(ctx context.Context, p *models.PermType2, rq *request) error {
-	share := p.GetShare()
+func checkObjectSharePermissions(ctx context.Context, p *PermType2, rq *request) error {
+	share := p.getShare()
 	// Check whether resource is shared with the tenant and Action is allowed.
 	for _, st := range share {
-		tenant := st.GetTenant()
-		tAccess := st.GetTenantAccess()
+		tenant := st.getTenant()
+		tAccess := st.getTenantAccess()
 		shareType, uuid := tenantInfo(tenant)
 
-		if (shareType == models.KindDomain && uuid == rq.domain) ||
-			(shareType == models.KindProject && uuid == rq.project) {
+		if (shareType == domainScope && uuid == rq.domain) ||
+			(shareType == projectScope && uuid == rq.project) {
 			if permsAccessAllowed(rq, tAccess) {
 				return nil
 			}
@@ -181,17 +168,17 @@ func checkObjectSharePermissions(ctx context.Context, p *models.PermType2, rq *r
 
 func tenantInfo(tenant string) (projectType string, uuid string) {
 	uuid = strings.Split(tenant, ":")[1]
-	if tenantType(tenant) == models.KindDomain {
-		return models.KindDomain, uuid
+	if tenantType(tenant) == domainScope {
+		return domainScope, uuid
 	}
-	return models.KindProject, uuid
+	return projectScope, uuid
 }
 
 func tenantType(tenant string) string {
 	if strings.HasPrefix(tenant, "domain") {
-		return models.KindDomain
+		return domainScope
 	}
-	return models.KindProject
+	return projectScope
 }
 
 func permsAccessAllowed(rq *request, access int64) bool {
