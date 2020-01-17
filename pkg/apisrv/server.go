@@ -5,6 +5,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/rbac"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -42,8 +43,9 @@ func SetupServiceChain(dbService *db.Service, extraServices ...services.Service)
 			MetadataGetter: dbService,
 		},
 		&services.RBACService{
-			ReadService: dbService,
-			AAAMode:     viper.GetString("aaa_mode"),
+			ReadService:  dbService,
+			AccessGetter: rbac.NewContrailAccessGetter(dbService),
+			AAAMode:      viper.GetString("aaa_mode"),
 		},
 		services.NewQuotaCheckerService(dbService),
 	}
