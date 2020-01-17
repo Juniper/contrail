@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:4c07141e725d29c3ef09085dc545b18326bdc81350060640b29a6281b59dd3f8"
+  digest = "1:dfd2adbfb015591c2ab213ea6137b5f4cd88e2bac4227aefe1e93cadd8c19bae"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apisrv/baseapisrv",
@@ -29,12 +29,13 @@
     "pkg/models/basemodels",
     "pkg/osutil",
     "pkg/proxy",
+    "pkg/rbac",
     "pkg/retry",
     "pkg/schema",
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "4da8d435f3e1aaab34341630806279f114f3d887"
+  revision = "a9b4b490acd5fba45096e5faf4c7624078a99f73"
 
 [[projects]]
   branch = "2.x"
@@ -1373,6 +1374,7 @@
     "github.com/Juniper/asf/pkg/models/basemodels",
     "github.com/Juniper/asf/pkg/osutil",
     "github.com/Juniper/asf/pkg/proxy",
+    "github.com/Juniper/asf/pkg/rbac",
     "github.com/Juniper/asf/pkg/retry",
     "github.com/Juniper/asf/pkg/schema",
     "github.com/Juniper/asf/pkg/services/baseservices",
