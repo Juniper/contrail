@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "e368857c_e6666c84",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T12:38:58Z",
+      "side": 1,
+      "message": "1. I\u0027ve removed Add from the interface (but kept the method).\n3. I have a stash where this is partially done.",
+      "parentUuid": "b8b21d11_11d851e6",
+      "range": {
+        "startLine": 41,
+        "startChar": 1,
+        "endLine": 43,
+        "endChar": 25
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "44377389_f8c34f78",
         "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 43
@@ -84,6 +108,30 @@
       "writtenOn": "2020-01-17T12:04:35Z",
       "side": 1,
       "message": "How about having RouteOptionsFunc (for function) and RouteOptions (for struct) types?\nWe have HandlerFunc, MiddlewareFunc, stdlib\u0027s http.HandlerFunc after all.",
+      "range": {
+        "startLine": 56,
+        "startChar": 5,
+        "endLine": 56,
+        "endChar": 16
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8ab1cfe9_f8998db2",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T12:38:58Z",
+      "side": 1,
+      "message": "It\u0027s not quite the same as http.Handler vs http.HandlerFunc - RouteParameters has all the fields unexported, so it\u0027s unusable outside baseapisrv.\nThis name change makes the code clearer, though, so I\u0027ve done it.",
+      "parentUuid": "44377389_f8c34f78",
       "range": {
         "startLine": 56,
         "startChar": 5,
