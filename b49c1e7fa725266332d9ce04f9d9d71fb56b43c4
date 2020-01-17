@@ -90,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "2fa0b120_e725f783",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-17T15:57:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ed426ceb_e2801e09",
+      "revId": "b49c1e7fa725266332d9ce04f9d9d71fb56b43c4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fc9dc9b7_3949a187",
         "filename": "sample/contrail-ui.yml",
         "patchSetId": 3

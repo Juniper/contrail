@@ -144,6 +144,30 @@
     },
     {
       "key": {
+        "uuid": "4b3561a0_09dd8b81",
+        "filename": "pkg/cloud/deployer.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-17T15:57:04Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1af26a1e_93c511e7",
+      "range": {
+        "startLine": 80,
+        "startChar": 4,
+        "endLine": 80,
+        "endChar": 83
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e6382880_54806ca0",
         "filename": "pkg/cloud/tf_state.go",
         "patchSetId": 11
