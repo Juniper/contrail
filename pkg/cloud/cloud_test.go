@@ -195,6 +195,40 @@ func TestCreatingUpdatingPublicClouds(t *testing.T) {
 			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
 			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
 		}, {
+			name:        "Test Reprovision Failed AWS Cloud",
+			cloudUUID:   "cloud_uuid_aws",
+			cloudAction: updateAction,
+			filesToCopy: []*fileToCopy{
+				{
+					source:      "./test_data/cloud_keypair",
+					destination: expectedSSHPrivKeyPath("cloud_uuid_aws"),
+				},
+				{
+					source:      "./test_data/cloud_keypair.pub",
+					destination: expectedSSHPubKeyPath("cloud_uuid_aws"),
+				},
+				{
+					source:      "./test_data/aws/test_aws_failed_reprovision/expected_topology.yml",
+					destination: "/var/tmp/cloud/cloud_uuid_aws/topology.yml",
+				},
+				{
+					source:      "./test_data/aws/aws_access.key",
+					destination: "/var/tmp/contrail/aws_access.key",
+				},
+				{
+					source:      "./test_data/aws/aws_secret.key",
+					destination: "/var/tmp/contrail/aws_secret.key",
+				},
+			},
+			requestsToStartWith: []string{
+				"./test_data/cluster_with_credentials_request.yml",
+				"./test_data/aws/test_aws_failed_reprovision/prerequisites.yml",
+				"./test_data/aws/test_aws_failed_reprovision/requests.yml",
+			},
+			expectedTopologyFile: "./test_data/aws/test_aws_failed_reprovision/expected_topology.yml",
+			expectedSecretFile:   "./test_data/aws/expected_secret.yml",
+			expectedCommandsFile: "./test_data/aws/expected_commands.yml",
+		}, {
 			name:        "Test Update AWS Cloud Fail",
 			cloudUUID:   "cloud_uuid_aws",
 			cloudAction: updateAction,
@@ -304,13 +338,14 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
-	err := cl.manage()
+	err := cl.Manage()
 
 	if pc.manageFails {
 		assert.Errorf(t, err, "manage cloud should fail, while cloud %s", pc.cloudAction)
 		assert.False(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
 			"modified status is removed")
 		verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
+		verifyCloudProvisioningStatus(cl.ctx, t, cl.APIServer, cl.config.CloudID, cl.config.Action, pc.manageFails)
 		return
 	}
 
@@ -319,7 +354,7 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 		"modified status is not removed")
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
-
+	verifyCloudProvisioningStatus(cl.ctx, t, cl.APIServer, cl.config.CloudID, cl.config.Action, pc.manageFails)
 	assert.True(t, verifyNodeType(cl.ctx, cl.APIServer, usedScenarios),
 		"public cloud nodes are not updated as type private")
 
@@ -327,6 +362,36 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	verifyCommandsExecuted(t, pc.expectedCommandsFile, cl.config.CloudID)
 	verifyGeneratedSSHKeyFiles(t, cl.config.CloudID)
+}
+
+func verifyCloudProvisioningStatus(
+	ctx context.Context, t *testing.T, apiServer *client.HTTP, cloudUUID, action string, fail bool,
+) {
+	c, err := apiServer.GetCloud(ctx, &services.GetCloudRequest{
+		ID: cloudUUID,
+	})
+	require.NoError(t, err)
+	var expectedStatus string
+	if fail {
+		switch action {
+		case createAction:
+			expectedStatus = statusCreateFailed
+		case updateAction:
+			expectedStatus = statusUpdateFailed
+		default:
+			assert.Fail(t, "Unexpected cloud action for verifying cloud failure status")
+		}
+	} else {
+		switch action {
+		case createAction:
+			expectedStatus = statusCreated
+		case updateAction:
+			expectedStatus = statusUpdated
+		default:
+			assert.Fail(t, "Unexpected cloud action for verifying cloud success status")
+		}
+	}
+	assert.Equal(t, expectedStatus, c.Cloud.ProvisioningState)
 }
 
 func assertModifiedStatusRemoval(ctx context.Context, t *testing.T, APIServer *client.HTTP, cloudUUID string) bool {
@@ -680,12 +745,13 @@ func testPublicCloudDeletion(t *testing.T, pc *providerConfig) {
 
 	cl := prepareCloud(t, pc.cloudUUID, updateAction)
 
-	err := cl.manage()
+	err := cl.Manage()
 	if pc.manageFails {
 		assert.Errorf(t, err, "manage cloud should fail, while deleting cloud", pc.cloudAction)
 		assert.False(t, assertModifiedStatusRemoval(cl.ctx, t, cl.APIServer, cl.config.CloudID),
 			"modified status is removed")
 		verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
+		verifyCloudProvisioningStatus(cl.ctx, t, cl.APIServer, cl.config.CloudID, cl.config.Action, pc.manageFails)
 		return
 	}
 
@@ -758,7 +824,8 @@ func testOnPremUpdate(t *testing.T, pc *providerConfig) {
 	defer postActions(t, pc.cloudUUID)
 
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
-	assert.NoErrorf(t, cl.manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
+	assert.NoErrorf(t, cl.Manage(), "failed to manage cloud, while cloud %s", pc.cloudAction)
+	verifyCloudProvisioningStatus(cl.ctx, t, cl.APIServer, cl.config.CloudID, cl.config.Action, pc.manageFails)
 
 	verifyCloudSecretFilesAreDeleted(t, cl.config.CloudID)
 	compareTopology(t, pc.expectedTopologyFile, cl.config.CloudID)
@@ -819,9 +886,10 @@ func testOnPremDelete(t *testing.T, pc *providerConfig) {
 	cl := prepareCloud(t, pc.cloudUUID, pc.cloudAction)
 
 	if pc.manageFails {
-		assert.Error(t, cl.manage(), "manage cloud succeeded but it shouldn't")
+		assert.Error(t, cl.Manage(), "manage cloud succeeded but it shouldn't")
+		verifyCloudProvisioningStatus(cl.ctx, t, cl.APIServer, cl.config.CloudID, cl.config.Action, pc.manageFails)
 	} else {
-		assert.NoError(t, cl.manage(), "failed to manage cloud, while deleting cloud")
+		assert.NoError(t, cl.Manage(), "failed to manage cloud, while deleting cloud")
 		verifyCloudDeleted(cl.ctx, t, cl.APIServer, pc.cloudUUID)
 	}
 

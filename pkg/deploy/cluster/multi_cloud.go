@@ -128,6 +128,11 @@ func (m *multiCloudProvisioner) deploy() error {
 	}
 
 	if err := m.waitForCloudsToBeUpdated(); err != nil {
+		if m.action == createAction {
+			m.reportStatus(statusCreateFailed)
+		} else {
+			m.reportStatus(statusUpdateFailed)
+		}
 		return err
 	}
 
