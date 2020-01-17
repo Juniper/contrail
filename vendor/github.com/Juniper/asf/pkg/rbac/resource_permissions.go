@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models"
 )
 
 // resourcePermissions is the 2st level hash table to get objectKind specific rules.
@@ -16,7 +15,7 @@ type resourceKey string
 // Input is in the  following form
 // < virtual-network, *> => Member:CRUD ,Development:CRUD
 // < virtual-ip, *> => Member:CRUD
-func (r resourcePermissions) RulesAdd(rbacRules []*models.RbacRuleType) error {
+func (r resourcePermissions) RulesAdd(rbacRules []*RuleType) error {
 	for _, obj := range rbacRules {
 
 		err := r.objectKindRuleAdd(obj)
@@ -30,13 +29,13 @@ func (r resourcePermissions) RulesAdd(rbacRules []*models.RbacRuleType) error {
 // objectKindRuleAdd add objectKind or wildcard RBAC rules to hash.
 // Input rbacRule is in the the following form
 // < virtual-network, *> => Member:CRUD ,Development:CRUD.
-func (r resourcePermissions) objectKindRuleAdd(rbacRule *models.RbacRuleType) error {
+func (r resourcePermissions) objectKindRuleAdd(rbacRule *RuleType) error {
 	if rbacRule == nil {
 		return nil
 	}
 
-	ruleKind := pluralNameToKind(rbacRule.GetRuleObject())
-	perms := rbacRule.GetRulePerms()
+	ruleKind := pluralNameToKind(rbacRule.getRuleObject())
+	perms := rbacRule.getRulePerms()
 
 	err := r.objectKindPermsAdd(ruleKind, perms)
 	if err != nil {
@@ -53,7 +52,7 @@ func pluralNameToKind(name string) string {
 // objectKindPermsAdd adds objectKind or wildcard RBAC rules to hash.
 // Input "perms" is in the  following form
 // Member:CRUD ,Development:CRUD
-func (r resourcePermissions) objectKindPermsAdd(ruleKind string, perms []*models.RbacPermType) error {
+func (r resourcePermissions) objectKindPermsAdd(ruleKind string, perms []*PermType) error {
 	for _, perm := range perms {
 		err := r.objectKindPermAdd(ruleKind, perm)
 		if err != nil {
@@ -66,12 +65,12 @@ func (r resourcePermissions) objectKindPermsAdd(ruleKind string, perms []*models
 // objectKindPermsAdd adds objectKind or wildcard RBAC rules to hash.
 // Input "perm" is in the following form
 // Member:CRUD
-func (r resourcePermissions) objectKindPermAdd(ruleKind string, perm *models.RbacPermType) error {
+func (r resourcePermissions) objectKindPermAdd(ruleKind string, perm *PermType) error {
 	if perm == nil {
 		return nil
 	}
-	role := perm.GetRoleName()
-	crud, err := crudToActionSet(perm.GetRoleCrud())
+	role := perm.getRoleName()
+	crud, err := crudToActionSet(perm.getRoleCrud())
 	if err != nil {
 		return err
 	}
