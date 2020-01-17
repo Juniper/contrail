@@ -132,8 +132,10 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	})
 
 	serviceChain = append(serviceChain, &services.RBACService{
-		ReadService: s.DBService,
-		AAAMode:     viper.GetString("aaa_mode")})
+		ReadService:  s.DBService,
+		AccessGetter: services.NewContrailAccessGetter(s.DBService),
+		AAAMode:      viper.GetString("aaa_mode"),
+	})
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		serviceChain = append(serviceChain, &neutron.Service{

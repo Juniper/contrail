@@ -15,7 +15,6 @@ import (
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -129,13 +128,6 @@ type RefUpdateToUpdateService struct {
 	InTransactionDoer InTransactionDoer
 }
 
-// RBACService will RBAC check on resource opeations.
-type RBACService struct {
-	BaseService
-	ReadService ReadService
-	AAAMode     string
-}
-
 //EventProcessor can handle events on generic way.
 type EventProcessor interface {
 	Process(ctx context.Context, event *Event) (*Event, error)
@@ -195,7 +187,6 @@ type ContrailService struct {
 	IntPoolAllocator   IntPoolAllocator
 	RefRelaxer         RefRelaxer
 	UserAgentKVService UserAgentKVService
-	Collector          collector.Collector
 }
 
 // RefUpdate represents ref-update input data.
@@ -225,6 +216,7 @@ func (r *RefUpdate) validate() error {
 }
 
 // RESTRefUpdate handles a ref-update request.
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	var data RefUpdate
 	if err := c.Bind(&data); err != nil {
@@ -262,6 +254,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 }
 
 // RESTRefRelaxForDelete handles a ref-relax-for-delete request.
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
 	var data RelaxRefRequest
 	if err := c.Bind(&data); err != nil {
@@ -299,6 +292,7 @@ func (service *ContrailService) RelaxRef(ctx context.Context, request *RelaxRefR
 }
 
 // RESTChown handles chown request.
+// TODO(dfurman): it should be Contrail plugin
 func (service *ContrailService) RESTChown(c echo.Context) error {
 	var data ChownRequest
 	if err := c.Bind(&data); err != nil {
@@ -374,6 +368,7 @@ func validateChownRequest(r *ChownRequest) error {
 }
 
 // RESTCreateIntPool handles a POST on int-pools requests
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
@@ -393,6 +388,7 @@ func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
 }
 
 // RESTGetIntOwner handles a GET on int-owner requests
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
@@ -424,6 +420,7 @@ func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
 }
 
 // RESTDeleteIntPool handles a POST on int-pools requests
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTDeleteIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
@@ -501,6 +498,7 @@ type IntPoolAllocationBody struct {
 }
 
 // RESTIntPoolAllocate handles a POST request on int-pool.
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
@@ -571,6 +569,7 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 }
 
 // RESTIntPoolDeallocate handles a DELETE request on int-pool.
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
@@ -649,6 +648,7 @@ func GetRequestID(ctx context.Context) string {
 // RESTSync
 
 // RESTSync handles Sync API request.
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTSync(c echo.Context) error {
 	events := &EventList{}
 	if err := c.Bind(events); err != nil {
@@ -828,6 +828,7 @@ func (p *restPropCollectionUpdateRequest) toPropCollectionUpdateRequest(
 }
 
 // RESTPropCollectionUpdate handles a prop-collection-update request.
+// TODO(dfurman): it should be Contrail plugin
 func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
 	var data restPropCollectionUpdateRequest
 	if err := c.Bind(&data); err != nil {
@@ -1012,6 +1013,7 @@ func isPropCollectionType(t reflect.Type) bool {
 // RESTGetObjPerms
 
 // RESTGetObjPerms handles GET operation of obj-perms request.
+// TODO(dfurman): it should be ASF plugin
 func (service *ContrailService) RESTGetObjPerms(c echo.Context) error {
 	return c.JSON(http.StatusOK, auth.GetIdentity(c.Request().Context()).GetObjPerms())
 }
@@ -1055,6 +1057,7 @@ func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 
 {% endif %}{% endfor %}
 
+	// TODO(dfurman): move registration of those endpoints to external plugins
 	r.POST(SyncPath, service.RESTSync)
 	r.POST(FQNameToIDPath, service.RESTFQNameToUUID, baseapisrv.WithHomepageName("name-to-id"))
 	r.POST(IDToFQNamePath, service.RESTIDToFQName, baseapisrv.WithHomepageName("id-to-name"))
@@ -1075,12 +1078,13 @@ func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 // RegisterGRPCAPI registers GRPC services.
 func (service *ContrailService) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
 	r.RegisterService(&_ContrailService_serviceDesc, service)
+
+	// TODO(dfurman): move registration of those endpoints to external plugins
 	r.RegisterService(&_IPAM_serviceDesc, service)
 	r.RegisterService(&_Chown_serviceDesc, service)
 	r.RegisterService(&_SetTag_serviceDesc, service)
 	r.RegisterService(&_RefRelax_serviceDesc, service)
 	r.RegisterService(&_PropCollectionUpdate_serviceDesc, service)
-
 	r.RegisterService(&_FQNameToID_serviceDesc, service)
 	r.RegisterService(&_IDToFQName_serviceDesc, service)
 	r.RegisterService(&_UserAgentKV_serviceDesc, service)
