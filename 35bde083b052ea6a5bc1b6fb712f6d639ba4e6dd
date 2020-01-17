@@ -46,6 +46,53 @@
       "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8b21d11_11d851e6",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-17T12:04:35Z",
+      "side": 1,
+      "message": "1. Add() should be removed (now or in future).\n2. Group() and Use() are nice features regardless if CCAPI needs them, so I would leave them.\n3. dynamicProxyMiddleware heavily depends on X-Cluster-ID and X-Service-Token headers logic. It assumes path contains clusterID. So I think we should just move it to contrail/pkg/proxy package (in funture CRs).",
+      "parentUuid": "feeba0c0_cffd335f",
+      "range": {
+        "startLine": 41,
+        "startChar": 1,
+        "endLine": 43,
+        "endChar": 25
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "44377389_f8c34f78",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-17T12:04:35Z",
+      "side": 1,
+      "message": "How about having RouteOptionsFunc (for function) and RouteOptions (for struct) types?\nWe have HandlerFunc, MiddlewareFunc, stdlib\u0027s http.HandlerFunc after all.",
+      "range": {
+        "startLine": 56,
+        "startChar": 5,
+        "endLine": 56,
+        "endChar": 16
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

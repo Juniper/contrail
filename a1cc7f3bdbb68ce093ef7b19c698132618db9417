@@ -97,6 +97,30 @@
     },
     {
       "key": {
+        "uuid": "f7758ad2_695d2eec",
+        "filename": "pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-01-17T12:04:35Z",
+      "side": 1,
+      "message": "I am resolving this as interfaces look awesome.",
+      "parentUuid": "15420c61_11f5abfe",
+      "range": {
+        "startLine": 42,
+        "startChar": 20,
+        "endLine": 42,
+        "endChar": 31
+      },
+      "revId": "a1cc7f3bdbb68ce093ef7b19c698132618db9417",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d335be6e_e76c166a",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 8
