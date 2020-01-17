@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	playbookCmd    = "ansible-playbook"
-	filePermRWOnly = 0600
+	playbookCmd     = "ansible-playbook"
+	hostPlaybookCmd = "/usr/bin/ansible-playbook"
+	filePermRWOnly  = 0600
 )
 
 // Player runs Ansible playbooks.
@@ -88,7 +89,7 @@ func prepareCLICmd(repositoryPath string, ansibleArgs []string, virtualenvPath s
 			return nil, err
 		}
 	} else {
-		cmd = exec.Command(playbookCmd, ansibleArgs...)
+		cmd = exec.Command(hostPlaybookCmd, ansibleArgs...)
 	}
 
 	cmd.Dir = repositoryPath
