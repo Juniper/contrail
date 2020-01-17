@@ -22,6 +22,30 @@
       "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "feeba0c0_cffd335f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T11:11:45Z",
+      "side": 1,
+      "message": "Add() can be removed now.\nAs for the others, I\u0027m not sure we want to delete them:\n- Group() is needed for the dynamic and static proxies, and I haven\u0027t found a way to use anything else than Group() there. Is it intended to be merged into baseapisrv.Server?\n- Use() is used in analytics.BodyDumpPlugin, which, as far as I understand, is not going to be moved into ASF. I suppose that having the ability to use custom middleware is useful in a framework like ASF.",
+      "parentUuid": "d8892807_bb156697",
+      "range": {
+        "startLine": 41,
+        "startChar": 1,
+        "endLine": 43,
+        "endChar": 25
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
