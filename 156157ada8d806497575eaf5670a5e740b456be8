@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b671315f_c413befd",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T16:37:26Z",
+      "side": 1,
+      "message": "Why not pass the whole `cl` object?",
+      "range": {
+        "startLine": 357,
+        "startChar": 31,
+        "endLine": 357,
+        "endChar": 92
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6cd5f12_e5da591e",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T16:37:26Z",
+      "side": 1,
+      "message": "Extract an `expectedStatus` function.",
+      "range": {
+        "startLine": 374,
+        "startChar": 1,
+        "endLine": 393,
+        "endChar": 2
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26427014_deb33b03",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T16:37:26Z",
+      "side": 1,
+      "message": "Does this mean that now all the work will be done even if the input isn\u0027t updated?",
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d1270551_7ecd4560",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 1027,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T16:37:26Z",
+      "side": 1,
+      "message": "Extract a function.",
+      "range": {
+        "startLine": 1008,
+        "startChar": 1,
+        "endLine": 1027,
+        "endChar": 2
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "174c8ee8_e5050fdc",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-17T16:37:26Z",
+      "side": 1,
+      "message": "This happens not only when the status of any cloud is status*Failed, but also when it is status*Progress.\n\nIs setting the status to status*Failed in both of those cases intended?",
+      "range": {
+        "startLine": 130,
+        "startChar": 41,
+        "endLine": 130,
+        "endChar": 51
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
