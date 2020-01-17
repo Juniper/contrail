@@ -3,25 +3,206 @@ package services
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/auth"
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/rbac"
+	"github.com/Juniper/asf/pkg/rbac"
 )
 
 // TODO(dfurman): move non-template code out of template
 
-func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*models.APIAccessList {
-	noAuthCtx := auth.NoAuth(ctx)
-	listRequest := &ListAPIAccessListRequest{
-		Spec: &baseservices.ListSpec{},
-	}
-	// Use a context with No auth for internal calls
-	result, err := service.ReadService.ListAPIAccessList(noAuthCtx, listRequest)
-	if err != nil {
-		return nil
-	}
-	return result.APIAccessLists
+const (
+    kindAccessControlList                 = "access-control-list"
+    kindAddressGroup                      = "address-group"
+    kindAlarm                             = "alarm"
+    kindAliasIPPool                       = "alias-ip-pool"
+    kindAliasIP                           = "alias-ip"
+    kindAnalyticsAlarmNode                = "analytics-alarm-node"
+    kindAnalyticsNode                     = "analytics-node"
+    kindAnalyticsSNMPNode                 = "analytics-snmp-node"
+    kindAPIAccessList                     = "api-access-list"
+    kindApplicationPolicySet              = "application-policy-set"
+    kindBGPAsAService                     = "bgp-as-a-service"
+    kindBGPRouter                         = "bgp-router"
+    kindBGPVPN                            = "bgp-vpn"
+    kindBridgeDomain                      = "bridge-domain"
+    kindCard                              = "card"
+    kindConfigDatabaseNode                = "config-database-node"
+    kindConfigNode                        = "config-node"
+    kindConfigRoot                        = "config-root"
+    kindControlNodeZone		          = "control-node-zone"
+    kindCustomerAttachment                = "customer-attachment"
+    kindDataCenterInterconnect            = "data-center-interconnect"
+    kindDatabaseNode                      = "database-node"
+    kindDeviceImage                       = "device-image"
+    kindDevicemgrNode                     = "devicemgr-node"
+    kindDiscoveryServiceAssignment        = "discovery-service-assignment"
+    kindDomain                            = "domain"
+    kindDsaRule                           = "dsa-rule"
+    kindE2ServiceProvider                 = "e2-service-provider"
+    kindFabricNamespace                   = "fabric-namespace"
+    kindFabric                            = "fabric"
+    kindFirewallPolicy                    = "firewall-policy"
+    kindFirewallRule                      = "firewall-rule"
+    kindFloatingIPPool                    = "floating-ip-pool"
+    kindFloatingIP                        = "floating-ip"
+    kindForwardingClass                   = "forwarding-class"
+    kindGlobalAnalyticsConfig             = "global-analytics-config"
+    kindGlobalQosConfig                   = "global-qos-config"
+    kindGlobalSystemConfig                = "global-system-config"
+    kindGlobalVrouterConfig               = "global-vrouter-config"
+    kindHardware                          = "hardware"
+    kindInstanceIP                        = "instance-ip"
+    kindInterfaceRouteTable               = "interface-route-table"
+    kindJobTemplate                       = "job-template"
+    kindLinkAggregationGroup              = "link-aggregation-group"
+    kindLoadbalancerHealthmonitor         = "loadbalancer-healthmonitor"
+    kindLoadbalancerListener              = "loadbalancer-listener"
+    kindLoadbalancerMember                = "loadbalancer-member"
+    kindLoadbalancerPool                  = "loadbalancer-pool"
+    kindLoadbalancer                      = "loadbalancer"
+    kindLogicalInterface                  = "logical-interface"
+    kindLogicalRouter			  = "logical-router"
+    kindMulticastGroupAddress             = "multicast-group-address"
+    kindMulticastGroup                    = "multicast-group"
+    kindMulticastPolicy                   = "multicast-policy"
+    kindNamespace                         = "namespace"
+    kindNetworkDeviceConfig               = "network-device-config"
+    kindNetworkIpam                       = "network-ipam"
+    kindNetworkPolicy                     = "network-policy"
+    kindNodeProfile                       = "node-profile"
+    kindNode                              = "node"
+    kindPeeringPolicy                     = "peering-policy"
+    kindPhysicalInterface		  = "physical-interface"
+    kindPhysicalRouter                    = "physical-router"
+    kindPolicyManagement                  = "policy-management"
+    kindPortGroup                         = "port-group"
+    kindPort                              = "port"
+    kindPortTuple                         = "port-tuple"
+    kindProject	                          = "project"
+    kindProviderAttachment                = "provider-attachment"
+    kindQosConfig                         = "qos-config"
+    kindQosQueue                          = "qos-queue"
+    kindRoleConfig                        = "role-config"
+    kindRouteAggregate                    = "route-aggregate"
+    kindRouteTable                        = "route-table"
+    kindRouteTarget                       = "route-target"
+    kindRoutingInstance                   = "routing-instance"
+    kindRoutingPolicy                     = "routing-policy"
+    kindSecurityGroup                     = "security-group"
+    kindSecurityLoggingObject             = "security-logging-object"
+    kindServiceAppliance		  = "service-appliance"
+    kindServiceApplianceSet               = "service-appliance-set"
+    kindServiceConnectionModule           = "service-connection-module"
+    kindServiceEndpoint			  = "service-endpoint"
+    kindServiceGroup                      = "service-group"
+    kindServiceHealthCheck                = "service-health-check"
+    kindServiceInstance	                  = "service-instance"
+    kindServiceObject                     = "service-object"
+    kindServiceTemplate                   = "service-template"
+    kindStructuredSyslogApplicationRecord = "structured-syslog-application-record"
+    kindStructuredSyslogConfig            = "structured-syslog-config"
+    kindStructuredSyslogHostnameRecord    = "structured-syslog-hostname-record"
+    kindStructuredSyslogMessage	          = "structured-syslog-message"
+    kindStructuredSyslogSLAProfile        = "structured-syslog-sla-profile"
+    kindSubCluster                        = "sub-cluster"
+    kindSubnet                            = "subnet"
+    kindTag			          = "tag"
+    kindTagType		                  = "tag-type"
+    kindVirtualDNSRecord                  = "virtual-dns-record"
+    kindVirtualDNS                        = "virtual-dns"
+    kindVirtualIP		          = "virtual-ip"
+    kindVirtualMachineInterface	          = "virtual-machine-interface"
+    kindVirtualMachine                    = "virtual-machine"
+    kindVirtualNetwork                    = "virtual-network"
+    kindVirtualPortGroup                  = "virtual-port-group"
+    kindVirtualRouter                     = "virtual-router"
+    kindWebuiNode                         = "webui-node"
+    kindAppformixBareHostNode             = "appformix-bare-host-node"
+    kindAppformixCluster                  = "appformix-cluster"
+    kindAppformixComputeNode              = "appformix-compute-node"
+    kindAppformixControllerNode           = "appformix-controller-node"
+    kindAppformixNetworkAgentsNode        = "appformix-network-agents-node"
+    kindAppformixOpenstackNode            = "appformix-openstack-node"
+    kindCloud                             = "cloud"
+    kindCloudPrivateSubnet                = "cloud-private-subnet"
+    kindCloudProvider                     = "cloud-provider"
+    kindCloudRegion                       = "cloud-region"
+    kindCloudSecurityGroup                = "cloud-security-group"
+    kindCloudSecurityGroupRule            = "cloud-security-group-rule"
+    kindCloudUser                         = "cloud-user"
+    kindVirtualCloud                      = "virtual-cloud"
+    kindContrailAnalyticsAlarmNode        = "contrail-analytics-alarm-node"
+    kindContrailAnalyticsDatabaseNode     = "contrail-analytics-database-node"
+    kindContrailAnalyticsNode             = "contrail-analytics-node"
+    kindContrailAnalyticsSNMPNode         = "contrail-analytics-snmp-node"
+    kindContrailCluster	                  = "contrail-cluster"
+    kindContrailConfigDatabaseNode        = "contrail-config-database-node"
+    kindContrailConfigNode                = "contrail-config-node"
+    kindContrailControlNode               = "contrail-control-node"
+    kindContrailMulticloudGWNode 	  = "contrail-multicloud-gw-node"
+    kindContrailServiceNode               = "contrail-service-node"
+    kindContrailStorageNode               = "contrail-storage-node"
+    kindContrailVcenterFabricManagerNode  = "contrail-vcenter-fabric-manager-node"
+    kindContrailVrouterNode 	          = "contrail-vrouter-node"
+    kindContrailWebuiNode 	          = "contrail-webui-node"
+    kindContrailWinCNMPluginNode  	  = "contrail-win-cnm-plugin-node"
+    kindContrailZTPDHCPNode 		  = "contrail-ztpdhcp-node"
+    kindContrailZTPTFTPNode 	          = "contrail-ztptftp-node"
+    kindCredential                        = "credential"
+    kindDashboard                         = "dashboard"
+    kindEndpoint                          = "endpoint"
+    kindFlavor                            = "flavor"
+    kindOsImage                           = "os-image"
+    kindKeypair                           = "keypair"
+    kindKubernetesCluster                 = "kubernetes-cluster"
+    kindKubernetesKubemanagerNode         = "kubernetes-kubemanager-node"
+    kindKubernetesMasterNode              = "kubernetes-master-node"
+    kindKubernetesNode                    = "kubernetes-node"
+    kindMesosAgentPrivateNode             = "mesos-agent-private-node"
+    kindMesosAgentPublicNode              = "mesos-agent-public-node"
+    kindMesosCluster                      = "mesos-cluster"
+    kindMesosMasterNode                   = "mesos-master-node"
+    kindMesosMesosmanagerNode             = "mesos-mesosmanager-node"
+    kindOpenstackBaremetalNode            = "openstack-baremetal-node"
+    kindOpenstackCluster                  = "openstack-cluster"
+    kindOpenstackComputeNode              = "openstack-compute-node"
+    kindOpenstackControlNode              = "openstack-control-node"
+    kindOpenstackMonitoringNode           = "openstack-monitoring-node"
+    kindOpenstackNetworkNode              = "openstack-network-node"
+    kindOpenstackStorageNode              = "openstack-storage-node"
+    kindRhospdCloudManager                = "rhospd-cloud-manager"
+    kindRhospdFlavor                      = "rhospd-flavor"
+    kindRhospdJumphostNode                = "rhospd-jumphost-node"
+    kindRhospdOvercloudNetwork            = "rhospd-overcloud-network"
+    kindRhospdOvercloudNode               = "rhospd-overcloud-node"
+    kindRhospdUndercloudNode              = "rhospd-undercloud-node"
+    kindServer                            = "server"
+    kindVCenter                           = "v-center"
+    kindVCenterCompute                    = "v-center-compute"
+    kindVCenterManagerNode                = "v-center-manager-node"
+    kindVCenterPluginNode                 = "v-center-plugin-node"
+    kindVPNGroup                          = "vpn-group"
+    kindWidget                            = "widget"
+    kindAppformixFlows                    = "appformix-flows"
+    kindAppformixFlowsNode                = "appformix-flows-node"
+)
+
+
+// RBACService will RBAC check on resource opeations.
+type RBACService struct {
+	BaseService
+	ReadService  ReadService
+	AAAMode      string
+	AccessGetter AccessGetter
+}
+
+type AccessGetter interface {
+	GetAPIAccessLists(ctx context.Context)	[]*rbac.APIAccessList
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	Get{{ schema.JSONSchema.GoName }}(ctx context.Context, uuid string) *rbac.PermType2
+{% endif %}{% endfor %}
+}
+
+func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*rbac.APIAccessList {
+	return service.AccessGetter.GetAPIAccessLists(ctx)
 }
 
 
@@ -37,7 +218,7 @@ func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
         return nil,err
     }
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionCreate) ; err != nil {
 		    return nil,err
 	    }
@@ -56,12 +237,12 @@ func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
     }
 
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
 		    r.AAAMode,model.Kind(),rbac.ActionUpdate); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID )
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, perms2,
 		    r.AAAMode,model.Kind(),rbac.ActionUpdate) ; err != nil {
 		    return nil,err
 	    }
@@ -72,21 +253,21 @@ func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
 func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionDelete);
+	kind := kind{{ schema.JSONSchema.GoName }}
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, kind, rbac.ActionDelete);
     if err != nil {
         return nil,err
     }
 
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionDelete); err != nil {
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
+		    r.AAAMode, kind, rbac.ActionDelete); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionDelete) ; err != nil {
+	    if err := rbac.CheckObjectPermissions(ctx, perms2,
+		    r.AAAMode, kind, rbac.ActionDelete) ; err != nil {
 		    return nil,err
 	    }
     }
@@ -96,22 +277,22 @@ func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
 func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionRead);
+	kind := kind{{ schema.JSONSchema.GoName }}
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, kind, rbac.ActionRead);
     if err != nil {
         return nil,err
     }
 
     if  !allowed  {
 
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
+		    r.AAAMode, kind, rbac.ActionRead); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
+	    if err := rbac.CheckObjectPermissions(ctx, perms2,
+		    r.AAAMode, kind, rbac.ActionRead) ; err != nil {
 		    return nil,err
 	    }
     }
@@ -121,9 +302,9 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *List{{ schema.JSONSchema.GoName }}Request,
 ) (*List{{ schema.JSONSchema.GoName }}Response, error) {
-	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode,model.Kind(), rbac.ActionRead);
+	kind := "kind{{ schema.JSONSchema.GoName }}"
+    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, kind, rbac.ActionRead);
 
     if err != nil {
         return nil,err
@@ -131,24 +312,21 @@ func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 
     if  !allowed  {
 
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
+        if err := rbac.CheckPermissions(ctx, r.getAllAPIAccessLists(ctx),
+		    r.AAAMode, kind, rbac.ActionRead); err != nil {
 		    return nil,err
 	    }
-	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID)
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
+	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx, "")
+	    if err := rbac.CheckObjectPermissions(ctx, perms2,
+		    r.AAAMode, kind, rbac.ActionRead) ; err != nil {
 		    return nil,err
 	    }
     }
 	return r.BaseService.List{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
-func (r *RBACService) Get{{ schema.JSONSchema.GoName }}Perms2(ctx context.Context,uuid string) *models.PermType2 {
-	if result, err := r.ReadService.Get{{ schema.JSONSchema.GoName }}(auth.NoAuth(ctx),  &Get{{ schema.JSONSchema.GoName }}Request{
-                                            ID: uuid, }); err == nil {
-		return result.{{ schema.JSONSchema.GoName }}.GetPerms2()
-	}
-	return nil
+func (service *RBACService) Get{{ schema.JSONSchema.GoName }}Perms2(ctx context.Context, uuid string) *rbac.PermType2 {
+	return service.AccessGetter.Get{{ schema.JSONSchema.GoName }}(ctx, uuid)
 }
+
 {% endif %}{% endfor %}
