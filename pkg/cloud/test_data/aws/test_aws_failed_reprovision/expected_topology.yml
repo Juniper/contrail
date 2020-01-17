@@ -1,0 +1,45 @@
+
+- provider: aws
+  organization: unit_test
+  project: test2
+  prebuild: test-update-image-id
+  regions:
+    - name: us-west-1
+      vpc:
+        - name: virtual_cloud
+          cidr_block: 192.168.10.0/16
+          subnets:
+            - name: cloud_private_subnet
+              cidr_block: 192.168.10.0/24
+              availability_zone: a
+          security_groups:
+              - name: cloud_security_group_rule
+                ingress:
+                  from_port: 0
+                  to_port: 0
+                  protocol: -1
+                  cidr_blocks:
+                  - 0.0.0.0/0
+          instances:
+            - name: cloud_node_compute
+              roles:
+                - compute_node
+              provision: true
+              username: ec2-user
+              os: rhel7
+              instance_type: t2.xlarge
+              subnets: cloud_private_subnet
+              availability_zone: a
+              security_groups:
+                - cloud_security_group_rule
+            - name: cloud_node_gw
+              roles:
+                - gateway
+              provision: true
+              username: ec2-user
+              os: rhel7
+              instance_type: t2.xlarge
+              subnets: cloud_private_subnet
+              availability_zone: a
+              security_groups:
+                - cloud_security_group_rule

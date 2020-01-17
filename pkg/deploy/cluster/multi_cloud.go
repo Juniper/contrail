@@ -73,6 +73,7 @@ type multiCloudProvisioner struct {
 func (m *multiCloudProvisioner) Deploy() error {
 	deployErr := m.deploy()
 	if deployErr != nil {
+		m.setStatusToFail()
 		m.Log.Errorf("Multi-Cloud provisioning failed with error: %v", deployErr)
 	}
 	if err := m.removeVulnerableFiles(); err != nil {
@@ -98,7 +99,6 @@ func (m *multiCloudProvisioner) deploy() error {
 	if m.isMCDeleteRequest() {
 		m.reportStatus(statusUpdateProgress)
 		if err := m.deleteMCCluster(); err != nil {
-			m.reportStatus(statusUpdateFailed)
 			return errors.Wrapf(err, "%s failed", pa)
 		}
 		m.reportStatus(statusUpdated)
@@ -144,11 +144,6 @@ func (m *multiCloudProvisioner) deploy() error {
 	}
 
 	if err := m.manageMCCluster(); err != nil {
-		if m.action == createAction {
-			m.reportStatus(statusCreateFailed)
-		} else {
-			m.reportStatus(statusUpdateFailed)
-		}
 		return errors.Wrapf(err, "%s failed", pa)
 	}
 
@@ -261,11 +256,9 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
-		m.reportStatus(statusUpdateFailed)
 		return false, errors.Wrapf(err, "couldn't read old topology file: %s", m.getClusterTopoFile(m.workDir))
 	}
 	if ok, err := m.compareClusterTopologyFile(); err != nil {
-		m.reportStatus(statusUpdateFailed)
 		return true, err
 	} else if ok {
 		m.Log.Infof("%s topology file is already up-to-date", defaultResource)
@@ -510,6 +503,14 @@ func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
 	}
 	m.Log.Info("Created tor/common.yml input file for multi-cloud deployer")
 	return nil
+}
+
+func (m *multiCloudProvisioner) setStatusToFail() {
+	if m.action == createAction {
+		m.reportStatus(statusCreateFailed)
+	} else {
+		m.reportStatus(statusUpdateFailed)
+	}
 }
 
 func (m *multiCloudProvisioner) removeVulnerableFiles() error {
