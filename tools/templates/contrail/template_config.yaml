@@ -38,8 +38,7 @@
   template_path: vendor/github.com/Juniper/asf/pkg/services/quota_checker_service.go.tmpl
   output_dir: pkg/services
 - type: all
-  # TODO(dfurman): use ASF's rbac_service.go.tmpl when pkg/rbac is decoupled from generated models
-  template_path: pkg/services/rbac_service.go.tmpl
+  template_path: vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl
   output_dir: pkg/services
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/services/sanitizer_service.go.tmpl
