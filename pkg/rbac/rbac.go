@@ -7,7 +7,6 @@ import (
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/models"
 )
 
 // CRUD operations rune constants
@@ -31,6 +30,149 @@ const (
 	ActionUpdate
 	ActionDelete
 )
+
+// Kinds used for permissions scopes
+const (
+	KindDomain             = "domain"
+	KindProject            = "project"
+	KindGlobalSystemConfig = "global-system-config"
+)
+
+// ShareType used for check whether resource is shared with the tenant
+type ShareType struct {
+	TenantAccess int64  `protobuf:"varint,1,opt,name=tenant_access,json=tenantAccess,proto3" json:"tenant_access,omitempty" yaml:"tenant_access,omitempty"`
+	Tenant       string `protobuf:"bytes,2,opt,name=tenant,proto3" json:"tenant,omitempty" yaml:"tenant,omitempty"`
+}
+
+func (s *ShareType) getTenantAccess() int64 {
+	if s != nil {
+		return s.TenantAccess
+	}
+	return 0
+}
+
+func (s *ShareType) getTenant() string {
+	if s != nil {
+		return s.Tenant
+	}
+	return ""
+}
+
+// PermType2 used to check object level (perms2) permissions.
+type PermType2 struct {
+	Owner        string       `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner" yaml:"owner,omitempty"`
+	OwnerAccess  int64        `protobuf:"varint,2,opt,name=owner_access,json=ownerAccess,proto3" json:"owner_access" yaml:"owner_access,omitempty"`
+	GlobalAccess int64        `protobuf:"varint,3,opt,name=global_access,json=globalAccess,proto3" json:"global_access" yaml:"global_access,omitempty"`
+	Share        []*ShareType `protobuf:"bytes,4,rep,name=share,proto3" json:"share" yaml:"share,omitempty"`
+}
+
+func (p *PermType2) getOwner() string {
+	if p != nil{
+		return p.Owner
+	}
+	return ""
+}
+
+func (p *PermType2) getOwnerAccess() int64 {
+	if p != nil {
+		return p.OwnerAccess
+	}
+	return 0
+}
+
+func (p *PermType2) getGlobalAccess() int64 {
+	if p != nil {
+		return p.GlobalAccess
+	}
+	return 0
+}
+
+func (p *PermType2) getShare() []*ShareType {
+	if p != nil {
+		return p.Share
+	}
+	return nil
+}
+
+// PermType used to check object level permissions.
+type PermType struct {
+	RoleCrud string `protobuf:"bytes,1,opt,name=role_crud,json=roleCrud,proto3" json:"role_crud,omitempty" yaml:"role_crud,omitempty"`
+	RoleName string `protobuf:"bytes,2,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty" yaml:"role_name,omitempty"`
+}
+
+func (r *PermType) getRoleCrud() string {
+	if r != nil {
+		return r.RoleCrud
+	}
+	return ""
+}
+
+func (r *PermType) getRoleName() string {
+	if r != nil {
+		return r.RoleName
+	}
+	return ""
+}
+
+// Rule used for entry
+type RuleType struct {
+	RuleObject string      `protobuf:"bytes,2,opt,name=rule_object,json=ruleObject,proto3" json:"rule_object,omitempty" yaml:"rule_object,omitempty"`
+	RulePerms  []*PermType `protobuf:"bytes,3,rep,name=rule_perms,json=rulePerms,proto3" json:"rule_perms,omitempty" yaml:"rule_perms,omitempty"`
+}
+
+func (r *RuleType) getRuleObject() string {
+	if r != nil {
+		return r.RuleObject
+	}
+	return ""
+}
+
+func (m *RuleType) getRulePerms() []*PermType {
+	if m != nil {
+		return m.RulePerms
+	}
+	return nil
+}
+
+// Rules used for entries
+type RuleEntriesType struct {
+	Rule []*RuleType `protobuf:"bytes,1,rep,name=rbac_rule,json=rbacRule,proto3" json:"rbac_rule,omitempty" yaml:"rbac_rule,omitempty"`
+}
+
+func (r *RuleEntriesType) getRuleType() []*RuleType {
+	if r != nil {
+		return r.Rule
+	}
+	return nil
+}
+
+// APIAccessList structure
+type APIAccessList struct {
+	ParentType           string           `protobuf:"bytes,4,opt,name=parent_type,json=parentType,proto3" json:"parent_type,omitempty" yaml:"parent_type,omitempty"`
+	FQName               []string         `protobuf:"bytes,5,rep,name=fq_name,json=fqName,proto3" json:"fq_name,omitempty" yaml:"fq_name,omitempty"`
+	APIAccessListEntries *RuleEntriesType `protobuf:"bytes,12,opt,name=api_access_list_entries,json=apiAccessListEntries,proto3" json:"api_access_list_entries,omitempty" yaml:"api_access_list_entries,omitempty"`
+}
+
+func (a *APIAccessList) getParentType() string {
+	if a != nil {
+		return a.ParentType
+	}
+	return ""
+}
+
+func (a *APIAccessList) getFQName() []string {
+	if a != nil {
+		return a.FQName
+	}
+	return nil
+}
+
+func (a *APIAccessList) getAPIAccessListEntries() *RuleEntriesType {
+	if a != nil {
+		return a.APIAccessListEntries
+	}
+	return nil
+}
 
 // CheckCommonPermissions checks checks whether access is based on RBAC configuration or user roles..
 func CheckCommonPermissions(ctx context.Context, aaaMode string, kind string, op Action) (isAllowed bool, err error) {
@@ -75,7 +217,7 @@ func isROAccessAllowed(ctx auth.Identity, op Action) bool {
 }
 
 // CheckPermissions checks whether resource operation is allowed based on RBAC config.
-func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode string, kind string, op Action) error {
+func CheckPermissions(ctx context.Context, l []*APIAccessList, aaaMode string, kind string, op Action) error {
 	if len(l) == 0 {
 		return errutil.ErrorForbidden("no API access list rules present.access denied ")
 	}
@@ -96,7 +238,7 @@ func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode st
 }
 
 // CheckObjectPermissions checks object level (perms2) permissions.
-func CheckObjectPermissions(ctx context.Context, p *models.PermType2, aaaMode string, kind string, op Action) error {
+func CheckObjectPermissions(ctx context.Context, p *PermType2, aaaMode string, kind string, op Action) error {
 	rq := newRequest(ctx, kind, op)
 
 	if p == nil {
@@ -104,13 +246,13 @@ func CheckObjectPermissions(ctx context.Context, p *models.PermType2, aaaMode st
 	}
 
 	// Check whether resource global access permissions allows  the Action.
-	if permsAccessAllowed(rq, p.GetGlobalAccess()) {
+	if permsAccessAllowed(rq, p.getGlobalAccess()) {
 		return nil
 	}
 
 	// Check whether resource owner access  permissions allows the Action.
-	if rq.project == p.GetOwner() {
-		if !permsAccessAllowed(rq, p.GetOwnerAccess()) {
+	if rq.project == p.getOwner() {
+		if !permsAccessAllowed(rq, p.getOwnerAccess()) {
 			return errutil.ErrorForbidden("object access not allowed. access denied ")
 		}
 		return nil
@@ -160,16 +302,16 @@ func getUserRoles(ctx context.Context) map[string]bool {
 	return rset
 }
 
-func checkObjectSharePermissions(ctx context.Context, p *models.PermType2, rq *request) error {
-	share := p.GetShare()
+func checkObjectSharePermissions(ctx context.Context, p *PermType2, rq *request) error {
+	share := p.getShare()
 	// Check whether resource is shared with the tenant and Action is allowed.
 	for _, st := range share {
-		tenant := st.GetTenant()
-		tAccess := st.GetTenantAccess()
+		tenant := st.getTenant()
+		tAccess := st.getTenantAccess()
 		shareType, uuid := tenantInfo(tenant)
 
-		if (shareType == models.KindDomain && uuid == rq.domain) ||
-			(shareType == models.KindProject && uuid == rq.project) {
+		if (shareType == KindDomain && uuid == rq.domain) ||
+			(shareType == KindProject && uuid == rq.project) {
 			if permsAccessAllowed(rq, tAccess) {
 				return nil
 			}
@@ -180,17 +322,17 @@ func checkObjectSharePermissions(ctx context.Context, p *models.PermType2, rq *r
 
 func tenantInfo(tenant string) (projectType string, uuid string) {
 	uuid = strings.Split(tenant, ":")[1]
-	if tenantType(tenant) == models.KindDomain {
-		return models.KindDomain, uuid
+	if tenantType(tenant) == KindDomain {
+		return KindDomain, uuid
 	}
-	return models.KindProject, uuid
+	return KindProject, uuid
 }
 
 func tenantType(tenant string) string {
 	if strings.HasPrefix(tenant, "domain") {
-		return models.KindDomain
+		return KindDomain
 	}
-	return models.KindProject
+	return KindProject
 }
 
 func permsAccessAllowed(rq *request, access int64) bool {

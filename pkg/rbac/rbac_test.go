@@ -5,14 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/models"
-
 	asfauth "github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/contrail/pkg/auth"
 )
-
-const apiAccessListUUID = "default-api-access-list8_uuid"
-const adminUser = "admin"
 
 func TestCheckCommonPermissions(t *testing.T) {
 	type args struct {
@@ -70,7 +65,7 @@ func TestCheckCommonPermissions(t *testing.T) {
 func TestCheckPermissions(t *testing.T) {
 	type args struct {
 		ctx     context.Context
-		l       []*models.APIAccessList
+		l       []*APIAccessList
 		aaaMode string
 		kind    string
 		op      Action
@@ -188,7 +183,7 @@ func TestCheckPermissions(t *testing.T) {
 func TestCheckObjectPermissions(t *testing.T) {
 	type args struct {
 		ctx     context.Context
-		p       *models.PermType2
+		p       *PermType2
 		aaaMode string
 		kind    string
 		op      Action
@@ -206,11 +201,11 @@ func TestCheckObjectPermissions(t *testing.T) {
 			name: "resource  access of owner with full permission",
 			args: args{
 				ctx: userAuth(ctx, "project_blue_uuid"),
-				p: &models.PermType2{
+				p: &PermType2{
 					Owner:        "project_blue_uuid",
 					OwnerAccess:  7,
 					GlobalAccess: 0,
-					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+					Share:        []*ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
 				},
 				aaaMode: "rbac",
 				kind:    "project",
@@ -221,11 +216,11 @@ func TestCheckObjectPermissions(t *testing.T) {
 			name: "resource read by owner without permission",
 			args: args{
 				ctx: userAuth(ctx, "project_blue_uuid"),
-				p: &models.PermType2{
+				p: &PermType2{
 					Owner:        "project_blue_uuid",
 					OwnerAccess:  2,
 					GlobalAccess: 0,
-					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+					Share:        []*ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
 				},
 				aaaMode: "rbac",
 				kind:    "project",
@@ -237,11 +232,11 @@ func TestCheckObjectPermissions(t *testing.T) {
 			name: "resource read by owner without permission",
 			args: args{
 				ctx: userAuth(ctx, "project_blue_uuid"),
-				p: &models.PermType2{
+				p: &PermType2{
 					Owner:        "project_blue_uuid",
 					OwnerAccess:  4,
 					GlobalAccess: 0,
-					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+					Share:        []*ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
 				},
 				aaaMode: "rbac",
 				kind:    "project",
@@ -253,11 +248,11 @@ func TestCheckObjectPermissions(t *testing.T) {
 			name: "resource access by the shared project with permission",
 			args: args{
 				ctx: userAuth(ctx, "project_red_uuid"),
-				p: &models.PermType2{
+				p: &PermType2{
 					Owner:        "project_blue_uuid",
 					OwnerAccess:  7,
 					GlobalAccess: 0,
-					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+					Share:        []*ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
 				},
 				aaaMode: "rbac",
 				kind:    "project",
@@ -268,11 +263,11 @@ func TestCheckObjectPermissions(t *testing.T) {
 			name: "Project access by no shared project",
 			args: args{
 				ctx: userAuth(ctx, "default-project"),
-				p: &models.PermType2{
+				p: &PermType2{
 					Owner:        "project_blue_uuid",
 					OwnerAccess:  7,
 					GlobalAccess: 0,
-					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+					Share:        []*ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
 				},
 				aaaMode: "rbac",
 				kind:    "project",
@@ -297,56 +292,84 @@ func userAuth(ctx context.Context, tenant string) context.Context {
 	return asfauth.WithIdentity(ctx, Context)
 }
 
-func globalAccessRuleList() []*models.APIAccessList {
-	list := make([]*models.APIAccessList, 0)
-	model := models.MakeAPIAccessList()
-	model.UUID = apiAccessListUUID
-	model.FQName = []string{"default-global-system-config", model.UUID}
-	model.Perms2.Owner = adminUser
-	model.ParentType = models.KindGlobalSystemConfig
+func makeAPIAccessList() *APIAccessList {
+	return &APIAccessList{
+		ParentType:           "",
+		FQName:               []string{},
+		APIAccessListEntries: makeRbacRuleEntriesType(),
+	}
+}
+
+func makeRbacRuleEntriesType() *RuleEntriesType {
+	return &RuleEntriesType{
+		Rule: makeRbacRuleTypeSlice(),
+	}
+}
+
+func makeRbacRuleTypeSlice() []*RuleType {
+	return []*RuleType{}
+}
+
+func makeRbacRuleType() *RuleType {
+	return &RuleType{
+		RuleObject: "",
+		RulePerms: makeRbacPermTypeSlice(),
+	}
+}
+
+func makeRbacPermTypeSlice() []*PermType {
+	return []*PermType{}
+}
+
+func makeRbacPermType() *PermType {
+	return &PermType{
+		RoleCrud: "",
+		RoleName: "",
+	}
+}
+
+func globalAccessRuleList() []*APIAccessList {
+	list := make([]*APIAccessList, 0)
+	model := makeAPIAccessList()
+	model.FQName = []string{"default-global-system-config"}
+	model.ParentType = KindGlobalSystemConfig
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
 }
 
-func domainAccessRuleList() []*models.APIAccessList {
-	list := make([]*models.APIAccessList, 0)
-	model := models.MakeAPIAccessList()
-	model.UUID = apiAccessListUUID
-	model.FQName = []string{"default-domain", model.UUID}
-	model.Perms2.Owner = adminUser
-	model.ParentType = models.KindDomain
+func domainAccessRuleList() []*APIAccessList {
+	list := make([]*APIAccessList, 0)
+	model := makeAPIAccessList()
+	model.FQName = []string{"default-domain"}
+	model.ParentType = KindDomain
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
 }
 
-func projectAccessRuleList() []*models.APIAccessList {
-	list := make([]*models.APIAccessList, 0)
-	model := models.MakeAPIAccessList()
-	model.UUID = apiAccessListUUID
-	model.FQName = []string{"default-domain", "default-project", model.UUID}
-	model.Perms2.Owner = adminUser
-	model.ParentType = models.KindProject
+func projectAccessRuleList() []*APIAccessList {
+	list := make([]*APIAccessList, 0)
+	model := makeAPIAccessList()
+	model.FQName = []string{"default-domain", "default-project"}
+	model.ParentType = KindProject
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
 }
 
-func wildcardGlobalAccessRuleList() []*models.APIAccessList {
-	list := make([]*models.APIAccessList, 0)
-	model := models.MakeAPIAccessList()
-	model.UUID = apiAccessListUUID
-	model.FQName = []string{"default-global-system-config", model.UUID}
-	model.Perms2.Owner = adminUser
-	model.ParentType = models.KindGlobalSystemConfig
+func wildcardGlobalAccessRuleList() []*APIAccessList {
+	list := make([]*APIAccessList, 0)
+	model := makeAPIAccessList()
+	model.FQName = []string{"default-global-system-config"}
+	model.ParentType = KindGlobalSystemConfig
 	rbacRuleEntryAdd(model, "*")
 	return append(list, model)
 }
 
-func rbacRuleEntryAdd(l *models.APIAccessList, kind string) {
-	m := models.MakeRbacRuleType()
+func rbacRuleEntryAdd(l *APIAccessList, kind string) {
+	m := makeRbacRuleType()
 	m.RuleObject = kind
-	p := models.MakeRbacPermType()
+	p := makeRbacPermType()
 	p.RoleCrud = "CRUD"
 	p.RoleName = "Member"
 	m.RulePerms = append(m.RulePerms, p)
-	l.APIAccessListEntries.RbacRule = append(l.APIAccessListEntries.RbacRule, m)
+	l.APIAccessListEntries.Rule = append(l.APIAccessListEntries.Rule, m)
 }

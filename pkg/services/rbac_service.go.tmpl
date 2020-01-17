@@ -37,7 +37,7 @@ func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
         return nil,err
     }
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, toRBACAPIAcesssList(r.getAllAPIAccessLists(ctx)),
 		    r.AAAMode,model.Kind(),rbac.ActionCreate) ; err != nil {
 		    return nil,err
 	    }
@@ -56,12 +56,12 @@ func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
     }
 
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, toRBACAPIAcesssList(r.getAllAPIAccessLists(ctx)),
 		    r.AAAMode,model.Kind(),rbac.ActionUpdate); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID )
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionUpdate) ; err != nil {
 		    return nil,err
 	    }
@@ -80,12 +80,12 @@ func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
     }
 
     if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, toRBACAPIAcesssList(r.getAllAPIAccessLists(ctx)),
 		    r.AAAMode,model.Kind(),rbac.ActionDelete); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionDelete) ; err != nil {
 		    return nil,err
 	    }
@@ -105,12 +105,12 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 
     if  !allowed  {
 
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, toRBACAPIAcesssList(r.getAllAPIAccessLists(ctx)),
 		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
 		    return nil,err
 	    }
@@ -131,12 +131,12 @@ func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 
     if  !allowed  {
 
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
+        if err := rbac.CheckPermissions(ctx, toRBACAPIAcesssList(r.getAllAPIAccessLists(ctx)),
 		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
 		    return nil,err
 	    }
 	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID)
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
+	    if err := rbac.CheckObjectPermissions(ctx, toRBACPermType2(perms2),
 		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
 		    return nil,err
 	    }
