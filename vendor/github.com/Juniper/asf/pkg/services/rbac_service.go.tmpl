@@ -9,24 +9,37 @@ import (
 	models "{{ modelsImportPath }}"
 )
 
+// RBACService will RBAC check on resource opeations.
+type RBACService struct {
+	BaseService
+	ReadService  ReadService
+	AAAMode      string
+	AccessGetter AccessGetter
+}
+
+type AccessGetter interface {
+	GetAPIAccessLists(ctx context.Context)	[]*rbac.APIAccessList
+	GetPermissions(ctx context.Context, typeName, uuid string) *rbac.PermType2
+}
+
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-    model := request.{{ schema.JSONSchema.GoName }}
+	model := request.{{ schema.JSONSchema.GoName }}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionCreate);
-    if err != nil {
-        return nil,err
-    }
-    if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionCreate) ; err != nil {
-		    return nil,err
-	    }
+	allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionCreate);
+	if err != nil {
+		return nil,err
 	}
-    return r.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+	if !allowed {
+		if err := r.checkTypePermissions(ctx, model.Kind(), rbac.ActionCreate); err != nil {
+			return nil, err
+		}
+	}
+	return r.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
@@ -34,22 +47,9 @@ func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
 	model := request.{{ schema.JSONSchema.GoName }}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionUpdate);
-    if err != nil {
-        return nil,err
-    }
-
-    if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionUpdate); err != nil {
-		    return nil,err
-	    }
-	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID )
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionUpdate) ; err != nil {
-		    return nil,err
-	    }
-    }
+	if err := r.checkAllPermissions(ctx, model.Kind(), "", rbac.ActionUpdate); err != nil {
+		return nil, err
+	}
 	return r.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
@@ -58,22 +58,9 @@ func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
 	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(), rbac.ActionDelete);
-    if err != nil {
-        return nil,err
-    }
-
-    if  !allowed  {
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionDelete); err != nil {
-		    return nil,err
-	    }
-	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionDelete) ; err != nil {
-		    return nil,err
-	    }
-    }
+	if err := r.checkAllPermissions(ctx, model.Kind(), request.GetID(), rbac.ActionDelete); err != nil {
+		return nil, err
+	}
 	return r.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
@@ -82,23 +69,9 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
 	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, model.Kind(),rbac.ActionRead);
-    if err != nil {
-        return nil,err
-    }
-
-    if  !allowed  {
-
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
-		    return nil,err
-	    }
-	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
-		    return nil,err
-	    }
-    }
+	if err := r.checkAllPermissions(ctx, model.Kind(), request.GetID(), rbac.ActionRead); err != nil {
+		return nil, err
+	}
 	return r.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
@@ -107,32 +80,38 @@ func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 ) (*List{{ schema.JSONSchema.GoName }}Response, error) {
 	model := models.{{ schema.JSONSchema.GoName }}{}
 
-    allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode,model.Kind(), rbac.ActionRead);
-
-    if err != nil {
-        return nil,err
-    }
-
-    if  !allowed  {
-
-        if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
-		    r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
-		    return nil,err
-	    }
-	    perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID)
-	    if err := rbac.CheckObjectPermissions(ctx,perms2,
-		    r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
-		    return nil,err
-	    }
-    }
+	if err := r.checkAllPermissions(ctx, model.Kind(), "", rbac.ActionRead); err != nil {
+		return nil, err
+	}
 	return r.BaseService.List{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
-func (r *RBACService) Get{{ schema.JSONSchema.GoName }}Perms2(ctx context.Context,uuid string) *models.PermType2 {
-	if result, err := r.ReadService.Get{{ schema.JSONSchema.GoName }}(auth.NoAuth(ctx),  &Get{{ schema.JSONSchema.GoName }}Request{
-                                            ID: uuid, }); err == nil {
-		return result.{{ schema.JSONSchema.GoName }}.GetPerms2()
+{% endif %}{% endfor %}
+
+func (r *RBACService) checkAllPermissions(ctx context.Context, typeName, uuid string, action rbac.Action) error {
+	allowed, err := rbac.CheckCommonPermissions(ctx, r.AAAMode, typeName, action);
+	if err != nil {
+		return err
+	}
+
+	if !allowed {
+		if err := r.checkTypePermissions(ctx, typeName, action); err != nil {
+			return err
+		}
+
+		if err := r.checkObjectPermissions(ctx, typeName, uuid, action); err != nil {
+			return err
+		}
 	}
 	return nil
 }
-{% endif %}{% endfor %}
+
+func (r *RBACService) checkTypePermissions(ctx context.Context, typeName string, action rbac.Action) error {
+	lists := r.AccessGetter.GetAPIAccessLists(auth.NoAuth(ctx))
+	return rbac.CheckPermissions(ctx, lists, r.AAAMode, typeName, action)
+}
+
+func (r *RBACService) checkObjectPermissions(ctx context.Context, typeName, uuid string, action rbac.Action) error {
+	perms2 := r.AccessGetter.GetPermissions(auth.NoAuth(ctx), typeName, uuid)
+	return rbac.CheckObjectPermissions(ctx, perms2, r.AAAMode, typeName, action)
+}
