@@ -1,0 +1,340 @@
+name: Create AWS Cloud resources
+cleanup:
+- path: /port/cloud_node_gw_port_uuid
+- path: /node/cloud_node_gw_uuid
+- path: /node/cloud_node_compute_uuid
+- path: /cloud-security-group-rule/cloud_security_group_rule_uuid
+- path: /cloud-security-group/cloud_security_group_uuid
+- path: /cloud-private-subnet/cloud_private_subnet_uuid
+- path: /virtual-cloud/virtual_cloud_uuid
+- path: /cloud-region/cloud_region_uuid
+- path: /cloud-provider/cloud_provider_uuid
+- path: /cloud/cloud_uuid_aws
+- path: /cloud-user/cloud_user_uuid
+- path: /credential/cloud_credential_uuid
+- path: /keypair/cloud_keypair_uuid
+- path: /tag/public_cloud_tag_uuid
+
+test_data:
+  cloud_keypair: &cloud_keypair
+    name: cloud_keypair
+    uuid: cloud_keypair_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    ssh_key_dir_path: /var/tmp/cloud/cloud_uuid_aws
+
+  cloud_credential: &cloud_credential
+    name: cloud_credential
+    uuid: cloud_credential_uuid
+    keypair_refs:
+      - uuid: cloud_keypair_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+
+  cloud_user: &cloud_user
+    name: cloud_user
+    uuid: cloud_user_uuid
+    credential_refs:
+      - uuid: cloud_credential_uuid
+
+  cloud: &cloud
+    provisioning_state: NOSTATE
+    name: cloud
+    uuid: cloud_uuid_aws
+    prebuild_image_id: test-image-id
+    parent_cluster_uuid: cluster_with_authorization_registries_uuid
+    organization: unit_test
+    cloud_user_refs:
+      - uuid: cloud_user_uuid
+
+  cloud_provider: &cloud_provider
+    name: cloud_provider
+    uuid: cloud_provider_uuid
+    type: aws
+    parent_type: cloud
+    parent_uuid: cloud_uuid_aws
+    project: test2
+
+  cloud_region: &cloud_region
+    name: us-west-1
+    parent_type: cloud-provider
+    parent_uuid: cloud_provider_uuid
+    uuid: cloud_region_uuid
+
+  vc_tag: &vc_tag
+    name: public_cloud_tag
+    uuid: public_cloud_tag_uuid
+    tag_type_name: namespace
+    tag_value: vc1
+
+  virtual_cloud: &virtual_cloud
+    name: virtual_cloud
+    uuid: virtual_cloud_uuid
+    parent_type: cloud-region
+    parent_uuid: cloud_region_uuid
+    cidr_block: 192.168.10.0/16
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+
+  cloud_private_subnet: &cloud_private_subnet
+    name: cloud_private_subnet
+    uuid: cloud_private_subnet_uuid
+    cidr_block: 192.168.10.0/24
+    availability_zone: a
+    parent_type: virtual-cloud
+    parent_uuid: virtual_cloud_uuid
+
+  cloud_security_group: &cloud_security_group
+    name: cloud_security_group
+    uuid: cloud_security_group_uuid
+    parent_type: virtual-cloud
+    parent_uuid: virtual_cloud_uuid
+    cloud_private_subnet_refs:
+      - uuid: cloud_private_subnet_uuid
+
+  cloud_security_group_rule: &cloud_security_group_rule
+    name: cloud_security_group_rule
+    uuid: cloud_security_group_rule_uuid
+    parent_type: cloud-security-group
+    parent_uuid: cloud_security_group_uuid
+    direction: ingress
+    protocol: ANY
+    from_port: 0
+    to_port: 0
+    cidr_block: 0.0.0.0/0
+
+  cloud_node_gw: &cloud_node_gw
+    name: cloud_node_gw
+    uuid: cloud_node_gw_uuid
+    hostname: cloud_node_gw
+    cloud_info:
+      operating_system: rhel7
+      instance_type: t2.xlarge
+      roles:
+        - gateway
+    cloud_private_subnet_refs:
+      - uuid: cloud_private_subnet_uuid
+    cloud_security_group_refs:
+      - uuid: cloud_security_group_uuid
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+
+  cloud_node_gw_port: &cloud_node_gw_port
+    name: private
+    uuid: cloud_node_gw_port_uuid
+    parent_type: node
+    parent_uuid: cloud_node_gw_uuid
+
+  cloud_node_compute: &cloud_node_compute
+    name: cloud_node_compute
+    uuid: cloud_node_compute_uuid
+    hostname: cloud_node_compute
+    cloud_info:
+      operating_system: rhel7
+      instance_type: t2.xlarge
+      roles:
+        - compute
+    cloud_private_subnet_refs:
+      - uuid: cloud_private_subnet_uuid
+    cloud_security_group_refs:
+      - uuid: cloud_security_group_uuid
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create keypair
+  request:
+    path: /keypairs
+    method: POST
+    expected:
+    - 200
+    data:
+      keypair: *cloud_keypair
+  expect:
+    keypair:
+      <<: *cloud_keypair
+      perms2:
+        owner: admin
+
+- name: create cloud credential
+  request:
+    path: /credentials
+    method: POST
+    expected:
+    - 200
+    data:
+      credential: *cloud_credential
+  expect:
+    credential:
+      <<: *cloud_credential
+      perms2:
+        owner: admin
+
+- name: create cloud user
+  request:
+    path: /cloud-users
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-user: *cloud_user
+  expect:
+    cloud-user:
+      <<: *cloud_user
+      perms2:
+        owner: admin
+
+- name: create cloud
+  request:
+    path: /clouds
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud: *cloud
+  expect:
+    cloud:
+      <<: *cloud
+      perms2:
+        owner: admin
+
+- name: create cloud provider
+  request:
+    path: /cloud-providers
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-provider: *cloud_provider
+  expect:
+    cloud-provider:
+      <<: *cloud_provider
+      perms2:
+        owner: admin
+
+- name: create cloud region
+  request:
+    path: /cloud-regions
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-region: *cloud_region
+  expect:
+    cloud-region:
+      <<: *cloud_region
+      perms2:
+        owner: admin
+
+- name: create virtual cloud tag
+  request:
+    path: /tags
+    method: POST
+    expected:
+    - 200
+    data:
+      tag: *vc_tag
+  expect:
+    tag: *vc_tag
+
+- name: create virtual cloud
+  request:
+    path: /virtual-clouds
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-cloud: *virtual_cloud
+  expect:
+    virtual-cloud:
+      <<: *virtual_cloud
+      perms2:
+        owner: admin
+
+- name: create cloud private subnet
+  request:
+    path: /cloud-private-subnets
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-private-subnet: *cloud_private_subnet
+  expect:
+    cloud-private-subnet:
+      <<: *cloud_private_subnet
+      perms2:
+        owner: admin
+
+- name: create cloud security group
+  request:
+    path: /cloud-security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-security-group: *cloud_security_group
+  expect:
+    cloud-security-group:
+      <<: *cloud_security_group
+      perms2:
+        owner: admin
+
+- name: create cloud security group rule
+  request:
+    path: /cloud-security-group-rules
+    method: POST
+    expected:
+    - 200
+    data:
+      cloud-security-group-rule: *cloud_security_group_rule
+  expect:
+    cloud-security-group-rule:
+      <<: *cloud_security_group_rule
+      perms2:
+        owner: admin
+
+- name: create cloud node gw
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *cloud_node_gw
+  expect:
+    node: *cloud_node_gw
+
+- name: create cloud node gw port
+  request:
+    path: /ports
+    method: POST
+    expected:
+    - 200
+    data:
+      port: *cloud_node_gw_port
+  expect:
+    port: *cloud_node_gw_port
+
+- name: create cloud node compute
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *cloud_node_compute
+  expect:
+    node: *cloud_node_compute
