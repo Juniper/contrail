@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models"
 )
 
 // tenantPermissions is the 1st level hash table to get tenant specific rules.
@@ -13,23 +12,23 @@ type tenantPermissions map[tenantKey]resourcePermissions
 type tenantKey string
 
 // AddAccessList creates project, domain and  global policies.
-func (t tenantPermissions) AddAccessList(lists []*models.APIAccessList) error {
-	global := make([]*models.APIAccessList, 0)
-	domains := make(map[string][]*models.APIAccessList)
-	projects := make(map[tenantKey][]*models.APIAccessList)
+func (t tenantPermissions) AddAccessList(lists []*APIAccessList) error {
+	global := make([]*APIAccessList, 0)
+	domains := make(map[string][]*APIAccessList)
+	projects := make(map[tenantKey][]*APIAccessList)
 
 	for _, list := range lists {
 
-		parentType := list.GetParentType()
-		fqName := list.GetFQName()
+		parentType := list.getParentType()
+		fqName := list.getFQName()
 
 		switch parentType {
-		case models.KindGlobalSystemConfig:
+		case ScopeGlobalSystemConfig:
 			global = append(global, list)
-		case models.KindDomain:
+		case ScopeDomain:
 			domainName := fqName[0]
 			domains[domainName] = append(domains[domainName], list)
-		case models.KindProject:
+		case ScopeProject:
 			domainName, projectName := fqName[0], fqName[1]
 			key := getTenantKey(domainName, projectName)
 			projects[key] = append(projects[key], list)
@@ -57,9 +56,9 @@ func (t tenantPermissions) AddAccessList(lists []*models.APIAccessList) error {
 
 // addTenantLevelPolicy create a project specific policy.
 func (t tenantPermissions) addTenantLevelPolicy(
-	global []*models.APIAccessList,
-	domain map[string][]*models.APIAccessList,
-	project map[tenantKey][]*models.APIAccessList,
+	global []*APIAccessList,
+	domain map[string][]*APIAccessList,
+	project map[tenantKey][]*APIAccessList,
 ) error {
 	for k, list := range project {
 
@@ -79,7 +78,7 @@ func (t tenantPermissions) addTenantLevelPolicy(
 
 // addDomainLevelPolicy create a domain specific policy.
 func (t tenantPermissions) addDomainLevelPolicy(
-	global []*models.APIAccessList, domain map[string][]*models.APIAccessList) error {
+	global []*APIAccessList, domain map[string][]*APIAccessList) error {
 	for k, list := range domain {
 		list = append(list, global...)
 		key := getTenantKey(k, "*")
@@ -93,7 +92,7 @@ func (t tenantPermissions) addDomainLevelPolicy(
 }
 
 // addGlobalLevelPolicy create a  global policy.
-func (t tenantPermissions) addGlobalLevelPolicy(global []*models.APIAccessList) error {
+func (t tenantPermissions) addGlobalLevelPolicy(global []*APIAccessList) error {
 	key := getTenantKey("*", "*")
 	entry, err := t.addAPIAccessRules(global)
 	if err != nil {
@@ -124,7 +123,7 @@ func (t tenantPermissions) addGlobalLevelPolicy(global []*models.APIAccessList) 
 // For example result could be
 // virtual-network.* ==> { Member 	 : { ActionCreate:true,ActionDelete:true  }  ,
 //			    Development  : { ActionUpdate:true } }
-func (t tenantPermissions) addAPIAccessRules(apiAccessRules []*models.APIAccessList) (resourcePermissions, error) {
+func (t tenantPermissions) addAPIAccessRules(apiAccessRules []*APIAccessList) (resourcePermissions, error) {
 	res := make(resourcePermissions)
 	for _, apiRule := range apiAccessRules {
 
@@ -139,8 +138,8 @@ func (t tenantPermissions) addAPIAccessRules(apiAccessRules []*models.APIAccessL
 }
 
 // getRBACRules retrieves RBAC rules from API access list entry.
-func getRBACRules(l *models.APIAccessList) []*models.RbacRuleType {
-	return l.GetAPIAccessListEntries().GetRbacRule()
+func getRBACRules(l *APIAccessList) []*RuleType {
+	return l.getAPIAccessListEntries().getRuleType()
 }
 
 // ValidateAPILevel checks whether any resource rules or wildcard allow this operation
