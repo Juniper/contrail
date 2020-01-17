@@ -354,18 +354,6 @@ func (c *Cloud) update() error {
 		return nil
 	}
 
-	topo := newTopology(c, data)
-
-	topoUpToDate, tErr := topo.isUpToDate(defaultCloudResource)
-	if tErr != nil {
-		return errors.Wrapf(tErr, "failed to check if topology is up to date for cloud %s", c.config.CloudID)
-	}
-
-	if topoUpToDate {
-		c.log.Debug("Topology is already up to date - skipping update")
-		return c.resetPublicCloudModifiedStatus(data)
-	}
-
 	var secret *secret
 	if !data.isCloudPrivate() {
 		secret, err = c.initializeSecret(data)
@@ -374,6 +362,7 @@ func (c *Cloud) update() error {
 		}
 	}
 
+	topo := newTopology(c, data)
 	if err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID)); err != nil {
 		return err
 	}
