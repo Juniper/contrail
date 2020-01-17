@@ -16,6 +16,7 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
@@ -923,6 +924,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
+	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, config.Action, true)
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during create")
 
@@ -953,6 +955,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		_ = integration.RunDirtyTestScenario(t, ts, server)
 
 		manageCluster(t, config)
+		verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, tt.action, false)
 		err = isCloudSecretFilesDeleted()
 		require.NoErrorf(t, err, "failed to delete public cloud secrets during %s", tt.action)
 
@@ -982,6 +985,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to manage(delete) cloud")
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during delete")
+	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, config.Action, false)
 	assert.True(t, verifyCommandsExecuted(t, expectedMCDeleteCmdExecuted),
 		"commands executed during cluster delete are not as expected")
 	// make sure cluster is removed
@@ -993,6 +997,39 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete cloud secrets during delete")
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
+}
+
+func verifyClusterProvisioningStatus(
+	ctx context.Context, t *testing.T, apiServer *client.HTTP, clusterUUID, action string, fail bool,
+) {
+	c, err := apiServer.GetContrailCluster(ctx, &services.GetContrailClusterRequest{
+		ID: clusterUUID,
+	})
+	require.NoError(t, err)
+	expected, err := expectedStatus(action, fail)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, c.ContrailCluster.ProvisioningState)
+}
+
+func expectedStatus(action string, fail bool) (string, error) {
+	if fail {
+		switch action {
+		case createAction:
+			return statusCreateFailed, nil
+		case updateAction:
+			return statusUpdateFailed, nil
+		default:
+			return "", errors.New("unexpected cloud action for verifying cloud failure status")
+		}
+	}
+	switch action {
+	case createAction:
+		return statusCreated, nil
+	case updateAction:
+		return statusUpdated, nil
+	default:
+		return "", errors.New("unexpected cloud action for verifying cloud success status")
+	}
 }
 
 func createDummyCloudFiles(t *testing.T) func() {
