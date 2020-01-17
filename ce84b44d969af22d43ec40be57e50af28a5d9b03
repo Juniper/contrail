@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "43ecd3f9_06f6ede8",
+        "filename": "pkg/cloud/configs/contrail-cloud-config.tmpl",
+        "patchSetId": 11
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-17T15:03:31Z",
+      "side": 1,
+      "message": "Actually agent supports only string as values.",
+      "parentUuid": "e4b8f78e_bac2b5d7",
+      "range": {
+        "startLine": 17,
+        "startChar": 46,
+        "endLine": 17,
+        "endChar": 53
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "02ed8f28_04fa4493",
         "filename": "pkg/cloud/deployer.go",
         "patchSetId": 11
