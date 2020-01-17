@@ -42,8 +42,9 @@ func SetupServiceChain(dbService *db.Service, extraServices ...services.Service)
 			MetadataGetter: dbService,
 		},
 		&services.RBACService{
-			ReadService: dbService,
-			AAAMode:     viper.GetString("aaa_mode"),
+			ReadService:  dbService,
+			AccessGetter: services.NewContrailAccessGetter(dbService),
+			AAAMode:      viper.GetString("aaa_mode"),
 		},
 		services.NewQuotaCheckerService(dbService),
 	}
