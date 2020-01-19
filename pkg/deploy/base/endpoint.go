@@ -254,7 +254,7 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 	}
 
 	// openstack endpoints
-	if e.ClusterData.ClusterInfo.Orchestrator == "openstack" {
+	if e.ClusterData.ClusterInfo.Orchestrator == openstack {
 		openstackEndpoints := e.getOpenstackEndpointNodes()
 		endpointProtocol := protocol
 		if e.ClusterData.getOpenstackClusterData().isSSLEnabled() {
@@ -329,7 +329,7 @@ func (e *EndpointData) getEndpointPrefixes() []string {
 	for k := range e.getContrailEndpointNodes() {
 		prefixes = append(prefixes, k)
 	}
-	if e.ClusterData.ClusterInfo.Orchestrator == "openstack" {
+	if e.ClusterData.ClusterInfo.Orchestrator == openstack {
 		for k := range e.getOpenstackEndpointNodes() {
 			prefixes = append(prefixes, k)
 		}

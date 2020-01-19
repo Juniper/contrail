@@ -77,4 +77,5 @@ const (
 	defaultAppformixComputeNodeResPath          = "/" + defaultAppformixComputeNodeRes
 	defaultAppformixNetworkAgentsNodeRes        = "appformix-network-agents-node"
 	defaultAppformixNetworkAgentsNodeResPath    = "/" + defaultAppformixNetworkAgentsNodeRes
+	openstack                                   = "openstack"
 )

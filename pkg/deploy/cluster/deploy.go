@@ -87,6 +87,9 @@ func (p *deployCluster) deleteWorkingDir() error {
 }
 
 func (p *deployCluster) ensureServiceUserCreated() error {
+	if p.clusterData.ClusterInfo.Orchestrator != "openstack" {
+		return nil
+	}
 	ctx := context.Background()
 	name, pass := p.clusterData.KeystoneAdminCredential()
 
