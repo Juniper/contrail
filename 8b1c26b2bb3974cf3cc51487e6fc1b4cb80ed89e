@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2cc5bcc0_6605b92d",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 895,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-20T12:12:22Z",
+      "side": 1,
+      "message": "Why you check that only in this branch not in both cases?",
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "53098598_0d76b013",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 1033,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-20T12:12:22Z",
+      "side": 1,
+      "message": "Any chance that we could avoid this duplication with that in cloud pkg?",
+      "range": {
+        "startLine": 1014,
+        "startChar": 0,
+        "endLine": 1033,
+        "endChar": 1
+      },
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
