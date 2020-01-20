@@ -2,6 +2,46 @@
   "comments": [
     {
       "key": {
+        "uuid": "fc74a1d7_37ef0e8d",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-20T12:13:37Z",
+      "side": 1,
+      "message": "Please remove newline.",
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "034c16e3_7fd853ad",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-20T12:13:37Z",
+      "side": 1,
+      "message": "Please don\u0027t add mapping logic to test code. Test case should know what values it expects.",
+      "range": {
+        "startLine": 504,
+        "startChar": 0,
+        "endLine": 524,
+        "endChar": 1
+      },
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2cc5bcc0_6605b92d",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 6
@@ -36,6 +76,23 @@
         "endLine": 1033,
         "endChar": 1
       },
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3fca7574_431ca255",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-20T12:13:37Z",
+      "side": 1,
+      "message": "Please move setting Fail statuses to the Deploy method.",
       "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
