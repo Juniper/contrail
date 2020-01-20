@@ -119,6 +119,24 @@
     },
     {
       "key": {
+        "uuid": "ccb80238_8f3baead",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 895,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-20T14:58:02Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "50d8e067_a16f8b38",
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "53098598_0d76b013",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 6
@@ -163,6 +181,30 @@
       "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a15d96d4_feb3cf02",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 1033,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-20T14:58:02Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "73153d94_68bde266",
+      "range": {
+        "startLine": 1014,
+        "startChar": 0,
+        "endLine": 1033,
+        "endChar": 1
+      },
+      "revId": "8b1c26b2bb3974cf3cc51487e6fc1b4cb80ed89e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
