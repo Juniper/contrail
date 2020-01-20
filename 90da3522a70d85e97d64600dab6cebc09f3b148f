@@ -16,6 +16,24 @@
       "revId": "90da3522a70d85e97d64600dab6cebc09f3b148f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e59a5f4b_82aed345",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-20T14:21:32Z",
+      "side": 1,
+      "message": "Yes, this is used by the cluster_test. Moved closer to the usage.",
+      "parentUuid": "16a95f90_521cf38d",
+      "revId": "90da3522a70d85e97d64600dab6cebc09f3b148f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
