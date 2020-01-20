@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "16a95f90_521cf38d",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-20T12:32:50Z",
+      "side": 1,
+      "message": "Is this used anywhere?",
+      "revId": "90da3522a70d85e97d64600dab6cebc09f3b148f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

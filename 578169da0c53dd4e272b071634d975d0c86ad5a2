@@ -84,6 +84,30 @@
     },
     {
       "key": {
+        "uuid": "720c4ae8_6933a78f",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-20T12:32:50Z",
+      "side": 1,
+      "message": "I think it\u0027s not done.",
+      "parentUuid": "0745664c_88080b05",
+      "range": {
+        "startLine": 41,
+        "startChar": 33,
+        "endLine": 41,
+        "endChar": 44
+      },
+      "revId": "578169da0c53dd4e272b071634d975d0c86ad5a2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "97932586_ef1cc219",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 8
