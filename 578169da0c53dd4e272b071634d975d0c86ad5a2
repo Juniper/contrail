@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "cef2acdc_918d630d",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 902,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-20T12:03:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "afbf6fdc_65cacf87",
+      "revId": "578169da0c53dd4e272b071634d975d0c86ad5a2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4cedd97f_408a34f7",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 8
@@ -30,6 +48,30 @@
       "writtenOn": "2020-01-14T12:10:33Z",
       "side": 1,
       "message": "Please use empty string, see: https://golang.org/pkg/io/ioutil/#TempDir",
+      "range": {
+        "startLine": 41,
+        "startChar": 33,
+        "endLine": 41,
+        "endChar": 44
+      },
+      "revId": "578169da0c53dd4e272b071634d975d0c86ad5a2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0745664c_88080b05",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-20T12:03:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4cedd97f_408a34f7",
       "range": {
         "startLine": 41,
         "startChar": 33,
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "22802374_3b8d725a",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-20T12:03:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "97932586_ef1cc219",
+      "range": {
+        "startLine": 33,
+        "startChar": 1,
+        "endLine": 63,
+        "endChar": 1
+      },
+      "revId": "578169da0c53dd4e272b071634d975d0c86ad5a2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "520d529e_2f959263",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 8
@@ -76,6 +142,30 @@
       "writtenOn": "2020-01-14T12:10:33Z",
       "side": 1,
       "message": "IMO using function pointer here is not perfect because:\n- it\u0027s hard to change the input (eg. I want to write and regression test for some specific input)\n- we lose clarity - test data defined as visible text vs test data defined as some random func defined somewhere else\n- every time we run the test we also test if rsa library produces valid key which we don\u0027t have to do\n\nI think the file contents should be defined here and inside the test body we should write this data to the temp file. That would fix all those problems.\n\nIn case of key generation I won\u0027t be stubborn - we can use rsa library if specifying the key turns out to be hard, but we can still use it as a test data.",
+      "range": {
+        "startLine": 95,
+        "startChar": 14,
+        "endLine": 95,
+        "endChar": 32
+      },
+      "revId": "578169da0c53dd4e272b071634d975d0c86ad5a2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "09b6151c_e89c0698",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-20T12:03:59Z",
+      "side": 1,
+      "message": "Actually I think that generating new key is much more clear way than placing hardcoded private key.\nThis is why we use those functions.\nIn case of specific input we can write a separate function for this. We shouldn\u0027t try to predict all the cases that might appear in the future in case of changing its logic but provide a proper way to test current logic.",
+      "parentUuid": "520d529e_2f959263",
       "range": {
         "startLine": 95,
         "startChar": 14,
