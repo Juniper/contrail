@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "31e50807_ff7bc370",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-20T11:41:51Z",
+      "side": 1,
+      "message": "I didn\u0027t want to tie this function to a single cloud instance, so I left the way to provide action separated from cloud.\nI agree in right now there is no particular usage of this, so if you think it doesn\u0027t make sense to keep it that way I can change it.",
+      "parentUuid": "b671315f_c413befd",
+      "range": {
+        "startLine": 357,
+        "startChar": 31,
+        "endLine": 357,
+        "endChar": 92
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c6cd5f12_e5da591e",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 4
@@ -36,6 +60,30 @@
       "writtenOn": "2020-01-17T16:37:26Z",
       "side": 1,
       "message": "Extract an `expectedStatus` function.",
+      "range": {
+        "startLine": 374,
+        "startChar": 1,
+        "endLine": 393,
+        "endChar": 2
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ae68a563_0111731a",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-20T11:41:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c6cd5f12_e5da591e",
       "range": {
         "startLine": 374,
         "startChar": 1,
@@ -65,6 +113,24 @@
     },
     {
       "key": {
+        "uuid": "173cfaec_9be9d786",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-20T11:41:51Z",
+      "side": 1,
+      "message": "Yes and no.\nOn the GoAPI side - yes, everything will be done each time, which is 3 operations on files and 2 operations on cloud object in DB.\nIn backend (PythonCLI) side - no, when python deployer is started it runs terraform which compares desired topology and actual state of cloud resources. Terraform performs this comparison better than the previous byte-2-byte way and can update cloud resources in case when a user changes something in cloud platform directly.",
+      "parentUuid": "26427014_deb33b03",
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d1270551_7ecd4560",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 4
@@ -88,6 +154,30 @@
     },
     {
       "key": {
+        "uuid": "8e12b8d2_ac0f0021",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 1027,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-20T11:41:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1270551_7ecd4560",
+      "range": {
+        "startLine": 1008,
+        "startChar": 1,
+        "endLine": 1027,
+        "endChar": 2
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "174c8ee8_e5050fdc",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 4
@@ -99,6 +189,30 @@
       "writtenOn": "2020-01-17T16:37:26Z",
       "side": 1,
       "message": "This happens not only when the status of any cloud is status*Failed, but also when it is status*Progress.\n\nIs setting the status to status*Failed in both of those cases intended?",
+      "range": {
+        "startLine": 130,
+        "startChar": 41,
+        "endLine": 130,
+        "endChar": 51
+      },
+      "revId": "156157ada8d806497575eaf5670a5e740b456be8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a14ebb85_bb268d1b",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-20T11:41:51Z",
+      "side": 1,
+      "message": "When status of a cloud is status*Progress, the looped function in retry.Do() returns true, fmt.Errorf(...). Retry.Do() function loops, until first returned value is false, which happennes only in case of cloud success/failure.",
+      "parentUuid": "174c8ee8_e5050fdc",
       "range": {
         "startLine": 130,
         "startChar": 41,
