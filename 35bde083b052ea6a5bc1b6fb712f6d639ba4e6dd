@@ -97,6 +97,30 @@
     },
     {
       "key": {
+        "uuid": "5bd399e4_cf8aa51d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-21T10:22:46Z",
+      "side": 1,
+      "message": "\u003e 2. Group() and Use() are nice features regardless if CCAPI needs them, so I would leave them.\n\nI agree with the first part but disagree with the second one. The feautres are nice, but is it a reason to couple plugin registration with middleware registration? IMO those two are separate entities and should be registered as such. Even in our code our plugins are either pure service plugins or standalone middlewares disguised as plugins.\n\nMy second argument is Use looks like a special case of Group and I see no point of having both at once. I checked echo implementation and those functions differ, however I think we should simplify this and have only one method with eg. opts.\n\n@Witaut: You can leave TODO if you don\u0027t want to impede this particular review, however I still feel that we don\u0027t want those methods in the Plugin interface.",
+      "parentUuid": "e368857c_e6666c84",
+      "range": {
+        "startLine": 41,
+        "startChar": 1,
+        "endLine": 43,
+        "endChar": 25
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "44377389_f8c34f78",
         "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 43
