@@ -65,6 +65,30 @@
     },
     {
       "key": {
+        "uuid": "5c053e3c_46aed0f6",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b4df0c21_03319446",
+      "range": {
+        "startLine": 138,
+        "startChar": 65,
+        "endLine": 138,
+        "endChar": 81
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7c5c04fa_e0a5e754",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
@@ -85,6 +109,30 @@
       "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e6d26e1a_5c45eeb4",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7c5c04fa_e0a5e754",
+      "range": {
+        "startLine": 141,
+        "startChar": 64,
+        "endLine": 141,
+        "endChar": 80
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -111,6 +159,30 @@
     },
     {
       "key": {
+        "uuid": "bd5c1745_4ba98caa",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8f3884be_371c2163",
+      "range": {
+        "startLine": 155,
+        "startChar": 1,
+        "endLine": 162,
+        "endChar": 2
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1335ae5b_50fb8de0",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
@@ -131,6 +203,30 @@
       "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a2c59db8_12e84b6d",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1335ae5b_50fb8de0",
+      "range": {
+        "startLine": 177,
+        "startChar": 2,
+        "endLine": 180,
+        "endChar": 12
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -157,6 +253,30 @@
     },
     {
       "key": {
+        "uuid": "c119e8b6_6699868c",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "96327976_f7ec97a2",
+      "range": {
+        "startLine": 295,
+        "startChar": 29,
+        "endLine": 295,
+        "endChar": 45
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0bdb7f47_662953a2",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
@@ -177,6 +297,30 @@
       "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "96d4f7cd_5eac707d",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 313,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0bdb7f47_662953a2",
+      "range": {
+        "startLine": 310,
+        "startChar": 1,
+        "endLine": 313,
+        "endChar": 11
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -203,6 +347,30 @@
     },
     {
       "key": {
+        "uuid": "47585596_e4541eaa",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 374,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "383dff81_96fa0c16",
+      "range": {
+        "startLine": 374,
+        "startChar": 1,
+        "endLine": 374,
+        "endChar": 89
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d3a63d6e_7c9cae97",
         "filename": "pkg/deploy/deploy.go",
         "patchSetId": 5
@@ -226,6 +394,30 @@
     },
     {
       "key": {
+        "uuid": "6f684b64_032e38f0",
+        "filename": "pkg/deploy/deploy.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d3a63d6e_7c9cae97",
+      "range": {
+        "startLine": 122,
+        "startChar": 16,
+        "endLine": 122,
+        "endChar": 25
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7cdad290_1a821277",
         "filename": "pkg/deploy/manage.go",
         "patchSetId": 5
@@ -246,6 +438,30 @@
       "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0522ac06_0bb8ba68",
+        "filename": "pkg/deploy/manage.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-21T16:50:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7cdad290_1a821277",
+      "range": {
+        "startLine": 55,
+        "startChar": 26,
+        "endLine": 55,
+        "endChar": 35
+      },
+      "revId": "6cfe0672ab2fbf0048cd0c42bfb4f35a3892c49b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
