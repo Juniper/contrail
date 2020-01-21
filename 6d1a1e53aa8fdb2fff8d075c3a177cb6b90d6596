@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3f8e6fc3_2d97a3c6",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 1028,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-21T10:48:43Z",
+      "side": 1,
+      "message": "This looks like it creates the private key and cleans it immediately. After thorough reading the code I realized it\u0027s not the case, but at first glance the behaviour is confusing.",
+      "range": {
+        "startLine": 1026,
+        "startChar": 1,
+        "endLine": 1028,
+        "endChar": 8
+      },
+      "revId": "6d1a1e53aa8fdb2fff8d075c3a177cb6b90d6596",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38506fbc_dd2802a6",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 1030,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-21T10:48:43Z",
+      "side": 1,
+      "message": "There is a function removeFile(...) which doesn\u0027t fail the test if the file to remove doesn\u0027t exist.",
+      "range": {
+        "startLine": 1030,
+        "startChar": 20,
+        "endLine": 1030,
+        "endChar": 34
+      },
+      "revId": "6d1a1e53aa8fdb2fff8d075c3a177cb6b90d6596",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

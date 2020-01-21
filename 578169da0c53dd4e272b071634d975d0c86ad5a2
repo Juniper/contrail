@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "9f9ae432_ec05db78",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 902,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-01-21T10:48:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cef2acdc_918d630d",
+      "revId": "578169da0c53dd4e272b071634d975d0c86ad5a2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4cedd97f_408a34f7",
         "filename": "pkg/deploy/cluster/mc_ssh_test.go",
         "patchSetId": 8
