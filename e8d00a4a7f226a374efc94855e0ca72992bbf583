@@ -190,6 +190,30 @@
     },
     {
       "key": {
+        "uuid": "06f27428_2c85e2c4",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-22T19:48:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "41fafb55_7579545a",
+      "range": {
+        "startLine": 148,
+        "startChar": 2,
+        "endLine": 151,
+        "endChar": 3
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6da167df_aa9ebc1d",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 13
@@ -704,6 +728,30 @@
       "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "364b11f3_cbc97d4c",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-01-22T19:48:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "89e789fb_3402b76d",
+      "range": {
+        "startLine": 444,
+        "startChar": 33,
+        "endLine": 444,
+        "endChar": 48
+      },
+      "revId": "e8d00a4a7f226a374efc94855e0ca72992bbf583",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
