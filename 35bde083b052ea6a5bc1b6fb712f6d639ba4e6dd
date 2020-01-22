@@ -213,6 +213,30 @@
       "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "544edbf9_82481c3f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 43
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-22T16:20:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "69501fcc_ba1f4d14",
+      "range": {
+        "startLine": 56,
+        "startChar": 5,
+        "endLine": 56,
+        "endChar": 16
+      },
+      "revId": "35bde083b052ea6a5bc1b6fb712f6d639ba4e6dd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
