@@ -270,14 +270,32 @@ func (c *Cloud) create() error {
 	if err != nil {
 		return err
 	}
+
+	pubData := &publicCloud{}
+	if !data.isCloudPrivate() {
+		if err = pubData.Fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
+		}
+	}
+
 	topo, secret, err := c.initialize(data)
 	if err != nil {
 		return err
 	}
 
-	if topo.createTopologyFile(GetTopoFile(c.config.CloudID)) != nil {
+	// Performing create // TODO(Daniel): extract function
+	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
+
+	if data.isCloudPrivate() {
+		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+	} else {
+		err = pubData.MarshalAndSave(GetTopoFile(c.config.CloudID))
+	}
+	if err != nil {
 		return err
 	}
+
+	c.log.Infof("Created topology file for cloud with uuid: %s ", c.config.CloudID)
 
 	if !data.isCloudPrivate() {
 		if err = secret.createSecretFile(data.info.GetParentClusterUUID()); err != nil {
@@ -311,7 +329,7 @@ func (d *Data) modifiedProviders() []string {
 		s = append(s, azure)
 	}
 	if d.info.GCPModified {
-		s = append(s, gcp)
+		s = append(s, google)
 	}
 	return s
 }
@@ -347,6 +365,13 @@ func (c *Cloud) update() error {
 		return nil
 	}
 
+	pubData := &publicCloud{}
+	if !data.isCloudPrivate() {
+		if err = pubData.Fill(c.ctx, c.APIServer, c.config.CloudID); err != nil {
+			return err
+		}
+	}
+
 	var secret *secret
 	if !data.isCloudPrivate() {
 		secret, err = c.initializeSecret(data)
@@ -355,10 +380,20 @@ func (c *Cloud) update() error {
 		}
 	}
 
+	// Performing update // TODO(Daniel): extract function
+	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
+
 	topo := newTopology(c, data)
-	if err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID)); err != nil {
+	if data.isCloudPrivate() {
+		err = topo.createOnPremTopologyFile(GetTopoFile(c.config.CloudID))
+	} else {
+		err = pubData.MarshalAndSave(GetTopoFile(c.config.CloudID))
+	}
+	if err != nil {
 		return err
 	}
+
+	c.log.Infof("Created topology file for cloud with uuid: %s ", c.config.CloudID)
 
 	//TODO(madhukar) handle if key-pair changes or aws-key
 	if !data.isCloudPrivate() {
