@@ -89,6 +89,48 @@ func TestKeystone_AssignProjectRoleOnUser(t *testing.T) {
 	}
 }
 
+func TestKeystone_checkServiceUserExists(t *testing.T) {
+	tests := []struct {
+		name     string
+		HTTPDoer doer
+		ctx      context.Context
+		want     bool
+		wantErr  bool
+	}{{
+		name:     "service user not found",
+		HTTPDoer: &mockDoer{Response: newResponse(http.StatusOK, []byte(`{"users": []}`))},
+	}, {
+		name:     "keystone returns StatusForbidden",
+		HTTPDoer: &mockDoer{Response: newResponse(http.StatusForbidden, nil)},
+		wantErr:  true,
+	}, {
+		name:     "keystone returns service user",
+		HTTPDoer: &mockDoer{Response: newResponse(http.StatusOK, []byte(`{"users":[{"name":"goapi", "password" : "goapi123", "roles" : [{"Name": "admin", "project": {"name": "service"}}]}]}`))},
+		want:     true,
+	}, {
+		name:     "keystone returns service user without roles",
+		HTTPDoer: &mockDoer{Response: newResponse(http.StatusOK, []byte(`{"users":[{"name":"goapi", "password" : "goapi123"}]}`))},
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.ctx == nil {
+				tt.ctx = context.Background()
+			}
+			k := &Client{
+				HTTPDoer: tt.HTTPDoer,
+			}
+			got, err := k.checkServiceUserExists(tt.ctx, User{Name: "goapi", Password: "goapi123"})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Keystone.checkServiceUserExists() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Keystone.checkServiceUserExists() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 type mockDoer struct {
 	*http.Response
 }
