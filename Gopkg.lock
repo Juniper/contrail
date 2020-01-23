@@ -10,7 +10,11 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
+<<<<<<< HEAD   (788188 Adding R2002 branch to CI)
   digest = "1:204575dc3c3560d7106d71e8778290096dcf05e872d19425f01c5988c77331a3"
+=======
+  digest = "1:b2af0f2043ed5677a7d403586f9f0814f6dc45909009542ef6a2c391f119603b"
+>>>>>>> CHANGE (0848c8 checkServiceUserExists: Return no error if not found)
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -33,7 +37,11 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
+<<<<<<< HEAD   (788188 Adding R2002 branch to CI)
   revision = "b04c479564e6ede17497f3acc1b689d4628dba6e"
+=======
+  revision = "116e5e4d46f70fb9907667cce818d4d0f8abcb8c"
+>>>>>>> CHANGE (0848c8 checkServiceUserExists: Return no error if not found)
 
 [[projects]]
   branch = "2.x"

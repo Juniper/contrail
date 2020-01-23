@@ -28,6 +28,14 @@ const (
 	serviceProjectName   = "service"
 )
 
+type serviceUserNotFound struct {
+	user string
+}
+
+func (e *serviceUserNotFound) Error() string {
+	return fmt.Sprintf("user '%s' does not exist", e.user)
+}
+
 // WithXAuthToken creates child context with Auth Token
 func WithXAuthToken(ctx context.Context, token string) context.Context {
 	return httputil.WithHTTPHeader(ctx, xAuthTokenHeader, token)
@@ -214,7 +222,7 @@ func (k *Client) GetUserByName(ctx context.Context, userName string) (User, erro
 			return user, nil
 		}
 	}
-	return User{}, errors.Errorf("user '%s' does not exist", userName)
+	return User{}, &serviceUserNotFound{userName}
 }
 
 // createServiceUser creates service user in keystone.
@@ -244,7 +252,12 @@ func (k *Client) createServiceUser(ctx context.Context, user User) (User, error)
 func (k *Client) checkServiceUserExists(ctx context.Context, user User) (bool, error) {
 	servUser, err := k.GetUserByName(ctx, user.Name)
 	if err != nil {
-		return false, err
+		switch err.(type) {
+		case *serviceUserNotFound:
+			return false, nil
+		default:
+			return false, err
+		}
 	}
 	if servUser.Password == user.Password {
 		for _, role := range servUser.Roles {

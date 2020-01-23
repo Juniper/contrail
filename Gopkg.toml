@@ -25,4 +25,8 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
+<<<<<<< HEAD   (788188 Adding R2002 branch to CI)
   revision = "b04c479564e6ede17497f3acc1b689d4628dba6e"
+=======
+  revision = "116e5e4d46f70fb9907667cce818d4d0f8abcb8c"
+>>>>>>> CHANGE (0848c8 checkServiceUserExists: Return no error if not found)
