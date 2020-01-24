@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d84af393_eee28d28",
+        "filename": "pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-24T12:06:30Z",
+      "side": 1,
+      "message": "Where is RBAC service definition? I guess it should be placed in this file.",
+      "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f8c219f4_f8b06e78",
+        "filename": "pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-24T12:06:30Z",
+      "side": 1,
+      "message": "This template cannot mention models in any way. See L14 comment.",
+      "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1a3dbb7d_a38b6be7",
+        "filename": "pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-24T12:06:30Z",
+      "side": 1,
+      "message": "We cannot mention models type (like models.APIAccessList) in any of ASF files, because client package might have the type named differently. The RBAC service should store pointers to some user defined APIAccessList getter, not ReadService.",
+      "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

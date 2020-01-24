@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a9067e29_da56d58b",
+        "filename": "pkg/rbac/rbac_integration_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-24T12:06:30Z",
+      "side": 0,
+      "message": "This and pkg/rbac/test_data/test_rbac.yml should be kept in contrail repo.",
+      "revId": "dc6dfcb32fd3872be5937f2ec87eb30017431e24",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
