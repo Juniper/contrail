@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "6714def8_182e5b1a",
+        "filename": "pkg/cloud/configs/contrail-cloud-config.tmpl",
+        "patchSetId": 11
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-24T16:27:14Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "43ecd3f9_06f6ede8",
+      "range": {
+        "startLine": 17,
+        "startChar": 46,
+        "endLine": 17,
+        "endChar": 53
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "02ed8f28_04fa4493",
         "filename": "pkg/cloud/deployer.go",
         "patchSetId": 11
@@ -168,6 +192,30 @@
     },
     {
       "key": {
+        "uuid": "72ed7fee_ac9794e7",
+        "filename": "pkg/cloud/deployer.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-24T16:27:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4b3561a0_09dd8b81",
+      "range": {
+        "startLine": 80,
+        "startChar": 4,
+        "endLine": 80,
+        "endChar": 83
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e6382880_54806ca0",
         "filename": "pkg/cloud/tf_state.go",
         "patchSetId": 11
@@ -215,6 +263,30 @@
     },
     {
       "key": {
+        "uuid": "ec32c8ef_115988c5",
+        "filename": "pkg/cloud/tf_state.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-24T16:27:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8926886a_ef8986ae",
+      "range": {
+        "startLine": 33,
+        "startChar": 6,
+        "endLine": 33,
+        "endChar": 12
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "26e7bcce_d3b426f2",
         "filename": "pkg/deploy/cluster/cluster.go",
         "patchSetId": 11
@@ -259,6 +331,30 @@
       "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9e4d27b0_1e64acde",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 11
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-24T16:27:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a0c1cedc_c6cc70de",
+      "range": {
+        "startLine": 170,
+        "startChar": 1,
+        "endLine": 187,
+        "endChar": 2
+      },
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -329,6 +425,24 @@
       "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "041d12c2_6585f4fb",
+        "filename": "sample/generate_contrail_ui_sample",
+        "patchSetId": 11
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-24T16:27:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1f43d27_d9982ea4",
+      "revId": "ce84b44d969af22d43ec40be57e50af28a5d9b03",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
