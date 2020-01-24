@@ -22,6 +22,30 @@
       "revId": "fe9ed0ae44ae3163ff0b6d79286a87a2e8b581ad",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7a4357bc_0f54a13a",
+        "filename": "pkg/deploy/cluster/mc_ssh_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-01-24T15:20:38Z",
+      "side": 1,
+      "message": "Agent.Stop method waits for the process to be exited. It\u0027s not asynchronous.",
+      "parentUuid": "91aa6d6b_7cc4dbd5",
+      "range": {
+        "startLine": 26,
+        "startChar": 1,
+        "endLine": 26,
+        "endChar": 42
+      },
+      "revId": "fe9ed0ae44ae3163ff0b6d79286a87a2e8b581ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
