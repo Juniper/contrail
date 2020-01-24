@@ -18,7 +18,6 @@ import (
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/replication"
 	"github.com/Juniper/asf/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -30,6 +29,7 @@ import (
 	etcdclient "github.com/Juniper/asf/pkg/db/etcd"
 	protocodec "github.com/gogo/protobuf/codec"
 	// TODO(buoto): Decouple from below packages
+	//"github.com/Juniper/asf/pkg/replication"
 	//"github.com/Juniper/asf/pkg/collector"
 	//"github.com/Juniper/asf/pkg/collector/analytics"
 	//"github.com/Juniper/asf/pkg/neutron"
