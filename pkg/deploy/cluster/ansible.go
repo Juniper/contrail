@@ -391,7 +391,7 @@ func (a *contrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 		a.getWorkRoot(),
 		a.getAnsibleDeployerRepoInContainer(),
 		ansibleArgs,
-		true,
+		false,
 	)
 }
 
