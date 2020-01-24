@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "66bc7150_4dcb7dfc",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-24T17:15:56Z",
+      "side": 0,
+      "message": "Why was this removed?",
+      "revId": "8e0ec5bed0ab80e125696646d706a281c1c5522c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
