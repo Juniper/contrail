@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "8c80ca0d_7e28089c",
+        "filename": "pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-27T08:57:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d84af393_eee28d28",
+      "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f8c219f4_f8b06e78",
         "filename": "pkg/services/rbac_service.go.tmpl",
         "patchSetId": 4
