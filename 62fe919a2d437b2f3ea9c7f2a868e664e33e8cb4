@@ -54,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "6af2c159_b814ce5d",
+        "filename": "pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-27T15:20:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8c219f4_f8b06e78",
+      "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a3dbb7d_a38b6be7",
         "filename": "pkg/services/rbac_service.go.tmpl",
         "patchSetId": 4
@@ -68,6 +86,24 @@
       "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "450ca0a7_f7532f10",
+        "filename": "pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-27T15:20:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a3dbb7d_a38b6be7",
+      "revId": "62fe919a2d437b2f3ea9c7f2a868e664e33e8cb4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
