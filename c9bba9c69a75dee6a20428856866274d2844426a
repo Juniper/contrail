@@ -1,0 +1,124 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ca26b8bf_82ec3099",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 8
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T15:16:04Z",
+      "side": 1,
+      "message": "Remove this and add `closes-jira-bug: CEM-8849` below to be consistent with other commit messages.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 10
+      },
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0bab928b_e0ada28d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T15:16:04Z",
+      "side": 1,
+      "message": "These constants can be generated, or removed altogether (see https://review.opencontrail.org/c/Juniper/contrail/+/56188/8/vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl#257).",
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "72da6fae_7a384bf9",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T15:16:04Z",
+      "side": 1,
+      "message": "Is this function useful?",
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03b35ae5_91f2e1bb",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T15:16:04Z",
+      "side": 1,
+      "message": "It doesn\u0027t look like we can take `kind` from the delete request (unless we add a method to the template); but we can still make this better:\n- either use `models.Kind{{ schema.JSONSchema.GoName }}` (we can import `models \"{{ modelsImportPath }}\"` after all).\n- or hardcode the value (\"{{ schema.TypeName }}\") here.",
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b076dfe_90f64d3c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 306,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T15:16:04Z",
+      "side": 1,
+      "message": "typo: this should not be quoted.",
+      "range": {
+        "startLine": 306,
+        "startChar": 9,
+        "endLine": 306,
+        "endChar": 10
+      },
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd9baeca_6a3a2a04",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 329,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T15:16:04Z",
+      "side": 1,
+      "message": "Is changing this not to use NoAuth intentional?",
+      "range": {
+        "startLine": 329,
+        "startChar": 63,
+        "endLine": 329,
+        "endChar": 66
+      },
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
