@@ -16,6 +16,24 @@
       "revId": "8e0ec5bed0ab80e125696646d706a281c1c5522c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2089fa5f_6b8cbb99",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 863
+      },
+      "writtenOn": "2020-01-28T08:46:14Z",
+      "side": 0,
+      "message": "This function updates workDir which is unnecessary as this is a static location and once initialized will not change. So now it is initialized once here:\npkg/deploy/cluster/cluster.go:194",
+      "parentUuid": "66bc7150_4dcb7dfc",
+      "revId": "8e0ec5bed0ab80e125696646d706a281c1c5522c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
