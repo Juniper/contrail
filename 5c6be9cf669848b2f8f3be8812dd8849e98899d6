@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "620486aa_3492c7f9",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 52
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T12:54:18Z",
+      "side": 1,
+      "message": "Should we use something like \"proxy\" or \"prefix\" here?",
+      "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a87092c6_bb464f49",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 52
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T12:54:18Z",
+      "side": 1,
+      "message": "Is leaving this as \"action\" fine?",
+      "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c49bd9a5_8b6cf34d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 52
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T12:54:18Z",
+      "side": 1,
+      "message": "Is having static files in the homepage necessary (it hasn\u0027t been done before)? I imagine it could add a lot of entries.",
+      "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
