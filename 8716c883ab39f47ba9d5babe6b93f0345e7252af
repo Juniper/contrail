@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f4b89fd3_82a89a0a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T14:29:02Z",
+      "side": 1,
+      "message": "Mention that pkg/replication is not planned to be part of asf and stays as contrail/pkg/replication.",
+      "revId": "8716c883ab39f47ba9d5babe6b93f0345e7252af",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8c8c629a_1037d093",
+        "filename": "Gopkg.toml",
+        "patchSetId": 1
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-28T14:29:02Z",
+      "side": 1,
+      "message": "Change this to a commit ID when that pull request is merged.",
+      "revId": "8716c883ab39f47ba9d5babe6b93f0345e7252af",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
