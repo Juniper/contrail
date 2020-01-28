@@ -14,7 +14,9 @@ import (
 
 	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/osutil"
+	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/ansible"
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/flosch/pongo2"
 
 	shellwords "github.com/mattn/go-shellwords"
@@ -743,15 +745,23 @@ func (a *contrailAnsibleDeployer) handleCreate() error {
 		if err := a.createInventory(); err != nil {
 			return err
 		}
-		return a.updateEndpoints()
+		if err := a.updateEndpoints(); err != nil {
+			return err
+		}
+	} else {
+		if err := a.createCluster(); err != nil {
+			return err
+		}
+		if err := a.createEndpoints(); err != nil {
+			return err
+		}
 	}
-	if err := a.createCluster(); err != nil {
-		return err
-	}
-	if err := a.ensureServiceUserCreated(); err != nil {
-		return err
-	}
-	return a.createEndpoints()
+	// after setting the endpoints we don't know when the proxy will read them, so we retry
+	times := 3
+	return retry.Do(func() (retry bool, err error) {
+		times--
+		return times > 0, a.ensureServiceUserCreated()
+	}, retry.WithInterval(apisrv.ProxySyncInterval))
 }
 
 func (a *contrailAnsibleDeployer) handleUpdate() error {
