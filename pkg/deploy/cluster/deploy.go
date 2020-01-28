@@ -3,6 +3,7 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/deploy/base"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -86,6 +88,16 @@ func (p *deployCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
 }
 
+func (p *deployCluster) keystoneProxyURL() (string, error) {
+	auth, err := url.Parse(p.cluster.APIServer.Keystone.URL)
+	if err != nil {
+		return "", errors.Wrap(err, "parsing AuthURL from cluster data")
+	}
+	auth.Path = fmt.Sprintf("/proxy/%s/keystone/v3", p.clusterID)
+
+	return auth.String(), nil
+}
+
 func (p *deployCluster) ensureServiceUserCreated() error {
 	if p.clusterData.ClusterInfo.Orchestrator != "openstack" {
 		return nil
@@ -93,7 +105,17 @@ func (p *deployCluster) ensureServiceUserCreated() error {
 	ctx := context.Background()
 	name, pass := p.clusterData.KeystoneAdminCredential()
 
-	token, err := p.cluster.APIServer.Keystone.ObtainToken(
+	keystoneURL, err := p.keystoneProxyURL()
+	if err != nil {
+		return err
+	}
+
+	keystoneClient := &keystone.Client{
+		URL:      keystoneURL,
+		HTTPDoer: p.cluster.APIServer.Keystone.HTTPDoer,
+	}
+
+	token, err := keystoneClient.ObtainToken(
 		ctx, name, pass, keystone.NewScope("default", "", "", keystone.AdminRoleName),
 	)
 	if err != nil {
@@ -101,7 +123,7 @@ func (p *deployCluster) ensureServiceUserCreated() error {
 	}
 	ctx = keystone.WithXAuthToken(ctx, token)
 
-	_, err = p.cluster.APIServer.Keystone.EnsureServiceUserCreated(ctx, keystone.User{
+	_, err = keystoneClient.EnsureServiceUserCreated(ctx, keystone.User{
 		Name:     p.cluster.config.ServiceUserID,
 		Password: p.cluster.config.ServiceUserPassword,
 	})
