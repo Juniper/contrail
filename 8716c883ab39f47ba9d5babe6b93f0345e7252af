@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "0a069da3_6d46db65",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-28T16:06:35Z",
+      "side": 1,
+      "message": "That was already mentioned in ASF commit, this CR is only a sync, however I can paste it here also.",
+      "parentUuid": "f4b89fd3_82a89a0a",
+      "revId": "8716c883ab39f47ba9d5babe6b93f0345e7252af",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8c8c629a_1037d093",
         "filename": "Gopkg.toml",
         "patchSetId": 1
