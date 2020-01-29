@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "a0f1f9be_df323651",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dcb3d682_3ffc4586",
+      "range": {
+        "startLine": 36,
+        "startChar": 1,
+        "endLine": 36,
+        "endChar": 5
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6ec5735c_9474cecc",
         "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
         "patchSetId": 12
@@ -71,6 +95,54 @@
     },
     {
       "key": {
+        "uuid": "b6759729_8f7ff611",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6ec5735c_9474cecc",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 21
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ddf25850_a15f5fb4",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "938942e8_6425eac7",
+      "range": {
+        "startLine": 41,
+        "startChar": 36,
+        "endLine": 41,
+        "endChar": 44
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4440a181_b68eb202",
         "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
         "patchSetId": 12
@@ -85,6 +157,24 @@
       "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a7790e5e_6b2e46b3",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4440a181_b68eb202",
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "2e26beb4_2a83213a",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "54843690_b551abd3",
+      "range": {
+        "startLine": 43,
+        "startChar": 21,
+        "endLine": 43,
+        "endChar": 152
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2806f580_5d67e81f",
         "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
         "patchSetId": 12
@@ -131,6 +245,30 @@
       "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7855e6f2_f573960d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2806f580_5d67e81f",
+      "range": {
+        "startLine": 61,
+        "startChar": 13,
+        "endLine": 61,
+        "endChar": 17
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -157,6 +295,30 @@
     },
     {
       "key": {
+        "uuid": "1b979fcd_dbe97bd7",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "953469d3_1a536244",
+      "range": {
+        "startLine": 97,
+        "startChar": 12,
+        "endLine": 97,
+        "endChar": 16
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "505353f0_533e120d",
         "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
         "patchSetId": 12
@@ -171,6 +333,24 @@
       "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3b476180_d0a68f81",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-29T19:39:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "505353f0_533e120d",
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
