@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 
 	"github.com/pkg/errors"
@@ -109,23 +110,54 @@ func (k *Client) do(
 	return resp, nil
 }
 
-// GetProjectIDByName finds project id using project name.
-func (k *Client) GetProjectIDByName(
-	ctx context.Context, projectName string, domain *Domain,
-) (string, error) {
+type QueryParameter struct {
+	Key   string
+	Value string
+}
+
+func encodeQueryParameters(qs []QueryParameter) string {
+	if len(qs) == 0 {
+		return ""
+	}
+	v := url.Values{}
+	for _, q := range qs {
+		v.Add(q.Key, q.Value)
+	}
+	return "?" + v.Encode()
+}
+
+// ListProjects lists all projects.
+// Note that this method requires an scoped token.
+func (k *Client) ListProjects(ctx context.Context, params ...QueryParameter) (Projects, error) {
 	var response projectListResponse
-	if _, err := k.do(
-		ctx, http.MethodGet, fmt.Sprintf("/projects?name=%s", projectName), []int{http.StatusOK}, nil, &response,
-	); err != nil {
+	_, err := k.do(
+		ctx, http.MethodGet, "/projects"+encodeQueryParameters(params), []int{http.StatusOK}, nil, &response,
+	)
+	return response.Projects, err
+}
+
+// GetProjectIDByName finds project id using project name.
+func (k *Client) GetProjectIDByName(ctx context.Context, projectName string) (string, error) {
+	projects, err := k.ListProjects(ctx, QueryParameter{Key: "name", Value: projectName})
+	if err != nil {
 		return "", err
 	}
 
-	for _, project := range response.Projects {
-		if project.Name == projectName {
-			return project.ID, nil
-		}
+	p := projects.FindByName(projectName)
+	if p == nil {
+		return "", errors.Errorf("could not find project with name %q", projectName)
 	}
-	return "", errors.Errorf("could not find project with name %q", projectName)
+	return p.ID, nil
+}
+
+// ListAvailableProjectScopes lists projects that are available to be scoped to based on
+// the unscoped token provided in context.
+func (k *Client) ListAvailableProjectScopes(ctx context.Context) (Projects, error) {
+	var response projectListResponse
+	_, err := k.do(
+		ctx, http.MethodGet, "/auth/projects", []int{http.StatusOK}, nil, &response,
+	)
+	return response.Projects, err
 }
 
 // ObtainUnscopedToken gets unscoped authentication token.
@@ -227,7 +259,7 @@ func (k *Client) GetUserByName(ctx context.Context, userName string) (User, erro
 
 // createServiceUser creates service user in keystone.
 func (k *Client) createServiceUser(ctx context.Context, user User) (User, error) {
-	projectID, err := k.GetProjectIDByName(ctx, serviceProjectName, DefaultDomain())
+	projectID, err := k.GetProjectIDByName(ctx, serviceProjectName)
 	if err != nil {
 		return User{}, err
 	}
