@@ -1,0 +1,176 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dcb3d682_3ffc4586",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "What about renaming this to `Scope`?",
+      "range": {
+        "startLine": 36,
+        "startChar": 1,
+        "endLine": 36,
+        "endChar": 5
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ec5735c_9474cecc",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "`is used to`",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 21
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "938942e8_6425eac7",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "`a resource`",
+      "range": {
+        "startLine": 41,
+        "startChar": 36,
+        "endLine": 41,
+        "endChar": 44
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4440a181_b68eb202",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "Put things below their usage.",
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54843690_b551abd3",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "Are these types ever (un)marshalled? If not, I\u0027d remove the annotations.",
+      "range": {
+        "startLine": 43,
+        "startChar": 21,
+        "endLine": 43,
+        "endChar": 152
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2806f580_5d67e81f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "`is used`",
+      "range": {
+        "startLine": 61,
+        "startChar": 13,
+        "endLine": 61,
+        "endChar": 17
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "953469d3_1a536244",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "`is used`",
+      "range": {
+        "startLine": 97,
+        "startChar": 12,
+        "endLine": 97,
+        "endChar": 16
+      },
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "505353f0_533e120d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-29T16:19:43Z",
+      "side": 1,
+      "message": "Use the standard format (the linter will complain about this): // RuleEntriesType ...",
+      "revId": "90bc53aaaea71d756150979e92092f6dc1255f1e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
