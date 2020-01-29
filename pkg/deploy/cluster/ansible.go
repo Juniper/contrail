@@ -734,7 +734,7 @@ func (a *contrailAnsibleDeployer) handleCreate() error {
 		return times > 0, a.ensureServiceUserCreated()
 	}, retry.WithInterval(apisrv.ProxySyncInterval)); err != nil {
 		// TODO(mblotniak): Fail instead of logging
-		a.deployCluster.Deploy.Log.Errorf("Skipping service user creation: %v", err)
+		a.Log.Warnf("Skipping service user creation: %v", err)
 	}
 	return nil
 }

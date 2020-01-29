@@ -105,6 +105,26 @@ type Project struct {
 	ParentID string  `json:"parent_id,omitempty"`
 }
 
+// Projects holds pointers to multiple project objects.
+type Projects []*Project
+
+// Find returns first project that matches the predicate or nil.
+func (pp Projects) Find(pred func(*Project) bool) *Project {
+	for _, p := range pp {
+		if pred(p) {
+			return p
+		}
+	}
+	return nil
+}
+
+// FindByName returns first project with given name or nil.
+func (pp Projects) FindByName(name string) *Project {
+	return pp.Find(func(p *Project) bool {
+		return p.Name == name
+	})
+}
+
 //Identity represents a auth methods.
 type Identity struct {
 	Methods  []string   `json:"methods"`
@@ -207,7 +227,7 @@ type ProjectResponse struct {
 
 //ProjectListResponse represents a project list response.
 type ProjectListResponse struct {
-	Projects []*Project `json:"projects"`
+	Projects `json:"projects"`
 }
 
 //DomainListResponse represents a domain list response.

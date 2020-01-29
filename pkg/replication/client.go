@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -149,10 +150,23 @@ func (h *vncAPIHandle) getProjectIDByName(ctx context.Context, apiClient *client
 	if err != nil {
 		return "", err
 	}
+<<<<<<< HEAD   (b7d18b Create service user after loading endpoints)
 	ctx = kstypes.WithXAuthToken(ctx, token)
 	return apiClient.Keystone.GetProjectIDByName(
 		ctx, defaultProjectName, apiClient.Scope.Project.Domain,
 	)
+=======
+	ctx = asfkeystone.WithXAuthToken(ctx, token)
+	projects, err := apiClient.Keystone.ListAvailableProjectScopes(ctx)
+	if err != nil {
+		return "", err
+	}
+	project := projects.FindByName(defaultProjectName)
+	if project == nil {
+		return "", errors.Errorf("project(name='%s') not found in available scopes for an unscoped token", defaultProjectName)
+	}
+	return project.ID, nil
+>>>>>>> CHANGE (86c720 Call /v3/auth/projects for unscoped tokens)
 }
 
 // UpdateClient updates client for given endpoint.

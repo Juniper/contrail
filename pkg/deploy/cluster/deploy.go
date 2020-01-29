@@ -119,15 +119,17 @@ func (p *deployCluster) ensureServiceUserCreated() error {
 		ctx, name, pass, keystone.NewScope("default", "", "", keystone.AdminRoleName),
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed while trying to optain scoped token")
 	}
 	ctx = keystone.WithXAuthToken(ctx, token)
 
-	_, err = keystoneClient.EnsureServiceUserCreated(ctx, keystone.User{
+	if _, err = keystoneClient.EnsureServiceUserCreated(ctx, keystone.User{
 		Name:     p.cluster.config.ServiceUserID,
 		Password: p.cluster.config.ServiceUserPassword,
-	})
-	return err
+	}); err != nil {
+		return errors.Wrapf(err, "cannot ensure that service user '%s' was created", p.cluster.config.ServiceUserID)
+	}
+	return nil
 }
 
 func (p *deployCluster) createEndpoints() error {
