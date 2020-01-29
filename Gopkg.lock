@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:b2af0f2043ed5677a7d403586f9f0814f6dc45909009542ef6a2c391f119603b"
+  digest = "1:465cfa7bd6063c8bf31838458280abb1eabab5699de3c5cfb6b2f04bb36d5ebc"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -33,7 +33,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "116e5e4d46f70fb9907667cce818d4d0f8abcb8c"
+  revision = "keystone-client-auth"
 
 [[projects]]
   branch = "2.x"
