@@ -101,6 +101,24 @@
     },
     {
       "key": {
+        "uuid": "e5f57e54_619b72b3",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-30T09:01:08Z",
+      "side": 1,
+      "message": "It is created to avoid repetition: it is used five times in the file.",
+      "parentUuid": "72da6fae_7a384bf9",
+      "revId": "c9bba9c69a75dee6a20428856866274d2844426a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "03b35ae5_91f2e1bb",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
         "patchSetId": 8
