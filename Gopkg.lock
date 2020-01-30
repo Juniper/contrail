@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:d0b60c65b61aedbe419de294ce68d82775cdf99eef96510b96a744c4a5561483"
+  digest = "1:d28c1fd1c3a70bad63f844966aa52b191d2988cf7e5336a487bad3a7e1c6007c"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -33,7 +33,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "761394d67773879d572158d4ef66dd9d38371cfa"
+  revision = "ff777c8b2fa3c65b51e7290e547df45a89e32c57"
 
 [[projects]]
   branch = "2.x"
