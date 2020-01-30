@@ -10,7 +10,11 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
+<<<<<<< HEAD   (d2f832 Call /v3/auth/projects for unscoped tokens)
   digest = "1:d0b60c65b61aedbe419de294ce68d82775cdf99eef96510b96a744c4a5561483"
+=======
+  digest = "1:961c50ad4bb9647a969bf059dae45d74d08a94069d7495a2e63ef570e1e66d79"
+>>>>>>> CHANGE (229461 Fix header leak in httputil)
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/auth",
@@ -33,7 +37,11 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
+<<<<<<< HEAD   (d2f832 Call /v3/auth/projects for unscoped tokens)
   revision = "761394d67773879d572158d4ef66dd9d38371cfa"
+=======
+  revision = "2fdf5948e6ad7dac8d4990a73486f33b4ef4cbf2"
+>>>>>>> CHANGE (229461 Fix header leak in httputil)
 
 [[projects]]
   branch = "2.x"

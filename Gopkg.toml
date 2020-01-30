@@ -25,4 +25,8 @@ required = [
 
 [[constraint]]
   name = "github.com/Juniper/asf"
+<<<<<<< HEAD   (d2f832 Call /v3/auth/projects for unscoped tokens)
   revision = "761394d67773879d572158d4ef66dd9d38371cfa"
+=======
+  revision = "2fdf5948e6ad7dac8d4990a73486f33b4ef4cbf2"
+>>>>>>> CHANGE (229461 Fix header leak in httputil)

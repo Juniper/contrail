@@ -15,7 +15,7 @@ const (
 func WithHTTPHeader(ctx context.Context, key, value string) context.Context {
 	headers := http.Header{}
 	if v, ok := ctx.Value(headersClientContextKey).(http.Header); ok && v != nil {
-		headers = v
+		headers = v.Clone()
 	}
 	headers.Set(key, value)
 	return context.WithValue(ctx, headersClientContextKey, headers)
