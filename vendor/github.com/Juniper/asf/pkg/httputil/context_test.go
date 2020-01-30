@@ -50,6 +50,29 @@ func TestWithHTTPHeader(t *testing.T) {
 	}
 }
 
+func TestWithHTTPHeaderHeadersLeak(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithHTTPHeader(ctx, contentTypeHeader, "old")
+
+	ctxA := WithHTTPHeader(ctx, contentTypeHeader, "A")
+	ctxB := WithHTTPHeader(ctx, contentTypeHeader, "B")
+
+	expectedOldValue := http.Header{contentTypeHeader: []string{"old"}}
+	if oldValue := ctx.Value(headersClientContextKey); !reflect.DeepEqual(oldValue, expectedOldValue) {
+		t.Errorf("header in old context was changed, want: %v, got: %v", expectedOldValue, oldValue)
+	}
+
+	expectedAValue := http.Header{contentTypeHeader: []string{"A"}}
+	if aValue := ctxA.Value(headersClientContextKey); !reflect.DeepEqual(aValue, expectedAValue) {
+		t.Errorf("header in context A was changed, want: %v, got: %v", expectedAValue, aValue)
+	}
+
+	expectedBValue := http.Header{contentTypeHeader: []string{"B"}}
+	if bValue := ctxB.Value(headersClientContextKey); !reflect.DeepEqual(bValue, expectedBValue) {
+		t.Errorf("header in context B was changed, want: %v, got: %v", expectedBValue, bValue)
+	}
+}
+
 func TestSetContextHeaders(t *testing.T) {
 	tests := []struct {
 		name       string
