@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "38124343_388b4be0",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-31T13:38:25Z",
+      "side": 1,
+      "message": "This change is contained in https://github.com/Juniper/asf/pull/30 (not merged yet). Add it to Gopkg.toml.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 39
+      },
+      "revId": "303843cdff999eede4505885fbbeb4ab3b3e484c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
