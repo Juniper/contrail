@@ -1,1 +1,20 @@
-deployer all topology --topology /var/tmp/cloud/cloud_uuid_azure/topology.yml --secret /var/tmp/cloud/cloud_uuid_azure/secret.yml --skip_validation --limit azure
+command:
+  - "deployer"
+  - "all"
+  - "topology"
+  - "--topology"
+  - "/var/tmp/cloud/cloud_uuid_azure/topology.yml"
+  - "--secret"
+  - "/var/tmp/cloud/cloud_uuid_azure/secret.yml"
+  - "--skip_validation"
+  - "--limit"
+  - "azure"
+parameters:
+  imageref: "test-registry/contrail-multicloud-deployer:master"
+  imagerefusername: "test-registry-username"
+  imagerefpassword: "test-registry-password"
+  volumes:
+    - source: "/var/tmp/cloud/cloud_uuid_azure"
+      target: "/var/tmp/cloud/cloud_uuid_azure"
+  workingdirectory: /var/tmp/cloud/cloud_uuid_azure
+  env: []
