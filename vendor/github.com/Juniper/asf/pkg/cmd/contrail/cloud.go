@@ -4,8 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	// TODO(buoto): Decouple from below packages
-	//"github.com/Juniper/asf/pkg/cloud"
+	"github.com/Juniper/contrail/pkg/cloud"
 )
 
 func init() {
