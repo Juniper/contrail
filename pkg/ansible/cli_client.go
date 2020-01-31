@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	playbookCmd     = "ansible-playbook"
+	// PlaybookCmd is a command for executing ansible playbooks.
+	PlaybookCmd     = "ansible-playbook"
 	hostPlaybookCmd = "/usr/bin/ansible-playbook"
 	filePermRWOnly  = 0600
 )
@@ -79,7 +80,7 @@ func prepareCLICmd(repositoryPath string, ansibleArgs []string, virtualenvPath s
 	var cmd *exec.Cmd
 	if virtualenvPath != "" {
 		var err error
-		cmd, err = osutil.VenvCommand(virtualenvPath, playbookCmd, ansibleArgs...)
+		cmd, err = osutil.VenvCommand(virtualenvPath, PlaybookCmd, ansibleArgs...)
 		if err != nil {
 			return nil, err
 		}
