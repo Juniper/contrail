@@ -4,8 +4,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/logutil/report"
-	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/cloud"
 )
 
@@ -24,17 +22,8 @@ var cloudCmd = &cobra.Command{
 	},
 }
 
-// TODO(apasyniuk) Export this into asf/osutils
-type osCommandExecutor struct{}
-
-func (e *osCommandExecutor) ExecCmdAndWait(
-	r *report.Reporter, cmd string, args []string, dir string, envVars ...string,
-) error {
-	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
-}
-
 func manageCloud() {
-	manager, err := cloud.NewCloudManager(configFile, &osCommandExecutor{})
+	manager, err := cloud.NewCloudManager(configFile)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

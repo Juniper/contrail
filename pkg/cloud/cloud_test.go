@@ -12,8 +12,11 @@ import (
 
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/cloud/mock"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -370,7 +373,7 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	compareTopology(t, pc.expectedTopologyFile, cl.config.CloudID)
 
-	verifyCommandsExecuted(t, pc.expectedCommandsFile, cl.config.CloudID)
+	verifyCommandsExecuted(t, pc.expectedCommandsFile, executedCommandsPath(cl.config.CloudID))
 	verifyGeneratedSSHKeyFiles(t, cl.config.CloudID)
 }
 
@@ -378,8 +381,8 @@ func assertModifiedStatusRemoval(ctx context.Context, t *testing.T, APIServer *c
 	c, err := APIServer.GetCloud(ctx, &services.GetCloudRequest{
 		ID: cloudUUID,
 	})
-	assert.NoError(t, err)
-	return !(c.Cloud.AwsModified || c.Cloud.AzureModified || c.Cloud.GCPModified)
+	assert.NoError(t, err, "cannot assert removal of modified status")
+	return !(c.GetCloud().GetAwsModified() || c.GetCloud().GetAzureModified() || c.GetCloud().GetGCPModified())
 }
 
 func prepareForTest(
@@ -469,7 +472,17 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c, terraformStateReaderStub{}, testutil.NewFileWritingExecutor(executedCommandsPath(c.CloudID)))
+	client := newHTTPClient(c)
+	reporter := report.NewReporter(
+		client,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
+	)
+
+	mockPlayer, err := cloudmock.NewMockContainerPlayer(t, executedCommandsPath(c.CloudID))
+	assert.NoError(t, err, "failed to create testing player")
+
+	cl, err := NewCloud(c, terraformStateReaderStub{}, mockPlayer, client, reporter)
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl
@@ -562,9 +575,12 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) error {
 	return nil
 }
 
-func verifyCommandsExecuted(t *testing.T, expectedCmdFile string, cloudUUID string) {
-	assertYAMLFileEqual(t, expectedCmdFile, executedCommandsPath(cloudUUID),
-		"Expected list of create commands are not executed")
+func verifyCommandsExecuted(t *testing.T, expectedCmdFile, actualCmdFile string) {
+	expected := cloudmock.ContainerParametersFromFile(t, expectedCmdFile)
+	actual := cloudmock.ContainerParametersFromFile(t, actualCmdFile)
+
+	testutil.AssertEqual(t, expected, actual,
+		fmt.Sprintf("YAML files %s and %s are not equal", expectedCmdFile, actualCmdFile))
 }
 
 func executedCommandsPath(cloudUUID string) string {

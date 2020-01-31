@@ -3,6 +3,7 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/ansible"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -62,16 +63,17 @@ type terraformStateReader interface {
 	Read() (terraformState, error)
 }
 
-// CommandExecutor interface provides methods to execute a command
-type CommandExecutor interface {
-	ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
+type containerPlayer interface {
+	StartExecuteAndRemove(
+		ctx context.Context, imageRef string, imageRefUsername string, imageRefPassword string, volumes []ansible.Volume,
+		workingDirectory string, cmd, env []string) error
 }
 
 // Cloud represents cloud service.
 type Cloud struct {
 	config               *Config
 	APIServer            *client.HTTP
-	commandExecutor      CommandExecutor
+	player               containerPlayer
 	log                  *logrus.Entry
 	reporter             *report.Reporter
 	streamServer         *logutil.StreamServer
@@ -80,7 +82,7 @@ type Cloud struct {
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
-func NewCloudManager(configPath string, commandExecutor CommandExecutor) (*Cloud, error) {
+func NewCloudManager(configPath string) (*Cloud, error) {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return nil, err
@@ -92,16 +94,24 @@ func NewCloudManager(configPath string, commandExecutor CommandExecutor) (*Cloud
 		return nil, err
 	}
 
-	return NewCloud(&c, cloudTfStateReader{c.CloudID}, commandExecutor)
-}
+	client := newHTTPClient(&c)
 
-// NewCloud returns a new Cloud instance
-func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExecutor) (*Cloud, error) {
-	if err := logutil.Configure(c.LogLevel); err != nil {
-		return nil, err
+	reporter := report.NewReporter(
+		client,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
+	)
+
+	player, err := ansible.NewContainerPlayer(reporter, c.LogFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot update topology without container player")
 	}
 
-	s := client.NewHTTP(&asfclient.HTTPConfig{
+	return NewCloud(&c, cloudTfStateReader{c.CloudID}, player, client, reporter)
+}
+
+func newHTTPClient(c *Config) *client.HTTP {
+	return client.NewHTTP(&asfclient.HTTPConfig{
 		ID:       c.ID,
 		Password: c.Password,
 		Endpoint: c.Endpoint,
@@ -114,6 +124,19 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 		),
 		Insecure: c.InSecure,
 	})
+}
+
+// NewCloud returns a new Cloud instance
+func NewCloud(
+	c *Config,
+	terraformStateReader terraformStateReader,
+	player containerPlayer,
+	httpClient *client.HTTP,
+	reporter *report.Reporter,
+) (*Cloud, error) {
+	if err := logutil.Configure(c.LogLevel); err != nil {
+		return nil, err
+	}
 
 	ctx := auth.NoAuth(context.Background())
 	if c.AuthURL != "" {
@@ -131,18 +154,14 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 	}
 
 	return &Cloud{
-		APIServer: s,
-		config:    c,
-		log:       logutil.NewFileLogger("cloud", c.LogFile).WithField("cloudID", c.CloudID),
-		reporter: report.NewReporter(
-			s,
-			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
-			logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
-		),
+		APIServer:            httpClient,
+		config:               c,
+		log:                  logutil.NewFileLogger("cloud", c.LogFile).WithField("cloudID", c.CloudID),
+		reporter:             reporter,
 		streamServer:         logutil.NewStreamServer(c.LogFile),
-		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
+		player:               player,
 	}, nil
 }
 
@@ -307,7 +326,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = updateTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}
@@ -410,7 +429,7 @@ func (c *Cloud) update() error {
 			return err
 		}
 
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = updateTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}
@@ -488,7 +507,7 @@ func (c *Cloud) delete() error {
 		if err = secret.createSecretFile(data.info.GetParentClusterUUID()); err != nil {
 			return err
 		}
-		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
+		if err = destroyTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}

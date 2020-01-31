@@ -173,6 +173,11 @@ func newAnsibleDeployer(c *Cluster, cData *base.Data) (*contrailAnsibleDeployer,
 func newMCProvisioner(c *Cluster, cData *base.Data) (*multiCloudProvisioner, error) {
 	d := newDeployCluster(c, cData, "multi-cloud-provisioner")
 
+	containerPlayer, err := ansible.NewContainerPlayer(d.Reporter, c.config.LogFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create container player for MC Provisioner")
+	}
+
 	return &multiCloudProvisioner{
 		contrailAnsibleDeployer: contrailAnsibleDeployer{
 			deployCluster: *d,
@@ -182,6 +187,7 @@ func newMCProvisioner(c *Cluster, cData *base.Data) (*multiCloudProvisioner, err
 				d.getWorkingDir(),
 				c.config.Test,
 			),
+			containerPlayer: containerPlayer,
 		},
 		workDir: "",
 	}, nil
@@ -227,4 +233,12 @@ func (m *mockContainerPlayer) Play(
 		content,
 		0600,
 	)
+}
+
+func (m *mockContainerPlayer) StartExecuteAndRemove(
+	ctx context.Context, imageRef string, imageRefUsername string, imageRefPassword string, volumes []ansible.Volume,
+	workingDirectory string, cmd, env []string,
+) error {
+	// TODO
+	return nil
 }
