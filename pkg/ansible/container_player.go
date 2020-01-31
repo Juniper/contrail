@@ -36,6 +36,7 @@ type apiClient interface {
 	ContainerExecCreate(ctx context.Context, container string, config types.ExecConfig) (types.IDResponse, error)
 	ContainerExecAttach(ctx context.Context, execID string, config types.ExecStartCheck) (types.HijackedResponse, error)
 	ContainerExecInspect(ctx context.Context, execID string) (types.ContainerExecInspect, error)
+	ContainerExecStart(ctx context.Context, execID string, config types.ExecStartCheck) error
 	ContainerStop(ctx context.Context, containerID string, timeout *time.Duration) error
 	ContainerRemove(ctx context.Context, containerID string, options types.ContainerRemoveOptions) error
 }
@@ -79,37 +80,24 @@ func (p *ContainerPlayer) Play(
 		"ansible-args": ansibleArgs,
 	}).Info("Running playbook in container")
 
-	err := p.pullImage(ctx, imageRef, imageRefUsername, imageRefPassword)
+	containerName, err := p.pullAndStart(
+		ctx, imageRef, imageRefUsername, imageRefPassword, workingDirectory, []mount.Mount{
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: workRoot,
+				Target: workRoot,
+			},
+		})
 	if err != nil {
-		return errors.Wrap(err, "image pulling failed")
+		return errors.Wrap(err, "container couldn't be started")
 	}
 
-	// Because we don't use fixed name ansible deployer container, and the user might choose to not remove the
-	// container after finishing ansible deployment, we need to search for existing container created from specified
-	// image registry first to use it.
-	containerInstance, isFound, err := p.searchContainer(ctx, imageRef)
-	if err != nil {
-		return errors.Wrap(err, "container search failed")
-	}
-
-	var containerName string
-	if isFound {
-		containerName, err = p.startExistingContainer(ctx, containerInstance)
-	} else {
-		containerName, err = p.createRunningContainer(ctx, imageRef, workRoot)
-	}
-	if err != nil {
-		return errors.Wrap(err, "container Initialization failed")
-	}
-
-	err = p.execCmd(ctx, containerName, workingDirectory, ansibleArgs)
-	if err != nil {
+	if err = p.execPlaybook(ctx, containerName, workingDirectory, ansibleArgs); err != nil {
 		return errors.Wrap(err, "container command execution failed")
 	}
 
 	if removeContainer {
-		err = p.removeContainer(ctx, containerName)
-		if err != nil {
+		if err = p.removeContainer(ctx, containerName); err != nil {
 			return errors.Wrap(err, "container cleaning failed")
 		}
 	}
@@ -117,6 +105,118 @@ func (p *ContainerPlayer) Play(
 	p.log.WithFields(logrus.Fields{
 		"ansible-args": ansibleArgs,
 	}).Info("Finished running playbook in container")
+
+	return nil
+}
+
+func (p *ContainerPlayer) pullAndStart(
+	ctx context.Context, imageRef, imageRefUsername, imageRefPassword, workingDirectory string, mounts []mount.Mount,
+) (string, error) {
+	err := p.pullImage(ctx, imageRef, imageRefUsername, imageRefPassword)
+	if err != nil {
+		return "", errors.Wrap(err, "image pulling failed")
+	}
+
+	// Because we don't use fixed name ansible deployer container, and the user might choose to not remove the
+	// container after finishing ansible deployment, we need to search for existing container created from specified
+	// image registry first to use it.
+	containerInstance, isFound, err := p.searchContainer(ctx, imageRef)
+	if err != nil {
+		return "", errors.Wrap(err, "container search failed")
+	}
+
+	var containerName string
+	if isFound {
+		containerName, err = p.startExistingContainer(ctx, containerInstance)
+	} else {
+		containerName, err = p.createRunningContainer(ctx, imageRef, mounts)
+	}
+	if err != nil {
+		return "", errors.Wrap(err, "container Initialization failed")
+	}
+	return containerName, nil
+}
+
+// Volume represents a configuration for a Volume that will be added to Container.
+type Volume struct {
+	Source string
+	Target string
+}
+
+func toMounts(volumes []Volume) []mount.Mount {
+	mounts := make([]mount.Mount, len(volumes))
+	for i, v := range volumes {
+		mounts[i] = mount.Mount{
+			Type:   mount.TypeBind,
+			Source: v.Source,
+			Target: v.Target,
+		}
+	}
+	return mounts
+}
+
+// StartExecuteAndRemove creates a container, executes certain command and after completion it removes that container.
+func (p *ContainerPlayer) StartExecuteAndRemove(
+	ctx context.Context, imageRef string, imageRefUsername string, imageRefPassword string, volumes []Volume,
+	workingDirectory string, cmd, env []string,
+) (err error) {
+	p.log.WithFields(logrus.Fields{
+		"command": cmd,
+		"image":   imageRef,
+	}).Info("Running cmd in container")
+
+	containerName, err := p.pullAndStart(ctx, imageRef, imageRefUsername, imageRefPassword, workingDirectory, toMounts(volumes))
+	if err != nil {
+		return errors.Wrap(err, "container couldn't be started")
+	}
+
+	defer func() {
+		if removeErr := p.removeContainer(ctx, containerName); removeErr != nil {
+			err = errors.Wrapf(err, "could not remove container: %v", removeErr)
+		}
+	}()
+
+	return p.execCmd(ctx, containerName, cmd, env, workingDirectory)
+}
+
+func (p *ContainerPlayer) execCmd(
+	ctx context.Context, containerName string, cmd, env []string, workingDirectory string,
+) error {
+	createResp, err := p.client.ContainerExecCreate(
+		ctx,
+		containerName,
+		types.ExecConfig{
+			AttachStdout: true,
+			AttachStderr: true,
+			WorkingDir:   workingDirectory,
+			Cmd:          cmd,
+			Env:          env,
+			Privileged:   true,
+		},
+	)
+	if err != nil {
+		return errors.Wrap(err, "creating container exec failed")
+	}
+	hijack, err := p.client.ContainerExecAttach(ctx, createResp.ID, types.ExecStartCheck{})
+	if err != nil {
+		return errors.Wrap(err, "creating container exec failed")
+	}
+
+	defer hijack.Close()
+	scanner := bufio.NewScanner(hijack.Reader)
+	for scanner.Scan() {
+		p.log.Debug(scanner.Text())
+	}
+
+	execInspectResp, err := p.client.ContainerExecInspect(ctx, createResp.ID)
+	if err != nil {
+		return errors.Wrap(err, "inspecting container exec failed")
+	}
+	if execInspectResp.ExitCode != 0 {
+		return errors.New("deployment in container failed, status code: " + strconv.Itoa(execInspectResp.ExitCode))
+	}
+
+	// CLOSE THE CONTAINER!!! OTHERWISE IT WON'T LOAD NEW VOLUMES
 
 	return nil
 }
@@ -194,7 +294,9 @@ func (p *ContainerPlayer) startExistingContainer(
 	return strings.Join(containerInstance.Names, ""), nil
 }
 
-func (p *ContainerPlayer) createRunningContainer(ctx context.Context, imageRef, workRoot string) (string, error) {
+func (p *ContainerPlayer) createRunningContainer(
+	ctx context.Context, imageRef string, mounts []mount.Mount,
+) (string, error) {
 	containerName := "ansible-deployer_" + time.Now().Format("20060102150405")
 
 	p.log.WithFields(logrus.Fields{
@@ -206,13 +308,7 @@ func (p *ContainerPlayer) createRunningContainer(ctx context.Context, imageRef, 
 		ctx,
 		&container.Config{Tty: true, Image: imageRef},
 		&container.HostConfig{
-			Mounts: []mount.Mount{
-				{
-					Type:   mount.TypeBind,
-					Source: workRoot,
-					Target: workRoot,
-				},
-			},
+			Mounts: mounts,
 		},
 		nil,
 		containerName,
@@ -231,7 +327,7 @@ func (p *ContainerPlayer) createRunningContainer(ctx context.Context, imageRef, 
 
 // playbooks: in /root/contrail-ansible-deployer
 // instances: /var/tmp/contrail-cluster, but you wanna mount /var/tmp
-func (p *ContainerPlayer) execCmd(
+func (p *ContainerPlayer) execPlaybook(
 	ctx context.Context, containerName, workingDirectory string,
 	ansibleArgs []string,
 ) error {

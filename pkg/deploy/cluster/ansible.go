@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/flosch/pongo2"
 
 	shellwords "github.com/mattn/go-shellwords"
@@ -52,6 +53,16 @@ type Player interface {
 		ansibleBinaryRepo string,
 		ansibleArgs []string,
 		keepContainerAlive bool,
+	) error
+
+	StartExecuteAndRemove(
+		ctx context.Context,
+		imageRef string,
+		imageRefUsername string,
+		imageRefPassword string,
+		workRoot []ansible.Volume,
+		workingDirectory string,
+		cmd, env []string,
 	) error
 }
 
@@ -383,11 +394,17 @@ func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 
 func (a *contrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 	a.Log.WithField("directory", a.getAnsibleDeployerRepoInContainer()).Info("Running playbook in container")
+	containerName, err := cloud.GetContainerName(
+		a.clusterData.ClusterInfo.ContainerRegistry,
+		"contrail-kolla-ansible-deployer",
+		cloud.GetContrailVersion(a.clusterData.ClusterInfo, a.Log),
+	)
+	if err != nil {
+		return err
+	}
 	return a.containerPlayer.Play(
 		context.Background(),
-		a.clusterData.ClusterInfo.ContainerRegistry+
-			"/contrail-kolla-ansible-deployer:"+
-			a.clusterData.ClusterInfo.ContrailVersion,
+		containerName,
 		a.clusterData.ClusterInfo.ContainerRegistryUsername,
 		a.clusterData.ClusterInfo.ContainerRegistryPassword,
 		a.getWorkRoot(),

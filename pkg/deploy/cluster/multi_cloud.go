@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
@@ -24,7 +25,7 @@ import (
 
 const (
 	mcWorkDir              = "multi-cloud"
-	mcRepository           = "contrail-multi-cloud"
+	mcRepositoryPath           = "/root/contrail-multi-cloud"
 	defaultMCInventoryFile = "inventories/inventory.yml"
 	defaultTopologyFile    = "topology.yml"
 	defaultSecretFile      = "secret.yml"
@@ -359,26 +360,58 @@ func (m *multiCloudProvisioner) provision() error {
 		return errors.Wrap(err, "cannot start SSH Agent")
 	}
 	defer stopAgent()
-	return m.cluster.commandExecutor.ExecCmdAndWait(
-		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
+	return m.runProvisionActionInContainer(append([]string{cmd}, args...), agent)
+}
+
+func (m *multiCloudProvisioner) runProvisionActionInContainer(cmdWithArgs []string, agent *sshAgent) error {
+	env := []string{sshAuthSock, agent.GetAuthenticationSocket()}
+
+	registry := m.clusterData.ClusterInfo.ContainerRegistry
+
+	imgRef, err := cloud.GetContainerName(
+		registry, cloud.MultiCloudContainer, cloud.GetContrailVersion(m.clusterData.ClusterInfo, m.Log),
 	)
+	if err != nil {
+		return err
+	}
+	imgRefUser := m.clusterData.ClusterInfo.ContainerRegistryUsername
+	imgRefPwd := m.clusterData.ClusterInfo.ContainerRegistryPassword
+
+	return m.containerPlayer.StartExecuteAndRemove(
+		context.Background(), imgRef, imgRefUser, imgRefPwd, m.getMCVolumes(agent), mcRepositoryPath, cmdWithArgs, env,
+	)
+}
+
+func (m *multiCloudProvisioner) getMCVolumes(agent *sshAgent) []ansible.Volume {
+	return []ansible.Volume {
+		ansible.Volume {
+			Source: m.workDir,
+			Target: m.workDir,
+		},
+		ansible.Volume {
+			Source: m.getPublicCloudWorkDir(),
+			Target: m.getPublicCloudWorkDir(),
+		},
+		ansible.Volume {
+			Source: agent.GetAuthenticationSocket(),
+			Target: agent.GetAuthenticationSocket(),
+		},
+	}
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	cmd := multicloudCLI
-	mcRepoDir := m.getMCDeployerRepoDir()
 	args := []string{
 		"all", "clean", "--topology", m.getClusterTopoFile(m.workDir),
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
-		"--state", filepath.Join(mcRepoDir, "state.yml"),
+		"--state", filepath.Join(mcRepositoryPath, "state.yml"),
 	}
 	agent, stopAgent, err := m.startSSHAgent()
 	if err != nil {
 		return err
 	}
 	defer stopAgent()
-	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+	return m.runProvisionActionInContainer(append([]string{cmd}, args...), agent)
 }
 
 func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
@@ -421,7 +454,7 @@ func (m *multiCloudProvisioner) filesToRemove() []string {
 	kfd := services.NewKeyFileDefaults()
 
 	f := []string{
-		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
+		m.getMCInventoryFile(mcRepositoryPath),
 		m.getClusterSecretFile(),
 		kfd.GetAzureSubscriptionIDPath(),
 		kfd.GetAzureClientIDPath(),
@@ -528,6 +561,18 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 	return ""
 }
 
+
+func (m *multiCloudProvisioner) getPublicCloudWorkDir() string {
+	for _, c := range m.clusterData.CloudInfo {
+		for _, prov := range c.CloudProviders {
+			if prov.Type != onPrem {
+				return cloud.GetCloudDir(c.UUID)
+			}
+		}
+	}
+	return ""
+}
+
 func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
 	return filepath.Join(workDir, defaultMCInventoryFile)
 }
@@ -539,10 +584,6 @@ func (m *multiCloudProvisioner) getClusterTopoFile(workDir string) string {
 
 func (m *multiCloudProvisioner) getClusterSecretFile() string {
 	return filepath.Join(m.workDir, defaultSecretFile)
-}
-
-func (m *multiCloudProvisioner) getMCDeployerRepoDir() string {
-	return filepath.Join(defaultAnsibleRepoDir, mcRepository)
 }
 
 func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {
