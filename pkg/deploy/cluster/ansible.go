@@ -44,16 +44,8 @@ const (
 
 // Player runs ansible playbook in a container
 type Player interface {
-	Play(
-		ctx context.Context,
-		imageRef string,
-		imageRefUsername string,
-		imageRefPassword string,
-		workRoot string,
-		ansibleBinaryRepo string,
-		ansibleArgs []string,
-		keepContainerAlive bool,
-	) error
+	Play(ctx context.Context, cp *ansible.ContainerParameters, ansibleArgs []string) error
+	StartExecuteAndRemove(ctx context.Context, cp *ansible.ContainerParameters, cmd []string) error
 }
 
 type openstackVariables struct {
@@ -386,18 +378,27 @@ func (a *ContrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 
 func (a *ContrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 	a.Log.WithField("directory", a.getAnsibleDeployerRepoInContainer()).Info("Running playbook in container")
-	return a.containerPlayer.Play(
-		context.Background(),
-		a.clusterData.ClusterInfo.ContainerRegistry+
-			"/contrail-kolla-ansible-deployer:"+
-			a.clusterData.ClusterInfo.ContrailVersion,
-		a.clusterData.ClusterInfo.ContainerRegistryUsername,
-		a.clusterData.ClusterInfo.ContainerRegistryPassword,
-		a.getWorkRoot(),
-		a.getAnsibleDeployerRepoInContainer(),
-		ansibleArgs,
-		false,
+	containerName, err := ansible.GetContainerName(
+		a.clusterData.ClusterInfo.ContainerRegistry,
+		"contrail-kolla-ansible-deployer",
+		ansible.GetContrailVersion(a.clusterData.ClusterInfo, a.Log),
 	)
+	if err != nil {
+		return err
+	}
+	return a.containerPlayer.Play(context.Background(), &ansible.ContainerParameters{
+		ImageRef:         containerName,
+		ImageRefUsername: a.clusterData.ClusterInfo.ContainerRegistryUsername,
+		ImageRefPassword: a.clusterData.ClusterInfo.ContainerRegistryPassword,
+		WorkingDirectory: a.getAnsibleDeployerRepoInContainer(),
+		Volumes: []ansible.Volume{
+			{
+				Source: a.getWorkRoot(),
+				Target: a.getWorkRoot(),
+			},
+		},
+		ContainerPrefix: "ansible-player",
+	}, ansibleArgs)
 }
 
 func (a *ContrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
