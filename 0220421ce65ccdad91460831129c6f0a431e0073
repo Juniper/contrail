@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "2147aa92_2542652f",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-31T14:54:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f529b996_72eccd37",
+      "range": {
+        "startLine": 227,
+        "startChar": 18,
+        "endLine": 227,
+        "endChar": 20
+      },
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cfa99942_08f089a1",
         "filename": "pkg/services/rbac.go",
         "patchSetId": 14
@@ -82,6 +106,30 @@
     },
     {
       "key": {
+        "uuid": "acc42d4c_d80dcf87",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-31T14:54:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "30978196_da42ea86",
+      "range": {
+        "startLine": 34,
+        "startChar": 3,
+        "endLine": 34,
+        "endChar": 37
+      },
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f483a76c_854cc867",
         "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac_test.go",
         "patchSetId": 14
@@ -96,6 +144,24 @@
       "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc256758_e9f4fb67",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-01-31T14:54:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f483a76c_854cc867",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
