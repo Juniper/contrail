@@ -20,8 +20,14 @@ type sshAgent struct {
 	authSock string
 }
 
-func (s *sshAgent) Run(key string) error {
-	cmdline := exec.Command("ssh-agent", "-s")
+// Run creates ssh-agent process and adds a private key to it. AuthSockPath describes the path where agent
+// authentication socket will be placed. If empty it will use ssh-agent default path.
+func (s *sshAgent) Run(key string, authSockPath string) error {
+	agentArgs := []string{"-s"}
+	if authSockPath != "" {
+		agentArgs = append(agentArgs, "-a", authSockPath)
+	}
+	cmdline := exec.Command("ssh-agent", agentArgs...)
 	cmdOutput := &bytes.Buffer{}
 	cmdline.Stdout = cmdOutput
 	if err := cmdline.Run(); err != nil {
@@ -60,6 +66,10 @@ func (s *sshAgent) GetExportVars() []string {
 		fmt.Sprintf("%s=%s", sshAuthSock, s.authSock),
 		fmt.Sprintf("%s=%s", sshAgentPid, s.pid),
 	}
+}
+
+func (s *sshAgent) AuthenticationSocket() string {
+	return s.authSock
 }
 
 func (s *sshAgent) RunCommand(name string, args ...string) error {
