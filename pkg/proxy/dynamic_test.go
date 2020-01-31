@@ -1,4 +1,4 @@
-package apisrv_test
+package proxy_test
 
 import (
 	"context"
@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +38,7 @@ const (
 // Dynamic proxy HTTP tests //
 //////////////////////////////
 
-func TestDynamicProxyServiceHTTPSupport(t *testing.T) {
+func TestDynamicProxyHTTPSupport(t *testing.T) {
 	for _, tt := range []struct {
 		name                      string
 		synchronizeProxyEndpoints func(s *integration.APIServer)
@@ -53,17 +53,17 @@ func TestDynamicProxyServiceHTTPSupport(t *testing.T) {
 			// TODO: Remove this test when proxyService switches to using events instead of Ticker.
 			name: "synchronizing proxy endpoints with sleep",
 			synchronizeProxyEndpoints: func(_ *integration.APIServer) {
-				time.Sleep(apisrv.ProxySyncInterval)
+				time.Sleep(proxy.SyncInterval)
 			},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			testDynamicProxyServiceHTTPSupport(t, tt.synchronizeProxyEndpoints)
+			testHTTPSupport(t, tt.synchronizeProxyEndpoints)
 		})
 	}
 }
 
-func testDynamicProxyServiceHTTPSupport(t *testing.T, synchronizeProxyEndpoints func(s *integration.APIServer)) {
+func testDynamicProxyHTTPSupport(t *testing.T, synchronizeProxyEndpoints func(s *integration.APIServer)) {
 	// arrange
 	const neutron1EndpointName, neutron2EndpointName = "neutron1", "neutron2"
 	clusterAName, clusterBName := contrailClusterName(t, "A"), contrailClusterName(t, "B")
@@ -143,7 +143,7 @@ func testDynamicProxyServiceHTTPSupport(t *testing.T, synchronizeProxyEndpoints 
 	verifyNeutronReadRequests(t, hc, clusterBName)
 }
 
-func TestDynamicProxyServiceRetriesRequestWhenTargetServerIsClosed(t *testing.T) {
+func TestDynamicProxyRetriesRequestWhenTargetServerIsClosed(t *testing.T) {
 	// arrange
 	const ok1EndpointName, ok2EndpointName = "neutron-ok1", "neutron-ok2"
 	clusterName := contrailClusterName(t, "")
@@ -187,7 +187,7 @@ func TestDynamicProxyServiceRetriesRequestWhenTargetServerIsClosed(t *testing.T)
 	verifyNeutronReadRequestsFail(t, hc, clusterName)
 }
 
-func TestDynamicProxyServiceRetriesRequestWhenTargetServerReturnsServerError(t *testing.T) {
+func TestDynamicProxyRetriesRequestWhenTargetServerReturnsServerError(t *testing.T) {
 	// arrange
 	const (
 		healthyEndpointName, unhealthyEndpointName = "healthy-neutron", "unhealthy-neutron"
@@ -234,7 +234,7 @@ func TestDynamicProxyServiceRetriesRequestWhenTargetServerReturnsServerError(t *
 	}
 }
 
-func TestDynamicProxyServiceInjectsServiceToken(t *testing.T) {
+func TestDynamicProxyInjectsServiceToken(t *testing.T) {
 	// arrange
 	const (
 		keystoneEndpointName  = "keystone"
@@ -356,7 +356,7 @@ func fooValueOnPrivateURL(clusterName string) string {
 func newNeutronPublicServerStub(clusterName string) *httptest.Server {
 	return newTestHTTPServer(routes{
 		portsPath: func(ctx echo.Context) error {
-			clusterID := ctx.Request().Header.Get(apisrv.XClusterIDKey)
+			clusterID := ctx.Request().Header.Get(proxy.XClusterIDKey)
 			if clusterID != contrailClusterUUID(clusterName) {
 				return ctx.JSON(http.StatusBadRequest, "cluster ID not found in header")
 			}
@@ -427,10 +427,10 @@ func verifyNeutronReadRequestFail(t *testing.T, c *integration.HTTPAPIClient, pa
 func neutronPortsPrivatePath(clusterName string) string {
 	return path.Join(
 		"/",
-		apisrv.DefaultDynamicProxyPath,
+		proxy.DefaultPath,
 		contrailClusterUUID(clusterName),
 		neutronEndpointPrefix,
-		apisrv.PrivateURLScope,
+		proxy.PrivateURLScope,
 		portsPath,
 	)
 }
@@ -438,7 +438,7 @@ func neutronPortsPrivatePath(clusterName string) string {
 func neutronPortsPublicPath(clusterName string) string {
 	return path.Join(
 		"/",
-		apisrv.DefaultDynamicProxyPath,
+		proxy.DefaultPath,
 		contrailClusterUUID(clusterName),
 		neutronEndpointPrefix,
 		portsPath,
@@ -448,10 +448,10 @@ func neutronPortsPublicPath(clusterName string) string {
 func swiftPrivatePath(clusterName string) string {
 	return path.Join(
 		"/",
-		apisrv.DefaultDynamicProxyPath,
+		proxy.DefaultPath,
 		contrailClusterUUID(clusterName),
 		swiftEndpointPrefix,
-		apisrv.PrivateURLScope,
+		proxy.PrivateURLScope,
 		portsPath,
 	)
 }
@@ -750,7 +750,7 @@ func verifyReadTokenRequestFails(ctx context.Context, t *testing.T, hc *client.H
 // Dynamic Proxy WebSockets tests //
 ////////////////////////////////////
 
-func TestDynamicProxyServiceWebSocketsSupport(t *testing.T) {
+func TestDynamicProxyWebSocketsSupport(t *testing.T) {
 	// arrange
 	clusterName := contrailClusterName(t, "")
 	const endpointPrefix, endpointName = "websocket-prefix", "websocket-endpoint"
@@ -808,7 +808,7 @@ func requestURL(clusterName, endpointPrefix string) string {
 	return fmt.Sprintf(
 		"%s/%s/%s/%s",
 		wsURLBase,
-		apisrv.DefaultDynamicProxyPath,
+		proxy.DefaultPath,
 		contrailClusterUUID(clusterName),
 		endpointPrefix,
 	)
