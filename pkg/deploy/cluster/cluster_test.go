@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/fileutil/template"
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/services"
@@ -72,6 +75,51 @@ var server *integration.APIServer
 
 func TestMain(m *testing.M) {
 	integration.TestMain(m, &server)
+}
+
+// TODO(dji): move to testing code and inject as dependency
+type mockContainerPlayer struct {
+	workingDirectory          string
+	t                         *testing.T
+	generatedCommandsFilepath string
+}
+
+func newMockContainerPlayer(workingDirectory string) (*mockContainerPlayer, error) {
+	return &mockContainerPlayer{workingDirectory: workingDirectory}, nil
+}
+
+func (m *mockContainerPlayer) Play(
+	ctx context.Context,
+	imageRef string,
+	imageRefUsername string,
+	imageRefPassword string,
+	workRoot string,
+	ansibleBinaryRepo string,
+	ansibleArgs []string,
+	keepContainerAlive bool,
+) error {
+	playBookIndex := len(ansibleArgs) - 1
+	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", pongo2.Context{
+		"playBook":    ansibleArgs[playBookIndex],
+		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.workingDirectory, "executed_ansible_playbook.yml"),
+		content,
+		0600,
+	)
+}
+
+func (m *mockContainerPlayer) StartExecuteAndRemove(ctx context.Context, cp ansible.ContainerExecParameters) error {
+	data, err := yaml.Marshal(cp)
+	assert.NoError(m.t, err, "cannot marshal provided container parameters")
+	err = fileutil.WriteToFile(m.generatedCommandsFilepath, data, 0644)
+	assert.NoErrorf(m.t, err, "cannot save provided container parameters to file %s", m.generatedCommandsFilepath)
+	return nil
 }
 
 func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
@@ -325,7 +373,9 @@ func runClusterCreateUpdateTest(
 }
 
 func manageCluster(t *testing.T, c *Config) {
-	clusterDeployer, err := NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
+	player, err := newMockContainerPlayer(filepath.Join(c.WorkRoot, c.ClusterID))
+	assert.NoError(t, err, "failed to create mock container player")
+	clusterDeployer, err := NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -536,7 +586,9 @@ func TestXflowInBand(t *testing.T) {
 }
 
 func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
-	cluster, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	player, err := newMockContainerPlayer(filepath.Join(config.WorkRoot, config.ClusterID))
+	assert.NoError(t, err, "failed to create mock container player")
+	cluster, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := cluster.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -911,7 +963,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	removeFile(t, executedPlaybooks)
 	removeFile(t, executedMCCommand)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	player, err := newMockContainerPlayer(filepath.Join(config.WorkRoot, config.ClusterID))
+	assert.NoError(t, err, "failed to create mock container player")
+
+	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -969,7 +1024,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1084,7 +1139,9 @@ func TestTripleoClusterImport(t *testing.T) {
 	// create cluster
 	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	player, err := newMockContainerPlayer(filepath.Join(config.WorkRoot, config.ClusterID))
+	assert.NoError(t, err, "failed to create mock container player")
+	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1110,7 +1167,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 	// delete cluster
 	config.Action = deleteAction
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1160,7 +1217,9 @@ func TestJUJUClusterImport(t *testing.T) {
 	// create cluster
 	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	player, err := newMockContainerPlayer(filepath.Join(config.WorkRoot, config.ClusterID))
+	assert.NoError(t, err, "failed to create mock container player")
+	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to import juju cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1186,7 +1245,7 @@ func TestJUJUClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 	// delete cluster
 	config.Action = deleteAction
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand), player)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
