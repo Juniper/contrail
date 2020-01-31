@@ -77,19 +77,22 @@ func (s *secret) createSecretFile(clusterUUID string) error {
 }
 
 func (s *secret) updateAuthorizedRegistry(clusterUUID string) error {
-	clusterResp, err := s.cloud.APIServer.GetContrailCluster(s.ctx, &services.GetContrailClusterRequest{
-		ID: clusterUUID,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot resolve Authentication Registries")
-	}
-	reg, err := NewAuthorizedRegistry(clusterResp.ContrailCluster)
+	reg, err := s.cloud.getRegistries(clusterUUID)
 	if err != nil {
 		return err
 	}
 	s.sfc.AuthorizedRegistries = []*AuthorizedRegistry{reg}
-
 	return nil
+}
+
+func (c *Cloud) getRegistries(clusterUUID string) (*AuthorizedRegistry, error) {
+	clusterResp, err := c.APIServer.GetContrailCluster(c.ctx, &services.GetContrailClusterRequest{
+		ID: clusterUUID,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot resolve Authentication Registries")
+	}
+	return NewAuthorizedRegistry(clusterResp.ContrailCluster)
 }
 
 // NewAuthorizedRegistry creates AuthorizedRegistry based on ContrailCluster parameters
