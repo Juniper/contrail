@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cfa99942_08f089a1",
+        "filename": "pkg/services/rbac.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-31T12:29:10Z",
+      "side": 1,
+      "message": "IMO those functions should be methods on model types and slices that are defined in models package. It\u0027s a model responsibility to know how to be described in library terms. I think there is no need to involve the services package to that.",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57794277_ed40f452",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 14
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-01-31T12:29:10Z",
+      "side": 1,
+      "message": "This should be also injected, because it implicitly depends on the client code. We cannot assume that any function will be available in client scope. We should require this function explicitly using an interface of function pointer.",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
