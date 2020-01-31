@@ -17,6 +17,9 @@ const (
 	defaultMultiCloudDir      = "/usr/share/contrail/"
 	defaultMultiCloudRepo     = "contrail-multi-cloud"
 
+	// MultiCloudContainer holds a name of MultiCloud container in docker hub.
+	MultiCloudContainer = "contrail-multicloud-deployer"
+
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
 	statusCreated        = "CREATED"
