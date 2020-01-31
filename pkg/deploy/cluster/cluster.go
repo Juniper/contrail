@@ -228,3 +228,11 @@ func (m *mockContainerPlayer) Play(
 		0600,
 	)
 }
+
+func (m *mockContainerPlayer) StartExecuteAndRemove(
+	ctx context.Context, imageRef string, imageRefUsername string, imageRefPassword string, workRoot []ansible.Volume,
+	workingDirectory string, cmd, env []string,
+) error {
+	// TODO
+	return nil
+}
