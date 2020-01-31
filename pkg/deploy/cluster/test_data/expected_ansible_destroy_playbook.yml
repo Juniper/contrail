@@ -1,4 +1,0 @@
-playbooks/openstack_destroy.yml:
-  args: -i inventory/
-playbooks/contrail_destroy.yml:
-  args: -i inventory/

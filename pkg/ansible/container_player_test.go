@@ -229,7 +229,7 @@ func TestStartExistingContainer(t *testing.T) {
 	}
 }
 
-func TestCreatRunningContainer(t *testing.T) {
+func TestCreateRunningContainer(t *testing.T) {
 	createCases := map[string]struct {
 		imageName                   string
 		expectedContainerNamePrefix string
@@ -247,11 +247,11 @@ func TestCreatRunningContainer(t *testing.T) {
 					expectedContainerNamePrefix: createCase.expectedContainerNamePrefix,
 				},
 			}
-			containerName, err := containerPlayer.createRunningContainer(
-				context.Background(),
-				createCase.imageName,
-				"/var/tmp/contrail_cluster",
-			)
+			containerName, err := containerPlayer.createRunningContainer(context.Background(), &ContainerParameters{
+				ImageRef:        createCase.imageName,
+				HostVolumes:     nil,
+				ContainerPrefix: "ansible-deployer",
+			})
 			if err != nil {
 				t.Errorf("%v when starting container", err)
 			}
@@ -287,8 +287,8 @@ func TestExecCmd(t *testing.T) {
 			err := containerPlayer.execCmd(
 				context.Background(),
 				execCase.containerID,
-				execCase.workingDirectory,
-				execCase.ansibleArgs,
+				&ContainerParameters{WorkingDirectory: execCase.workingDirectory},
+				append([]string{PlaybookCmd}, execCase.ansibleArgs...),
 			)
 			if err != nil {
 				t.Errorf("%v when executing command in container", err)
