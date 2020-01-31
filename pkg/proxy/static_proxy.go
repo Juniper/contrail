@@ -1,4 +1,4 @@
-package apisrv
+package proxy
 
 import (
 	"crypto/tls"
@@ -15,16 +15,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-type staticProxyPlugin struct {
+// StaticProxyPlugin provides statically configured endpoints that proxy requests.
+type StaticProxyPlugin struct {
 	proxies []staticProxy
 }
 
-// newStaticProxyPluginByViper creates a staticProxyPlugin based on global Viper configuration.
-func newStaticProxyPluginByViper() (p staticProxyPlugin, err error) {
+// NewStaticProxyPluginByViper creates a StaticProxyPlugin based on global Viper configuration.
+func NewStaticProxyPluginByViper() (p StaticProxyPlugin, err error) {
 	for prefix, rawTargetURLs := range viper.GetStringMapStringSlice("server.proxy") {
 		targetURLs, err := parseTargetURLs(rawTargetURLs)
 		if err != nil {
-			return staticProxyPlugin{}, errors.Wrapf(err, "invalid target URLs for prefix %v", prefix)
+			return StaticProxyPlugin{}, errors.Wrapf(err, "invalid target URLs for prefix %v", prefix)
 		}
 		p.proxies = append(p.proxies, newStaticProxy(
 			prefix,
@@ -49,14 +50,15 @@ func parseTargetURLs(rawTargetURLs []string) (targetURLs []*url.URL, err error) 
 	return targetURLs, nil
 }
 
-func (p staticProxyPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+// RegisterHTTPAPI registers the proxy endpoints.
+func (p StaticProxyPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 	for _, pr := range p.proxies {
 		r.Group(pr.prefix, baseapisrv.WithMiddleware(pr.middleware))
 	}
 }
 
-func (staticProxyPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
-}
+// RegisterGRPCAPI does nothing.
+func (StaticProxyPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {}
 
 type staticProxy struct {
 	prefix string
