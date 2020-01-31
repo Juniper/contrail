@@ -1,1 +1,22 @@
-deployer all topology --topology /var/tmp/cloud/cloud_uuid_gcp/topology.yml --secret /var/tmp/cloud/cloud_uuid_gcp/secret.yml --skip_validation --limit google
+command:
+  - "deployer"
+  - "all"
+  - "topology"
+  - "--topology"
+  - "/var/tmp/cloud/cloud_uuid_gcp/topology.yml"
+  - "--secret"
+  - "/var/tmp/cloud/cloud_uuid_gcp/secret.yml"
+  - "--skip_validation"
+  - "--limit"
+  - "google"
+parameters:
+  imageref: "test-registry/contrail-multicloud-deployer:master"
+  imagerefusername: "test-registry-username"
+  imagerefpassword: "test-registry-password"
+  hostvolumes:
+    - source: "/var/tmp/cloud/cloud_uuid_gcp"
+      target: "/var/tmp/cloud/cloud_uuid_gcp"
+    - source: "/var/tmp/contrail"
+      target: "/var/tmp/contrail"
+  workingdirectory: /var/tmp/cloud/cloud_uuid_gcp
+  env: []

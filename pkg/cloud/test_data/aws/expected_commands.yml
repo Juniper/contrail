@@ -1,1 +1,22 @@
-deployer all topology --topology /var/tmp/cloud/cloud_uuid_aws/topology.yml --secret /var/tmp/cloud/cloud_uuid_aws/secret.yml --skip_validation --limit aws
+command:
+  - "deployer"
+  - "all"
+  - "topology"
+  - "--topology"
+  - "/var/tmp/cloud/cloud_uuid_aws/topology.yml"
+  - "--secret"
+  - "/var/tmp/cloud/cloud_uuid_aws/secret.yml"
+  - "--skip_validation"
+  - "--limit"
+  - "aws"
+parameters:
+  imageref: "test-registry/contrail-multicloud-deployer:master"
+  imagerefusername: "test-registry-username"
+  imagerefpassword: "test-registry-password"
+  hostvolumes:
+    - source: "/var/tmp/cloud/cloud_uuid_aws"
+      target: "/var/tmp/cloud/cloud_uuid_aws"
+    - source: "/var/tmp/contrail"
+      target: "/var/tmp/contrail"
+  workingdirectory: /var/tmp/cloud/cloud_uuid_aws
+  env: []
