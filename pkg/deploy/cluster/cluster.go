@@ -1,21 +1,12 @@
 package cluster
 
 import (
-	"context"
-	"os/exec"
-	"path/filepath"
-	"strings"
-
-	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/fileutil/template"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -53,27 +44,21 @@ type Config struct {
 	Test bool
 }
 
-// CommandExecutor interface provides methods to execute a command
-type CommandExecutor interface {
-	ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
-	ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error
-}
-
 // Cluster represents contrail cluster manager
 type Cluster struct {
-	config          *Config
-	APIServer       *client.HTTP
-	log             *logrus.Entry
-	commandExecutor CommandExecutor
+	config            *Config
+	APIServer         *client.HTTP
+	log               *logrus.Entry
+	containerExecutor ContainerExecutor
 }
 
 // NewCluster creates Cluster with given configuration.
-func NewCluster(c *Config, commandExecutor CommandExecutor) (*Cluster, error) {
+func NewCluster(c *Config, containerExecutor ContainerExecutor) (*Cluster, error) {
 	return &Cluster{
-		config:          c,
-		APIServer:       c.APIServer,
-		log:             logutil.NewFileLogger("cluster", c.LogFile),
-		commandExecutor: commandExecutor,
+		config:            c,
+		APIServer:         c.APIServer,
+		log:               logutil.NewFileLogger("cluster", c.LogFile),
+		containerExecutor: containerExecutor,
 	}, nil
 }
 
@@ -89,9 +74,9 @@ func (c *Cluster) GetDeployer() (base.Deployer, error) {
 	case "rhospd":
 		return newOvercloudDeployer(c)
 	case "ansible", "tripleo", "juju":
-		return newAnsibleDeployer(c, cData)
+		return newAnsibleDeployer(c, cData, c.containerExecutor)
 	case MCProvisioner:
-		return newMCProvisioner(c, cData)
+		return newMCProvisioner(c, cData, c.containerExecutor)
 	}
 	return nil, errors.New("unsupported deployer type")
 }
@@ -149,14 +134,10 @@ func newOvercloudDeployer(c *Cluster) (base.Deployer, error) {
 	return o.GetDeployer()
 }
 
-func newAnsibleDeployer(c *Cluster, cData *base.Data) (*ContrailAnsibleDeployer, error) {
+func newAnsibleDeployer(
+	c *Cluster, cData *base.Data, containerExecutor ContainerExecutor,
+) (*ContrailAnsibleDeployer, error) {
 	d := newDeployCluster(c, cData, "contrail-ansible-deployer")
-
-	// TODO(dji): move dependency injection to testing code
-	containerPlayer, err := getContainerPlayer(c, d)
-	if err != nil {
-		return nil, errors.Wrap(err, "New container player creation failed")
-	}
 
 	return &ContrailAnsibleDeployer{
 		deployCluster: *d,
@@ -166,11 +147,13 @@ func newAnsibleDeployer(c *Cluster, cData *base.Data) (*ContrailAnsibleDeployer,
 			d.getWorkingDir(),
 			c.config.Test,
 		),
-		containerPlayer: containerPlayer,
+		containerExecutor: containerExecutor,
 	}, nil
 }
 
-func newMCProvisioner(c *Cluster, cData *base.Data) (*multiCloudProvisioner, error) {
+func newMCProvisioner(
+	c *Cluster, cData *base.Data, containerExecutor ContainerExecutor,
+) (*multiCloudProvisioner, error) {
 	d := newDeployCluster(c, cData, "multi-cloud-provisioner")
 
 	return &multiCloudProvisioner{
@@ -182,49 +165,8 @@ func newMCProvisioner(c *Cluster, cData *base.Data) (*multiCloudProvisioner, err
 				d.getWorkingDir(),
 				c.config.Test,
 			),
+			containerExecutor: containerExecutor,
 		},
 		workDir: "",
 	}, nil
-}
-
-func getContainerPlayer(c *Cluster, d *deployCluster) (Player, error) {
-	if c.config.Test {
-		return newMockContainerPlayer(d.getWorkingDir())
-	}
-	return ansible.NewContainerPlayer(d.Reporter, c.config.LogFile)
-}
-
-// TODO(dji): move to testing code and inject as dependency
-type mockContainerPlayer struct {
-	workingDirectory string
-}
-
-func newMockContainerPlayer(workingDirectory string) (*mockContainerPlayer, error) {
-	return &mockContainerPlayer{workingDirectory: workingDirectory}, nil
-}
-
-func (m *mockContainerPlayer) Play(
-	ctx context.Context,
-	imageRef string,
-	imageRefUsername string,
-	imageRefPassword string,
-	workRoot string,
-	ansibleBinaryRepo string,
-	ansibleArgs []string,
-	keepContainerAlive bool,
-) error {
-	playBookIndex := len(ansibleArgs) - 1
-	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", pongo2.Context{
-		"playBook":    ansibleArgs[playBookIndex],
-		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
-	})
-	if err != nil {
-		return err
-	}
-
-	return fileutil.AppendToFile(
-		filepath.Join(m.workingDirectory, "executed_ansible_playbook.yml"),
-		content,
-		0600,
-	)
 }
