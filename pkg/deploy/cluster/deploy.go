@@ -42,7 +42,7 @@ func newDeployCluster(c *Cluster, cData *base.Data, moduleName string) *deployCl
 func newReporter(cluster *Cluster) *report.Reporter {
 	return report.NewReporter(
 		cluster.APIServer,
-		fmt.Sprintf("%s/%s", defaultResourcePath, cluster.config.ClusterID),
+		fmt.Sprintf("%s/%s", DefaultResourcePath, cluster.config.ClusterID),
 		logutil.NewFileLogger("reporter", cluster.config.LogFile),
 	)
 }

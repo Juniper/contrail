@@ -2,8 +2,9 @@ package cluster
 
 // TODO:(ijohnson) generate constant resources
 const (
-	defaultResource                       = "contrail-cluster"
-	defaultResourcePath                   = "/" + defaultResource
+	defaultResource = "contrail-cluster"
+	// DefaultResourcePath is a contrail-cluster resource path
+	DefaultResourcePath                   = "/" + defaultResource
 	defaultFilePermRWOnly                 = 0600
 	defaultWorkRoot                       = "/var/tmp/contrail_cluster"
 	defaultInstanceTemplate               = "instances.tmpl"

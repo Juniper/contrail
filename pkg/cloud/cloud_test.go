@@ -11,13 +11,49 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	yaml "gopkg.in/yaml.v2"
 )
+
+func containerParametersFromFile(t *testing.T, file string) *ansible.ContainerExecParameters {
+	data, err := ioutil.ReadFile(file)
+	assert.NoErrorf(t, err, "cannot load container parameters from file '%s'", file)
+	cp := &ansible.ContainerExecParameters{}
+	err = yaml.Unmarshal(data, cp)
+	assert.NoError(t, err, "cannot unmarshal container parameters")
+	return cp
+}
+
+type mockContainerPlayer struct {
+	t                         *testing.T
+	generatedCommandsFilepath string
+}
+
+func newMockContainerPlayer(t *testing.T, generatedCommandsFilepath string) *mockContainerPlayer {
+	return &mockContainerPlayer{
+		t:                         t,
+		generatedCommandsFilepath: generatedCommandsFilepath,
+	}
+}
+
+func (m *mockContainerPlayer) StartExecuteAndRemove(
+	ctx context.Context, cp ansible.ContainerExecParameters,
+) (err error) {
+	data, err := yaml.Marshal(cp)
+	assert.NoError(m.t, err, "cannot marshal provided container parameters")
+	err = fileutil.WriteToFile(m.generatedCommandsFilepath, data, 0644)
+	assert.NoErrorf(m.t, err, "cannot save provided container parameters to file %s", m.generatedCommandsFilepath)
+	return nil
+}
 
 type providerConfig struct {
 	name                 string
@@ -370,7 +406,8 @@ func testPublicCloudUpdate(t *testing.T, pc *providerConfig) {
 
 	compareTopology(t, pc.expectedTopologyFile, cl.config.CloudID)
 
-	verifyCommandsExecuted(t, pc.expectedCommandsFile, cl.config.CloudID)
+	assertYAMLFileEqual(t, pc.expectedCommandsFile, executedCommandsPath(cl.config.CloudID),
+		"passed parameters do not match")
 	verifyGeneratedSSHKeyFiles(t, cl.config.CloudID)
 }
 
@@ -378,8 +415,8 @@ func assertModifiedStatusRemoval(ctx context.Context, t *testing.T, APIServer *c
 	c, err := APIServer.GetCloud(ctx, &services.GetCloudRequest{
 		ID: cloudUUID,
 	})
-	assert.NoError(t, err)
-	return !(c.Cloud.AwsModified || c.Cloud.AzureModified || c.Cloud.GCPModified)
+	assert.NoError(t, err, "cannot assert removal of modified status")
+	return !(c.GetCloud().GetAwsModified() || c.GetCloud().GetAzureModified() || c.GetCloud().GetGCPModified())
 }
 
 func prepareForTest(
@@ -469,7 +506,16 @@ func prepareCloud(t *testing.T, cloudUUID, cloudAction string) *Cloud {
 		Test:         true,
 	}
 
-	cl, err := NewCloud(c, terraformStateReaderStub{}, testutil.NewFileWritingExecutor(executedCommandsPath(c.CloudID)))
+	client := newHTTPClient(c)
+	reporter := report.NewReporter(
+		client,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
+	)
+
+	mockPlayer := newMockContainerPlayer(t, executedCommandsPath(c.CloudID))
+
+	cl, err := NewCloud(c, terraformStateReaderStub{}, mockPlayer, client, reporter)
 	assert.NoError(t, err, "failed to create cloud struct")
 
 	return cl
@@ -560,11 +606,6 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) error {
 		return fmt.Errorf("expected:\n%s\n\nActual:\n%s", expectedData, generatedData)
 	}
 	return nil
-}
-
-func verifyCommandsExecuted(t *testing.T, expectedCmdFile string, cloudUUID string) {
-	assertYAMLFileEqual(t, expectedCmdFile, executedCommandsPath(cloudUUID),
-		"Expected list of create commands are not executed")
 }
 
 func executedCommandsPath(cloudUUID string) string {
