@@ -53,6 +53,16 @@ type Player interface {
 		ansibleArgs []string,
 		keepContainerAlive bool,
 	) error
+
+	StartExecuteAndRemove(
+		ctx context.Context,
+		imageRef string,
+		imageRefUsername string,
+		imageRefPassword string,
+		workRoot []ansible.Volume,
+		workingDirectory string,
+		cmd, env []string,
+	) error
 }
 
 type openstackVariables struct {

@@ -146,11 +146,6 @@ schema:
       view:
       - create
       - detail
-      title: Data Retention Time
-      type: string
-      view:
-      - create
-      - detail
     default_gateway:
       default: ""
       description: Default Gateway
