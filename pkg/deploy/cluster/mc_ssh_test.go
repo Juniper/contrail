@@ -11,7 +11,7 @@ import (
 func TestStoppingSSHAgent(t *testing.T) {
 	agent := &sshAgent{}
 	setProperKeyPermissions(t, "./test_data/test_pvt_key_real")
-	assert.NoError(t, agent.Run("./test_data/test_pvt_key_real"))
+	assert.NoError(t, agent.Run("./test_data/test_pvt_key_real", ""))
 	assert.True(t, processExists(agent.pid))
 	assert.NoError(t, agent.Stop())
 	assert.False(t, processExists(agent.pid))
@@ -59,7 +59,7 @@ func TestRunSSHAgentWithKey(t *testing.T) {
 			if tt.keyExists {
 				setProperKeyPermissions(t, tt.key)
 			}
-			err := agent.Run(tt.key)
+			err := agent.Run(tt.key, "")
 			if tt.fails {
 				assert.Error(t, err, "SSH Agent starting should fail")
 			} else {
