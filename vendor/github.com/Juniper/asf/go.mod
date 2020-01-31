@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/DavidCai1993/etcd-lock v0.0.0-20171006032119-32f65b8d019a
 	github.com/ExpansiveWorlds/instrumentedsql v0.0.0-20171218214018-45abb4b1947d
+	github.com/Juniper/contrail v0.0.0-20200213151742-cb5f1be835e6
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/apparentlymart/go-cidr v1.0.1
 	github.com/cockroachdb/apd v1.1.0 // indirect
@@ -20,9 +21,8 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.2.1
 	github.com/golang/mock v1.3.1
-	github.com/google/uuid v1.1.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1
-	github.com/hashicorp/go-multierror v1.0.0 // indirect
+	github.com/hashicorp/terraform v0.12.20 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/jackc/pgx v3.6.0+incompatible
 	github.com/json-iterator/go v1.1.7 // indirect
@@ -32,7 +32,6 @@ require (
 	github.com/lib/pq v1.2.0
 	github.com/mattn/go-shellwords v1.0.6
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/satori/go.uuid v1.2.0
