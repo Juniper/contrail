@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/models"
@@ -24,7 +25,7 @@ import (
 
 const (
 	mcWorkDir              = "multi-cloud"
-	mcRepository           = "contrail-multi-cloud"
+	mcRepositoryPath       = "/root/contrail-multi-cloud"
 	defaultMCInventoryFile = "inventories/inventory.yml"
 	defaultTopologyFile    = "topology.yml"
 	defaultSecretFile      = "secret.yml"
@@ -359,26 +360,61 @@ func (m *multiCloudProvisioner) provision() error {
 		return errors.Wrap(err, "cannot start SSH Agent")
 	}
 	defer stopAgent()
-	return m.cluster.commandExecutor.ExecCmdAndWait(
-		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
+	return m.runProvisionActionInContainer(append([]string{cmd}, args...), agent)
+}
+
+func (m *multiCloudProvisioner) runProvisionActionInContainer(cmdWithArgs []string, agent *sshAgent) error {
+	env := []string{sshAuthSock, agent.AuthenticationSocket()}
+
+	imgRef, err := ansible.GetContainerName(m.clusterData.ClusterInfo.ContainerRegistry,
+		cloud.MultiCloudContainer, ansible.GetContrailVersion(m.clusterData.ClusterInfo, m.Log))
+	if err != nil {
+		return err
+	}
+
+	return m.containerPlayer.StartExecuteAndRemove(
+		context.Background(), imgRef,
+		m.clusterData.ClusterInfo.ContainerRegistryUsername,
+		m.clusterData.ClusterInfo.ContainerRegistryPassword,
+		m.getMCVolumes(), m.getMCTmpfsVolumes(agent), mcRepositoryPath, cmdWithArgs, env,
 	)
+}
+
+func (m *multiCloudProvisioner) getMCVolumes() []ansible.Volume {
+	return []ansible.Volume{
+		ansible.Volume{
+			Source: m.workDir,
+			Target: m.workDir,
+		},
+		ansible.Volume{
+			Source: m.getPublicCloudWorkDir(),
+			Target: m.getPublicCloudWorkDir(),
+		},
+	}
+}
+
+func (m *multiCloudProvisioner) getMCTmpfsVolumes(agent *sshAgent) []ansible.Volume {
+	return []ansible.Volume{
+		ansible.Volume{
+			Source: filepath.Dir(agent.AuthenticationSocket()),
+			Target: filepath.Dir(agent.AuthenticationSocket()),
+		},
+	}
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	cmd := multicloudCLI
-	mcRepoDir := m.getMCDeployerRepoDir()
 	args := []string{
 		"all", "clean", "--topology", m.getClusterTopoFile(m.workDir),
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
-		"--state", filepath.Join(mcRepoDir, "state.yml"),
+		"--state", filepath.Join(mcRepositoryPath, "state.yml"),
 	}
 	agent, stopAgent, err := m.startSSHAgent()
 	if err != nil {
 		return err
 	}
 	defer stopAgent()
-	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+	return m.runProvisionActionInContainer(append([]string{cmd}, args...), agent)
 }
 
 func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
@@ -421,7 +457,7 @@ func (m *multiCloudProvisioner) filesToRemove() []string {
 	kfd := services.NewKeyFileDefaults()
 
 	f := []string{
-		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
+		m.getMCInventoryFile(mcRepositoryPath),
 		m.getClusterSecretFile(),
 		kfd.GetAzureSubscriptionIDPath(),
 		kfd.GetAzureClientIDPath(),
@@ -528,6 +564,17 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 	return ""
 }
 
+func (m *multiCloudProvisioner) getPublicCloudWorkDir() string {
+	for _, c := range m.clusterData.CloudInfo {
+		for _, prov := range c.CloudProviders {
+			if prov.Type != onPrem {
+				return cloud.GetCloudDir(c.UUID)
+			}
+		}
+	}
+	return ""
+}
+
 func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
 	return filepath.Join(workDir, defaultMCInventoryFile)
 }
@@ -539,10 +586,6 @@ func (m *multiCloudProvisioner) getClusterTopoFile(workDir string) string {
 
 func (m *multiCloudProvisioner) getClusterSecretFile() string {
 	return filepath.Join(m.workDir, defaultSecretFile)
-}
-
-func (m *multiCloudProvisioner) getMCDeployerRepoDir() string {
-	return filepath.Join(defaultAnsibleRepoDir, mcRepository)
 }
 
 func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {

@@ -1,6 +1,7 @@
 package cloud
 
 import (
+	"github.com/Juniper/contrail/pkg/ansible"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -67,11 +68,17 @@ type CommandExecutor interface {
 	ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string, envVars ...string) error
 }
 
+type containerPlayer interface {
+	StartExecuteAndRemove(
+		ctx context.Context, imageRef string, imageRefUsername string, imageRefPassword string, volumes, tmpfsVolumes []ansible.Volume,
+		workingDirectory string, cmd, env []string) error
+}
+
 // Cloud represents cloud service.
 type Cloud struct {
 	config               *Config
 	APIServer            *client.HTTP
-	commandExecutor      CommandExecutor
+	player				containerPlayer
 	log                  *logrus.Entry
 	reporter             *report.Reporter
 	streamServer         *logutil.StreamServer
@@ -130,19 +137,26 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 		return nil, fmt.Errorf("cloudID not specified in the config")
 	}
 
+	reporter := report.NewReporter(
+		s,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
+	)
+
+	player, err := ansible.NewContainerPlayer(reporter, c.LogFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot update topology without container player")
+	}
+
 	return &Cloud{
 		APIServer: s,
 		config:    c,
 		log:       logutil.NewFileLogger("cloud", c.LogFile).WithField("cloudID", c.CloudID),
-		reporter: report.NewReporter(
-			s,
-			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
-			logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
-		),
+		reporter: reporter,
 		streamServer:         logutil.NewStreamServer(c.LogFile),
-		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
+		player:	player,
 	}, nil
 }
 
@@ -307,7 +321,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = updateTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}
@@ -410,7 +424,7 @@ func (c *Cloud) update() error {
 			return err
 		}
 
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = updateTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}
@@ -488,7 +502,7 @@ func (c *Cloud) delete() error {
 		if err = secret.createSecretFile(data.info.GetParentClusterUUID()); err != nil {
 			return err
 		}
-		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
+		if err = destroyTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}

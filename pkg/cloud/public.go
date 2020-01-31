@@ -53,11 +53,11 @@ func (c *publicCloud) Fill(ctx context.Context, cli *client.HTTP, cloudUUID stri
 
 type publicProvider struct {
 	Type         string            `yaml:"provider,omitempty"`
-	Organization string            `yaml:"organization,omitempty"`
-	Project      string            `yaml:"project,omitempty"`
+	Organization string            `yaml:"organization"`
+	Project      string            `yaml:"project"`
 	Prebuild     string            `yaml:"prebuild,omitempty"`
-	Tags         map[string]string `yaml:"tags,omitempty"`
-	Regions      []region          `yaml:"regions,omitempty"`
+	Tags         map[string]string `yaml:"tags"`
+	Regions      []region          `yaml:"regions"`
 }
 
 func (p *publicProvider) Fill(ctx context.Context, cli *client.HTTP, providerUUID string, providerType string) error {
@@ -283,16 +283,16 @@ func (v *virtualCloud) fillSecurityGroups(
 }
 
 type publicInstance struct {
-	Name             string         `yaml:"name,omitempty"`
-	Roles            []instanceRole `yaml:"roles,omitempty"`
-	Provision        bool           `yaml:"provision,omitempty"`
-	Username         string         `yaml:"username,omitempty"`
-	OS               string         `yaml:"os,omitempty"`
-	InstanceType     string         `yaml:"instance_type,omitempty"`
-	Subnets          string         `yaml:"subnets,omitempty"`
+	Name             string         `yaml:"name"`
+	Roles            []instanceRole `yaml:"roles"`
+	Provision        bool           `yaml:"provision"`
+	Username         string         `yaml:"username"`
+	OS               string         `yaml:"os"`
+	InstanceType     string         `yaml:"instance_type"`
+	Subnets          string         `yaml:"subnets"`
 	AvailabilityZone string         `yaml:"availability_zone,omitempty"`
-	ProtocolsMode    []string       `yaml:"protocols_mode,omitempty"`
-	SecurityGroups   []string       `yaml:"security_groups,omitempty"`
+	ProtocolsMode    []string       `yaml:"protocols_mode"`
+	SecurityGroups   []string       `yaml:"security_groups"`
 }
 
 func (i *publicInstance) Fill(ctx context.Context, cli *client.HTTP, instanceUUID string, providerType string) error {
@@ -420,8 +420,8 @@ func (s *awsSecurityGroup) allow(r *models.CloudSecurityGroupRule) {
 type awsSecurityGroupRule struct {
 	From       int64    `yaml:"from_port"`
 	To         int64    `yaml:"to_port"`
-	Protocol   string   `yaml:"protocol,omitempty"`
-	CIDRBlocks []string `yaml:"cidr_blocks,omitempty"`
+	Protocol   string   `yaml:"protocol"`
+	CIDRBlocks []string `yaml:"cidr_blocks"`
 }
 
 type azureSecurityGroup struct {
