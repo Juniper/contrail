@@ -1,4 +1,4 @@
-package apisrv
+package proxy
 
 import (
 	"context"
@@ -21,18 +21,21 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 )
 
 // Proxy service related constants.
 const (
-	DefaultDynamicProxyPath = "proxy"
-	ProxySyncInterval       = 2 * time.Second
-	PrivateURLScope         = "private"
-	PublicURLScope          = "public"
-	XClusterIDKey           = "X-Cluster-ID"
-	XServiceTokenKey        = "X-Service-Token"
+	DefaultPath  = "proxy"
+	SyncInterval = 2 * time.Second
+
+	PrivateURLScope  = "private"
+	PublicURLScope   = "public"
+	XClusterIDKey    = "X-Cluster-ID"
+	XServiceTokenKey = "X-Service-Token"
 
 	limit         = 100
 	pathSeparator = "/"
@@ -45,14 +48,10 @@ type endpointStore interface {
 	UpdateEndpoint(prefix string, endpoint *models.Endpoint) error
 	InitScope(prefix string)
 	GetEndpointURL(clusterID, prefix string) (string, bool)
-	GetPassword(prefix string, endpointKey string) string
-	GetUsername(prefix string, endpointKey string) string
-	Remove(prefix string)
 }
 
-// proxyService provides dynamic HTTP and WebSockets proxy capabilities.
-// TODO(dfurman): move to subpackage to improve design
-type proxyService struct {
+// Service provides dynamic HTTP and WebSocket proxy capabilities.
+type Service struct {
 	endpointStore    endpointStore
 	dbService        services.Service
 	dynamicProxyPath string
@@ -62,8 +61,8 @@ type proxyService struct {
 	log              *logrus.Entry
 }
 
-// DynamicProxyConfig configures the dynamic proxy service and middleware.
-type DynamicProxyConfig struct {
+// Config configures the dynamic proxy service and middleware.
+type Config struct {
 	// Path is the path the proxy is served at.
 	Path string
 	// ServiceTokenEndpointPrefixes are prefixes of the endpoints that should have a service token injected into requests.
@@ -72,8 +71,45 @@ type DynamicProxyConfig struct {
 	ServiceUserClientConfig *asfclient.HTTPConfig
 }
 
-func newProxyService(es endpointStore, dbService services.Service, config *DynamicProxyConfig) *proxyService {
-	return &proxyService{
+// ConfigFromViper creates a Config from the global Viper configuration.
+func ConfigFromViper() *Config {
+	return &Config{
+		Path:                         pathFromViper(),
+		ServiceTokenEndpointPrefixes: viper.GetStringSlice("server.service_token_endpoint_prefixes"),
+		ServiceUserClientConfig:      serviceUserClientConfigFromViper(),
+	}
+}
+
+func pathFromViper() string {
+	if path := viper.GetString("server.dynamic_proxy_path"); path != "" {
+		return path
+	}
+	return DefaultPath
+}
+
+func serviceUserClientConfigFromViper() *asfclient.HTTPConfig {
+	c := asfclient.LoadHTTPConfig()
+	c.SetCredentials(
+		viper.GetString("keystone.service_user.id"),
+		viper.GetString("keystone.service_user.password"),
+	)
+	c.Scope = asfkeystone.NewScope(
+		viper.GetString("keystone.service_user.domain_id"),
+		viper.GetString("keystone.service_user.domain_name"),
+		viper.GetString("keystone.service_user.project_id"),
+		viper.GetString("keystone.service_user.project_name"),
+	)
+	return c
+}
+
+// NewServiceFromViper creates a Service from the global Viper configuration.
+func NewServiceFromViper(es endpointStore, dbService services.Service) *Service {
+	return NewService(es, dbService, ConfigFromViper())
+}
+
+// NewService creates a new Service.
+func NewService(es endpointStore, dbService services.Service, config *Config) *Service {
+	return &Service{
 		endpointStore:    es,
 		dbService:        dbService,
 		dynamicProxyPath: config.Path,
@@ -82,28 +118,37 @@ func newProxyService(es endpointStore, dbService services.Service, config *Dynam
 	}
 }
 
-type dynamicProxyPlugin struct {
+// Plugin provides a dynamic HTTP and WebSocket proxy.
+type Plugin struct {
 	es     endpointStore
-	config *DynamicProxyConfig
+	config *Config
 	log    *logrus.Entry
 }
 
-func newDynamicProxyPlugin(es endpointStore, config *DynamicProxyConfig) *dynamicProxyPlugin {
-	return &dynamicProxyPlugin{
+// NewPluginFromViper creates a Plugin from the global Viper configuration.
+func NewPluginFromViper(es endpointStore) *Plugin {
+	return NewPlugin(es, ConfigFromViper())
+}
+
+// NewPlugin creates a new Plugin.
+func NewPlugin(es endpointStore, config *Config) *Plugin {
+	return &Plugin{
 		es:     es,
 		config: config,
 		log:    logutil.NewLogger("dynamic-proxy-mw"),
 	}
 }
 
-func (p *dynamicProxyPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+// RegisterHTTPAPI registers the proxy endpoint at the configured path.
+func (p *Plugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 	r.Group(p.config.Path, baseapisrv.WithMiddleware(p.middleware), baseapisrv.WithNoAuth())
 }
 
-func (p *dynamicProxyPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+// RegisterGRPCAPI does nothing.
+func (p *Plugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
 }
 
-func (p *dynamicProxyPlugin) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+func (p *Plugin) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
 	return func(ctx echo.Context) error {
 		r := ctx.Request()
 
@@ -180,7 +225,7 @@ func clusterID(url, dynamicProxyPath string) (string, error) {
 	return paths[2], nil
 }
 
-func shouldInjectServiceToken(proxyPrefix string, config *DynamicProxyConfig) bool {
+func shouldInjectServiceToken(proxyPrefix string, config *Config) bool {
 	paths := strings.Split(proxyPrefix, pathSeparator)
 	if len(paths) < 4 {
 		return false
@@ -190,7 +235,7 @@ func shouldInjectServiceToken(proxyPrefix string, config *DynamicProxyConfig) bo
 	return format.ContainsString(allowedPrefixes, endpointPrefix)
 }
 
-func obtainServiceToken(ctx context.Context, clusterID string, config *DynamicProxyConfig) (string, error) {
+func obtainServiceToken(ctx context.Context, clusterID string, config *Config) (string, error) {
 	apiClient := client.NewHTTP(config.ServiceUserClientConfig)
 
 	ctx = keystone.WithXClusterID(ctx, clusterID)
@@ -209,7 +254,7 @@ func setServiceTokenHeader(r *http.Request, token string) {
 }
 
 // StartEndpointsSync starts synchronization of proxy endpoints.
-func (p *proxyService) StartEndpointsSync() {
+func (p *Service) StartEndpointsSync() {
 	serviceCtx, cancel := context.WithCancel(context.Background())
 	p.stopService = cancel
 
@@ -218,7 +263,7 @@ func (p *proxyService) StartEndpointsSync() {
 
 	go func() {
 		defer p.serviceWaitGroup.Done()
-		ticker := time.NewTicker(ProxySyncInterval)
+		ticker := time.NewTicker(SyncInterval)
 		defer ticker.Stop()
 		for {
 			select {
@@ -235,7 +280,7 @@ func (p *proxyService) StartEndpointsSync() {
 	}()
 }
 
-func (p *proxyService) updateEndpoints() {
+func (p *Service) updateEndpoints() {
 	endpoints, err := p.readEndpoints()
 	if err != nil {
 		p.log.WithError(err).Error("Endpoints read failed")
@@ -244,7 +289,7 @@ func (p *proxyService) updateEndpoints() {
 	p.syncProxyEndpoints(endpoints)
 }
 
-func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
+func (p *Service) readEndpoints() (map[string]*models.Endpoint, error) {
 	endpoints := make(map[string]*models.Endpoint)
 	ctx := auth.NoAuth(context.Background())
 	spec := baseservices.ListSpec{Limit: limit}
@@ -268,7 +313,7 @@ func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 	return endpoints, nil
 }
 
-func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint) {
+func (p *Service) syncProxyEndpoints(endpoints map[string]*models.Endpoint) {
 	// delete stale proxy endpoints in-memory
 	p.endpointStore.RemoveDeleted(endpoints)
 	// create/update proxy middleware
@@ -281,7 +326,7 @@ func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint)
 	}
 }
 
-func (p *proxyService) initProxyTargetStore(e *models.Endpoint) {
+func (p *Service) initProxyTargetStore(e *models.Endpoint) {
 	if e.PublicURL != "" {
 		proxyPrefix := p.getProxyPrefix(e, PublicURLScope)
 		p.endpointStore.InitScope(proxyPrefix)
@@ -291,7 +336,7 @@ func (p *proxyService) initProxyTargetStore(e *models.Endpoint) {
 	}
 }
 
-func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope string) {
+func (p *Service) manageProxyEndpoint(endpoint *models.Endpoint, scope string) {
 	proxyPrefix := p.getProxyPrefix(endpoint, scope)
 
 	err := p.endpointStore.UpdateEndpoint(proxyPrefix, endpoint)
@@ -300,7 +345,7 @@ func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope stri
 	}
 }
 
-func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (proxyPrefix string) {
+func (p *Service) getProxyPrefix(endpoint *models.Endpoint, scope string) (proxyPrefix string) {
 	prefix := endpoint.Prefix
 	// TODO(ijohnson) remove using DisplayName as prefix
 	// once UI takes prefix as input.
@@ -319,14 +364,14 @@ func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (
 }
 
 // ForceUpdate requests an immediate update of endpoints and waits for its completion.
-func (p *proxyService) ForceUpdate() {
+func (p *Service) ForceUpdate() {
 	wait := make(chan struct{})
 	p.forceUpdateChan <- wait
 	<-wait
 }
 
 // StopEndpointsSync stops synchronization of proxy endpoints.
-func (p *proxyService) StopEndpointsSync() {
+func (p *Service) StopEndpointsSync() {
 	// stop proxy server poll
 	p.stopService()
 	// wait for the proxy server poll to complete

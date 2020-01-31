@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
@@ -84,10 +84,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	}
 
 	{
-		proxyPath := apisrv.DefaultDynamicProxyPath
-		if p := viper.GetString("server.dynamic_proxy_path"); p != "" {
-			proxyPath = p
-		}
+		proxyPath := proxy.ConfigFromViper().Path
 
 		routes.add(resolve(proxyPath))
 		routes.add(resolve(proxyPath, "*"))
