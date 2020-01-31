@@ -1,0 +1,109 @@
+{
+    "version": 3,
+    "terraform_version": "0.11.14",
+    "serial": 14,
+    "lineage": "d8706173-1f32-3b4f-2122-7578c2ce1be5",
+    "modules": [
+        {
+            "path": [
+                "root"
+            ],
+            "outputs": {
+                "usetekcn1.private_ip": {
+                    "sensitive": false,
+                    "type": "string",
+                    "value": "172.16.2.30"
+                }
+            },
+            "resources": {},
+            "depends_on": []
+        },
+        {
+            "path": [
+                "root",
+                "aws"
+            ],
+            "outputs": {
+                "usetekcn1.private_ip": {
+                    "sensitive": false,
+                    "type": "string",
+                    "value": "172.16.2.30"
+                }
+            },
+            "resources": {
+                "aws_instance.usetekcn1": {
+                    "type": "aws_instance",
+                    "depends_on": [
+                        "aws_security_group.usetekeg",
+                        "aws_security_group.useteking",
+                        "aws_subnet.usetek-private",
+                        "data.aws_ami.ami-ca-central-1-rhel7-compute_node-packerios"
+                    ],
+                    "primary": {
+                        "id": "i-0ed3293c29846dca2",
+                        "attributes": {
+                            "ami": "ami-0ffd5e2ce054b6123",
+                            "arn": "arn:aws:ec2:ca-central-1:287374649893:instance/i-0ed3293c29846dca2",
+                            "associate_public_ip_address": "false",
+                            "availability_zone": "ca-central-1a",
+                            "cpu_core_count": "4",
+                            "cpu_threads_per_core": "1",
+                            "credit_specification.#": "1",
+                            "credit_specification.0.cpu_credits": "standard",
+                            "disable_api_termination": "false",
+                            "ebs_block_device.#": "0",
+                            "ebs_optimized": "false",
+                            "ephemeral_block_device.#": "0",
+                            "get_password_data": "false",
+                            "iam_instance_profile": "",
+                            "id": "i-0ed3293c29846dca2",
+                            "instance_state": "running",
+                            "instance_type": "t2.xlarge",
+                            "ipv6_addresses.#": "0",
+                            "key_name": "keypair-4b4f861d-2f71-46c5-be6a-ef73f37d6146",
+                            "monitoring": "false",
+                            "network_interface.#": "0",
+                            "password_data": "",
+                            "placement_group": "",
+                            "primary_network_interface_id": "eni-0ac43a5fbc24ff9a4",
+                            "private_dns": "ip-172-16-2-30.ca-central-1.compute.internal",
+                            "private_ip": "172.16.2.30",
+                            "public_dns": "",
+                            "public_ip": "",
+                            "root_block_device.#": "1",
+                            "root_block_device.0.delete_on_termination": "true",
+                            "root_block_device.0.iops": "100",
+                            "root_block_device.0.volume_id": "vol-0b2da6b87b89f9dea",
+                            "root_block_device.0.volume_size": "20",
+                            "root_block_device.0.volume_type": "gp2",
+                            "security_groups.#": "0",
+                            "source_dest_check": "true",
+                            "subnet_id": "subnet-087ca89e4e2da8392",
+                            "tags.%": "3",
+                            "tags.Name": "usetekcn1",
+                            "tags.Project": "contrail_multicloud",
+                            "tags.Roles": "compute_node",
+                            "tenancy": "default",
+                            "volume_tags.%": "0",
+                            "vpc_security_group_ids.#": "2",
+                            "vpc_security_group_ids.2158015384": "sg-0712d261abaee9a26",
+                            "vpc_security_group_ids.802517255": "sg-0015a5cf4221cd457"
+                        },
+                        "meta": {
+                            "e2bfb730-ecaa-11e6-8f88-34363bc7c4c0": {
+                                "create": 1800000000000,
+                                "delete": 3600000000000,
+                                "update": 1800000000000
+                            },
+                            "schema_version": "1"
+                        },
+                        "tainted": false
+                    },
+                    "deposed": [],
+                    "provider": "provider.aws.ca-central-1"
+                }
+            },
+            "depends_on": []
+        }
+    ]
+}

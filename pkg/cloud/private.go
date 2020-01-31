@@ -384,17 +384,21 @@ func (i *privateInstance) fillSubNetDetails(subnets []*models.NodeCloudPrivateSu
 		i.log.Warnf("onPrem node has invalid number of subnets: %d, only first will be considered", len(subnets))
 	}
 
-	subnetRef := subnets[0]
-	privateSubnetResp, err := i.cli.GetCloudPrivateSubnet(
-		i.ctx,
-		&services.GetCloudPrivateSubnetRequest{
-			ID: subnetRef.UUID,
-		})
-	if err != nil {
-		return err
+	privateSubnets := []string{}
+
+	for _, s := range subnets {
+		privateSubnetResp, err := i.cli.GetCloudPrivateSubnet(
+			i.ctx,
+			&services.GetCloudPrivateSubnetRequest{
+				ID: s.UUID,
+			})
+		if err != nil {
+			return err
+		}
+		privateSubnets = append(privateSubnets, privateSubnetResp.CloudPrivateSubnet.CidrBlock)
 	}
 
-	i.PrivateSubnets = []string{privateSubnetResp.CloudPrivateSubnet.CidrBlock}
+	i.PrivateSubnets = privateSubnets
 	return nil
 }
 
