@@ -146,11 +146,6 @@ schema:
       view:
       - create
       - detail
-      title: Data Retention Time
-      type: string
-      view:
-      - create
-      - detail
     default_gateway:
       default: ""
       description: Default Gateway
@@ -319,6 +314,19 @@ schema:
       view:
       - create
       - detail
+    multicloud_image_ref:
+      description: MultiCloud Image Ref points to an image version of Multi Cloud Provisioner container
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: MultiCloudImageRef
+      type: string
+      view:
+      - create
+      - detail
+      presence: "optional"
     mc_gw_info:
       presence: "optional"
       description: "Multi Cloud Gateway Details"

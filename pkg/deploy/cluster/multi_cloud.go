@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
@@ -359,8 +360,32 @@ func (m *multiCloudProvisioner) provision() error {
 		return errors.Wrap(err, "cannot start SSH Agent")
 	}
 	defer stopAgent()
-	return m.cluster.commandExecutor.ExecCmdAndWait(
-		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
+
+	env := []string{sshAuthSock, agent.GetAuthenticationSocket()}
+
+	imgRef := m.clusterData.ClusterInfo.MulticloudImageRef
+	imgRefUser := m.clusterData.ClusterInfo.ContainerRegistryUsername
+	imgRefPwd := m.clusterData.ClusterInfo.ContainerRegistryPassword
+
+	workingDir := "/"
+
+	volumes := []ansible.Volume {
+		ansible.Volume {
+			Source: m.workDir,
+			Target: m.workDir,
+		},
+		ansible.Volume {
+			Source: m.getPublicCloudWorkDir(),
+			Target: m.getPublicCloudWorkDir(),
+		},
+		ansible.Volume {
+			Source: agent.GetAuthenticationSocket(),
+			Target: agent.GetAuthenticationSocket(),
+		},
+	}
+
+	return m.containerPlayer.StartExecuteAndRemove(
+		context.Background(), imgRef, imgRefUser, imgRefPwd, volumes, workingDir, append([]string{cmd}, args...), env,
 	)
 }
 
@@ -377,8 +402,19 @@ func (m *multiCloudProvisioner) cleanupProvisioning() error {
 		return err
 	}
 	defer stopAgent()
-	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+
+	env := []string{sshAuthSock, agent.GetAuthenticationSocket()}
+
+	imgRef := m.clusterData.ClusterInfo.MulticloudImageRef
+	imgRefUser := m.clusterData.ClusterInfo.ContainerRegistryUsername
+	imgRefPwd := m.clusterData.ClusterInfo.ContainerRegistryPassword
+
+	workRoot := "/"
+	workingDir := "/"
+
+	return m.containerPlayer.StartExecuteAndRemove(
+		context.Background(), imgRef, imgRefUser, imgRefPwd, workRoot, workingDir, append([]string{cmd}, args...), env,
+	)
 }
 
 func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
@@ -522,6 +558,18 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 		for _, prov := range c.CloudProviders {
 			if prov.Type != onPrem {
 				return cloud.GetTFStateFile(c.UUID)
+			}
+		}
+	}
+	return ""
+}
+
+
+func (m *multiCloudProvisioner) getPublicCloudWorkDir() string {
+	for _, c := range m.clusterData.CloudInfo {
+		for _, prov := range c.CloudProviders {
+			if prov.Type != onPrem {
+				return cloud.GetCloudDir(c.UUID)
 			}
 		}
 	}
