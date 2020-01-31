@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ef2e1083_5555b89a",
+        "filename": "pkg/models/rbac.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-31T15:14:58Z",
+      "side": 1,
+      "message": "This can be made a method of (*RbacRuleEntriesType):\n\nfunc (m *RbacRuleEntriesType) ToRBAC() *rbac.RuleEntriesType",
+      "revId": "f531ca8837f631a675b3f70770064b8ac45c6755",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
