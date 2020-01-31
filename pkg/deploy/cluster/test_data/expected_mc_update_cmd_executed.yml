@@ -1,1 +1,25 @@
-deployer all provision --topology /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/topology.yml --secret /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/secret.yml --tf_state /var/tmp/cloud/public_cloud_uuid/terraform.tfstate --update
+command:
+  - "deployer"
+  - "all"
+  - "provision"
+  - "--topology"
+  - "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/topology.yml"
+  - "--secret"
+  - "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/secret.yml"
+  - "--tf_state"
+  - "/var/tmp/cloud/public_cloud_uuid/terraform.tfstate"
+  - "--update"
+parameters:
+  imageref: "test_registry/contrail-multicloud-deployer:master.100"
+  imagerefusername: user1
+  imagerefpassword: password
+  volumes:
+  - source: /tmp/contrail_cluster/test_cluster_uuid/multi-cloud
+    target: /tmp/contrail_cluster/test_cluster_uuid/multi-cloud
+  - source: /var/tmp/cloud/public_cloud_uuid
+    target: /var/tmp/cloud/public_cloud_uuid
+  - source: /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/agent
+    target: /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/agent
+  workingdirectory: /root/contrail-multi-cloud
+  env:
+    - SSH_AUTH_SOCK=/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/agent

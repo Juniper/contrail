@@ -247,11 +247,15 @@ func TestCreatRunningContainer(t *testing.T) {
 					expectedContainerNamePrefix: createCase.expectedContainerNamePrefix,
 				},
 			}
-			containerName, err := containerPlayer.createRunningContainer(
-				context.Background(),
-				createCase.imageName,
-				"/var/tmp/contrail_cluster",
-			)
+			containerName, err := containerPlayer.createRunningContainer(context.Background(), &ContainerParameters{
+				ImageRef: createCase.imageName,
+				Volumes: []Volume{
+					{
+						Source: "/var/tmp/contrail_cluster",
+						Target: "/var/tmp/contrail_cluster",
+					},
+				},
+			})
 			if err != nil {
 				t.Errorf("%v when starting container", err)
 			}
@@ -284,7 +288,7 @@ func TestExecCmd(t *testing.T) {
 				log:    logrus.NewEntry(logrus.New()),
 				client: &mockAPIClient{},
 			}
-			err := containerPlayer.execCmd(
+			err := containerPlayer.execPlaybook(
 				context.Background(),
 				execCase.containerID,
 				execCase.workingDirectory,
