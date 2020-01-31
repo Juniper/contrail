@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
-	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/collector"
@@ -17,13 +16,13 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	asfclient "github.com/Juniper/asf/pkg/client"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 )
@@ -31,10 +30,9 @@ import (
 // Server represents Intent API Server.
 type Server struct {
 	Server            *baseapisrv.Server
-	endpointStore     endpointStore
 	Keystone          *keystone.Keystone
 	DBService         *db.Service
-	Proxy             *proxyService
+	Proxy             *proxy.Dynamic
 	Service           services.Service
 	UserAgentKVServer services.UserAgentKVServer
 	FQNameToIDServer  services.FQNameToIDServer
@@ -43,12 +41,23 @@ type Server struct {
 	log               *logrus.Entry
 }
 
+type endpointStore interface {
+	RemoveDeleted(endpoints map[string]*models.Endpoint)
+	Contains(prefix string) bool
+	GetEndpointURLs(prefix string, endpointKey string) []string
+	UpdateEndpoint(prefix string, endpoint *models.Endpoint) error
+	InitScope(prefix string)
+	GetEndpointURL(clusterID, prefix string) (string, bool)
+	GetPassword(prefix string, endpointKey string) string
+	GetUsername(prefix string, endpointKey string) string
+	Remove(prefix string)
+}
+
 // NewServer makes a server.
 // nolint: gocyclo
 func NewServer(es endpointStore, cache *cache.DB) (*Server, error) {
 	s := &Server{
-		endpointStore: es,
-		log:           logutil.NewLogger("contrail-api-server"),
+		log: logutil.NewLogger("contrail-api-server"),
 	}
 
 	var plugins []baseapisrv.APIPlugin
@@ -83,20 +92,19 @@ func NewServer(es endpointStore, cache *cache.DB) (*Server, error) {
 		plugins = append(plugins, s.setupNeutronService(cs))
 	}
 
-	staticProxyPlugin, err := newStaticProxyPluginByViper()
+	staticProxyPlugin, err := proxy.NewStaticByViper()
 	if err != nil {
 		return nil, err
 	}
 	plugins = append(plugins, staticProxyPlugin)
 
-	config := loadDynamicProxyConfig()
-	s.Proxy = newProxyService(s.endpointStore, s.DBService, config)
+	s.Proxy = proxy.NewDynamicFromViper(es, s.DBService)
 	s.Proxy.StartEndpointsSync()
-	plugins = append(plugins, newDynamicProxyPlugin(s.endpointStore, config))
+	plugins = append(plugins, s.Proxy)
 
 	if viper.GetBool("keystone.local") {
 		var k *keystone.Keystone
-		k, err = keystone.Init(s.endpointStore)
+		k, err = keystone.Init(es)
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to init local keystone server")
 		}
@@ -240,36 +248,6 @@ func (s *Server) etcdNotifier() services.Service {
 		return nil
 	}
 	return en
-}
-
-func loadDynamicProxyConfig() *DynamicProxyConfig {
-	return &DynamicProxyConfig{
-		Path:                         loadDynamicProxyPath(),
-		ServiceTokenEndpointPrefixes: viper.GetStringSlice("server.service_token_endpoint_prefixes"),
-		ServiceUserClientConfig:      loadServiceUserClientConfig(),
-	}
-}
-
-func loadDynamicProxyPath() string {
-	if path := viper.GetString("server.dynamic_proxy_path"); path != "" {
-		return path
-	}
-	return DefaultDynamicProxyPath
-}
-
-func loadServiceUserClientConfig() *asfclient.HTTPConfig {
-	c := client.LoadHTTPConfig()
-	c.SetCredentials(
-		viper.GetString("keystone.service_user.id"),
-		viper.GetString("keystone.service_user.password"),
-	)
-	c.Scope = asfkeystone.NewScope(
-		viper.GetString("keystone.service_user.domain_id"),
-		viper.GetString("keystone.service_user.domain_name"),
-		viper.GetString("keystone.service_user.project_id"),
-		viper.GetString("keystone.service_user.project_name"),
-	)
-	return c
 }
 
 func noAuthPaths() []string {
