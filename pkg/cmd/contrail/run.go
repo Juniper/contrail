@@ -115,7 +115,7 @@ func initConfig(configFile string) {
 }
 
 func manageCloud(configFile string) {
-	manager, err := cloud.NewCloudManager(configFile, &osCommandExecutor{})
+	manager, err := cloud.NewCloudManager(configFile)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

@@ -28,6 +28,8 @@ const (
 	DefaultInventoryTemplate              = "inventory.tmpl"
 	DefaultInventoryFile                  = "inventory.yml"
 
+	defaultResource = "contrail-cluster"
+
 	defaultAppformixAnsibleRepoDir = "/usr/share/contrail/"
 	defaultAppformixImageDir       = "/opt/software/appformix/"
 	defaultAppformixAnsibleRepo    = "appformix-ansible-deployer"

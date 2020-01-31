@@ -54,6 +54,8 @@ type Player interface {
 		ansibleArgs []string,
 		keepContainerAlive bool,
 	) error
+
+	StartExecuteAndRemove(ctx context.Context, cp ansible.ContainerExecParameters) error
 }
 
 type openstackVariables struct {
@@ -386,11 +388,17 @@ func (a *ContrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 
 func (a *ContrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 	a.Log.WithField("directory", a.getAnsibleDeployerRepoInContainer()).Info("Running playbook in container")
+	containerName, err := ansible.GetContainerName(
+		a.clusterData.ClusterInfo.ContainerRegistry,
+		"contrail-kolla-ansible-deployer",
+		ansible.GetContrailVersion(a.clusterData.ClusterInfo, a.Log),
+	)
+	if err != nil {
+		return err
+	}
 	return a.containerPlayer.Play(
 		context.Background(),
-		a.clusterData.ClusterInfo.ContainerRegistry+
-			"/contrail-kolla-ansible-deployer:"+
-			a.clusterData.ClusterInfo.ContrailVersion,
+		containerName,
 		a.clusterData.ClusterInfo.ContainerRegistryUsername,
 		a.clusterData.ClusterInfo.ContainerRegistryPassword,
 		a.getWorkRoot(),
