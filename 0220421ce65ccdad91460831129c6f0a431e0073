@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "f529b996_72eccd37",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-31T12:33:25Z",
+      "side": 1,
+      "message": "Put this on the next line to be consistent with the other code.",
+      "range": {
+        "startLine": 227,
+        "startChar": 18,
+        "endLine": 227,
+        "endChar": 20
+      },
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cfa99942_08f089a1",
         "filename": "pkg/services/rbac.go",
         "patchSetId": 14
@@ -13,6 +36,63 @@
       "writtenOn": "2020-01-31T12:29:10Z",
       "side": 1,
       "message": "IMO those functions should be methods on model types and slices that are defined in models package. It\u0027s a model responsibility to know how to be described in library terms. I think there is no need to involve the services package to that.",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "69cb9b93_019e9735",
+        "filename": "pkg/services/rbac.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-31T12:33:25Z",
+      "side": 1,
+      "message": "There\u0027s another way to do this:\n\nrbacList :\u003d make([]*rbac.APIAccessList, 0, len(modelsList))\nfor _, v :\u003d range modelsList {\n  rbacList \u003d append(rbacList, \u0026rbac.APIAccessList{...})\n}\n\nBoth ways work the same, though.",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "30978196_da42ea86",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-31T12:33:25Z",
+      "side": 1,
+      "message": "Just `Permission scopes` would be fine.",
+      "range": {
+        "startLine": 34,
+        "startChar": 3,
+        "endLine": 34,
+        "endChar": 37
+      },
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f483a76c_854cc867",
+        "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-01-31T12:33:25Z",
+      "side": 1,
+      "message": "Move these functions to be below their usage.",
       "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
