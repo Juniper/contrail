@@ -38,22 +38,15 @@ const (
 	AddCVFMProvisioningAction       = "ADD_CVFM"
 	DestroyAction                   = "DESTROY"
 
+	AnsibleContainerPrefix = "ansible-player",
+
 	enable  = "yes"
 	disable = "no"
 )
 
-// Player runs ansible playbook in a container
-type Player interface {
-	Play(
-		ctx context.Context,
-		imageRef string,
-		imageRefUsername string,
-		imageRefPassword string,
-		workRoot string,
-		ansibleBinaryRepo string,
-		ansibleArgs []string,
-		keepContainerAlive bool,
-	) error
+// ContainerExecutor executes command in container.
+type ContainerExecutor interface {
+	StartExecuteAndRemove(ctx context.Context, cp *ansible.ContainerParameters, cmd []string) error
 }
 
 type openstackVariables struct {
@@ -63,8 +56,8 @@ type openstackVariables struct {
 // ContrailAnsibleDeployer is a deployer using CAD.
 type ContrailAnsibleDeployer struct {
 	deployCluster
-	ansibleClient   *ansible.CLIClient
-	containerPlayer Player
+	ansibleClient     *ansible.CLIClient
+	containerExecutor ContainerExecutor
 }
 
 // nolint: gocyclo
@@ -192,6 +185,9 @@ func (a *ContrailAnsibleDeployer) getAnsibleDatapathEncryptionRepoDir() (ansible
 }
 
 func (a *ContrailAnsibleDeployer) fetchAnsibleDeployer() error {
+	if a.cluster.config.Test {
+		return nil
+	}
 	repoDir := a.getAnsibleDeployerRepoDir()
 
 	a.Log.Infof("Fetching :%s", a.cluster.config.AnsibleFetchURL)
@@ -200,7 +196,7 @@ func (a *ContrailAnsibleDeployer) fetchAnsibleDeployer() error {
 		return err
 	}
 	args = append([]string{"fetch"}, args...)
-	if err = a.cluster.commandExecutor.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
+	if err = osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("git fetch completed")
@@ -209,10 +205,13 @@ func (a *ContrailAnsibleDeployer) fetchAnsibleDeployer() error {
 }
 
 func (a *ContrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
+	if a.cluster.config.Test {
+		return nil
+	}
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
-	if err := a.cluster.commandExecutor.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
+	if err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("Cherry-pick completed")
@@ -221,10 +220,13 @@ func (a *ContrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
 }
 
 func (a *ContrailAnsibleDeployer) resetAnsibleDeployer() error {
+	if a.cluster.config.Test {
+		return nil
+	}
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
-	if err := a.cluster.commandExecutor.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
+	if err := osutil.ExecCmdAndWait(a.Reporter, "git", args, repoDir); err != nil {
 		return err
 	}
 	a.Log.Info("Git reset completed")
@@ -386,18 +388,27 @@ func (a *ContrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 
 func (a *ContrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 	a.Log.WithField("directory", a.getAnsibleDeployerRepoInContainer()).Info("Running playbook in container")
-	return a.containerPlayer.Play(
-		context.Background(),
-		a.clusterData.ClusterInfo.ContainerRegistry+
-			"/contrail-kolla-ansible-deployer:"+
-			a.clusterData.ClusterInfo.ContrailVersion,
-		a.clusterData.ClusterInfo.ContainerRegistryUsername,
-		a.clusterData.ClusterInfo.ContainerRegistryPassword,
-		a.getWorkRoot(),
-		a.getAnsibleDeployerRepoInContainer(),
-		ansibleArgs,
-		false,
+	containerName, err := ansible.ImageReference(
+		a.clusterData.ClusterInfo.ContainerRegistry,
+		"contrail-kolla-ansible-deployer",
+		ansible.GetContrailVersion(a.clusterData.ClusterInfo, a.Log),
 	)
+	if err != nil {
+		return err
+	}
+	return a.containerExecutor.StartExecuteAndRemove(context.Background(), &ansible.ContainerParameters{
+		ImageRef:         containerName,
+		ImageRefUsername: a.clusterData.ClusterInfo.ContainerRegistryUsername,
+		ImageRefPassword: a.clusterData.ClusterInfo.ContainerRegistryPassword,
+		WorkingDirectory: a.getAnsibleDeployerRepoInContainer(),
+		HostVolumes: []ansible.Volume{
+			{
+				Source: a.getWorkRoot(),
+				Target: a.getWorkRoot(),
+			},
+		},
+		ContainerPrefix: AnsibleContainerPrefix,
+	}, append([]string{ansible.PlaybookCmd}, ansibleArgs...))
 }
 
 func (a *ContrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
@@ -523,7 +534,7 @@ func (a *ContrailAnsibleDeployer) playXflowProvision() error {
 
 		command.Dir = xflowDir
 
-		if err := a.cluster.commandExecutor.ExecAndWait(a.Reporter, command); err != nil {
+		if err := osutil.ExecAndWait(a.Reporter, command); err != nil {
 			a.Log.Errorf("Error when running command in venv %s: %s", venvDir, err)
 			return err
 		}

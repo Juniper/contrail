@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/models"
@@ -25,7 +26,8 @@ import (
 // Multicloud related constants.
 const (
 	MCWorkDir              = "multi-cloud"
-	MCRepository           = "contrail-multi-cloud"
+	mcRepositoryPath       = "/root/contrail-multi-cloud"
+	MCConfigurationPath		= "/etc/multicloud"
 	DefaultMCInventoryFile = "inventories/inventory.yml"
 	DefaultTopologyFile    = "topology.yml"
 	DefaultSecretFile      = "secret.yml"
@@ -33,6 +35,9 @@ const (
 	addCloud    = "ADD_CLOUD"
 	updateCloud = "UPDATE_CLOUD"
 	deleteCloud = "DELETE_CLOUD"
+
+	authSockFile = "agent"
+	mcStateFile  = "state.yml"
 
 	aws    = "aws"
 	azure  = "azure"
@@ -350,39 +355,86 @@ func (m *multiCloudProvisioner) provision() error {
 	cmd := multicloudCLI
 	args := []string{
 		"all", "provision", "--topology", m.getClusterTopoFile(m.workDir),
-		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
+		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(), "--state", m.getMCStateFile(),
 	}
 	if m.clusterData.ClusterInfo.ProvisioningAction == updateCloud {
 		args = append(args, "--update")
 	}
-	agent, stopAgent, err := m.startSSHAgent()
+	agent, stopAgent, err := m.startSSHAgent(filepath.Join(m.workDir, authSockFile))
 	if err != nil {
 		return errors.Wrap(err, "cannot start SSH Agent")
 	}
 	defer stopAgent()
-	return m.cluster.commandExecutor.ExecCmdAndWait(
-		m.Reporter, cmd, args, m.getMCDeployerRepoDir(), agent.GetExportVars()...,
-	)
+	return m.runProvisionActionInContainer(append([]string{cmd}, args...), agent)
+}
+
+func (m *multiCloudProvisioner) runProvisionActionInContainer(cmdWithArgs []string, agent *sshAgent) error {
+	env := []string{fmt.Sprintf("%s=%s", sshAuthSock, agent.AuthenticationSocket())}
+
+	imgRef, err := ansible.ImageReference(m.clusterData.ClusterInfo.ContainerRegistry,
+		cloud.MultiCloudDockerImage, ansible.GetContrailVersion(m.clusterData.ClusterInfo, m.Log))
+	if err != nil {
+		return err
+	}
+
+	return m.containerExecutor.StartExecuteAndRemove(context.Background(), &ansible.ContainerParameters{
+		ImageRef:               imgRef,
+		ImageRefUsername:       m.clusterData.ClusterInfo.ContainerRegistryUsername,
+		ImageRefPassword:       m.clusterData.ClusterInfo.ContainerRegistryPassword,
+		HostVolumes:            m.getMCVolumes(agent),
+		ForceContainerRecreate: true,
+		WorkingDirectory:       mcRepositoryPath,
+		Env:                    env,
+		ContainerPrefix:        cloud.MultiCloudContainerPrefix,
+		HostNetwork:            true,
+		OverwriteEntrypoint:    true,
+		RemoveContainer:        true,
+		Privileged:             true,
+	}, cmdWithArgs)
+}
+
+// These volumes are loaded from host - not from Contrail Command container.
+func (m *multiCloudProvisioner) getMCVolumes(agent *sshAgent) []ansible.Volume {
+	keyPaths := services.NewKeyFileDefaults()
+	return []ansible.Volume{
+		{
+			Source: m.workDir,
+			Target: m.workDir,
+		},
+		{
+			Source: m.getPublicCloudWorkDir(),
+			Target: m.getPublicCloudWorkDir(),
+		},
+		{
+			Source: keyPaths.KeyHomeDir,
+			Target: keyPaths.KeyHomeDir,
+		},
+		{
+			Source: MCConfigurationPath,
+			Target: MCConfigurationPath,
+		},
+	}
 }
 
 func (m *multiCloudProvisioner) cleanupProvisioning() error {
 	cmd := multicloudCLI
-	mcRepoDir := m.getMCDeployerRepoDir()
 	args := []string{
 		"all", "clean", "--topology", m.getClusterTopoFile(m.workDir),
 		"--secret", m.getClusterSecretFile(), "--tf_state", m.getTFStateFile(),
-		"--state", filepath.Join(mcRepoDir, "state.yml"),
+		"--state", m.getMCStateFile(),
 	}
-	agent, stopAgent, err := m.startSSHAgent()
+	agent, stopAgent, err := m.startSSHAgent(filepath.Join(m.workDir, authSockFile))
 	if err != nil {
 		return err
 	}
 	defer stopAgent()
-	// TODO: Change inventory path after specifying work dir during provisioning.
-	return m.cluster.commandExecutor.ExecCmdAndWait(m.Reporter, cmd, args, mcRepoDir, agent.GetExportVars()...)
+	return m.runProvisionActionInContainer(append([]string{cmd}, args...), agent)
 }
 
-func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
+func (m *multiCloudProvisioner) startSSHAgent(authSockDst string) (*sshAgent, func(), error) {
+	// SSH Agent authentication socket must be located in the volume shared between
+	// host and contrail_command container. Current container exec function does not
+	// allow mounting volumes from container - not from host.
 	kp, err := m.getPublicCloudKeyPair()
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "cannot resolve public cloud keypair")
@@ -398,7 +450,7 @@ func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
 		}
 	}
 
-	if err = agent.Run(filepath.Join(kp.GetSSHKeyDirPath(), kp.GetName())); err != nil {
+	if err = agent.Run(filepath.Join(kp.GetSSHKeyDirPath(), kp.GetName()), authSockDst); err != nil {
 		stopAgent()
 		return nil, nil, err
 	}
@@ -421,8 +473,10 @@ func (m *multiCloudProvisioner) removeVulnerableFiles() error {
 func (m *multiCloudProvisioner) filesToRemove() []string {
 	kfd := services.NewKeyFileDefaults()
 
+	// inventory.yml is another vulnerable file that should be deleted hovewer current
+	// contrail-multi-cloud repository creates this file in the container which is removed
+	// after performing an action.
 	f := []string{
-		m.getMCInventoryFile(m.getMCDeployerRepoDir()),
 		m.getClusterSecretFile(),
 		kfd.GetAzureSubscriptionIDPath(),
 		kfd.GetAzureClientIDPath(),
@@ -529,8 +583,23 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 	return ""
 }
 
+func (m *multiCloudProvisioner) getPublicCloudWorkDir() string {
+	for _, c := range m.clusterData.CloudInfo {
+		for _, prov := range c.CloudProviders {
+			if prov.Type != onPrem {
+				return cloud.GetCloudDir(c.UUID)
+			}
+		}
+	}
+	return ""
+}
+
 func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
 	return filepath.Join(workDir, DefaultMCInventoryFile)
+}
+
+func (m *multiCloudProvisioner) getMCStateFile() string {
+	return filepath.Join(m.workDir, mcStateFile)
 }
 
 // use topology constant from cloud pkg
@@ -540,10 +609,6 @@ func (m *multiCloudProvisioner) getClusterTopoFile(workDir string) string {
 
 func (m *multiCloudProvisioner) getClusterSecretFile() string {
 	return filepath.Join(m.workDir, DefaultSecretFile)
-}
-
-func (m *multiCloudProvisioner) getMCDeployerRepoDir() string {
-	return filepath.Join(DefaultAnsibleRepoDir, MCRepository)
 }
 
 func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {
