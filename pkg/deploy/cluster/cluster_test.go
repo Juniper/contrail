@@ -10,7 +10,10 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/ansible"
+	"github.com/Juniper/contrail/pkg/ansible/ansiblemock"
 	"github.com/Juniper/contrail/pkg/client"
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/services"
@@ -19,35 +22,15 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
 const (
 	workRoot                              = "/tmp/contrail_cluster"
 	allInOneClusterTemplatePath           = "./test_data/test_all_in_one_cluster.tmpl"
-	createPlaybooks                       = "./test_data/expected_ansible_create_playbook.yml"
-	destroyPlaybooks                      = "./test_data/expected_ansible_destroy_playbook.yml"
-	createAppformixPlaybooks              = "./test_data/expected_ansible_create_appformix_playbook.yml"
-	updatePlaybooks                       = "./test_data/expected_ansible_update_playbook.yml"
-	updateAppformixPlaybooks              = "./test_data/expected_ansible_update_appformix_playbook.yml"
-	upgradePlaybooks                      = "./test_data/expected_ansible_upgrade_playbook.yml"
-	upgradeAppformixPlaybooks             = "./test_data/expected_ansible_upgrade_appformix_playbook.yml"
-	addComputePlaybooks                   = "./test_data/expected_ansible_add_compute_playbook.yml"
-	deleteComputePlaybooks                = "./test_data/expected_ansible_delete_compute_playbook.yml"
-	addAppformixComputePlaybooks          = "./test_data/expected_ansible_add_appformix_compute_playbook.yml"
-	deleteAppformixComputePlaybooks       = "./test_data/expected_ansible_delete_appformix_compute_playbook.yml"
-	addCSNPlaybooks                       = "./test_data/expected_ansible_add_csn_playbook.yml"
-	addAppformixCSNPlaybooks              = "./test_data/expected_ansible_add_appformix_csn_playbook.yml"
-	createEncryptPlaybooks                = "./test_data/expected_ansible_create_encrypt_playbook.yml"
-	updateEncryptPlaybooks                = "./test_data/expected_ansible_update_encrypt_playbook.yml"
-	upgradeEncryptPlaybooks               = "./test_data/expected_ansible_upgrade_encrypt_playbook.yml"
-	addComputeEncryptPlaybooks            = "./test_data/expected_ansible_add_compute_encrypt_playbook.yml"
 	allInOneKubernetesClusterTemplatePath = "./test_data/test_all_in_one_kubernetes_cluster.tmpl"
-	upgradePlaybooksKubernetes            = "./test_data/expected_ansible_upgrade_playbook_kubernetes.yml"
-	addComputePlaybooksKubernetes         = "./test_data/expected_ansible_add_kubernetes_compute.yml"
-	deleteComputePlaybooksKubernetes      = "./test_data/expected_ansible_delete_kubernetes_compute.yml"
 	allInOneVcenterClusterTemplatePath    = "./test_data/test_all_in_one_vcenter_server.tmpl"
-	upgradePlaybooksvcenter               = "./test_data/expected_ansible_upgrade_playbook_vcenter.yml"
 	allInOneMCClusterTemplatePath         = "./test_data/test_mc_cluster.tmpl"
 	allInOneMCClusterUpdateTemplatePath   = "./test_data/test_mc_update_cluster.tmpl"
 	allInOneMCClusterDeleteTemplatePath   = "./test_data/test_mc_delete_cluster.tmpl"
@@ -55,18 +38,17 @@ const (
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
+	testImageRef = "test_registry/contrail-multicloud-deployer:ocata-5.0-x"
+	testImageRefUsername = "user1"
+	testImageRefPassword = "password"
+
 	generatedInstances   = workRoot + "/" + clusterID + "/" + cluster.DefaultInstanceFile
 	generatedInventory   = workRoot + "/" + clusterID + "/" + cluster.DefaultInventoryFile
 	generatedVcenterVars = workRoot + "/" + clusterID + "/" + cluster.DefaultVcenterFile
 	generatedSecret      = workRoot + "/" + clusterID + "/" + cluster.MCWorkDir + "/" + cluster.DefaultSecretFile
 	generatedTopology    = workRoot + "/" + clusterID + "/" + cluster.MCWorkDir + "/" + cluster.DefaultTopologyFile
-	executedPlaybooks    = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
-	executedMCCommand    = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
 
 	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
-	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
-	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
-	expectedMCDeleteCmdExecuted = "./test_data/expected_mc_delete_cmd_executed.yml"
 )
 
 var server *integration.APIServer
@@ -175,12 +157,19 @@ func assertGeneratedInstancesEqual(t *testing.T, expected string, msgAndArgs ...
 	assertYamlFilesAreEqual(t, expected, generatedInstances, msgAndArgs...)
 }
 
-func verifyPlaybooks(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, executedPlaybooks)
-}
+func assertYAMLFileEqual(t *testing.T, expectedFilePath, actualFilePath string, msg string) {
+	var actualYAML interface{}
+	require.NoErrorf(
+		t, fileutil.LoadFile(actualFilePath, &actualYAML), "Failed read yaml from %s", actualFilePath,
+	)
 
-func verifyCommandsExecuted(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, executedMCCommand)
+	var expectedYAML interface{}
+	require.NoErrorf(
+		t, fileutil.LoadFile(expectedFilePath, &expectedYAML), "Failed read yaml from %s", expectedFilePath,
+	)
+
+	testutil.AssertEqual(t, expectedYAML, actualYAML,
+		fmt.Sprintf("YAML files %s and %s are not equal", expectedFilePath, actualFilePath), msg)
 }
 
 func TestAllInOneCluster(t *testing.T) {
@@ -197,7 +186,7 @@ func TestAllInOneSriovCluster(t *testing.T) {
 
 type clusterActionTestSpec struct {
 	action            string
-	expectedPlaybooks string
+	expectedPlaybookExecutions []ansiblemock.ContainerExecution
 }
 
 func runAllInOneClusterTest(t *testing.T, computeType string) {
@@ -226,30 +215,113 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 	}
 
 	runTest(t, expectedInstances, "", pContext, expectedEndpoints, allInOneClusterTemplatePath,
-		createPlaybooks,
-		updatePlaybooks,
+		createOpenstackPlaybookExecutions(),
+		upgradeOpenstackPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradePlaybooks,
+			// Check if not update/upgrade
+			expectedPlaybookExecutions: updateOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputePlaybooks,
+			expectedPlaybookExecutions: addComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooks,
+			expectedPlaybookExecutions: deleteComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addCSNPlaybooks,
+			expectedPlaybookExecutions: addCSNOpenstackPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}})
 }
 
-// nolint: gocyclo
-func runTest(t *testing.T, expectedInstance, expectedInventory string,
-	pContext map[string]interface{}, expectedEndpoints map[string]string, tsPath string,
-	expectedCreatePlaybooks, expectedUpdatePlaybooks string, clusterActionSpecs []clusterActionTestSpec) {
+type playbookArg []string
 
+var openstackOrch playbookArg = []string{"-e", "orchestrator=openstack"}
+var k8sOrch playbookArg = []string{"-e", "orchestrator=kubernetes"}
+var vcenterOrch playbookArg = []string{"-e", "orchestrator=vcenter"}
+var defaultInventory playbookArg = []string{"-i", "inventory/"}
+var encryptInventory playbookArg = []string{"-i", "/tmp/contrail_cluster/test_cluster_uuid/inventory.yml"}
+var defaultConfigFile playbookArg = []string{"-e", "config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml"}
+var forceCheckout playbookArg = []string{"-e", "force_checkout=yes"}
+var novaTag playbookArg = []string{"--tags=nova"}
+var defaultAppFormixVer = []string{"-e", "appformix_version=3.0.0"}
+var skipDockerInstall = []string{"--skip-tags=install_docker"}
+
+func upgradeOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return upgradeOpenstackPlaybookExecutionsWithSecureRegistry("", "")
+}
+
+func defaultClusterParameters() *ansible.ContainerParameters {
+	return defaultClusterParametersWithSecureRegistry("", "")
+}
+
+func defaultClusterParametersWithSecureRegistry(username, password string) *ansible.ContainerParameters {
+	return ansibleContainerParameters(
+		"test_registry/contrail-kolla-ansible-deployer:ocata-5.0-x",
+		username,
+		password,
+		cluster.DefaultAnsibleRepoInContainer,
+		"/tmp/contrail_cluster",
+	)
+}
+
+func addCSNOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return addCSNOpenstackPlaybookExecutionsWithSecureRegistry("", "")
+}
+
+func deleteComputeOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return deleteComputeOpenstackPlaybookExecutionsWithSecureRegistry("", "")
+}
+
+func addComputeOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return addComputeOpenstackPlaybookExecutionsWithSecureRegistry("", "")
+}
+
+func defaultPlayBookExecution(
+	playbook string, cp *ansible.ContainerParameters , ansibleArgs ...playbookArg,
+) ansiblemock.ContainerExecution {
+	cmd := []string{ansible.PlaybookCmd, playbook}
+	for _, a := range ansibleArgs {
+		cmd = append(cmd, ([]string)(a)...)
+	}
+
+	return ansiblemock.ContainerExecution {
+		Cmd: cmd,
+		Parameters: cp,
+	}
+}
+
+func ansibleContainerParameters(
+	imageRef, imageRefUsername, imageRefPassword, workingDirectory, volume string,
+) *ansible.ContainerParameters {
+	return &ansible.ContainerParameters{
+		ImageRef:         imageRef,
+		ImageRefUsername: imageRefUsername,
+		ImageRefPassword: imageRefPassword,
+		WorkingDirectory: workingDirectory,
+		HostVolumes: []ansible.Volume{
+			{
+				Source: volume,
+				Target: volume,
+			},
+		},
+		ContainerPrefix: cluster.AnsibleContainerPrefix,
+	}
+}
+
+// nolint: gocyclo
+func runTest(
+	t *testing.T,
+	expectedInstance,
+	expectedInventory string,
+	pContext map[string]interface{},
+	expectedEndpoints map[string]string,
+	tsPath string,
+	expectedCreatePlaybookExecutions,
+	expectedUpdatePlaybookExecutions []ansiblemock.ContainerExecution,
+	clusterActionSpecs []clusterActionTestSpec,
+) {
 	// Create the cluster and related objects
 	ts, err := integration.LoadTest(tsPath, pContext)
 	require.NoError(t, err, "failed to load cluster test data")
@@ -274,42 +346,52 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	for _, tt := range []struct {
 		action            string
-		expectedPlaybooks string
+		expectedAnsibleExecutions []ansiblemock.ContainerExecution
 	}{{
 		action:            cluster.CreateAction,
-		expectedPlaybooks: expectedCreatePlaybooks,
+		expectedAnsibleExecutions: expectedCreatePlaybookExecutions,
 	}, {
 		action:            cluster.UpdateAction,
-		expectedPlaybooks: expectedUpdatePlaybooks,
+		expectedAnsibleExecutions: expectedUpdatePlaybookExecutions,
 	}} {
 		runClusterCreateUpdateTest(
-			t, ts, config, tt.action, tt.expectedPlaybooks, expectedInstance, expectedInventory, expectedEndpoints,
+			t, ts, config, tt.action, tt.expectedAnsibleExecutions, expectedInstance, expectedInventory,
+			expectedEndpoints,
 		)
 	}
 
 	for _, spec := range clusterActionSpecs {
-		runClusterActionTest(t, ts, config, spec.action, expectedInstance, spec.expectedPlaybooks, expectedEndpoints)
+		runClusterActionTest(
+			t,
+			ts,
+			config,
+			spec.action,
+			expectedInstance,
+			spec.expectedPlaybookExecutions,
+			expectedEndpoints,
+		)
 	}
 
 	// delete cluster
 	config.Action = cluster.DeleteAction
-	removeFile(t, executedPlaybooks)
-	manageCluster(t, config)
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	manageCluster(t, config, executor)
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
 
 func runClusterCreateUpdateTest(
 	t *testing.T, ts *integration.TestScenario, config *cluster.Config, action string,
-	expectedPlaybooks, expectedInstance, expectedInventory string, expectedEndpoints map[string]string) {
-
+	expectedPlaybookExecutions []ansiblemock.ContainerExecution,
+	expectedInstance, expectedInventory string, expectedEndpoints map[string]string,
+) {
 	//cleanup old files
 	removeFile(t, generatedInstances)
 	removeFile(t, generatedInventory)
-	removeFile(t, executedPlaybooks)
 
 	config.Action = action
-	manageCluster(t, config)
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	manageCluster(t, config, executor)
 
 	assertGeneratedInstancesEqual(t, expectedInstance,
 		fmt.Sprintf("Instance file created during cluster %s is not as expected", action))
@@ -317,16 +399,15 @@ func runClusterCreateUpdateTest(
 		assert.Truef(t, compareFiles(t, expectedInventory, generatedInventory),
 			"Inventory file created during cluster %s is not as expected", action)
 	}
-	assert.Truef(t, verifyPlaybooks(t, expectedPlaybooks),
-		"Expected list of %s playbooks are not executed", action)
+	executor.AssertAndClear(expectedPlaybookExecutions)
 
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	assert.NoError(t, verifyEndpoints(t, ts, expectedEndpoints))
 }
 
-func manageCluster(t *testing.T, c *cluster.Config) {
-	clusterDeployer, err := cluster.NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
+func manageCluster(t *testing.T, c *cluster.Config, containerExecutor cluster.ContainerExecutor) {
+	clusterDeployer, err := cluster.NewCluster(c, containerExecutor)
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -337,7 +418,7 @@ func manageCluster(t *testing.T, c *cluster.Config) {
 // nolint: gocyclo
 func runClusterActionTest(
 	t *testing.T, ts *integration.TestScenario, config *cluster.Config, action, expectedInstance string,
-	expectedPlaybooks string, expectedEndpoints map[string]string,
+	expectedPlaybookExecutions []ansiblemock.ContainerExecution, expectedEndpoints map[string]string,
 ) {
 	// set action field in the contrail-cluster resource
 	cl := map[string]interface{}{"uuid": clusterID, "provisioning_action": action}
@@ -364,16 +445,13 @@ func runClusterActionTest(
 		assert.NoErrorf(t, err, "failed to set %s action in contrail cluster", action)
 		break
 	}
-	removeFile(t, executedPlaybooks)
-	manageCluster(t, config)
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	manageCluster(t, config, executor)
 	if expectedInstance != "" {
 		assertGeneratedInstancesEqual(t, expectedInstance,
 			"Instance file created during cluster %s is not as expected", action)
 	}
-	if expectedPlaybooks != "" {
-		assert.True(t, verifyPlaybooks(t, expectedPlaybooks),
-			fmt.Sprintf("Expected list of %s playbooks are not executed", action))
-	}
+	executor.AssertAndClear(expectedPlaybookExecutions)
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
@@ -409,29 +487,134 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 	}
 	appformixFilesCleanup := createDummyAppformixFiles(t)
 	defer appformixFilesCleanup()
-	runTest(t, expectedInstances, "", context, expectedEndpoints, allInOneClusterAppformixTemplatePath,
-		createAppformixPlaybooks,
-		updateAppformixPlaybooks,
+	runTest(
+		t,
+		expectedInstances,
+		"",
+		context,
+		expectedEndpoints,
+		allInOneClusterAppformixTemplatePath,
+		createUpdateAppformixPlaybookExecutions(),
+		createUpdateAppformixPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradeAppformixPlaybooks,
+			expectedPlaybookExecutions: upgradeAppformixPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addAppformixComputePlaybooks,
+			expectedPlaybookExecutions: addDeleteAppformixComputePlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteAppformixComputePlaybooks,
+			expectedPlaybookExecutions: addDeleteAppformixComputePlaybookExecutions(),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addAppformixCSNPlaybooks,
+			expectedPlaybookExecutions: addAppfornixCSNPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}, {
 			action:            cluster.DestroyAction,
-			expectedPlaybooks: destroyPlaybooks,
+			expectedPlaybookExecutions: destroyPlaybookExecutions(),
 		}},
 	)
+}
 
+func createUpdateAppformixPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/provision_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_appformix.yml", appformixContainerParameters(),
+			defaultConfigFile, defaultAppFormixVer, skipDockerInstall,
+		),
+	}
+}
+
+func appformixContainerParameters() *ansible.ContainerParameters {
+	return ansibleContainerParameters(
+		"test_registry/contrail-kolla-ansible-deployer:ocata-5.0-x",
+		"",
+		"",
+		"/tmp/contrail_cluster/appformix-ansible-deployer/appformix/venv",
+		"/tmp/contrail_cluster",
+	)
+}
+
+func destroyPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/openstack_destroy.yml", defaultClusterParameters(),
+			defaultInventory,
+		),
+		defaultPlayBookExecution(
+			"playbooks/contrail_destroy.yml", defaultClusterParameters(),
+			defaultInventory,
+		),
+	}
+}
+
+
+func addAppfornixCSNPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_appformix.yml", appformixContainerParameters(),
+			defaultConfigFile, defaultAppFormixVer, skipDockerInstall,
+		),
+	}
+}
+
+func addDeleteAppformixComputePlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout, novaTag,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_appformix.yml", appformixContainerParameters(),
+			defaultConfigFile, defaultAppFormixVer, skipDockerInstall,
+		),
+	}
+}
+
+func upgradeAppformixPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_appformix.yml", appformixContainerParameters(),
+			defaultConfigFile, defaultAppFormixVer, skipDockerInstall,
+		),
+	}
 }
 
 func createDummyAppformixFiles(t *testing.T) func() {
@@ -537,7 +720,8 @@ func TestXflowInBand(t *testing.T) {
 }
 
 func getClusterDeployer(t *testing.T, config *cluster.Config) base.Deployer {
-	cluster, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	cluster, err := cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := cluster.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -562,29 +746,42 @@ func TestAllInOneVfabricManager(t *testing.T) {
 		"keystone":  "http://127.0.0.1:5000",
 		"appformix": "http://127.0.0.1:9001",
 	}
-	expectedInstances := "./test_data/expected_all_in_one_vfabric_manager_instances.yml"
 
-	runTest(t, expectedInstances, "", pContext, expectedEndpoints, allInOneClusterTemplatePath,
-		createPlaybooks,
-		updatePlaybooks,
+	runTest(
+		t,
+		"./test_data/expected_all_in_one_vfabric_manager_instances.yml",
+		"",
+		pContext,
+		expectedEndpoints,
+		allInOneClusterTemplatePath,
+		createOpenstackPlaybookExecutions(),
+		upgradeOpenstackPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradePlaybooks,
+			expectedPlaybookExecutions: updateOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputePlaybooks,
+			expectedPlaybookExecutions: addComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooks,
+			expectedPlaybookExecutions: deleteComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addCSNPlaybooks,
+			expectedPlaybookExecutions: addCSNOpenstackPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}, {
 			action:            cluster.AddCVFMProvisioningAction,
-			expectedPlaybooks: updatePlaybooks,
+			expectedPlaybookExecutions: upgradeOpenstackPlaybookExecutions(),
 		}})
+}
+
+func createOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return createOpenstackPlaybookExecutionsWithSecureRegistry("", "")
+}
+
+func updateOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return updateOpenstackPlaybookExecutionsWithSecureRegistry("", "")
 }
 
 func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
@@ -605,23 +802,84 @@ func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 	}
 	runTest(t, "./test_data/expected_all_in_one_instances.yml",
 		"./test_data/expected_all_in_one_inventory.yml", pContext, expectedEndpoints, allInOneClusterTemplatePath,
-		createEncryptPlaybooks,
-		updateEncryptPlaybooks,
+		createUpdateEncryptOpenstackPlaybookExecutions(),
+		createUpdateEncryptOpenstackPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradeEncryptPlaybooks,
+			expectedPlaybookExecutions: upgradeEncryptOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputeEncryptPlaybooks,
+			expectedPlaybookExecutions: addComputeEncryptOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooks,
+			expectedPlaybookExecutions: deleteComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addCSNPlaybooks,
+			expectedPlaybookExecutions: addCSNOpenstackPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}})
+}
+
+func createUpdateEncryptOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/provision_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout,
+			novaTag,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/deploy_and_run_all.yml", defaultClusterParameters(),
+			encryptInventory,
+		),
+	}
+}
+
+func upgradeEncryptOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/deploy_and_run_all.yml", defaultClusterParameters(),
+			encryptInventory,
+		),
+	}
+}
+
+func addComputeEncryptOpenstackPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout,
+			novaTag,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/deploy_and_run_all.yml", defaultClusterParameters(),
+			encryptInventory,
+		),
+	}
 }
 
 func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
@@ -643,26 +901,28 @@ func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
 	}
 	runTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "",
 		pContext, expectedEndpoints, allInOneClusterTemplatePath,
-		createPlaybooks,
-		updatePlaybooks,
+		createOpenstackPlaybookExecutions(),
+		upgradeOpenstackPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradePlaybooks,
+			expectedPlaybookExecutions: updateOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputePlaybooks,
+			expectedPlaybookExecutions: addComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooks,
+			expectedPlaybookExecutions: deleteComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addCSNPlaybooks,
+			expectedPlaybookExecutions: addCSNOpenstackPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}})
 }
 
 func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
+	registryUsername := "testRegistry"
+	registryPassword := "testRegistry123"
 	pContext := pongo2.Context{
 		"MGMT_INT_IP":                 "10.1.1.1",
 		"CONTROL_NODES":               "127.0.0.1",
@@ -670,8 +930,8 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		"OPENSTACK_NODES":             "127.0.0.1",
 		"OPENSTACK_INTERNAL_VIP":      "127.0.0.1",
 		"CONTRAIL_EXTERNAL_VIP":       "10.1.1.100",
-		"CONTAINER_REGISTRY_USERNAME": "testRegistry",
-		"CONTAINER_REGISTRY_PASSWORD": "testRegistry123",
+		"CONTAINER_REGISTRY_USERNAME": registryUsername,
+		"CONTAINER_REGISTRY_PASSWORD": registryPassword,
 		"ZTP_ROLE":                    true,
 		"SSL_ENABLE":                  "yes",
 		"CLUSTER_NAME":                t.Name(),
@@ -689,23 +949,134 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 
 	runTest(t, "./test_data/expected_multi_interface_instances.yml", "",
 		pContext, expectedEndpoints, allInOneClusterTemplatePath,
-		createPlaybooks,
-		updatePlaybooks,
+		createOpenstackPlaybookExecutionsWithSecureRegistry(registryUsername, registryPassword),
+		upgradeOpenstackPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradePlaybooks,
+			expectedPlaybookExecutions: updateOpenstackPlaybookExecutionsWithSecureRegistry(
+				registryUsername, registryPassword,
+			),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputePlaybooks,
+			expectedPlaybookExecutions: addComputeOpenstackPlaybookExecutionsWithSecureRegistry(
+				registryUsername, registryPassword,
+			),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooks,
+			expectedPlaybookExecutions: deleteComputeOpenstackPlaybookExecutionsWithSecureRegistry(
+				registryUsername, registryPassword,
+			),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addCSNPlaybooks,
+			expectedPlaybookExecutions: addCSNOpenstackPlaybookExecutionsWithSecureRegistry(
+				registryUsername, registryPassword,
+			),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}})
+}
+
+
+func createOpenstackPlaybookExecutionsWithSecureRegistry(username, password string) []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/provision_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+	}
+}
+
+
+func upgradeOpenstackPlaybookExecutionsWithSecureRegistry(username, password string) []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/provision_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+	}
+}
+
+
+func updateOpenstackPlaybookExecutionsWithSecureRegistry(username, password string) []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+	}
+}
+
+
+func addComputeOpenstackPlaybookExecutionsWithSecureRegistry(username, password string) []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout, novaTag,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+	}
+}
+
+
+func deleteComputeOpenstackPlaybookExecutionsWithSecureRegistry(username, password string) []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_openstack.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch, forceCheckout, novaTag,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+	}
+}
+
+func addCSNOpenstackPlaybookExecutionsWithSecureRegistry(username, password string) []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParametersWithSecureRegistry(username, password),
+			defaultInventory, defaultConfigFile, openstackOrch,
+		),
+	}
 }
 
 func TestCredAllInOneClusterTest(t *testing.T) {
@@ -731,20 +1102,20 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 	expectedInstances := "./test_data/expected_creds_all_in_one_instances.yml"
 
 	runTest(t, expectedInstances, "", pContext, expectedEndpoints, allInOneClusterTemplatePath,
-		createPlaybooks,
-		updatePlaybooks,
+	createOpenstackPlaybookExecutions(),
+	upgradeOpenstackPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradePlaybooks,
+			expectedPlaybookExecutions: updateOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputePlaybooks,
+			expectedPlaybookExecutions: addComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooks,
+			expectedPlaybookExecutions: deleteComputeOpenstackPlaybookExecutions(),
 		}, {
 			action:            cluster.AddCSNProvisioningAction,
-			expectedPlaybooks: addCSNPlaybooks,
+			expectedPlaybookExecutions: addCSNOpenstackPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}})
@@ -762,20 +1133,67 @@ func TestKubernetesCluster(t *testing.T) {
 	}
 	runTest(t, "./test_data/expected_all_in_one_kubernetes_instances.yml", "",
 		pContext, expectedEndpoints, allInOneKubernetesClusterTemplatePath,
-		"./test_data/expected_ansible_create_playbook_kubernetes.yml",
-		"./test_data/expected_ansible_update_playbook_kubernetes.yml",
+		createUpdateKubernetesPlaybookExecutions(),
+		createUpdateKubernetesPlaybookExecutions(),
 		[]clusterActionTestSpec{{
 			action:            cluster.UpgradeProvisioningAction,
-			expectedPlaybooks: upgradePlaybooksKubernetes,
+			expectedPlaybookExecutions: upgradeKubernetesPlaybookExecutions(),
 		}, {
 			action:            cluster.AddComputeProvisioningAction,
-			expectedPlaybooks: addComputePlaybooksKubernetes,
+			expectedPlaybookExecutions: addDeleteComputeKubernetesPlaybookExecutions(),
 		}, {
 			action:            cluster.DeleteComputeProvisioningAction,
-			expectedPlaybooks: deleteComputePlaybooksKubernetes,
+			expectedPlaybookExecutions: addDeleteComputeKubernetesPlaybookExecutions(),
 		}, {
 			action: cluster.ImportProvisioningAction,
 		}})
+}
+
+func createUpdateKubernetesPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/provision_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_k8s.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+	}
+}
+
+func upgradeKubernetesPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+	}
+}
+
+func addDeleteComputeKubernetesPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_k8s.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, k8sOrch,
+		),
+	}
 }
 
 func TestVcenterCluster(t *testing.T) {
@@ -819,14 +1237,13 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 		ServiceUserPassword: integration.ServiceUserPassword,
 	}
 	// create cluster
-	removeFile(t, executedPlaybooks)
-	manageCluster(t, config)
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	manageCluster(t, config, executor)
 	assertGeneratedInstancesEqual(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
 	assert.True(t, compareFiles(t, expectedVcenterVars, generatedVcenterVars),
 		"Vcenter_vars file created during cluster create is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_vcenter.yml"),
-		"Expected list of create playbooks are not executed")
+	executor.AssertAndClear(createUpdateVCenterPlaybookExecutions())
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
@@ -837,13 +1254,11 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 	config.Action = cluster.UpdateAction
 	// remove instances.yml to trigger cluster update
 	removeFile(t, generatedInstances)
-	removeFile(t, executedPlaybooks)
 
-	manageCluster(t, config)
+	manageCluster(t, config, executor)
 	assertGeneratedInstancesEqual(t, expectedInstance,
 		"Instance file created during cluster update is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_vcenter.yml"),
-		"Expected list of update playbooks are not executed")
+	executor.AssertAndClear(createUpdateVCenterPlaybookExecutions())
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
@@ -853,20 +1268,50 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 	// UPGRADE test
 	runClusterActionTest(t, ts, config,
 		cluster.UpgradeProvisioningAction, expectedInstance,
-		upgradePlaybooksvcenter, expectedEndpoints)
+		upgradeVCenterPlaybookExecutions(), expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, ts, config,
-		cluster.ImportProvisioningAction, expectedInstance, "", expectedEndpoints)
+		cluster.ImportProvisioningAction, expectedInstance, nil, expectedEndpoints)
 
 	// delete cluster
 	config.Action = cluster.DeleteAction
-	removeFile(t, executedPlaybooks)
 
-	manageCluster(t, config)
+	manageCluster(t, config, executor)
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
+
+func createUpdateVCenterPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/provision_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, vcenterOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/vcenter.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, vcenterOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/configure_instances.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, vcenterOrch,
+		),
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, vcenterOrch,
+		),
+	}
+}
+
+func upgradeVCenterPlaybookExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		defaultPlayBookExecution(
+			"playbooks/install_contrail.yml", defaultClusterParameters(),
+			defaultInventory, defaultConfigFile, vcenterOrch,
+		),
+	}
+}
+
 func TestWindowsCompute(t *testing.T) {
 	ts, err := integration.LoadTest("./test_data/test_windows_compute.yml", nil)
 	require.NoError(t, err, "failed to load test data")
@@ -909,10 +1354,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	cloudFileCleanup := createDummyCloudFiles(t)
 	defer cloudFileCleanup()
 	// create cluster
-	removeFile(t, executedPlaybooks)
-	removeFile(t, executedMCCommand)
 
-	clusterDeployer, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	executor := ansiblemock.NewMockContainerExecutor(t)
+
+	clusterDeployer, err := cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -929,21 +1374,20 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	for _, tt := range []struct {
 		tsPath           string
 		action           string
-		expectedCommands string
+		expectedContainerExecutions []ansiblemock.ContainerExecution
 		expectedStatus   string
 	}{{
 		tsPath:           allInOneMCCloudUpdateTemplatePath,
 		action:           cluster.CreateAction,
-		expectedCommands: expectedMCCreateCmdExecuted,
-		expectedStatus:   cluster.StatusCreated,
+		expectedContainerExecutions: expectedMCCreateContainerExecutions(),
+		expectedStatus: cluster.StatusCreated,
 	}, {
 		tsPath:           allInOneMCClusterUpdateTemplatePath,
 		action:           cluster.UpdateAction,
-		expectedCommands: expectedMCUpdateCmdExecuted,
-		expectedStatus:   cluster.StatusUpdated,
+		expectedContainerExecutions: expectedMCUpdateContainerExecutions(),
+		expectedStatus: cluster.StatusUpdated,
 	}} {
 		//cleanup all the files
-		removeFile(t, executedMCCommand)
 		removeFile(t, generatedTopology)
 		removeFile(t, generatedSecret)
 
@@ -953,26 +1397,25 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		require.NoErrorf(t, err, "failed to load MC test data for cluster %s", tt.action)
 		_ = integration.RunDirtyTestScenario(t, ts, server)
 
-		manageCluster(t, config)
-		verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, tt.expectedStatus)
+		manageCluster(t, config, executor)
+		verifyClusterProvisioningStatus(
+			context.Background(), t, config.APIServer, config.ClusterID, tt.expectedStatus,
+		)
 		err = isCloudSecretFilesDeleted()
 		require.NoErrorf(t, err, "failed to delete public cloud secrets during %s", tt.action)
 
 		assert.Truef(t, compareFiles(t, expectedMCClusterTopology, generatedTopology),
 			"Topolgy file created during cluster %s is not as expected", tt.action)
-		assert.Truef(t, verifyCommandsExecuted(t, tt.expectedCommands),
-			"MC commands executed during cluster %s are not as expected", tt.action)
+		executor.AssertAndClear(tt.expectedContainerExecutions)
 	}
 
-	// delete cloud secanrio
-	//cleanup all the files
-	removeFile(t, executedPlaybooks)
-	removeFile(t, executedMCCommand)
+	// delete cloud scenario
+	// cleanup all the files
 
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
-	clusterDeployer, err = cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -980,18 +1423,101 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to manage(delete) cloud")
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during delete")
-	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, cluster.StatusUpdated)
-	assert.True(t, verifyCommandsExecuted(t, expectedMCDeleteCmdExecuted),
-		"commands executed during cluster delete are not as expected")
+	verifyClusterProvisioningStatus(
+		context.Background(), t, config.APIServer, config.ClusterID, cluster.StatusUpdated,
+	)
+	executor.AssertAndClear(expectedMCDeleteContainerExecutions())
 	// make sure cluster is removed
 	assert.True(t, verifyMCDeleted(clusterDeployer.APIServer), "MC folder is not deleted during cluster delete")
 
 	// delete cluster itself
 	config.Action = cluster.DeleteAction
-	manageCluster(t, config)
+	manageCluster(t, config, executor)
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete cloud secrets during delete")
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
+}
+
+func expectedMCCreateContainerExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		{
+			Cmd: []string{
+				"deployer", "all", "provision",
+				"--topology", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/topology.yml",
+				"--secret", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/secret.yml",
+				"--tf_state", "/var/tmp/cloud/public_cloud_uuid/terraform.tfstate",
+				"--state", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/state.yml",
+			},
+			Parameters: expectedMCParameters(),
+		},
+	}
+}
+
+func expectedMCUpdateContainerExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		{
+			Cmd: []string{
+				"deployer", "all", "provision",
+				"--topology", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/topology.yml",
+				"--secret", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/secret.yml",
+				"--tf_state", "/var/tmp/cloud/public_cloud_uuid/terraform.tfstate",
+				"--state", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/state.yml",
+				"--update",
+			},
+			Parameters: expectedMCParameters(),
+		},
+	}
+}
+
+func expectedMCDeleteContainerExecutions() []ansiblemock.ContainerExecution {
+	return []ansiblemock.ContainerExecution {
+		{
+			Cmd: []string{
+				"deployer", "all", "clean",
+			"--topology", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/topology.yml",
+			"--secret", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/secret.yml",
+			"--tf_state", "/var/tmp/cloud/public_cloud_uuid/terraform.tfstate",
+			"--state", "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/state.yml",
+			},
+			Parameters: expectedMCParameters(),
+		},
+	}
+}
+
+func expectedMCParameters() *ansible.ContainerParameters {
+	paths := services.NewKeyFileDefaults()
+
+	return &ansible.ContainerParameters {
+		ImageRef: testImageRef,
+		ImageRefUsername: testImageRefUsername,
+		ImageRefPassword: testImageRefPassword,
+		HostVolumes: []ansible.Volume{
+			ansible.Volume{
+				Source: "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud",
+				Target: "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud",
+			},
+			ansible.Volume{
+				Source: "/var/tmp/cloud/public_cloud_uuid",
+				Target: "/var/tmp/cloud/public_cloud_uuid",
+			},
+			ansible.Volume{
+				Source: paths.KeyHomeDir,
+				Target: paths.KeyHomeDir,
+			},
+			ansible.Volume{
+				Source: "/tmp/contrail_cluster/test_cluster_uuid/multi-cloud",
+				Target: cluster.MCConfigurationPath,
+			},
+		},
+		ContainerPrefix: cloud.MultiCloudContainerPrefix,
+		ForceContainerRecreate: true,
+		Privileged: true,
+		HostNetwork: true,
+		OverwriteEntrypoint: true,
+		RemoveContainer: true,
+		WorkingDirectory: "/root/contrail-multi-cloud",
+		Env: []string{"SSH_AUTH_SOCK=/tmp/contrail_cluster/test_cluster_uuid/multi-cloud/agent"},
+	}
 }
 
 func verifyClusterProvisioningStatus(
@@ -1085,9 +1611,9 @@ func TestTripleoClusterImport(t *testing.T) {
 		ServiceUserPassword: integration.ServiceUserPassword,
 	}
 	// create cluster
-	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	clusterDeployer, err := cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1113,7 +1639,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 	// delete cluster
 	config.Action = cluster.DeleteAction
-	clusterDeployer, err = cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1161,9 +1687,9 @@ func TestJUJUClusterImport(t *testing.T) {
 		ServiceUserPassword: integration.ServiceUserPassword,
 	}
 	// create cluster
-	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	executor := ansiblemock.NewMockContainerExecutor(t)
+	clusterDeployer, err := cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to import juju cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1189,7 +1715,7 @@ func TestJUJUClusterImport(t *testing.T) {
 	assert.NoError(t, err)
 	// delete cluster
 	config.Action = cluster.DeleteAction
-	clusterDeployer, err = cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = cluster.NewCluster(config, executor)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
