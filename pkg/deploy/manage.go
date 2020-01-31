@@ -1,17 +1,16 @@
 package deploy
 
 import (
-	"os/exec"
-
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"fmt"
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/logutil/report"
-	"github.com/Juniper/asf/pkg/osutil"
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // manager inerface to manage resources
@@ -22,19 +21,6 @@ type manager interface {
 type oneShotManager struct {
 	deploy *Deploy
 	log    *logrus.Entry
-}
-
-// TODO(apasyniuk) Export this into asf/osutils
-type osCommandExecutor struct{}
-
-func (e *osCommandExecutor) ExecCmdAndWait(
-	r *report.Reporter, cmd string, args []string, dir string, envVars ...string,
-) error {
-	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
-}
-
-func (e *osCommandExecutor) ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
-	return osutil.ExecAndWait(r, cmd)
 }
 
 func (o *oneShotManager) manage() error {
@@ -64,6 +50,14 @@ func newManager(deploy *Deploy) (manager, error) {
 func newDeployer(deploy *Deploy) (base.Deployer, error) {
 	switch deploy.config.ResourceType {
 	case "contrail_cluster":
+		player, err := ansible.NewContainerPlayer(report.NewReporter(
+			deploy.APIServer,
+			fmt.Sprintf("%s/%s", cluster.DefaultResourcePath, deploy.config.ResourceID),
+			logutil.NewFileLogger("reporter", deploy.config.LogFile).WithField("cloudID", deploy.config.ResourceID),
+		), deploy.config.LogFile)
+		if err != nil {
+			return nil, err
+		}
 		c, err := cluster.NewCluster(&cluster.Config{
 			APIServer:                 deploy.APIServer,
 			ClusterID:                 deploy.config.ResourceID,
@@ -77,7 +71,7 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 			AnsibleRevision:           deploy.config.AnsibleRevision,
 			ServiceUserID:             deploy.config.ServiceUserID,
 			ServiceUserPassword:       deploy.config.ServiceUserPassword,
-		}, &osCommandExecutor{})
+		}, player)
 		if err != nil {
 			return nil, err
 		}
