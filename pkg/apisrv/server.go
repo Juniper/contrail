@@ -29,16 +29,12 @@ import (
 
 // Server represents Intent API Server.
 type Server struct {
-	Server            *baseapisrv.Server
-	Keystone          *keystone.Keystone
-	DBService         *db.Service
-	Proxy             *proxy.Service
-	Service           services.Service
-	UserAgentKVServer services.UserAgentKVServer
-	FQNameToIDServer  services.FQNameToIDServer
-	IDToFQNameServer  services.IDToFQNameServer
-	Collector         collector.Collector
-	log               *logrus.Entry
+	Server    *baseapisrv.Server
+	Keystone  *keystone.Keystone
+	DBService *db.Service
+	Proxy     *proxy.Service
+	Collector collector.Collector
+	log       *logrus.Entry
 }
 
 type endpointStore interface {
@@ -80,11 +76,6 @@ func NewServer(es endpointStore, cache *cache.DB) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	s.Service = cs
-	s.UserAgentKVServer = cs
-	s.FQNameToIDServer = cs
-	s.IDToFQNameServer = cs
 
 	plugins = append(plugins, cs)
 
@@ -228,13 +219,13 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	}, nil
 }
 
-func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
+func (s *Server) setupNeutronService(cs *services.ContrailService) *neutron.Server {
 	return &neutron.Server{
 		ReadService:       cs,
 		WriteService:      cs,
-		UserAgentKV:       s.UserAgentKVServer,
-		IDToFQNameService: s.IDToFQNameServer,
-		FQNameToIDService: s.FQNameToIDServer,
+		UserAgentKV:       cs,
+		IDToFQNameService: cs,
+		FQNameToIDService: cs,
 		InTransactionDoer: s.DBService,
 		Log:               logutil.NewLogger("neutron-server"),
 	}
