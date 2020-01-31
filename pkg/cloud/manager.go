@@ -307,7 +307,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = updateTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}
@@ -410,7 +410,7 @@ func (c *Cloud) update() error {
 			return err
 		}
 
-		if err = updateTopology(c, data.modifiedProviders()); err != nil {
+		if err = updateTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}
@@ -488,7 +488,7 @@ func (c *Cloud) delete() error {
 		if err = secret.createSecretFile(data.info.GetParentClusterUUID()); err != nil {
 			return err
 		}
-		if err = destroyTopology(c, data.modifiedProviders()); err != nil {
+		if err = destroyTopology(c, data.modifiedProviders(), data.info.ParentClusterUUID); err != nil {
 			return err
 		}
 	}

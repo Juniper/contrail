@@ -62,6 +62,10 @@ func (s *sshAgent) GetExportVars() []string {
 	}
 }
 
+func (s *sshAgent) GetAuthenticationSocket() string {
+	return s.authSock
+}
+
 func (s *sshAgent) RunCommand(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	cmd.Env = append(os.Environ(), s.GetExportVars()...)
