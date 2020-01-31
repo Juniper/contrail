@@ -16,7 +16,7 @@ import (
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/ansible"
-	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/flosch/pongo2"
 
 	shellwords "github.com/mattn/go-shellwords"
@@ -761,7 +761,7 @@ func (a *contrailAnsibleDeployer) handleCreate() error {
 	if err := retry.Do(func() (retry bool, err error) {
 		times--
 		return times > 0, a.ensureServiceUserCreated()
-	}, retry.WithInterval(apisrv.ProxySyncInterval)); err != nil {
+	}, retry.WithInterval(proxy.SyncInterval)); err != nil {
 		// TODO(mblotniak): Fail instead of logging
 		a.Log.Warnf("Skipping service user creation: %v", err)
 	}
