@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c74c6158_76dbcfeb",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 56
+      },
+      "lineNbr": 1027,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-03T16:18:51Z",
+      "side": 1,
+      "message": "RESTCreate API allows user to create only one resource, so I think it is not a collection endpoint.",
+      "revId": "5bdf188fdf12962760d6c17661b70e2cdee0147c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
