@@ -83,6 +83,24 @@
     },
     {
       "key": {
+        "uuid": "062b273b_e074a612",
+        "filename": "pkg/services/rbac.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-03T13:14:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "69cb9b93_019e9735",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "30978196_da42ea86",
         "filename": "vendor/github.com/Juniper/asf/pkg/rbac/rbac.go",
         "patchSetId": 14
@@ -179,6 +197,24 @@
       "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "58cbf38b_0e24b0a3",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 14
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-03T13:14:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "57794277_ed40f452",
+      "revId": "0220421ce65ccdad91460831129c6f0a431e0073",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

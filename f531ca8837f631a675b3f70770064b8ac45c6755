@@ -34,6 +34,24 @@
       "revId": "f531ca8837f631a675b3f70770064b8ac45c6755",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e467c1a_c3d06aa7",
+        "filename": "pkg/models/rbac.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-03T13:14:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9245b6dd_aa735f5f",
+      "revId": "f531ca8837f631a675b3f70770064b8ac45c6755",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
