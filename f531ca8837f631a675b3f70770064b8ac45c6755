@@ -16,6 +16,24 @@
       "revId": "f531ca8837f631a675b3f70770064b8ac45c6755",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9245b6dd_aa735f5f",
+        "filename": "pkg/models/rbac.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-03T09:50:50Z",
+      "side": 1,
+      "message": "+1, that\u0027s what I meant in previous comments",
+      "parentUuid": "ef2e1083_5555b89a",
+      "revId": "f531ca8837f631a675b3f70770064b8ac45c6755",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
