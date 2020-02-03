@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c3c485db_fd821dd3",
+        "filename": "pkg/proxy/proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-03T09:45:43Z",
+      "side": 1,
+      "message": "What\u0027s the difference between service and plugin?",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af72cde5_b6e04624",
+        "filename": "pkg/proxy/proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-03T09:45:43Z",
+      "side": 1,
+      "message": "This can be one line IMO",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
