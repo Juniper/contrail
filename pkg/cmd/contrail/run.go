@@ -9,7 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 
 	"github.com/Juniper/asf/pkg/errutil"
@@ -149,22 +151,42 @@ func startAmqpReplicator() {
 
 func startServer() {
 	es := endpoint.NewStore()
-	server, err := apisrv.NewServer(es, cacheDB)
+
+	var plugins []baseapisrv.APIPlugin
+
+	var k *keystone.Keystone
+	if viper.GetBool("keystone.local") {
+		var err error
+		k, err = keystone.Init(es)
+		if err != nil {
+			logutil.FatalWithStackTrace(err)
+		}
+		plugins = append(plugins, k)
+	}
+
+	if cacheDB != nil {
+		plugins = append(plugins, cacheDB)
+	}
+
+	server, err := apisrv.NewServer(es, plugins...)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	var r *replication.Replicator
-	if r, err = startVNCReplicator(server, es); err != nil {
-		logutil.FatalWithStackTrace(err)
+
+	if k != nil {
+		r, err := startVNCReplicator(es, k)
+		if err != nil {
+			logutil.FatalWithStackTrace(err)
+		}
+		defer r.Stop()
 	}
-	defer r.Stop()
 	if err = server.Run(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 }
 
-func startVNCReplicator(s *apisrv.Server, es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es, s.Keystone)
+func startVNCReplicator(es *endpoint.Store, k *keystone.Keystone) (vncReplicator *replication.Replicator, err error) {
+	vncReplicator, err = replication.New(es, k)
 	if err != nil {
 		return nil, err
 	}

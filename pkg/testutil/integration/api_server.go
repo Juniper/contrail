@@ -65,6 +65,7 @@ const (
 // APIServer is embedded API Server for testing purposes.
 type APIServer struct {
 	APIServer  *apisrv.Server
+	keystone   *keystone.Keystone
 	testServer *httptest.Server
 	log        *logrus.Entry
 }
@@ -106,7 +107,11 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	viper.Set("client.endpoint", ts.URL)
 
 	es := endpoint.NewStore()
-	s, err := apisrv.NewServer(es, c.CacheDB)
+	k, err := keystone.Init(es)
+	if err != nil {
+		return nil, err
+	}
+	s, err := apisrv.NewServer(es, k, c.CacheDB)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
@@ -114,13 +119,14 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	serverHandler = s.Server.Echo
 
 	if c.EnableVNCReplication {
-		if _, err = startVNCReplicator(s, es); err != nil {
+		if _, err = startVNCReplicator(es, k); err != nil {
 			return nil, errors.WithStack(err)
 		}
 	}
 
 	return &APIServer{
 		APIServer:  s,
+		keystone:   k,
 		testServer: ts,
 		log:        logutil.NewLogger("api-server"),
 	}, nil
@@ -260,8 +266,8 @@ func setViper(config map[string]interface{}) {
 	}
 }
 
-func startVNCReplicator(s *apisrv.Server, es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es, s.Keystone)
+func startVNCReplicator(es *endpoint.Store, k *keystone.Keystone) (vncReplicator *replication.Replicator, err error) {
+	vncReplicator, err = replication.New(es, k)
 	if err != nil {
 		return nil, err
 	}
@@ -294,4 +300,35 @@ func (s *APIServer) Close() error {
 // ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
 func (s *APIServer) ForceProxyUpdate() {
 	s.APIServer.Proxy.ForceUpdate()
+}
+
+// AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
+// TODO: Remove that, because it modifies internal state of SUT.
+// TODO: Use pre-created Server's keystone assignment.
+func (s *APIServer) AddKeystoneProjectAndUser(testID string) func() {
+	assignment := s.keystone.Assignment.(*asfkeystone.StaticAssignment) // nolint: errcheck
+	assignment.Projects[testID] = &asfkeystone.Project{
+		Domain: assignment.Domains[DefaultDomainID],
+		ID:     testID,
+		Name:   testID,
+	}
+
+	assignment.Users[testID] = &asfkeystone.User{
+		Domain:   assignment.Domains[DefaultDomainID],
+		ID:       testID,
+		Name:     testID,
+		Password: testID,
+		Roles: []*asfkeystone.Role{
+			{
+				ID:      "member",
+				Name:    "Member",
+				Project: assignment.Projects[testID],
+			},
+		},
+	}
+
+	return func() {
+		delete(assignment.Projects, testID)
+		delete(assignment.Users, testID)
+	}
 }
