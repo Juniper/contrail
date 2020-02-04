@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "af4f165b_a49a6725",
+        "filename": "pkg/proxy/proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-04T10:44:14Z",
+      "side": 1,
+      "message": "Can\u0027t they be merged?",
+      "parentUuid": "198bd7fe_c8ff3f52",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "af72cde5_b6e04624",
         "filename": "pkg/proxy/proxy.go",
         "patchSetId": 3
@@ -48,6 +66,23 @@
       "writtenOn": "2020-02-03T09:45:43Z",
       "side": 1,
       "message": "This can be one line IMO",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9dc6e378_0cede0f7",
+        "filename": "pkg/proxy/static_proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-04T10:44:14Z",
+      "side": 1,
+      "message": "Pls one line",
       "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
