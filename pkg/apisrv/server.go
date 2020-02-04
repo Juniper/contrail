@@ -12,8 +12,6 @@ import (
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/db/cache"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
 	"github.com/Juniper/contrail/pkg/proxy"
@@ -30,7 +28,6 @@ import (
 // Server represents Intent API Server.
 type Server struct {
 	Server    *baseapisrv.Server
-	Keystone  *keystone.Keystone
 	DBService *db.Service
 	Proxy     *proxy.Proxy
 	Collector collector.Collector
@@ -51,7 +48,7 @@ type endpointStore interface {
 
 // NewServer makes a server.
 // nolint: gocyclo
-func NewServer(es endpointStore, cache *cache.DB) (*Server, error) {
+func NewServer(es endpointStore, extraPlugins ...baseapisrv.APIPlugin) (*Server, error) {
 	s := &Server{
 		log: logutil.NewLogger("contrail-api-server"),
 	}
@@ -93,19 +90,7 @@ func NewServer(es endpointStore, cache *cache.DB) (*Server, error) {
 	s.Proxy.StartEndpointsSync()
 	plugins = append(plugins, s.Proxy)
 
-	if viper.GetBool("keystone.local") {
-		var k *keystone.Keystone
-		k, err = keystone.Init(es)
-		if err != nil {
-			return nil, errors.Wrap(err, "Failed to init local keystone server")
-		}
-		s.Keystone = k
-		plugins = append(plugins, k)
-	}
-
-	if viper.GetBool("cache.enabled") {
-		plugins = append(plugins, cache)
-	}
+	plugins = append(plugins, extraPlugins...)
 
 	plugins = append(plugins, services.UploadCloudKeysPlugin{})
 

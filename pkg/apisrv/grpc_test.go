@@ -10,7 +10,6 @@ import (
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -70,7 +69,7 @@ func TestChownGRPC(t *testing.T) {
 		defer cleanup(t)
 
 		otherProjectName := uuid.NewV4().String()
-		kscleanup := addKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		kscleanup := server.AddKeystoneProjectAndUser(otherProjectName)
 		defer kscleanup()
 		otherProjectCTX := metadata.NewOutgoingContext(firstProjectCTX,
 			metadata.Pairs("X-Auth-Token", restLogin(firstProjectCTX, t, otherProjectName)))
@@ -411,7 +410,7 @@ func testProjectRead(ctx context.Context, c services.ContrailServiceClient, proj
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
-	kscleanup := addKeystoneProjectAndUser(server.APIServer, testName)
+	kscleanup := server.AddKeystoneProjectAndUser(testName)
 	defer kscleanup()
 	authToken := restLogin(ctx, t, testName)
 
@@ -429,37 +428,6 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 		metadata.NewOutgoingContext(context.Background(), metadata.Pairs("X-Auth-Token", authToken)),
 		conn,
 	)
-}
-
-// addKeystoneProjectAndUser adds Keystone project and user in Server internal state.
-// TODO: Remove that, because it modifies internal state of SUT.
-// TODO: Use pre-created Server's keystone assignment.
-func addKeystoneProjectAndUser(s *apisrv.Server, testID string) func() {
-	assignment := s.Keystone.Assignment.(*asfkeystone.StaticAssignment) // nolint: errcheck
-	assignment.Projects[testID] = &asfkeystone.Project{
-		Domain: assignment.Domains[integration.DefaultDomainID],
-		ID:     testID,
-		Name:   testID,
-	}
-
-	assignment.Users[testID] = &asfkeystone.User{
-		Domain:   assignment.Domains[integration.DefaultDomainID],
-		ID:       testID,
-		Name:     testID,
-		Password: testID,
-		Roles: []*asfkeystone.Role{
-			{
-				ID:      "member",
-				Name:    "Member",
-				Project: assignment.Projects[testID],
-			},
-		},
-	}
-
-	return func() {
-		delete(assignment.Projects, testID)
-		delete(assignment.Users, testID)
-	}
 }
 
 func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
