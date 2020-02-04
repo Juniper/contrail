@@ -19,6 +19,7 @@ import (
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -72,7 +73,7 @@ func Init(es endpointStore) (*Keystone, error) {
 		var staticAssignment asfkeystone.StaticAssignment
 		err := config.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "creating local keystone server: failed to parse keystone assignment configuration")
 		}
 		keystone.staticAssignment = &staticAssignment
 		keystone.Assignment = &staticAssignment
