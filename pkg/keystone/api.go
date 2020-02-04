@@ -19,6 +19,7 @@ import (
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -72,7 +73,7 @@ func Init(es endpointStore) (*Keystone, error) {
 		var staticAssignment asfkeystone.StaticAssignment
 		err := config.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "creating local keystone server: failed to parse keystone assignment configuration")
 		}
 		keystone.staticAssignment = &staticAssignment
 		keystone.Assignment = &staticAssignment
@@ -253,7 +254,7 @@ func (k *Keystone) setAssignment(clusterID string) (configEndpoint string, err e
 	if clusterID == "" {
 		return "", nil
 	}
-	authType, err := k.GetAuthType(clusterID)
+	authType, err := GetAuthType(k.apiClient, clusterID)
 	if err != nil {
 		logrus.Errorf("Not able to find auth type for cluster %s, %v", clusterID, err)
 		return "", err
@@ -278,8 +279,8 @@ func (k *Keystone) setAssignment(clusterID string) (configEndpoint string, err e
 }
 
 // GetAuthType from the cluster configuration
-func (k *Keystone) GetAuthType(clusterID string) (authType string, err error) {
-	resp, err := k.apiClient.GetContrailCluster(
+func GetAuthType(apiClient *client.HTTP, clusterID string) (authType string, err error) {
+	resp, err := apiClient.GetContrailCluster(
 		context.Background(),
 		&services.GetContrailClusterRequest{
 			ID: clusterID,

@@ -40,15 +40,13 @@ type vncAPIHandle struct {
 	clients       map[string]*vncAPI
 	endpointStore *endpoint.Store
 	log           *logrus.Entry
-	auth          *keystone.Keystone
 }
 
-func newVncAPIHandle(epStore *endpoint.Store, auth *keystone.Keystone) *vncAPIHandle {
+func newVncAPIHandle(epStore *endpoint.Store) *vncAPIHandle {
 	return &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
 		log:           logutil.NewLogger("vnc_replication_client"),
-		auth:          auth,
 		APIServer:     client.NewHTTPFromConfig(),
 	}
 }
@@ -60,7 +58,7 @@ func (h *vncAPIHandle) CreateClient(ep *models.Endpoint) {
 	}
 
 	config := asfclient.LoadHTTPConfig()
-	authType, err := h.auth.GetAuthType(ep.ParentUUID)
+	authType, err := keystone.GetAuthType(h.APIServer, ep.ParentUUID)
 	if err != nil {
 		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
 	}
