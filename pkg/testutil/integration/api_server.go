@@ -106,7 +106,11 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	viper.Set("client.endpoint", ts.URL)
 
 	es := endpoint.NewStore()
-	s, err := apisrv.NewServer(es, c.CacheDB)
+	k, err := keystone.Init(es)
+	if err != nil {
+		return nil, err
+	}
+	s, err := apisrv.NewServer(es, k, c.CacheDB)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
@@ -114,7 +118,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	serverHandler = s.Server.Echo
 
 	if c.EnableVNCReplication {
-		if _, err = startVNCReplicator(s, es); err != nil {
+		if _, err = startVNCReplicator(es, k); err != nil {
 			return nil, errors.WithStack(err)
 		}
 	}
@@ -260,8 +264,8 @@ func setViper(config map[string]interface{}) {
 	}
 }
 
-func startVNCReplicator(s *apisrv.Server, es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es, s.Keystone)
+func startVNCReplicator(es *endpoint.Store, k *keystone.Keystone) (vncReplicator *replication.Replicator, err error) {
+	vncReplicator, err = replication.New(es, k)
 	if err != nil {
 		return nil, err
 	}
