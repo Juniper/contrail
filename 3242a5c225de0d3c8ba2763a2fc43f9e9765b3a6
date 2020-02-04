@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2a2f0b16_24427050",
+        "filename": "pkg/proxy/dynamic_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-04T17:51:44Z",
+      "side": 1,
+      "message": "I would leave \"DynamicProxy\" prefix in test names to make obvious which component is tested. It is not clear because we have 3 groups functionality in this package:\n- dynamic proxy\n- static proxy\n- DynamicProxyMiddleware used by also keystone.Keystone for its proxy - tested here.",
+      "revId": "3242a5c225de0d3c8ba2763a2fc43f9e9765b3a6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
