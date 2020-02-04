@@ -16,6 +16,24 @@
       "revId": "5bdf188fdf12962760d6c17661b70e2cdee0147c",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dbe772f8_e6308ce8",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 56
+      },
+      "lineNbr": 1027,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-04T09:41:31Z",
+      "side": 1,
+      "message": "If WithNoHomepageMethod() is passed, only one homepage entry with method\u003dnull is created, so there\u0027s no distinction between GET/POST/etc.\n\nI made it this way to match what the VNC API has - a single entry with method\u003dnull and rel\u003d\"collection\".",
+      "parentUuid": "c74c6158_76dbcfeb",
+      "revId": "5bdf188fdf12962760d6c17661b70e2cdee0147c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
