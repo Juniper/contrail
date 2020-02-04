@@ -186,6 +186,7 @@ docker_build: ## Build Docker image with Contrail binary
 		--build-arg BASE_IMAGE_REPOSITORY=$(BASE_IMAGE_REPOSITORY) \
 		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
 		--build-arg GOPATH=$(GOPATH) \
+		--build-arg USE_INTERNAL_PIP_REPO=yes \
 		--file ${DOCKER_FILE}.patched \
 		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
