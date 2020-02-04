@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "a12a42b6_16c98f5b",
+        "filename": "pkg/proxy/proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-04T11:09:42Z",
+      "side": 1,
+      "message": "I\u0027ll try to merge them.",
+      "parentUuid": "af4f165b_a49a6725",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "af72cde5_b6e04624",
         "filename": "pkg/proxy/proxy.go",
         "patchSetId": 3
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "79ae2606_99da9d09",
+        "filename": "pkg/proxy/proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-04T11:09:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "af72cde5_b6e04624",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9dc6e378_0cede0f7",
         "filename": "pkg/proxy/static_proxy.go",
         "patchSetId": 3
@@ -86,6 +122,24 @@
       "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef5c277e_ea897ebf",
+        "filename": "pkg/proxy/static_proxy.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-04T11:09:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9dc6e378_0cede0f7",
+      "revId": "c7b0901e4c25e009288ef2edddd536824292137e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
