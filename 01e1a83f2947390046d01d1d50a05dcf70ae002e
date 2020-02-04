@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "26de4ede_f7294ab6",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-02-04T22:03:38Z",
+      "side": 1,
+      "message": "Do you need to remove the container after execution?",
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b5713ed_02c373a8",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-02-04T22:03:38Z",
+      "side": 1,
+      "message": "I think this was a confusing feature of docker client, as containerExecStart won\u0027t give the output even if AttachStdout and AttachStderr are set to true. This was my headache when first tried out. Because ContainerExecStart will run as another process apart from the main process of the container, and only the main process\u0027s stdout and stderr are piped out by default, ContainerExecAttatch is the only way to get a log.\nBtw, there is another way that might suit the need, you can give the command you want to use when calling ContainerCreate function, though this forbid the container to run exec any following command and we have to kill it afterwards.",
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
