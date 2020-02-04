@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "54dfb108_1991021e",
+        "filename": "pkg/proxy/static_proxy.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-04T14:52:16Z",
+      "side": 1,
+      "message": "Now we have proxy.Proxy and proxy.StaticProxyPlugin. I think the names should be more consistent, like: proxy.Dynamic, proxy.Static",
+      "revId": "72b7d3ade954c50af07c504ab4278126808e234e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
