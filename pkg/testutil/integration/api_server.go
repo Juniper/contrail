@@ -64,7 +64,10 @@ const (
 
 // APIServer is embedded API Server for testing purposes.
 type APIServer struct {
-	APIServer  *apisrv.Server
+	APIServer *apisrv.Server
+	// TODO(Witaut): Remove this when AddKeystoneProjectAndUser is removed.
+	keystone   *keystone.Keystone
+	replicator *replication.Replicator
 	testServer *httptest.Server
 	log        *logrus.Entry
 }
@@ -106,21 +109,29 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	viper.Set("client.endpoint", ts.URL)
 
 	es := endpoint.NewStore()
-	s, err := apisrv.NewServer(es, c.CacheDB)
+	k, err := keystone.Init(es)
+	if err != nil {
+		return nil, err
+	}
+	s, err := apisrv.NewServer(es, k, c.CacheDB)
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
 	serverHandler = s.Server.Echo
 
+	var r *replication.Replicator
 	if c.EnableVNCReplication {
-		if _, err = startVNCReplicator(s, es); err != nil {
+		if r, err = startVNCReplicator(es); err != nil {
 			return nil, errors.WithStack(err)
 		}
 	}
 
 	return &APIServer{
-		APIServer:  s,
+		APIServer: s,
+		// TODO(Witaut): Remove this when AddKeystoneProjectAndUser is removed.
+		keystone:   k,
+		replicator: r,
 		testServer: ts,
 		log:        logutil.NewLogger("api-server"),
 	}, nil
@@ -260,8 +271,8 @@ func setViper(config map[string]interface{}) {
 	}
 }
 
-func startVNCReplicator(s *apisrv.Server, es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es, s.Keystone)
+func startVNCReplicator(es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
+	vncReplicator, err = replication.New(es)
 	if err != nil {
 		return nil, err
 	}
@@ -287,6 +298,9 @@ func (s *APIServer) CloseT(t *testing.T) {
 
 // Close closes server.
 func (s *APIServer) Close() error {
+	if s.replicator != nil {
+		s.replicator.Stop()
+	}
 	s.testServer.Close()
 	return s.APIServer.Close()
 }
@@ -294,4 +308,35 @@ func (s *APIServer) Close() error {
 // ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
 func (s *APIServer) ForceProxyUpdate() {
 	s.APIServer.Proxy.ForceUpdate()
+}
+
+// AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
+// TODO: Remove that, because it modifies internal state of SUT.
+// TODO: Use pre-created Server's keystone assignment.
+func (s *APIServer) AddKeystoneProjectAndUser(testID string) func() {
+	assignment := s.keystone.Assignment.(*asfkeystone.StaticAssignment) // nolint: errcheck
+	assignment.Projects[testID] = &asfkeystone.Project{
+		Domain: assignment.Domains[DefaultDomainID],
+		ID:     testID,
+		Name:   testID,
+	}
+
+	assignment.Users[testID] = &asfkeystone.User{
+		Domain:   assignment.Domains[DefaultDomainID],
+		ID:       testID,
+		Name:     testID,
+		Password: testID,
+		Roles: []*asfkeystone.Role{
+			{
+				ID:      "member",
+				Name:    "Member",
+				Project: assignment.Projects[testID],
+			},
+		},
+	}
+
+	return func() {
+		delete(assignment.Projects, testID)
+		delete(assignment.Users, testID)
+	}
 }

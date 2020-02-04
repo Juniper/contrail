@@ -6,7 +6,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/endpoint"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
@@ -55,7 +54,7 @@ type Replicator struct {
 }
 
 // New initializes replication data
-func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator, error) {
+func New(epStore *endpoint.Store) (*Replicator, error) {
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func New(epStore *endpoint.Store, localKeystone *keystone.Keystone) (*Replicator
 
 	return &Replicator{
 		serviceWaitGroup: &sync.WaitGroup{},
-		handler:          newVncAPIHandle(epStore, localKeystone),
+		handler:          newVncAPIHandle(epStore),
 		log:              logutil.NewLogger("vnc_replication"),
 	}, nil
 }
