@@ -19,6 +19,46 @@
     },
     {
       "key": {
+        "uuid": "21c9aff7_91000555",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "return p.execCmd(ctx, containerName, cmd, env, workingDirectory)",
+      "range": {
+        "startLine": 173,
+        "startChar": 1,
+        "endLine": 176,
+        "endChar": 11
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "72b0bc97_98bf9215",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "This method lacks of removing container.",
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6b5713ed_02c373a8",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 1
@@ -30,6 +70,161 @@
       "writtenOn": "2020-02-04T22:03:38Z",
       "side": 1,
       "message": "I think this was a confusing feature of docker client, as containerExecStart won\u0027t give the output even if AttachStdout and AttachStderr are set to true. This was my headache when first tried out. Because ContainerExecStart will run as another process apart from the main process of the container, and only the main process\u0027s stdout and stderr are piped out by default, ContainerExecAttatch is the only way to get a log.\nBtw, there is another way that might suit the need, you can give the command you want to use when calling ContainerCreate function, though this forbid the container to run exec any following command and we have to kill it afterwards.",
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "60afc9bc_c76b0659",
+        "filename": "pkg/ansible/container_player_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Add tests.",
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6de11157_79544901",
+        "filename": "pkg/ansible/container_player_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 406,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Finish this method.",
+      "range": {
+        "startLine": 406,
+        "startChar": 1,
+        "endLine": 406,
+        "endChar": 8
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f19743ff_a6d71574",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 236,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Finish this.",
+      "range": {
+        "startLine": 236,
+        "startChar": 1,
+        "endLine": 236,
+        "endChar": 8
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52626ab0_19173636",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Check if this method is still required.",
+      "range": {
+        "startLine": 58,
+        "startChar": 0,
+        "endLine": 63,
+        "endChar": 1
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "91ceaf6e_99aebfb1",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Set proper workingDir",
+      "range": {
+        "startLine": 370,
+        "startChar": 1,
+        "endLine": 370,
+        "endChar": 18
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b37712b_2c66ccd6",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 412,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Set to mounts.",
+      "range": {
+        "startLine": 412,
+        "startChar": 1,
+        "endLine": 412,
+        "endChar": 16
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "267496df_374034d7",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 413,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-04T22:17:00Z",
+      "side": 1,
+      "message": "Set to proper workingDir",
+      "range": {
+        "startLine": 413,
+        "startChar": 1,
+        "endLine": 413,
+        "endChar": 18
+      },
       "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
