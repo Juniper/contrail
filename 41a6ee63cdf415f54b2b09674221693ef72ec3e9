@@ -123,6 +123,24 @@
       "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8765579_5b44ed41",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-04T17:11:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3a4fa318_a5a57039",
+      "revId": "41a6ee63cdf415f54b2b09674221693ef72ec3e9",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

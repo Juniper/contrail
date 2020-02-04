@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5c027d82_1c602003",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 52
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-04T17:11:24Z",
+      "side": 1,
+      "message": "I am not sure what \"rel\" stands for, but I vote on \"proxy\".",
+      "parentUuid": "620486aa_3492c7f9",
+      "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a87092c6_bb464f49",
         "filename": "pkg/apisrv/homepage_test.go",
         "patchSetId": 52
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "1a2da2f3_571fed14",
+        "filename": "pkg/apisrv/homepage_test.go",
+        "patchSetId": 52
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-04T17:11:24Z",
+      "side": 1,
+      "message": "I have no objections.",
+      "parentUuid": "a87092c6_bb464f49",
+      "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c49bd9a5_8b6cf34d",
         "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
         "patchSetId": 52
@@ -47,6 +83,24 @@
       "writtenOn": "2020-01-28T12:54:18Z",
       "side": 1,
       "message": "Is having static files in the homepage necessary (it hasn\u0027t been done before)? I imagine it could add a lot of entries.",
+      "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b1cdab9_adce2da2",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/baseapisrv/server.go",
+        "patchSetId": 52
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-04T17:11:24Z",
+      "side": 1,
+      "message": "Let\u0027s leave current behaviour and remove TODO",
+      "parentUuid": "c49bd9a5_8b6cf34d",
       "revId": "5c6be9cf669848b2f8f3be8812dd8849e98899d6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
