@@ -9,8 +9,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/db"
-	"github.com/Juniper/asf/pkg/db/cassandra"
-	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services"
@@ -19,8 +17,6 @@ import (
 // Data source and destination types.
 const (
 	YAMLType          = "yaml"
-	CassandraType     = "cassandra"
-	CassandraDumpType = "cassandra_dump"
 	RDBMSType         = "rdbms"
 	EtcdType          = "etcd"
 	HTTPType          = "http"
@@ -32,9 +28,6 @@ type Config struct {
 	InFile                  string
 	OutType                 string
 	OutFile                 string
-	CassandraPort           int
-	CassandraTimeout        int
-	CassandraConnectTimeout int
 	EtcdNotifierPath        string
 	URL                     string
 }
@@ -60,16 +53,6 @@ func Convert(c *Config) error {
 
 func readData(c *Config) (*services.EventList, error) {
 	switch c.InType {
-	case CassandraType:
-		cassCfg := cassandra.Config{
-			Host:           c.InFile,
-			Port:           c.CassandraPort,
-			Timeout:        time.Duration(c.CassandraTimeout) * time.Second,
-			ConnectTimeout: time.Duration(c.CassandraConnectTimeout) * time.Millisecond,
-		}
-		return cassandra.DumpCassandra(cassCfg)
-	case CassandraDumpType:
-		return cassandra.ReadCassandraDump(c.InFile)
 	case YAMLType:
 		return readYAML(c.InFile)
 	case RDBMSType:
