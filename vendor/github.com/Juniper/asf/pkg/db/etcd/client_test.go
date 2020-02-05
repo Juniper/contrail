@@ -91,13 +91,13 @@ func TestClient_DoInTransaction(t *testing.T) {
 	}{
 		{
 			name:    "transaction is already in context, function returns no error",
-			ctx:     WithTxn(context.Background(), &stmTxn{}),
+			ctx:     WithTxn(context.Background(), &StmTxn{}),
 			do:      func(context.Context) error { return nil },
 			wantErr: false,
 		},
 		{
 			name:    "transaction is already in context, function returns error",
-			ctx:     WithTxn(context.Background(), &stmTxn{}),
+			ctx:     WithTxn(context.Background(), &StmTxn{}),
 			do:      func(context.Context) error { return assert.AnError },
 			wantErr: true,
 		},
