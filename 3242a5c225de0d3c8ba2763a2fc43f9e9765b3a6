@@ -34,6 +34,24 @@
       "revId": "3242a5c225de0d3c8ba2763a2fc43f9e9765b3a6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23379163_1a31daa9",
+        "filename": "pkg/proxy/dynamic_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-05T13:54:46Z",
+      "side": 1,
+      "message": "They could be in contrail/pkg/keystone but I think it is out of scope.",
+      "parentUuid": "ffac8077_49649109",
+      "revId": "3242a5c225de0d3c8ba2763a2fc43f9e9765b3a6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
