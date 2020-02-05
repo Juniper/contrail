@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "16942b4d_57dd0d82",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-05T13:25:18Z",
+      "side": 1,
+      "message": "I know that this logic is equivalent with the old one, however this looks like a potential bug. Why can we start replicator only if we have local keystone enabled?\nI looked into the code and replication uses only one method from local keystone https://github.com/Juniper/contrail/blob/master/pkg/replication/client.go#L63 and this method is not specific to local keystone https://github.com/Juniper/contrail/blob/bb969af02762bf72608b77a70fbeb0f9571bc41f/pkg/keystone/api.go#L271\n\nMaybe we could fix it in this review?",
+      "revId": "e17ed92ae8e830bc6a4c168ac0b9cae8e43af00a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
