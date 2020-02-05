@@ -6,12 +6,14 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/asf/pkg/db/etcd"
-	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
+
+// TODO: move to ASF
 
 const (
 	testResourceKey          = "concurrent-resource-test"

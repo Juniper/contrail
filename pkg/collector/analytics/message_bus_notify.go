@@ -5,7 +5,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/collector"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
