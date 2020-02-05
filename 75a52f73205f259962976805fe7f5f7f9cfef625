@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4839abbb_c105e54f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 21
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-05T09:06:07Z",
+      "side": 1,
+      "message": "Ok, know I understand - this should be in a different file. I think this should be moved to file containing ContrailService methods.",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 41,
+        "endChar": 23
+      },
+      "revId": "75a52f73205f259962976805fe7f5f7f9cfef625",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
