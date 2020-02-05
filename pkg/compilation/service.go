@@ -22,11 +22,12 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
+	asfetcd "github.com/Juniper/asf/pkg/etcd"
 )
 
 const serviceName = "intent-compiler"
@@ -61,7 +62,7 @@ type Store interface {
 	Create(context.Context, string, []byte) error
 	Put(context.Context, string, []byte) error
 	Get(context.Context, string) ([]byte, error)
-	WatchRecursive(context.Context, string, int64) chan etcd.Message
+	WatchRecursive(context.Context, string, int64) chan asfetcd.Message
 	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 	Close() error
 }
@@ -164,7 +165,7 @@ func (ics *IntentCompilationService) handleMessage(
 }
 
 func (ics *IntentCompilationService) getStoredIndex(ctx context.Context) (int64, error) {
-	txn := etcd.GetTxn(ctx)
+	txn := asfetcd.GetTxn(ctx)
 	messageIndexKey := ics.config.EtcdNotifierCfg.MsgIndexString
 
 	storedIndexData := txn.Get(messageIndexKey)
@@ -178,7 +179,7 @@ func (ics *IntentCompilationService) getStoredIndex(ctx context.Context) (int64,
 }
 
 func (ics *IntentCompilationService) putStoredIndex(ctx context.Context, index int64) {
-	txn := etcd.GetTxn(ctx)
+	txn := asfetcd.GetTxn(ctx)
 	messageIndexKey := ics.config.EtcdNotifierCfg.MsgIndexString
 
 	newIndexStr := strconv.FormatInt(index, 10)
