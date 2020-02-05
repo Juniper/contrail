@@ -183,7 +183,7 @@ test_data:
     hostname: cloud_node_compute
     cloud_info:
       roles:
-        - compute_node
+        - compute
     credential_refs:
       - uuid: cloud_credential_uuid
     parent_type: global-system-config
