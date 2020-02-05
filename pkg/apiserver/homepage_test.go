@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/apiserver"
-	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"

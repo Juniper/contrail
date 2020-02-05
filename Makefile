@@ -42,7 +42,7 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 	$(CONTRAILSCHEMA) generate --no-regenerate --schemas schemas/contrail --addons schemas/addons \
 		--template-config tools/templates/contrail/template_config.yaml \
 		--db-import-path github.com/Juniper/contrail/pkg/db \
-		--etcd-import-path github.com/Juniper/contrail/pkg/db/etcd \
+		--etcd-import-path github.com/Juniper/contrail/pkg/etcd \
 		--models-import-path github.com/Juniper/contrail/pkg/models \
 		--services-import-path github.com/Juniper/contrail/pkg/services \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
