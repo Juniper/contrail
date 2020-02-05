@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/db/etcd"
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
