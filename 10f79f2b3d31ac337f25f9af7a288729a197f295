@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "90aade15_0e628fba",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-05T09:36:06Z",
+      "side": 1,
+      "message": "Please start Replicator just after keystone.Init(es) to simplify code.",
+      "revId": "10f79f2b3d31ac337f25f9af7a288729a197f295",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
