@@ -13,9 +13,6 @@ import (
 	"github.com/Juniper/asf/pkg/services"
 
 	"github.com/Juniper/asf/pkg/apisrv"
-	"github.com/Juniper/asf/pkg/db/cache"
-	"github.com/Juniper/asf/pkg/db/cassandra"
-	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/retry"
 	syncp "github.com/Juniper/asf/pkg/sync"
@@ -49,8 +46,6 @@ var processCmd = &cobra.Command{
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
 	maybeStartCacheService(wg)
-	MaybeStart("replication.cassandra", startCassandraReplicator, wg)
-	MaybeStart("replication.amqp", startAmqpReplicator, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)
 	MaybeStart("sync", startSync, wg)
@@ -76,18 +71,8 @@ func maybeStartCacheService(wg *sync.WaitGroup) {
 	}
 	logrus.Debug("Cache service enabled")
 	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
-	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
-}
-
-func startCassandraWatcher() {
-	logrus.Debug("Cassandra watcher enabled for cache")
-	producer := cassandra.NewEventProducer(cacheDB)
-	err := producer.Start(context.Background())
-	if err != nil {
-		logrus.Warn(err)
-	}
 }
 
 func startEtcdWatcher() {
@@ -113,32 +98,6 @@ func startRDBMSWatcher() {
 		logutil.FatalWithStackTrace(err)
 	}
 	defer producer.Close()
-	err = producer.Start(context.Background())
-	if err != nil {
-		logrus.Warn(err)
-	}
-}
-
-func startCassandraReplicator() {
-	logrus.Debug("Cassandra replication service enabled")
-	cassandraProcessor := cassandra.NewEventProcessor()
-	producer, err := etcd.NewEventProducer(cassandraProcessor, "cassandra-replicator")
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-	err = producer.Start(context.Background())
-	if err != nil {
-		logrus.Warn(err)
-	}
-}
-
-func startAmqpReplicator() {
-	logrus.Debug("AMQP replication service enabled")
-	amqpProcessor := cassandra.NewAmqpEventProcessor()
-	producer, err := etcd.NewEventProducer(amqpProcessor, "amqp-replicator")
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
 	err = producer.Start(context.Background())
 	if err != nil {
 		logrus.Warn(err)
