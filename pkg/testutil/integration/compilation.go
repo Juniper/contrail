@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/db/etcd"
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/Juniper/asf/pkg/db/etcd"
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
