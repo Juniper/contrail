@@ -10,10 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
 )
-
-// TODO(dfurman): move to ASF
 
 const (
 	dialTimeout      = 10 * time.Second
@@ -93,13 +91,13 @@ func TestClient_DoInTransaction(t *testing.T) {
 	}{
 		{
 			name:    "transaction is already in context, function returns no error",
-			ctx:     WithTxn(context.Background(), &stmTxn{}),
+			ctx:     WithTxn(context.Background(), &StmTxn{}),
 			do:      func(context.Context) error { return nil },
 			wantErr: false,
 		},
 		{
 			name:    "transaction is already in context, function returns error",
-			ctx:     WithTxn(context.Background(), &stmTxn{}),
+			ctx:     WithTxn(context.Background(), &StmTxn{}),
 			do:      func(context.Context) error { return assert.AnError },
 			wantErr: true,
 		},

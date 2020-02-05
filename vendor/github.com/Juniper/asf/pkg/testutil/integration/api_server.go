@@ -7,7 +7,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/apisrv"
 	"github.com/Juniper/asf/pkg/constants"
-	"github.com/Juniper/asf/pkg/db/cache"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/testutil"
