@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/Juniper/asf/pkg/constants"
-	"github.com/Juniper/asf/pkg/db/cache"
-	"github.com/Juniper/asf/pkg/db/etcd"
 	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
 )
 

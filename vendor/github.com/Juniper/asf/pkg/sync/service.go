@@ -7,7 +7,6 @@ import (
 	"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services"

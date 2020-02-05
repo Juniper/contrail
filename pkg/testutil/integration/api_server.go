@@ -8,8 +8,8 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/replication"

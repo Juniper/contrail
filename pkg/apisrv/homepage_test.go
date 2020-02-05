@@ -8,7 +8,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"

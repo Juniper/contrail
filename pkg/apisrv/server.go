@@ -9,11 +9,11 @@ import (
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
@@ -25,7 +25,7 @@ import (
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
-	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
+	etcdclient "github.com/Juniper/contrail/pkg/etcd"
 )
 
 // Server represents Intent API Server.
