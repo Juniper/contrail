@@ -5,8 +5,8 @@
   template_path: vendor/github.com/Juniper/asf/pkg/client/client_http.go.tmpl
   output_dir: pkg/client
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/cache/cachedb.go.tmpl
-  output_dir: pkg/db/cache
+  template_path: vendor/github.com/Juniper/asf/pkg/cache/db.go.tmpl
+  output_dir: pkg/cache
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/db/db.go.tmpl
   output_dir: pkg/db
@@ -20,8 +20,8 @@
   template_path: vendor/github.com/Juniper/asf/pkg/db/db_types.go.tmpl
   output_dir: pkg/db
 - type: all
-  template_path: vendor/github.com/Juniper/asf/pkg/db/etcd/notifier_service.go.tmpl
-  output_dir: pkg/db/etcd
+  template_path: vendor/github.com/Juniper/asf/pkg/etcd/notifier_service.go.tmpl
+  output_dir: pkg/etcd
 - type: alltype
   template_path: vendor/github.com/Juniper/asf/pkg/models/model.go.tmpl
   output_dir: pkg/models

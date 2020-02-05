@@ -12,7 +12,6 @@ import (
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db"
-	"github.com/Juniper/asf/pkg/db/cache"
 	"github.com/Juniper/asf/pkg/endpoint"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/keystone"
@@ -26,7 +25,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	etcdclient "github.com/Juniper/asf/pkg/db/etcd"
 	protocodec "github.com/gogo/protobuf/codec"
 	// TODO(buoto): Decouple from below packages
 	//"github.com/Juniper/asf/pkg/replication"

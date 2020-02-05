@@ -3,9 +3,9 @@ package integration
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/db/cache"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/etcd"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 

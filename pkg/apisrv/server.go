@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/viper"
 
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
-	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
+	etcdclient "github.com/Juniper/contrail/pkg/etcd"
 )
 
 // Server represents Intent API Server.
