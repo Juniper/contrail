@@ -8,12 +8,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/constants"
+	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	asfetcd "github.com/Juniper/asf/pkg/db/etcd"
+	
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 

@@ -22,7 +22,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
 
