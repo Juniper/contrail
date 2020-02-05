@@ -11,6 +11,7 @@ import (
 
 	//"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db"
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services"
@@ -381,7 +382,7 @@ func TestSyncService(t *testing.T) {
 	}
 
 	// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
-	viper.Set(constants.ETCDPathVK, "test")
+	viper.Set(etcd.ETCDPathVK, "test")
 	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
 

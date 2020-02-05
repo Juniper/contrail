@@ -1,19 +1,18 @@
-package etcd
+package etcd_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
 )
-
-// TODO(dfurman): move to ASF
 
 const (
 	dialTimeout      = 10 * time.Second
@@ -23,21 +22,21 @@ const (
 func TestNewClient(t *testing.T) {
 	tests := []struct {
 		name   string
-		config *Config
+		config *etcd.Config
 		fails  bool
 	}{
 		{
 			name: "succeeds when TLS disabled and correct credentials given",
-			config: &Config{
+			config: &etcd.Config{
 				Config: *etcdConfig(dialTimeout),
 			},
 			fails: false,
 		},
 		{
 			name: "fails when TLS enabled and no certificates given",
-			config: &Config{
+			config: &etcd.Config{
 				Config: *etcdConfig(shortDialTimeout),
-				TLSConfig: TLSConfig{
+				TLSConfig: etcd.TLSConfig{
 					Enabled: true,
 				},
 			},
@@ -45,9 +44,9 @@ func TestNewClient(t *testing.T) {
 		},
 		{
 			name: "fails when TLS enabled invalid certificate paths given",
-			config: &Config{
+			config: &etcd.Config{
 				Config: *etcdConfig(dialTimeout),
-				TLSConfig: TLSConfig{
+				TLSConfig: etcd.TLSConfig{
 					Enabled:         true,
 					CertificatePath: "invalid-path",
 					KeyPath:         "invalid-path",
@@ -60,7 +59,7 @@ func TestNewClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, err := NewClient(tt.config)
+			c, err := etcd.NewClient(tt.config)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -79,7 +78,7 @@ func etcdConfig(dialTimeout time.Duration) *clientv3.Config {
 	}
 }
 
-func closeClient(t *testing.T, c *Client) {
+func closeClient(t *testing.T, c *etcd.Client) {
 	assert.NoError(t, c.Close())
 }
 
@@ -93,13 +92,13 @@ func TestClient_DoInTransaction(t *testing.T) {
 	}{
 		{
 			name:    "transaction is already in context, function returns no error",
-			ctx:     WithTxn(context.Background(), &stmTxn{}),
+			ctx:     etcd.WithTxn(context.Background(), &etcd.StmTxn{}),
 			do:      func(context.Context) error { return nil },
 			wantErr: false,
 		},
 		{
 			name:    "transaction is already in context, function returns error",
-			ctx:     WithTxn(context.Background(), &stmTxn{}),
+			ctx:     etcd.WithTxn(context.Background(), &etcd.StmTxn{}),
 			do:      func(context.Context) error { return assert.AnError },
 			wantErr: true,
 		},
@@ -107,7 +106,7 @@ func TestClient_DoInTransaction(t *testing.T) {
 			name: "get the key twice",
 			ctx:  context.Background(),
 			do: func(ctx context.Context) error {
-				txn := GetTxn(ctx)
+				txn := etcd.GetTxn(ctx)
 
 				txn.Put(testKey, []byte("some value"))
 				v1 := txn.Get(testKey)
@@ -127,7 +126,7 @@ func TestClient_DoInTransaction(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, err := NewClient(&Config{
+			c, err := etcd.NewClient(&etcd.Config{
 				Config:      *etcdConfig(shortDialTimeout),
 				ServiceName: t.Name(),
 			})
