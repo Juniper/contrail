@@ -8,12 +8,11 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	asfetcd "github.com/Juniper/asf/pkg/db/etcd"
+	asfetcd "github.com/Juniper/asf/pkg/etcd"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
@@ -251,7 +250,7 @@ func (s *blockingStore) RegisterIn(ics *compilation.IntentCompilationService) {
 
 func (s *blockingStore) WatchRecursive(
 	ctx context.Context, keyPattern string, afterIndex int64,
-) chan etcd.Message {
+) chan asfetcd.Message {
 	c := s.Store.WatchRecursive(ctx, keyPattern, afterIndex)
 	s.StartedWatch <- struct{}{}
 	return c
@@ -261,13 +260,13 @@ func (s *blockingStore) DoInTransaction(ctx context.Context, do func(ctx context
 	s.TransactionInProgress = make(chan struct{})
 	wrappedDo := func(ctx context.Context) error {
 		txn := blockingTxn{
-			Txn:         etcd.GetTxn(ctx),
+			Txn:         asfetcd.GetTxn(ctx),
 			StartGet:    s.StartGet,
 			FinishedGet: s.FinishedGet,
 			StartPut:    s.StartPut,
 			FinishedPut: s.FinishedPut,
 		}
-		ctx = etcd.WithTxn(ctx, txn)
+		ctx = asfetcd.WithTxn(ctx, txn)
 		return do(ctx)
 	}
 
@@ -277,7 +276,7 @@ func (s *blockingStore) DoInTransaction(ctx context.Context, do func(ctx context
 }
 
 type blockingTxn struct {
-	etcd.Txn
+	asfetcd.Txn
 
 	StartGet    chan struct{}
 	FinishedGet chan string

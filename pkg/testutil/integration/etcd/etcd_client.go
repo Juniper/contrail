@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/db/etcd"
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/coreos/etcd/clientv3"
