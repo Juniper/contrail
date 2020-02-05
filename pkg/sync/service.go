@@ -7,7 +7,7 @@ import (
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
@@ -16,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	asfetcd "github.com/Juniper/asf/pkg/db/etcd"
+	asfetcd "github.com/Juniper/asf/pkg/etcd"
 )
 
 const (
