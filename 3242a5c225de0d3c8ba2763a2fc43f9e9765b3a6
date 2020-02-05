@@ -16,6 +16,24 @@
       "revId": "3242a5c225de0d3c8ba2763a2fc43f9e9765b3a6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ffac8077_49649109",
+        "filename": "pkg/proxy/dynamic_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-05T11:00:35Z",
+      "side": 1,
+      "message": "I see that this file has tests for both /proxy and /keystone endpoints, so having different function names makes sense.\n\n\u003e DynamicProxyMiddleware used by also keystone.Keystone for its proxy - tested here.\n\nActually, keystone uses asf/pkg/proxy.HandleRequest, not this middleware.\nNow I\u0027m concerned that the tests of the local keystone proxying would stay in contrail/pkg/proxy. I don\u0027t have a better idea on where to put them, though.",
+      "parentUuid": "2a2f0b16_24427050",
+      "revId": "3242a5c225de0d3c8ba2763a2fc43f9e9765b3a6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
