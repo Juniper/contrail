@@ -16,6 +16,24 @@
       "revId": "e17ed92ae8e830bc6a4c168ac0b9cae8e43af00a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "41c70899_3783e8ac",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-05T14:07:20Z",
+      "side": 1,
+      "message": "Nice catch. I table to adapt GetAuthType() method to be a free function taking additional apiClient parameter.",
+      "parentUuid": "16942b4d_57dd0d82",
+      "revId": "e17ed92ae8e830bc6a4c168ac0b9cae8e43af00a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
