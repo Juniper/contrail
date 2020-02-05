@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  etcd:
+    container_name: etcd
+    ports:
+      - 2379:2379
+    image: 'gcr.io/etcd-development/etcd:v3.3.18'
+    command: etcd --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
+    environment:
+      - ETCDCTL_API=3
