@@ -1,7 +1,7 @@
 package contrailutil
 
 import (
-	"github.com/Juniper/asf/pkg/db/etcd"
+	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/convert"
 	"github.com/spf13/cobra"
