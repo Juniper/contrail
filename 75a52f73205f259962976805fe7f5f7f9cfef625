@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "0d80624e_8df87017",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 21
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-05T13:31:47Z",
+      "side": 1,
+      "message": "After discussing with Daniel and Witaut, we came to conclusion that this can\u0027t be used in this code.\n\nThis code assumes that models.APIAccessLists and service.ListAPIAccessList is defined in every client project which is not true. We already have AccessGetter interface in RBACService which is good, but the object that implements this interface cannot be ContrailService.\n\nWhat you need to do is create a struct that implements AccessGetter somewhere in non-ASF code. This struct should use ReadService to fetch objects and services.GetObject to fetch object depending on its type name.",
+      "range": {
+        "startLine": 26,
+        "startChar": 16,
+        "endLine": 26,
+        "endChar": 30
+      },
+      "revId": "75a52f73205f259962976805fe7f5f7f9cfef625",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4839abbb_c105e54f",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
         "patchSetId": 21
