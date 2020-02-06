@@ -59,7 +59,7 @@ type Config struct { // nolint: maligned
 }
 
 type terraformStateReader interface {
-	Read() (terraformState, error)
+	Read() (TerraformState, error)
 }
 
 // CommandExecutor interface provides methods to execute a command
@@ -76,7 +76,9 @@ type Cloud struct {
 	reporter             *report.Reporter
 	streamServer         *logutil.StreamServer
 	terraformStateReader terraformStateReader
-	ctx                  context.Context
+	// TODO(dfurman): Do not store Contexts inside a struct type; instead, pass a Context explicitly to each function
+	// that needs it. See: https://golang.org/pkg/context/
+	ctx context.Context
 }
 
 // NewCloudManager creates cloud fields by reading config from given configPath
@@ -176,7 +178,7 @@ func (c *Cloud) manage() (err error) {
 			)
 		}
 	}()
-	return c.handleCloudRequest()
+	return c.HandleCloudRequest()
 }
 
 func (c *Cloud) provisioningSetToNonState() (bool, error) {
@@ -184,10 +186,11 @@ func (c *Cloud) provisioningSetToNonState() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return cloudObject.GetProvisioningState() == statusNoState, nil
+	return cloudObject.GetProvisioningState() == StatusNoState, nil
 }
 
-func (c *Cloud) handleCloudRequest() error {
+// HandleCloudRequest handles Cloud create/update/delete request.
+func (c *Cloud) HandleCloudRequest() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 
@@ -204,20 +207,20 @@ func (c *Cloud) handleCloudRequest() error {
 	}
 
 	switch c.config.Action {
-	case createAction:
+	case CreateAction:
 		c.log.Debug("Starting create of cloud")
-		c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusCreateProgress}, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, map[string]interface{}{StatusField: StatusCreateProgress}, defaultCloudResource)
 		if err = c.create(); err != nil {
 			return errors.Wrapf(err, "failed to create cloud with CloudID %v", c.config.CloudID)
 		}
-		c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusCreated}, defaultCloudResource)
-	case updateAction:
+		c.reporter.ReportStatus(c.ctx, map[string]interface{}{StatusField: StatusCreated}, defaultCloudResource)
+	case UpdateAction:
 		c.log.Debug("Starting update of cloud")
-		c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusUpdateProgress}, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, map[string]interface{}{StatusField: StatusUpdateProgress}, defaultCloudResource)
 		if err = c.update(); err != nil {
 			return errors.Wrapf(err, "failed to update cloud with CloudID %v", c.config.CloudID)
 		}
-		c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: statusUpdated}, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, map[string]interface{}{StatusField: StatusUpdated}, defaultCloudResource)
 	default:
 		return errors.Errorf("Invalid action %s called for cloud %s", c.config.Action, c.config.CloudID)
 	}
@@ -230,7 +233,7 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 		return false, err
 	}
 
-	return c.config.Action == updateAction && cloudObj.ProvisioningAction == deleteCloudAction, nil
+	return c.config.Action == UpdateAction && cloudObj.ProvisioningAction == DeleteCloudAction, nil
 }
 
 func (c *Cloud) fail() error {
@@ -243,22 +246,22 @@ func (c *Cloud) fail() error {
 		return errors.New("unknown state change. Trying to set failure from state: " +
 			cloudObject.GetProvisioningState())
 	}
-	c.reporter.ReportStatus(c.ctx, map[string]interface{}{statusField: failStatus}, defaultCloudResource)
+	c.reporter.ReportStatus(c.ctx, map[string]interface{}{StatusField: failStatus}, defaultCloudResource)
 	return nil
 }
 
 func (c *Cloud) getFailStatusField(currentStatus string) string {
 	switch currentStatus {
-	case statusCreateProgress:
-		return statusCreateFailed
-	case statusUpdateProgress:
-		return statusUpdateFailed
-	case statusNoState:
+	case StatusCreateProgress:
+		return StatusCreateFailed
+	case StatusUpdateProgress:
+		return StatusUpdateFailed
+	case StatusNoState:
 		switch c.config.Action {
-		case createAction:
-			return statusCreateFailed
-		case updateAction:
-			return statusUpdateFailed
+		case CreateAction:
+			return StatusCreateFailed
+		case UpdateAction:
+			return StatusUpdateFailed
 		}
 	}
 	return ""
@@ -598,7 +601,7 @@ func (c *Cloud) verifyContrailClusterStatus(data *Data) error {
 
 func (c *Cloud) getTemplateRoot() string {
 	if c.config.TemplateRoot == "" {
-		return defaultTemplateRoot
+		return DefaultTemplateRoot
 	}
 	return c.config.TemplateRoot
 }
@@ -631,4 +634,14 @@ func (c *Cloud) removeVulnerableFiles(data *Data) error {
 		)
 	}
 	return osutil.ForceRemoveFiles(f, c.log)
+}
+
+// Config returns copy of Cloud's config.
+func (c *Cloud) Config() Config {
+	return *c.config
+}
+
+// Context returns Cloud's context.
+func (c *Cloud) Context() context.Context {
+	return c.ctx
 }
