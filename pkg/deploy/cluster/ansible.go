@@ -24,18 +24,18 @@ import (
 )
 
 const (
-	createAction = "create"
-	updateAction = "update"
-	deleteAction = "delete"
+	CreateAction = "create"
+	UpdateAction = "update"
+	DeleteAction = "delete"
 
-	provisionProvisioningAction     = "PROVISION"
-	upgradeProvisioningAction       = "UPGRADE"
-	importProvisioningAction        = "IMPORT"
-	addComputeProvisioningAction    = "ADD_COMPUTE"
-	deleteComputeProvisioningAction = "DELETE_COMPUTE"
-	addCSNProvisioningAction        = "ADD_CSN"
-	addCVFMProvisioningAction       = "ADD_CVFM"
-	destroyAction                   = "DESTROY"
+	ProvisionProvisioningAction     = "PROVISION"
+	UpgradeProvisioningAction       = "UPGRADE"
+	ImportProvisioningAction        = "IMPORT"
+	AddComputeProvisioningAction    = "ADD_COMPUTE"
+	DeleteComputeProvisioningAction = "DELETE_COMPUTE"
+	AddCSNProvisioningAction        = "ADD_CSN"
+	AddCVFMProvisioningAction       = "ADD_CVFM"
+	DestroyAction                   = "DESTROY"
 
 	enable  = "yes"
 	disable = "no"
@@ -59,14 +59,15 @@ type openstackVariables struct {
 	enableHaproxy string
 }
 
-type contrailAnsibleDeployer struct {
+// ContrailAnsibleDeployer is a deployer using CAD.
+type ContrailAnsibleDeployer struct {
 	deployCluster
 	ansibleClient   *ansible.CLIClient
 	containerPlayer Player
 }
 
 // nolint: gocyclo
-func (a *contrailAnsibleDeployer) untar(src, dst string) error {
+func (a *ContrailAnsibleDeployer) untar(src, dst string) error {
 	f, err := os.Open(src)
 	if err != nil {
 		return err
@@ -142,54 +143,54 @@ func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 	}
 }
 
-func (a *contrailAnsibleDeployer) getInstanceTemplate() (instanceTemplate string) {
-	return filepath.Join(a.getTemplateRoot(), defaultInstanceTemplate)
+func (a *ContrailAnsibleDeployer) getInstanceTemplate() (instanceTemplate string) {
+	return filepath.Join(a.getTemplateRoot(), DefaultInstanceTemplate)
 }
 
-func (a *contrailAnsibleDeployer) getInstanceFile() (instanceFile string) {
-	return filepath.Join(a.getWorkingDir(), defaultInstanceFile)
+func (a *ContrailAnsibleDeployer) getInstanceFile() (instanceFile string) {
+	return filepath.Join(a.getWorkingDir(), DefaultInstanceFile)
 }
 
-func (a *contrailAnsibleDeployer) getVcenterFile() (instanceFile string) {
-	return filepath.Join(a.getWorkingDir(), defaultVcenterFile)
+func (a *ContrailAnsibleDeployer) getVcenterFile() (instanceFile string) {
+	return filepath.Join(a.getWorkingDir(), DefaultVcenterFile)
 }
 
-func (a *contrailAnsibleDeployer) getVcenterTemplate() (instanceTemplate string) {
-	return filepath.Join(a.getTemplateRoot(), defaultVcenterTemplate)
+func (a *ContrailAnsibleDeployer) getVcenterTemplate() (instanceTemplate string) {
+	return filepath.Join(a.getTemplateRoot(), DefaultVcenterTemplate)
 }
 
-func (a *contrailAnsibleDeployer) getInventoryTemplate() (inventoryTemplate string) {
-	return filepath.Join(a.getTemplateRoot(), defaultInventoryTemplate)
+func (a *ContrailAnsibleDeployer) getInventoryTemplate() (inventoryTemplate string) {
+	return filepath.Join(a.getTemplateRoot(), DefaultInventoryTemplate)
 }
 
-func (a *contrailAnsibleDeployer) getInventoryFile() (inventoryFile string) {
-	return filepath.Join(a.getWorkingDir(), defaultInventoryFile)
+func (a *ContrailAnsibleDeployer) getInventoryFile() (inventoryFile string) {
+	return filepath.Join(a.getWorkingDir(), DefaultInventoryFile)
 }
 
-func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir string) {
-	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleRepo)
+func (a *ContrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir string) {
+	return filepath.Join(DefaultAnsibleRepoDir, DefaultAnsibleRepo)
 }
 
-func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoInContainer() string {
-	return defaultAnsibleRepoInContainer
+func (a *ContrailAnsibleDeployer) getAnsibleDeployerRepoInContainer() string {
+	return DefaultAnsibleRepoInContainer
 }
 
-func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
+func (a *ContrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
 	if a.cluster.config.Test {
 		return filepath.Join(a.cluster.config.WorkRoot, defaultAppformixAnsibleRepo, defaultAppformixDir)
 	}
 	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultAppformixDir)
 }
 
-func (a *contrailAnsibleDeployer) getXflowDeployerDir() (xflowDir string) {
+func (a *ContrailAnsibleDeployer) getXflowDeployerDir() (xflowDir string) {
 	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultXflowDir)
 }
 
-func (a *contrailAnsibleDeployer) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
-	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleDatapathEncryptionRepo)
+func (a *ContrailAnsibleDeployer) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
+	return filepath.Join(DefaultAnsibleRepoDir, DefaultAnsibleDatapathEncryptionRepo)
 }
 
-func (a *contrailAnsibleDeployer) fetchAnsibleDeployer() error {
+func (a *ContrailAnsibleDeployer) fetchAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 
 	a.Log.Infof("Fetching :%s", a.cluster.config.AnsibleFetchURL)
@@ -206,7 +207,7 @@ func (a *contrailAnsibleDeployer) fetchAnsibleDeployer() error {
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
+func (a *ContrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
@@ -218,7 +219,7 @@ func (a *contrailAnsibleDeployer) cherryPickAnsibleDeployer() error {
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) resetAnsibleDeployer() error {
+func (a *ContrailAnsibleDeployer) resetAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.Log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
@@ -230,7 +231,7 @@ func (a *contrailAnsibleDeployer) resetAnsibleDeployer() error {
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) compareInventory() (identical bool, err error) {
+func (a *ContrailAnsibleDeployer) compareInventory() (identical bool, err error) {
 	tmpfile, err := ioutil.TempFile("", "instances")
 	if err != nil {
 		return false, err
@@ -258,7 +259,8 @@ func (a *contrailAnsibleDeployer) compareInventory() (identical bool, err error)
 	return bytes.Equal(oldInventory, newInventory), nil
 }
 
-func (a *contrailAnsibleDeployer) createInventory() error {
+// CreateInventory creates "instances" file and "inventory" file.
+func (a *ContrailAnsibleDeployer) CreateInventory() error {
 	if err := a.createInstancesFile(a.getInstanceFile()); err != nil {
 		return err
 	}
@@ -274,7 +276,7 @@ func (a *contrailAnsibleDeployer) createInventory() error {
 }
 
 // nolint: gocyclo
-func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables {
+func (a *ContrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables {
 	openstackVars := openstackVariables{}
 	cluster := a.clusterData.GetOpenstackClusterInfo()
 	// Enable haproxy when multiple openstack control nodes present in cluster
@@ -328,7 +330,7 @@ func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables 
 	return &openstackVars
 }
 
-func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error {
+func (a *ContrailAnsibleDeployer) createInstancesFile(destination string) error {
 	a.Log.Info("Creating instance.yml input file for ansible deployer")
 	pContext := pongo2.Context{
 		"cluster":            a.clusterData.ClusterInfo,
@@ -346,27 +348,27 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 		"defaultSSHPassword": a.clusterData.DefaultSSHPassword,
 		"defaultSSHKey":      a.clusterData.DefaultSSHKey,
 	}
-	if err := template.ApplyToFile(a.getInstanceTemplate(), destination, pContext, defaultFilePermRWOnly); err != nil {
+	if err := template.ApplyToFile(a.getInstanceTemplate(), destination, pContext, DefaultFilePermRWOnly); err != nil {
 		return err
 	}
 	a.Log.Info("Created instance.yml input file for ansible deployer")
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) createDatapathEncryptionInventory(destination string) error {
+func (a *ContrailAnsibleDeployer) createDatapathEncryptionInventory(destination string) error {
 	a.Log.Info("Creating inventory.yml input file for datapath encryption ansible deployer")
 	pContext := pongo2.Context{
 		"cluster": a.clusterData.ClusterInfo,
 		"nodes":   a.clusterData.GetAllNodesInfo(),
 	}
-	if err := template.ApplyToFile(a.getInventoryTemplate(), destination, pContext, defaultFilePermRWOnly); err != nil {
+	if err := template.ApplyToFile(a.getInventoryTemplate(), destination, pContext, DefaultFilePermRWOnly); err != nil {
 		return err
 	}
 	a.Log.Info("Created inventory.yml input file for datapath encryption ansible deployer")
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) error {
+func (a *ContrailAnsibleDeployer) createVcenterVarsFile(destination string) error {
 	a.Log.Info("Creating vcenter_vars.yml input file for vcenter ansible deployer")
 	pContext := pongo2.Context{
 		"cluster": a.clusterData.ClusterInfo,
@@ -374,14 +376,14 @@ func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 		"nodes":   a.clusterData.GetAllNodesInfo(),
 	}
 
-	if err := template.ApplyToFile(a.getVcenterTemplate(), destination, pContext, defaultFilePermRWOnly); err != nil {
+	if err := template.ApplyToFile(a.getVcenterTemplate(), destination, pContext, DefaultFilePermRWOnly); err != nil {
 		return err
 	}
 	a.Log.Info("Created vcenter_vars.yml input file for vcenter ansible deployer")
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
+func (a *ContrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 	a.Log.WithField("directory", a.getAnsibleDeployerRepoInContainer()).Info("Running playbook in container")
 	return a.containerPlayer.Play(
 		context.Background(),
@@ -397,70 +399,70 @@ func (a *contrailAnsibleDeployer) playInContainer(ansibleArgs []string) error {
 	)
 }
 
-func (a *contrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
+func (a *ContrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
 	a.Log.WithField("directory", directory).Info("Running playbook")
 	return a.ansibleClient.Play(directory, ansibleArgs, "")
 }
 
-func (a *contrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {
-	return a.playInContainer(append(ansibleArgs, defaultInstanceProvPlay))
+func (a *ContrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {
+	return a.playInContainer(append(ansibleArgs, DefaultInstanceProvPlay))
 }
 
-func (a *contrailAnsibleDeployer) playInstancesConfig(ansibleArgs []string) error {
-	return a.playInContainer(append(ansibleArgs, defaultInstanceConfPlay))
+func (a *ContrailAnsibleDeployer) playInstancesConfig(ansibleArgs []string) error {
+	return a.playInContainer(append(ansibleArgs, DefaultInstanceConfPlay))
 }
 
-func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string) error {
+func (a *ContrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string) error {
 	switch a.clusterData.ClusterInfo.Orchestrator {
 	case orchestratorOpenstack:
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
 		switch a.clusterData.ClusterInfo.ProvisioningAction {
-		case addComputeProvisioningAction, deleteComputeProvisioningAction:
+		case AddComputeProvisioningAction, DeleteComputeProvisioningAction:
 			ansibleArgs = append(ansibleArgs, "--tags=nova")
 		}
-		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
+		ansibleArgs = append(ansibleArgs, DefaultOpenstackProvPlay)
 	case orchestratorKubernetes:
-		ansibleArgs = append(ansibleArgs, defaultKubernetesProvPlay)
+		ansibleArgs = append(ansibleArgs, DefaultKubernetesProvPlay)
 	case orchestratorVcenter:
-		ansibleArgs = append(ansibleArgs, defaultvCenterProvPlay)
+		ansibleArgs = append(ansibleArgs, DefaultvCenterProvPlay)
 	}
 
 	return a.playInContainer(ansibleArgs)
 }
 
-func (a *contrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) error {
+func (a *ContrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) error {
 	destroyAnsibleArgs := ansibleArgs[:2]
 	switch a.clusterData.ClusterInfo.Orchestrator {
 	case orchestratorOpenstack:
-		destroyAnsibleArgs = append(destroyAnsibleArgs, defaultOpenstackDestoryPlay)
+		destroyAnsibleArgs = append(destroyAnsibleArgs, DefaultOpenstackDestoryPlay)
 	}
 
 	return a.playInContainer(destroyAnsibleArgs)
 }
 
-func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
-	return a.playInContainer(append(ansibleArgs, defaultContrailProvPlay))
+func (a *ContrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
+	return a.playInContainer(append(ansibleArgs, DefaultContrailProvPlay))
 }
 
-func (a *contrailAnsibleDeployer) playContrailDestroy(ansibleArgs []string) error {
-	return a.playInContainer(append(ansibleArgs[:2], defaultContrailDestoryPlay))
+func (a *ContrailAnsibleDeployer) playContrailDestroy(ansibleArgs []string) error {
+	return a.playInContainer(append(ansibleArgs[:2], DefaultContrailDestoryPlay))
 }
 
 // TODO(dji): use ansible.container_deployer in the future
-func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
+func (a *ContrailAnsibleDeployer) playContrailDatapathEncryption() error {
 	if a.clusterData.ClusterInfo.DatapathEncryption {
 		inventory := filepath.Join(a.getWorkingDir(), "inventory.yml")
-		ansibleArgs := []string{"-i", inventory, defaultContrailDatapathEncryptionPlay}
+		ansibleArgs := []string{"-i", inventory, DefaultContrailDatapathEncryptionPlay}
 		return a.playFromDirectory(a.getAnsibleDatapathEncryptionRepoDir(), ansibleArgs)
 	}
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) appformixVenvDir() string {
+func (a *ContrailAnsibleDeployer) appformixVenvDir() string {
 	return filepath.Join(a.getAppformixAnsibleDeployerRepoDir(), "venv")
 }
 
-func (a *contrailAnsibleDeployer) xflowVenvDir() string {
+func (a *ContrailAnsibleDeployer) xflowVenvDir() string {
 	return filepath.Join(a.getXflowDeployerDir(), "venv")
 }
 
@@ -471,7 +473,7 @@ type AppformixConfig struct {
 }
 
 // TODO(dji): use ansible.container_deployer in the future
-func (a *contrailAnsibleDeployer) playAppformixProvision() error {
+func (a *ContrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
 		repoDir := a.getAppformixAnsibleDeployerRepoDir()
 		configFile := repoDir + "/" + "config.yml"
@@ -501,7 +503,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 }
 
 // TODO(dji): use ansible.container_deployer in the future
-func (a *contrailAnsibleDeployer) playXflowProvision() error {
+func (a *ContrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
 		venvDir := a.xflowVenvDir()
 		xflowDir := a.getXflowDeployerDir()
@@ -530,7 +532,7 @@ func (a *contrailAnsibleDeployer) playXflowProvision() error {
 }
 
 // nolint: gocyclo
-func (a *contrailAnsibleDeployer) playBook() error {
+func (a *ContrailAnsibleDeployer) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
 		"config_file=" + a.getInstanceFile(),
 		"-e orchestrator=" + a.clusterData.ClusterInfo.Orchestrator}
@@ -540,7 +542,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 	}
 
 	switch a.clusterData.ClusterInfo.ProvisioningAction {
-	case provisionProvisioningAction, "", addCVFMProvisioningAction:
+	case ProvisionProvisioningAction, "", AddCVFMProvisioningAction:
 		if err := a.playInstancesProvision(args); err != nil {
 			return err
 		}
@@ -571,7 +573,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playXflowProvision(); err != nil {
 			return err
 		}
-	case upgradeProvisioningAction:
+	case UpgradeProvisioningAction:
 		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
@@ -584,7 +586,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playXflowProvision(); err != nil {
 			return err
 		}
-	case addComputeProvisioningAction:
+	case AddComputeProvisioningAction:
 		if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
 			if err := a.playOrchestratorProvision(args); err != nil {
 				return err
@@ -609,7 +611,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playAppformixProvision(); err != nil {
 			return err
 		}
-	case deleteComputeProvisioningAction:
+	case DeleteComputeProvisioningAction:
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
 		}
@@ -622,7 +624,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playAppformixProvision(); err != nil {
 			return err
 		}
-	case addCSNProvisioningAction:
+	case AddCSNProvisioningAction:
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
 		}
@@ -632,7 +634,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playAppformixProvision(); err != nil {
 			return err
 		}
-	case destroyAction:
+	case DestroyAction:
 		if err := a.playOrchestratorDestroy(args); err != nil {
 			return err
 		}
@@ -649,61 +651,61 @@ func (a *contrailAnsibleDeployer) playBook() error {
 }
 
 // nolint: gocyclo
-func (a *contrailAnsibleDeployer) createCluster() error {
+func (a *ContrailAnsibleDeployer) createCluster() error {
 	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
-	status := map[string]interface{}{statusField: statusCreateProgress}
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	status := map[string]interface{}{StatusField: StatusCreateProgress}
+	a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 
-	status[statusField] = statusCreateFailed
+	status[StatusField] = StatusCreateFailed
 	if err := a.createWorkingDir(); err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 		return err
 	}
 
 	if !a.cluster.config.Test {
 		if a.cluster.config.AnsibleFetchURL != "" {
 			if err := a.fetchAnsibleDeployer(); err != nil {
-				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+				a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleCherryPickRevision != "" {
 			if err := a.cherryPickAnsibleDeployer(); err != nil {
-				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+				a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleRevision != "" {
 			if err := a.resetAnsibleDeployer(); err != nil {
-				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+				a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 				return err
 			}
 		}
 	}
-	if err := a.createInventory(); err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := a.CreateInventory(); err != nil {
+		a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 		return err
 	}
 	if err := a.playBook(); err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 		return err
 	}
 
-	status[statusField] = statusCreated
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	status[StatusField] = StatusCreated
+	a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
-	if a.clusterData.ClusterInfo.ProvisioningState == statusNoState {
+func (a *ContrailAnsibleDeployer) isUpdated() (updated bool, err error) {
+	if a.clusterData.ClusterInfo.ProvisioningState == StatusNoState {
 		return false, nil
 	}
 	status := map[string]interface{}{}
 	if _, err := os.Stat(a.getInstanceFile()); err == nil {
 		ok, err := a.compareInventory()
 		if err != nil {
-			status[statusField] = statusUpdateFailed
-			a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			status[StatusField] = StatusUpdateFailed
+			a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 			return false, err
 		}
 		if ok {
@@ -714,35 +716,35 @@ func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
 	return false, nil
 }
 
-func (a *contrailAnsibleDeployer) updateCluster() error {
+func (a *ContrailAnsibleDeployer) updateCluster() error {
 	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
 	status := map[string]interface{}{}
-	status[statusField] = statusUpdateProgress
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	status[StatusField] = StatusUpdateProgress
+	a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 
-	if err := a.createInventory(); err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := a.CreateInventory(); err != nil {
+		a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 		return err
 	}
 	if err := a.playBook(); err != nil {
-		status[statusField] = statusUpdateFailed
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		status[StatusField] = StatusUpdateFailed
+		a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 		return err
 	}
 
-	status[statusField] = statusUpdated
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	status[StatusField] = StatusUpdated
+	a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) deleteCluster() error {
+func (a *ContrailAnsibleDeployer) deleteCluster() error {
 	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.cluster.config.ClusterID)
 	return a.deleteWorkingDir()
 }
 
-func (a *contrailAnsibleDeployer) handleCreate() error {
+func (a *ContrailAnsibleDeployer) handleCreate() error {
 	if a.isCreated() {
-		if err := a.createInventory(); err != nil {
+		if err := a.CreateInventory(); err != nil {
 			return err
 		}
 		if err := a.updateEndpoints(); err != nil {
@@ -768,7 +770,7 @@ func (a *contrailAnsibleDeployer) handleCreate() error {
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) handleUpdate() error {
+func (a *ContrailAnsibleDeployer) handleUpdate() error {
 	updated, err := a.isUpdated()
 	if err != nil {
 		return err
@@ -782,20 +784,20 @@ func (a *contrailAnsibleDeployer) handleUpdate() error {
 	return a.updateEndpoints()
 }
 
-func (a *contrailAnsibleDeployer) handleDelete() error {
+func (a *ContrailAnsibleDeployer) handleDelete() error {
 	if err := a.deleteCluster(); err != nil {
 		return err
 	}
 	return a.deleteEndpoints()
 }
 
-func (a *contrailAnsibleDeployer) Deploy() error {
+func (a *ContrailAnsibleDeployer) Deploy() error {
 	switch a.action {
-	case createAction:
+	case CreateAction:
 		return a.handleCreate()
-	case updateAction:
+	case UpdateAction:
 		return a.handleUpdate()
-	case deleteAction:
+	case DeleteAction:
 		return a.handleDelete()
 	}
 	return nil

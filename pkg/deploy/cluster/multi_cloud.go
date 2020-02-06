@@ -23,11 +23,11 @@ import (
 )
 
 const (
-	mcWorkDir              = "multi-cloud"
-	mcRepository           = "contrail-multi-cloud"
-	defaultMCInventoryFile = "inventories/inventory.yml"
-	defaultTopologyFile    = "topology.yml"
-	defaultSecretFile      = "secret.yml"
+	MCWorkDir              = "multi-cloud"
+	MCRepository           = "contrail-multi-cloud"
+	DefaultMCInventoryFile = "inventories/inventory.yml"
+	DefaultTopologyFile    = "topology.yml"
+	DefaultSecretFile      = "secret.yml"
 
 	addCloud    = "ADD_CLOUD"
 	updateCloud = "UPDATE_CLOUD"
@@ -42,7 +42,7 @@ const (
 )
 
 type multiCloudProvisioner struct {
-	contrailAnsibleDeployer
+	ContrailAnsibleDeployer
 	workDir string
 }
 
@@ -66,7 +66,7 @@ func (m *multiCloudProvisioner) Deploy() error {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) deploy() error {
-	if m.clusterData.ClusterInfo.ProvisioningState != statusNoState {
+	if m.clusterData.ClusterInfo.ProvisioningState != StatusNoState {
 		return nil
 	}
 
@@ -74,11 +74,11 @@ func (m *multiCloudProvisioner) deploy() error {
 	pa := m.clusterData.ClusterInfo.ProvisioningAction
 
 	if m.isMCDeleteRequest() {
-		m.reportStatus(statusUpdateProgress)
+		m.reportStatus(StatusUpdateProgress)
 		if err := m.deleteMCCluster(); err != nil {
 			return errors.Wrapf(err, "%s failed", pa)
 		}
-		m.reportStatus(statusUpdated)
+		m.reportStatus(StatusUpdated)
 		return nil
 	}
 
@@ -114,20 +114,20 @@ func (m *multiCloudProvisioner) deploy() error {
 		return nil
 	}
 
-	if m.action == createAction {
-		m.reportStatus(statusCreateProgress)
+	if m.action == CreateAction {
+		m.reportStatus(StatusCreateProgress)
 	} else {
-		m.reportStatus(statusUpdateProgress)
+		m.reportStatus(StatusUpdateProgress)
 	}
 
 	if err := m.manageMCCluster(); err != nil {
 		return errors.Wrapf(err, "%s failed", pa)
 	}
 
-	if m.action == createAction {
-		m.reportStatus(statusCreated)
+	if m.action == CreateAction {
+		m.reportStatus(StatusCreated)
 	} else {
-		m.reportStatus(statusUpdated)
+		m.reportStatus(StatusUpdated)
 	}
 	return nil
 }
@@ -137,12 +137,12 @@ func (m *multiCloudProvisioner) updateMCWorkDir() {
 }
 
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
-	return m.clusterData.ClusterInfo.ProvisioningState == statusNoState &&
+	return m.clusterData.ClusterInfo.ProvisioningState == StatusNoState &&
 		m.clusterData.ClusterInfo.ProvisioningAction == deleteCloud
 }
 
 func (m *multiCloudProvisioner) reportStatus(status string) {
-	m.Reporter.ReportStatus(context.Background(), map[string]interface{}{statusField: status}, defaultResource)
+	m.Reporter.ReportStatus(context.Background(), map[string]interface{}{StatusField: status}, DefaultResource)
 }
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
@@ -152,7 +152,7 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err := m.cleanupProvisioning(); err != nil {
 		return err
 	}
-	if m.action != deleteAction {
+	if m.action != DeleteAction {
 		if err := m.removeCloudRefFromCluster(); err != nil {
 			return err
 		}
@@ -191,7 +191,7 @@ func appendFile(src, dest string) error {
 	if err != nil {
 		return err
 	}
-	return fileutil.AppendToFile(dest, content, defaultFilePermRWOnly)
+	return fileutil.AppendToFile(dest, content, DefaultFilePermRWOnly)
 }
 
 func (m *multiCloudProvisioner) createClusterSecretFile() error {
@@ -215,7 +215,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile() error {
 	if err != nil {
 		return errors.Wrapf(err, "couldn't marshal secret to yaml for cluster %s", m.cluster.config.ClusterID)
 	}
-	err = ioutil.WriteFile(m.getClusterSecretFile(), marshaled, defaultFilePermRWOnly)
+	err = ioutil.WriteFile(m.getClusterSecretFile(), marshaled, DefaultFilePermRWOnly)
 	return errors.Wrapf(err, "couldn't create secret.yml file for cluster %s", m.cluster.config.ClusterID)
 }
 
@@ -229,7 +229,7 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 	if ok, err := m.compareClusterTopologyFile(); err != nil {
 		return true, err
 	} else if ok {
-		m.Log.Infof("%s topology file is already up-to-date", defaultResource)
+		m.Log.Infof("%s topology file is already up-to-date", DefaultResource)
 		return true, nil
 	}
 	return false, nil
@@ -291,19 +291,19 @@ func waitForCloudStatusToBeUpdated(
 		}
 
 		switch cloudResp.Cloud.ProvisioningState {
-		case statusCreateProgress:
+		case StatusCreateProgress:
 			return true, fmt.Errorf("waiting for create cloud %s to complete", cloudUUID)
-		case statusUpdateProgress:
+		case StatusUpdateProgress:
 			return true, fmt.Errorf("waiting for update cloud %s to complete", cloudUUID)
-		case statusNoState:
+		case StatusNoState:
 			return true, fmt.Errorf("waiting for cloud %s to complete processing", cloudUUID)
-		case statusCreated:
+		case StatusCreated:
 			return false, nil
-		case statusUpdated:
+		case StatusUpdated:
 			return false, nil
-		case statusCreateFailed:
+		case StatusCreateFailed:
 			return false, fmt.Errorf("cloud %s status has failed in creating", cloudUUID)
-		case statusUpdateFailed:
+		case StatusUpdateFailed:
 			return false, fmt.Errorf("cloud %s status has failed in updating", cloudUUID)
 		}
 		return false, fmt.Errorf("unknown cloud status %s for cloud %s", cloudResp.Cloud.ProvisioningState, cloudUUID)
@@ -405,10 +405,10 @@ func (m *multiCloudProvisioner) startSSHAgent() (*sshAgent, func(), error) {
 }
 
 func (m *multiCloudProvisioner) setStatusToFail() {
-	if m.action == createAction {
-		m.reportStatus(statusCreateFailed)
+	if m.action == CreateAction {
+		m.reportStatus(StatusCreateFailed)
 	} else {
-		m.reportStatus(statusUpdateFailed)
+		m.reportStatus(StatusUpdateFailed)
 	}
 }
 
@@ -529,22 +529,22 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 }
 
 func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
-	return filepath.Join(workDir, defaultMCInventoryFile)
+	return filepath.Join(workDir, DefaultMCInventoryFile)
 }
 
 // use topology constant from cloud pkg
 func (m *multiCloudProvisioner) getClusterTopoFile(workDir string) string {
-	return filepath.Join(workDir, defaultTopologyFile)
+	return filepath.Join(workDir, DefaultTopologyFile)
 }
 
 func (m *multiCloudProvisioner) getClusterSecretFile() string {
-	return filepath.Join(m.workDir, defaultSecretFile)
+	return filepath.Join(m.workDir, DefaultSecretFile)
 }
 
 func (m *multiCloudProvisioner) getMCDeployerRepoDir() string {
-	return filepath.Join(defaultAnsibleRepoDir, mcRepository)
+	return filepath.Join(DefaultAnsibleRepoDir, MCRepository)
 }
 
 func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {
-	return filepath.Join(clusterWorkDir, mcWorkDir)
+	return filepath.Join(clusterWorkDir, MCWorkDir)
 }
