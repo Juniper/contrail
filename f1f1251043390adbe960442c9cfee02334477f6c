@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2c158d34_fbf6c091",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-06T18:58:50Z",
+      "side": 1,
+      "message": "This adds neutron.Service just before dbService, but it was originally added just before ContrailTypeLogicService. Would this be a problem?\n\nIn general, when any service from extraServices calls Next() and changes anything, those changes won\u0027t be validated.",
+      "revId": "f1f1251043390adbe960442c9cfee02334477f6c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
