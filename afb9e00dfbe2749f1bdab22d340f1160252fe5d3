@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b5223e47_8384ca68",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-06T14:22:31Z",
+      "side": 1,
+      "message": "We\u0027re in the process of removing pkg/apisrv. Move this to pkg/services.",
+      "range": {
+        "startLine": 224,
+        "startChar": 7,
+        "endLine": 224,
+        "endChar": 27
+      },
+      "revId": "afb9e00dfbe2749f1bdab22d340f1160252fe5d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ba26b8e_fd88322d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 22
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-06T14:22:31Z",
+      "side": 1,
+      "message": "This can be changed to something like:\n\nGetPermissions(ctx, typeName, uuid) *rbac.PermType2\n\nand implemented using services.GetObject, as Michał wrote. Then we won\u0027t need to generate hundreds of functions.",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 23
+      },
+      "revId": "afb9e00dfbe2749f1bdab22d340f1160252fe5d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
