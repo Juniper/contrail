@@ -10,9 +10,10 @@ The chain overview:
     ↓ RefUpdateToUpdateService
     ↓ SanitizerService
     ↓ RBACService
-    ↓ ContrailTypeLogicService
     ↓ QuotaCheckerService
     ↓ etcd.NotifierService (optional)
+    ↓ NeutronService (optional)
+    ↓ ContrailTypeLogicService
     ↓ db.DBService
     ↓
     ↺ Database

@@ -140,7 +140,15 @@ func (l *StreamServer) Close() {
 	l.shutDown()
 }
 
-// FatalWithStackTrace logs error with extended format and calls os.Exit(1)
+// FatalWithStackTraceIfError logs error with an extended format and calls os.Exit(1) if error is not nil.
+// See: FatalWithStackTrace
+func FatalWithStackTraceIfError(err error) {
+	if err != nil {
+		logrus.Fatalf("%+v", err)
+	}
+}
+
+// FatalWithStackTrace logs error with an extended format and calls os.Exit(1)
 // If given error is constructed with pkg/errors library, stack trace is printed.
 // See: https://godoc.org/github.com/pkg/errors#hdr-Formatted_printing_of_errors
 func FatalWithStackTrace(err error) {

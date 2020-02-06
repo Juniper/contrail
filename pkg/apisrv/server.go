@@ -1,260 +1,64 @@
 package apisrv
 
 import (
-	"crypto/tls"
-	"net/http"
-	"strings"
-
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
-	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/collector"
-	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/neutron"
-	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	asfkeystone "github.com/Juniper/asf/pkg/keystone"
-	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 )
 
-// Server represents Intent API Server.
-type Server struct {
-	Server    *baseapisrv.Server
-	DBService *db.Service
-	Proxy     *proxy.Dynamic
-	Collector collector.Collector
-	log       *logrus.Entry
-}
-
-type endpointStore interface {
-	RemoveDeleted(endpoints map[string]*models.Endpoint)
-	Contains(prefix string) bool
-	GetEndpointURLs(prefix string, endpointKey string) []string
-	UpdateEndpoint(prefix string, endpoint *models.Endpoint) error
-	InitScope(prefix string)
-	GetEndpointURL(clusterID, prefix string) (string, bool)
-	GetPassword(prefix string, endpointKey string) string
-	GetUsername(prefix string, endpointKey string) string
-	Remove(prefix string)
-}
-
-// NewServer makes a server.
-// nolint: gocyclo
-func NewServer(es endpointStore, extraPlugins ...baseapisrv.APIPlugin) (*Server, error) {
-	s := &Server{
-		log: logutil.NewLogger("contrail-api-server"),
-	}
-
-	var plugins []baseapisrv.APIPlugin
-
-	var err error
-	s.Collector, err = makeCollector()
-	if err != nil {
-		return nil, err
-	}
-	analytics.AddLoggerHook(s.Collector)
-	plugins = append(plugins, analytics.BodyDumpPlugin{Collector: s.Collector})
-
-	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(s.Collector))
-	if err != nil {
-		return nil, err
-	}
-	s.DBService = db.NewService(sqlDB)
-
-	cs, err := s.setupService()
-	if err != nil {
-		return nil, err
-	}
-
-	plugins = append(plugins, cs)
-
-	if viper.GetBool("server.enable_vnc_neutron") {
-		plugins = append(plugins, s.setupNeutronService(cs))
-	}
-
-	staticProxyPlugin, err := proxy.NewStaticByViper()
-	if err != nil {
-		return nil, err
-	}
-	plugins = append(plugins, staticProxyPlugin)
-
-	s.Proxy = proxy.NewDynamicFromViper(es, s.DBService)
-	s.Proxy.StartEndpointsSync()
-	plugins = append(plugins, s.Proxy)
-
-	plugins = append(plugins, extraPlugins...)
-
-	plugins = append(plugins, services.UploadCloudKeysPlugin{})
-
-	s.Server, err = baseapisrv.NewServer(plugins, noAuthPaths())
-	if err != nil {
-		return nil, err
-	}
-
-	return s, nil
-}
-
-func makeCollector() (c collector.Collector, err error) {
-	cfg := &analytics.Config{}
-	if err = viper.UnmarshalKey("collector", cfg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal collector config")
-	}
-	if c, err = analytics.NewCollector(cfg); err != nil {
-		return nil, errors.Wrap(err, "failed to create collector")
-	}
-	return c, nil
-}
-
-func (s *Server) setupService() (*services.ContrailService, error) {
-	var serviceChain []services.Service
-
-	cs, err := s.contrailService()
-	if err != nil {
-		return nil, err
-	}
-	serviceChain = append(serviceChain, cs)
-
-	serviceChain = append(serviceChain, &services.RefUpdateToUpdateService{
-		ReadService:       s.DBService,
-		InTransactionDoer: s.DBService,
-	})
-
-	serviceChain = append(serviceChain, &services.SanitizerService{
-		MetadataGetter: s.DBService,
-	})
-
-	serviceChain = append(serviceChain, &services.RBACService{
-		ReadService: s.DBService,
-		AAAMode:     viper.GetString("aaa_mode")})
-
-	if viper.GetBool("server.enable_vnc_neutron") {
-		serviceChain = append(serviceChain, &neutron.Service{
-			Keystone: &asfkeystone.Client{
-				URL: viper.GetString("keystone.authurl"),
-				HTTPDoer: analytics.LatencyReportingDoer{
-					Doer: &http.Client{
-						Transport: &http.Transport{
-							TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
-						},
-					},
-					Collector:   s.Collector,
-					Operation:   "VALIDATE",
-					Application: "KEYSTONE",
-				},
-			},
-			ReadService:    s.DBService,
-			MetadataGetter: s.DBService,
-			WriteService: &services.InternalContextWriteServiceWrapper{
-				WriteService: serviceChain[0],
-			},
-			InTransactionDoer: s.DBService,
-		})
-	}
-
-	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		ReadService:       s.DBService,
-		InTransactionDoer: s.DBService,
-		AddressManager:    s.DBService,
-		IntPoolAllocator:  s.DBService,
-		MetadataGetter:    s.DBService,
-		WriteService: &services.InternalContextWriteServiceWrapper{
-			WriteService: serviceChain[0],
-		},
-	})
-
-	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.DBService))
-
-	if viper.GetBool("server.notify_etcd") {
-		en := s.etcdNotifier()
-		if en != nil {
-			serviceChain = append(serviceChain, en)
-		}
-	}
-
-	serviceChain = append(serviceChain, s.DBService)
-
-	services.Chain(serviceChain...)
-	return cs, nil
-}
-
-func (s *Server) contrailService() (*services.ContrailService, error) {
+// SetupServiceChain creates service chain using default services, given extra services and DB service.
+// It puts extra services between default services and DB service.
+// It returns first service of built service chain.
+// TODO(dfurman): move to ASF template
+// TODO(dfurman): return services.Service when ContrailService is split to plugins.
+func SetupServiceChain(dbService *db.Service, extraServices ...services.Service) (*services.ContrailService, error) {
 	tv, err := models.NewTypeValidatorWithFormat()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "new type validator with format")
 	}
 
-	return &services.ContrailService{
+	cs := &services.ContrailService{
 		BaseService:        services.BaseService{},
-		DBService:          s.DBService,
+		DBService:          dbService,
 		TypeValidator:      tv,
-		MetadataGetter:     s.DBService,
-		InTransactionDoer:  s.DBService,
-		IntPoolAllocator:   s.DBService,
-		RefRelaxer:         s.DBService,
-		UserAgentKVService: s.DBService,
-		Collector:          s.Collector,
-	}, nil
-}
-
-func (s *Server) setupNeutronService(cs *services.ContrailService) *neutron.Server {
-	return &neutron.Server{
-		ReadService:       cs,
-		WriteService:      cs,
-		UserAgentKV:       cs,
-		IDToFQNameService: cs,
-		FQNameToIDService: cs,
-		InTransactionDoer: s.DBService,
-		Log:               logutil.NewLogger("neutron-server"),
+		MetadataGetter:     dbService,
+		InTransactionDoer:  dbService,
+		IntPoolAllocator:   dbService,
+		RefRelaxer:         dbService,
+		UserAgentKVService: dbService,
 	}
-}
 
-func (s *Server) etcdNotifier() services.Service {
-	// TODO(Michał): Make the codec configurable
-	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
-	if err != nil {
-		s.log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
-		return nil
+	serviceChain := []services.Service{
+		cs,
+		&services.RefUpdateToUpdateService{
+			ReadService:       dbService,
+			InTransactionDoer: dbService,
+		},
+		&services.SanitizerService{
+			MetadataGetter: dbService,
+		},
+		&services.RBACService{
+			ReadService: dbService,
+			AAAMode:     viper.GetString("aaa_mode"),
+		},
+		services.NewQuotaCheckerService(dbService),
 	}
-	return en
-}
 
-func noAuthPaths() []string {
-	return []string{
-		"/v3/auth/tokens", // TODO(mblotniak): Is this ever used?
-		strings.Join([]string{
-			models.ContrailClusterPluralPath,
-			"?fields=",
-			models.ContrailClusterFieldUUID,
-			",",
-			models.ContrailClusterFieldName,
-		}, ""),
-	}
-}
-
-// Run runs Server.
-func (s *Server) Run() error {
-	defer func() {
-		if err := s.Close(); err != nil {
-			s.log.WithError(err).Error("Closing DBService failed")
+	if viper.GetBool("server.notify_etcd") {
+		// TODO(Michał): Make the codec configurable
+		en, enErr := etcd.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
+		if enErr != nil {
+			return nil, errors.Wrap(enErr, "new notifier service")
 		}
-	}()
+		serviceChain = append(serviceChain, en)
+	}
 
-	return s.Server.Run()
-}
-
-// Close closes Server.
-func (s *Server) Close() error {
-	s.log.Info("Closing server")
-	s.Proxy.StopEndpointsSync()
-	err := s.DBService.Close()
-	s.log.Info("Server closed")
-	return err
+	serviceChain = append(serviceChain, extraServices...)
+	serviceChain = append(serviceChain, dbService)
+	services.Chain(serviceChain...)
+	return cs, nil
 }
