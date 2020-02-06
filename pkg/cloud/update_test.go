@@ -31,7 +31,7 @@ type updateIPDetailsTestSuite struct {
 	mockCtrl       *gomock.Controller
 	httpClientMock *servicesmock.MockService
 	apiMocked      apiServer
-	tfStateMock    *cloudmock.MockterraformState
+	tfStateMock    *cloudmock.MockTerraformState
 }
 
 func (s *updateIPDetailsTestSuite) SetupTest() {
@@ -39,7 +39,7 @@ func (s *updateIPDetailsTestSuite) SetupTest() {
 	s.mockCtrl = gomock.NewController(s.T())
 	s.httpClientMock = servicesmock.NewMockService(s.mockCtrl)
 	s.apiMocked = apiServer{s.httpClientMock, s.dummyContext}
-	s.tfStateMock = cloudmock.NewMockterraformState(s.mockCtrl)
+	s.tfStateMock = cloudmock.NewMockTerraformState(s.mockCtrl)
 }
 
 func (s *updateIPDetailsTestSuite) TeardownTest() {

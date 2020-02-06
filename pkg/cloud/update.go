@@ -7,7 +7,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-func updateIPDetails(ctx context.Context, instances []*instanceData, tfState terraformState) error {
+func updateIPDetails(ctx context.Context, instances []*instanceData, tfState TerraformState) error {
 	for _, instance := range instances {
 		if err := updateIP(ctx, instance, tfState); err != nil {
 			return err
@@ -16,7 +16,7 @@ func updateIPDetails(ctx context.Context, instances []*instanceData, tfState ter
 	return nil
 }
 
-func updateIP(ctx context.Context, instance *instanceData, tfState terraformState) error {
+func updateIP(ctx context.Context, instance *instanceData, tfState TerraformState) error {
 	switch {
 	case instance.isGateway():
 		return updateGatewayInstanceIP(ctx, instance, tfState)
@@ -25,7 +25,7 @@ func updateIP(ctx context.Context, instance *instanceData, tfState terraformStat
 	}
 }
 
-func updateInstanceIP(ctx context.Context, instance *instanceData, tfState terraformState) error {
+func updateInstanceIP(ctx context.Context, instance *instanceData, tfState TerraformState) error {
 	privateIP, err := tfState.GetPrivateIP(instance.info.Hostname)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func updateInstanceIP(ctx context.Context, instance *instanceData, tfState terra
 	return addIPToNode(ctx, privateIP, instance.info, instance.client)
 }
 
-func updateGatewayInstanceIP(ctx context.Context, instance *instanceData, tfState terraformState) error {
+func updateGatewayInstanceIP(ctx context.Context, instance *instanceData, tfState TerraformState) error {
 	privateIP, err := tfState.GetPrivateIP(instance.info.Hostname)
 	if err != nil {
 		return err

@@ -14,6 +14,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -35,6 +36,15 @@ func (*noSender) Send(_ collector.MessageBuilder) {}
 type proxySender struct {
 	url    string
 	client *http.Client
+}
+
+// NewCollectorFromGlobalConfig makes a collector using global Viper configuration.
+func NewCollectorFromGlobalConfig() (collector.Collector, error) {
+	var cfg Config
+	if err := viper.UnmarshalKey("collector", &cfg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal collector config")
+	}
+	return NewCollector(&cfg)
 }
 
 // NewCollector makes a collector

@@ -25,17 +25,17 @@ const (
 
 // GetCloudDir gets directory of cloud
 func GetCloudDir(cloudID string) string {
-	return filepath.Join(defaultWorkRoot, cloudID)
+	return filepath.Join(DefaultWorkRoot, cloudID)
 }
 
 // GetMultiCloudRepodir returns path to multi-cloud directory
 func GetMultiCloudRepodir() string {
-	return filepath.Join(defaultMultiCloudDir, defaultMultiCloudRepo)
+	return filepath.Join(DefaultMultiCloudDir, DefaultMultiCloudRepo)
 }
 
 // GetGenInventoryCmd get generate inventory command
 func GetGenInventoryCmd(mcDir string) string {
-	return filepath.Join(mcDir, defaultGenInventoryScript)
+	return filepath.Join(mcDir, DefaultGenInventoryScript)
 }
 
 // GetCloud gets cloud data for a given cloud UUID
@@ -54,32 +54,32 @@ func GetCloud(ctx context.Context, client *client.HTTP, cloudID string) (*models
 
 // GetTopoFile gets topology file for a cloud
 func GetTopoFile(cloudID string) string {
-	return filepath.Join(GetCloudDir(cloudID), defaultTopologyFile)
+	return filepath.Join(GetCloudDir(cloudID), DefaultTopologyFile)
 }
 
 // GetSecretFile gets secret file for a cloud
 func GetSecretFile(cloudID string) string {
-	return filepath.Join(GetCloudDir(cloudID), defaultSecretFile)
+	return filepath.Join(GetCloudDir(cloudID), DefaultSecretFile)
 }
 
 // GetTFStateFile get terraform state file
 func GetTFStateFile(cloudID string) string {
-	return filepath.Join(GetCloudDir(cloudID), defaultTFStateFile)
+	return filepath.Join(GetCloudDir(cloudID), DefaultTFStateFile)
 }
 
 // GetTerraformAWSPlanFile gets terraform AWS plan file
 func GetTerraformAWSPlanFile(cloudID string) string {
-	return filepath.Join(GetCloudDir(cloudID), defaultAWSPlanTF)
+	return filepath.Join(GetCloudDir(cloudID), DefaultAWSPlanTF)
 }
 
 // GetTerraformAzurePlanFile gets terraform Azure plan file
 func GetTerraformAzurePlanFile(cloudID string) string {
-	return filepath.Join(GetCloudDir(cloudID), defaultAzurePlanTF)
+	return filepath.Join(GetCloudDir(cloudID), DefaultAzurePlanTF)
 }
 
 // GetTerraformGCPPlanFile gets terraform GCP plan file
 func GetTerraformGCPPlanFile(cloudID string) string {
-	return filepath.Join(GetCloudDir(cloudID), defaultGCPPlanTF)
+	return filepath.Join(GetCloudDir(cloudID), DefaultGCPPlanTF)
 }
 
 func deleteNodeObjects(ctx context.Context,
@@ -383,23 +383,23 @@ func waitForClusterStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
 
 		if clusterResp.ContrailCluster.ProvisioningAction == "DELETE_CLOUD" {
 			switch clusterResp.ContrailCluster.ProvisioningState {
-			case statusCreateProgress:
+			case StatusCreateProgress:
 				return true, fmt.Errorf("waiting for create cluster %s to complete",
 					clusterUUID)
-			case statusUpdateProgress:
+			case StatusUpdateProgress:
 				return true, fmt.Errorf("waiting for update cluster %s to complete",
 					clusterUUID)
-			case statusNoState:
+			case StatusNoState:
 				return true, fmt.Errorf("waiting for cluster %s to complete processing",
 					clusterUUID)
-			case statusCreated:
+			case StatusCreated:
 				return false, nil
-			case statusUpdated:
+			case StatusUpdated:
 				return false, nil
-			case statusCreateFailed:
+			case StatusCreateFailed:
 				return false, fmt.Errorf("cluster %s status has failed in creating",
 					clusterUUID)
-			case statusUpdateFailed:
+			case StatusUpdateFailed:
 				return false, fmt.Errorf("cluster %s status has failed in updating",
 					clusterUUID)
 			}
