@@ -2,16 +2,27 @@ package contrail
 
 import (
 	"context"
+	"crypto/tls"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/db/basedb"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/collector"
+	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/neutron"
+	"github.com/Juniper/contrail/pkg/proxy"
+	"github.com/Juniper/contrail/pkg/types"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 
 	"github.com/Juniper/asf/pkg/errutil"
@@ -33,6 +44,7 @@ const (
 	syncRetryInterval = 3 * time.Second
 )
 
+// TODO: remove
 var cacheDB *cache.DB
 
 func init() {
@@ -74,6 +86,7 @@ func MaybeStart(serviceName string, f func(), wg *sync.WaitGroup) {
 	}()
 }
 
+// TODO: move to startServer
 func maybeStartCacheService(wg *sync.WaitGroup) {
 	if !viper.GetBool("cache.enabled") {
 		return
@@ -85,6 +98,7 @@ func maybeStartCacheService(wg *sync.WaitGroup) {
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
 }
 
+// TODO: move to startServer
 func startCassandraWatcher() {
 	logrus.Debug("Cassandra watcher enabled for cache")
 	producer := cassandra.NewEventProducer(cacheDB)
@@ -94,6 +108,7 @@ func startCassandraWatcher() {
 	}
 }
 
+// TODO: move to startServer
 func startEtcdWatcher() {
 	logrus.Debug("etcd watcher enabled for cache")
 	producer, err := etcd.NewEventProducer(cacheDB, "cache-service")
@@ -106,6 +121,7 @@ func startEtcdWatcher() {
 	}
 }
 
+// TODO: move to startServer
 func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
 	processor := &services.EventListProcessor{
@@ -150,15 +166,42 @@ func startAmqpReplicator() {
 }
 
 func startServer() {
-	es := endpoint.NewStore()
+	analyticsCollector, err := analytics.NewCollectorFromGlobalConfig()
+	logutil.FatalWithStackTraceIfError(err)
+	analytics.AddLoggerHook(analyticsCollector)
 
-	var plugins []baseapisrv.APIPlugin
+	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(analyticsCollector))
+	logutil.FatalWithStackTraceIfError(err)
+	dbService := db.NewService(sqlDB)
+	defer func() {
+		if cErr := dbService.Close(); cErr != nil {
+			logrus.WithError(err).Error("Failed to close DB service")
+		}
+	}()
+
+	serviceChain, err := newServiceChain(dbService, analyticsCollector)
+	logutil.FatalWithStackTraceIfError(err)
+
+	staticProxyPlugin, err := proxy.NewStaticByViper()
+	logutil.FatalWithStackTraceIfError(err)
+
+	es := endpoint.NewStore()
+	dynamicProxy := proxy.NewDynamicFromViper(es, dbService) // TODO(dfurman): it could use head of service chain
+	// TODO(dfurman): move to proxy constructor and use context for cancellation
+	dynamicProxy.StartEndpointsSync()
+	defer dynamicProxy.StopEndpointsSync()
+
+	plugins := []baseapisrv.APIPlugin{
+		serviceChain,
+		staticProxyPlugin,
+		dynamicProxy,
+		services.UploadCloudKeysPlugin{},
+		analytics.BodyDumpPlugin{Collector: analyticsCollector},
+	}
 
 	if viper.GetBool("keystone.local") {
-		k, err := keystone.Init(es)
-		if err != nil {
-			logutil.FatalWithStackTrace(err)
-		}
+		k, initErr := keystone.Init(es)
+		logutil.FatalWithStackTraceIfError(initErr)
 		plugins = append(plugins, k)
 	}
 
@@ -166,19 +209,89 @@ func startServer() {
 		plugins = append(plugins, cacheDB)
 	}
 
-	server, err := apisrv.NewServer(es, plugins...)
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
+	if viper.GetBool("server.enable_vnc_neutron") {
+		plugins = append(plugins, &neutron.Server{
+			ReadService:       serviceChain,
+			WriteService:      serviceChain,
+			UserAgentKV:       serviceChain,
+			IDToFQNameService: serviceChain,
+			FQNameToIDService: serviceChain,
+			InTransactionDoer: dbService,
+			Log:               logutil.NewLogger("neutron-server"),
+		})
 	}
+
+	server, err := baseapisrv.NewServer(plugins, noAuthPaths())
+	logutil.FatalWithStackTraceIfError(err)
 
 	r, err := startVNCReplicator(es)
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
+	logutil.FatalWithStackTraceIfError(err)
 	defer r.Stop()
 
-	if err = server.Run(); err != nil {
-		logutil.FatalWithStackTrace(err)
+	err = server.Run()
+	logutil.FatalWithStackTraceIfError(err)
+}
+
+func newServiceChain(dbService *db.Service, c collector.Collector) (*services.ContrailService, error) {
+	var extraServices []services.Service
+	var neutronService *neutron.Service
+	if viper.GetBool("server.enable_vnc_neutron") {
+		neutronService = &neutron.Service{
+			Keystone: &asfkeystone.Client{
+				URL: viper.GetString("keystone.authurl"),
+				HTTPDoer: analytics.LatencyReportingDoer{
+					Doer: &http.Client{
+						Transport: &http.Transport{
+							TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+						},
+					},
+					Collector:   c,
+					Operation:   "VALIDATE",
+					Application: "KEYSTONE",
+				},
+			},
+			ReadService:       dbService,
+			MetadataGetter:    dbService,
+			InTransactionDoer: dbService,
+		}
+		extraServices = append(extraServices, neutronService)
+	}
+
+	typeLogicService := &types.ContrailTypeLogicService{
+		ReadService:       dbService,
+		InTransactionDoer: dbService,
+		AddressManager:    dbService,
+		IntPoolAllocator:  dbService,
+		MetadataGetter:    dbService,
+	}
+	extraServices = append(extraServices, typeLogicService)
+
+	serviceChain, err := apisrv.SetupServiceChain(dbService, extraServices...)
+	if err != nil {
+		return nil, err
+	}
+
+	if neutronService != nil {
+		neutronService.WriteService = &services.InternalContextWriteServiceWrapper{
+			WriteService: serviceChain,
+		}
+	}
+	typeLogicService.WriteService = &services.InternalContextWriteServiceWrapper{
+		WriteService: serviceChain,
+	}
+	return serviceChain, nil
+}
+
+func noAuthPaths() []string {
+	return []string{
+		"/v3/auth/tokens", // TODO(mblotniak): Is this ever used?
+		strings.Join([]string{
+			models.ContrailClusterPluralPath,
+			"?fields=",
+			models.ContrailClusterFieldUUID,
+			",",
+			models.ContrailClusterFieldName,
+		}, ""),
 	}
 }
 
