@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "08fe3a87_5370d780",
+        "filename": "pkg/compilation/service_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-06T00:21:21Z",
+      "side": 1,
+      "message": "Please remove extra lines.",
+      "revId": "c2a166b93259e0047570f4825564817d476c18ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "329f2531_1b593ba3",
+        "filename": "pkg/convert/convert.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-06T00:21:21Z",
+      "side": 1,
+      "message": "Please remove extra lines.",
+      "revId": "c2a166b93259e0047570f4825564817d476c18ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7af02ff_38a9832c",
+        "filename": "pkg/etcd/notifier_service_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-06T00:21:21Z",
+      "side": 1,
+      "message": "Set imports according to review.md",
+      "range": {
+        "startLine": 7,
+        "startChar": 1,
+        "endLine": 18,
+        "endChar": 76
+      },
+      "revId": "c2a166b93259e0047570f4825564817d476c18ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90164a61_362c9a51",
+        "filename": "vendor/github.com/Juniper/asf/pkg/testutil/integration/cache_db.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-06T00:21:21Z",
+      "side": 1,
+      "message": "Separate them with a line please.",
+      "range": {
+        "startLine": 6,
+        "startChar": 1,
+        "endLine": 7,
+        "endChar": 71
+      },
+      "revId": "c2a166b93259e0047570f4825564817d476c18ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
