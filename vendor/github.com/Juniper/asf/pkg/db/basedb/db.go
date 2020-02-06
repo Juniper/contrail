@@ -46,7 +46,10 @@ func (db *BaseDB) DB() *sql.DB {
 
 //Close closes db.
 func (db *BaseDB) Close() error {
-	return db.db.Close()
+	if err := db.db.Close(); err != nil {
+		return errors.Wrap(err, "close DB handle")
+	}
+	return nil
 }
 
 // Object is generic database model instance.

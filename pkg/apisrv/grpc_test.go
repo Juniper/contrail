@@ -69,7 +69,7 @@ func TestChownGRPC(t *testing.T) {
 		defer cleanup(t)
 
 		otherProjectName := uuid.NewV4().String()
-		kscleanup := server.AddKeystoneProjectAndUser(otherProjectName)
+		kscleanup := server.AddKeystoneProjectAndUser(t, otherProjectName)
 		defer kscleanup()
 		otherProjectCTX := metadata.NewOutgoingContext(firstProjectCTX,
 			metadata.Pairs("X-Auth-Token", restLogin(firstProjectCTX, t, otherProjectName)))
@@ -410,7 +410,7 @@ func testProjectRead(ctx context.Context, c services.ContrailServiceClient, proj
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
-	kscleanup := server.AddKeystoneProjectAndUser(testName)
+	kscleanup := server.AddKeystoneProjectAndUser(t, testName)
 	defer kscleanup()
 	authToken := restLogin(ctx, t, testName)
 
