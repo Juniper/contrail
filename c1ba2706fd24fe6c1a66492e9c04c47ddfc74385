@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "78c22972_6b88618c",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-06T01:19:22Z",
+      "side": 1,
+      "message": "Remove unnecessary whitespaces.",
+      "revId": "c1ba2706fd24fe6c1a66492e9c04c47ddfc74385",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1b9be967_a2cb07b7",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 685,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-06T01:19:22Z",
+      "side": 1,
+      "message": "This and L#688 are obsolete values. Consider not adding them again.",
+      "revId": "c1ba2706fd24fe6c1a66492e9c04c47ddfc74385",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
