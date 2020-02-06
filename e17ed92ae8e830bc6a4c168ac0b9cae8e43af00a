@@ -34,6 +34,24 @@
       "revId": "e17ed92ae8e830bc6a4c168ac0b9cae8e43af00a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3923c266_ab8e4552",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 9
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-06T13:57:08Z",
+      "side": 1,
+      "message": "Nice suggestion. Done.",
+      "parentUuid": "41c70899_3783e8ac",
+      "revId": "e17ed92ae8e830bc6a4c168ac0b9cae8e43af00a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
