@@ -9,8 +9,8 @@ cleanup:
 - path: /project/admin_lr_vxlan_project_uuid
 - path: /virtual-network/vn_vxlan_conflicting_vn
 - path: /logical-router/vn_vxlan_conflicting_logical_router
-test_data:
 
+test_data:
   admin_project: &admin_project_lr
     uuid: admin_lr_vxlan_project_uuid
     name: admin_lr_vxlan_project
@@ -68,10 +68,9 @@ test_data:
       - uuid: lr_vxlan_bgpvpn_l3
 
   vn_vxlan_conflicting_vn_base: &vn_vxlan_conflicting_vn_base
-    fq_name: ["default", "admin_vn_vxlan_project_uuid", "vn_vxlan_conflicting_vn"]
+    fq_name: ["default-domain", "admin_lr_vxlan_project", "vn_vxlan_conflicting_vn"]
     uuid: vn_vxlan_conflicting_vn
     parent_type: project
-    parent_uuid: admin_vn_vxlan_project_uuid
 
 clients:
   default:

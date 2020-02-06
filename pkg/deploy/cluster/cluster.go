@@ -90,7 +90,7 @@ func (c *Cluster) GetDeployer() (base.Deployer, error) {
 		return newOvercloudDeployer(c)
 	case "ansible", "tripleo", "juju":
 		return newAnsibleDeployer(c, cData)
-	case mCProvisioner:
+	case MCProvisioner:
 		return newMCProvisioner(c, cData)
 	}
 	return nil, errors.New("unsupported deployer type")
@@ -108,11 +108,11 @@ func deployerType(cData *base.Data, action string) string {
 		return cData.ClusterInfo.ProvisionerType
 	}
 
-	if action != deleteAction && isMCProvisioner(cData) {
-		return mCProvisioner
+	if action != DeleteAction && isMCProvisioner(cData) {
+		return MCProvisioner
 	}
 
-	return defaultDeployer
+	return DefaultDeployer
 }
 
 func isMCProvisioner(cData *base.Data) bool {
@@ -149,7 +149,7 @@ func newOvercloudDeployer(c *Cluster) (base.Deployer, error) {
 	return o.GetDeployer()
 }
 
-func newAnsibleDeployer(c *Cluster, cData *base.Data) (*contrailAnsibleDeployer, error) {
+func newAnsibleDeployer(c *Cluster, cData *base.Data) (*ContrailAnsibleDeployer, error) {
 	d := newDeployCluster(c, cData, "contrail-ansible-deployer")
 
 	// TODO(dji): move dependency injection to testing code
@@ -158,7 +158,7 @@ func newAnsibleDeployer(c *Cluster, cData *base.Data) (*contrailAnsibleDeployer,
 		return nil, errors.Wrap(err, "New container player creation failed")
 	}
 
-	return &contrailAnsibleDeployer{
+	return &ContrailAnsibleDeployer{
 		deployCluster: *d,
 		ansibleClient: ansible.NewCLIClient(
 			d.Reporter,
@@ -174,7 +174,7 @@ func newMCProvisioner(c *Cluster, cData *base.Data) (*multiCloudProvisioner, err
 	d := newDeployCluster(c, cData, "multi-cloud-provisioner")
 
 	return &multiCloudProvisioner{
-		contrailAnsibleDeployer: contrailAnsibleDeployer{
+		ContrailAnsibleDeployer: ContrailAnsibleDeployer{
 			deployCluster: *d,
 			ansibleClient: ansible.NewCLIClient(
 				d.Reporter,

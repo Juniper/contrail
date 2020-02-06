@@ -286,7 +286,7 @@ func newSecret(c *Cloud) *secret {
 func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
 	// TODO(madhukar) - optimize handling of multiple cloud users
 	cloudID := d.info.UUID
-	if err := os.MkdirAll(getCloudSSHKeyDir(cloudID), sshDirPerm); err != nil {
+	if err := os.MkdirAll(GetCloudSSHKeyDir(cloudID), sshDirPerm); err != nil {
 		return nil, err
 	}
 
@@ -332,12 +332,14 @@ func getSSHKeyIfValid(kp *models.Keypair, keyType string) ([]byte, error) {
 	return pubKey, err
 }
 
-func getCloudSSHKeyDir(cloudID string) string {
+// GetCloudSSHKeyDir returns directory of SSH key for given Cloud.
+func GetCloudSSHKeyDir(cloudID string) string {
 	return filepath.Join(GetCloudDir(cloudID), defaultSSHKeyRepo)
 }
 
-func getCloudSSHKeyPath(cloudID string, name string) string {
-	return filepath.Join(getCloudSSHKeyDir(cloudID), name)
+// GetCloudSSHKeyPath returns path of SSH key for given Cloud and key name.
+func GetCloudSSHKeyPath(cloudID string, name string) string {
+	return filepath.Join(GetCloudSSHKeyDir(cloudID), name)
 }
 
 //nolint: gocyclo
@@ -377,7 +379,7 @@ func (s *secret) getCredKeyPairIfExists(d *Data, cloudID string) (*models.Keypai
 				s.log.Errorf("error while creating ssh keys: %v", err)
 				return nil, err
 			}
-			keypair.SSHKeyDirPath = getCloudSSHKeyDir(cloudID)
+			keypair.SSHKeyDirPath = GetCloudSSHKeyDir(cloudID)
 			kpResp, err := s.cloud.APIServer.CreateKeypair(s.ctx,
 				&services.CreateKeypairRequest{
 					Keypair: keypair,
@@ -412,7 +414,7 @@ func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
 		return err
 	}
 
-	if err = fileutil.WriteToFile(getCloudSSHKeyPath(cloudID,
+	if err = fileutil.WriteToFile(GetCloudSSHKeyPath(cloudID,
 		keypair.DisplayName+".pub"), rawPubkey, sshPubKeyPerm); err != nil {
 		return err
 	}
@@ -425,7 +427,7 @@ func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
 		return err
 	}
 
-	return fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName),
+	return fileutil.WriteToFile(GetCloudSSHKeyPath(cloudID, keypair.DisplayName),
 		rawPvtKey, defaultRWOnlyPerm)
 }
 
@@ -437,10 +439,10 @@ func createSSHKey(cloudID string, keypair *models.Keypair) error {
 	}
 	keypair.SSHPublicKey = strings.TrimSpace(string(pubKey))
 
-	if err = fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName),
+	if err = fileutil.WriteToFile(GetCloudSSHKeyPath(cloudID, keypair.DisplayName),
 		pvtKey, defaultRWOnlyPerm); err != nil {
 		return err
 	}
-	return fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName+".pub"),
+	return fileutil.WriteToFile(GetCloudSSHKeyPath(cloudID, keypair.DisplayName+".pub"),
 		pubKey, sshPubKeyPerm)
 }
