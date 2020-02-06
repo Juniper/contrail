@@ -16,14 +16,15 @@ import (
 )
 
 const (
-	createAction   = "create"
-	updateAction   = "update"
-	deleteAction   = "delete"
+	CreateAction = "create"
+	UpdateAction = "update"
+	DeleteAction = "delete"
+
 	filePermRWOnly = 0600
 
-	provisionProvisioningAction = "PROVISION"
-	importProvisioningAction    = "IMPORT"
-	testIntrospectionDir        = "./test_data/introspection"
+	ProvisionProvisioningAction = "PROVISION"
+	ImportProvisioningAction    = "IMPORT"
+	TestIntrospectionDir        = "./test_data/introspection"
 )
 
 type contrailCloudDeployer struct {
@@ -49,7 +50,7 @@ func (c *contrailCloudDeployer) getSiteFile() (siteFile string) {
 func (c *contrailCloudDeployer) getIntrospectionDir() (introspectionDir string) {
 	introspectionDir = defaultContrailCloudIntrospectDir
 	if c.undercloud.config.Test {
-		introspectionDir = testIntrospectionDir
+		introspectionDir = TestIntrospectionDir
 	}
 	return introspectionDir
 }
@@ -187,12 +188,12 @@ func (c *contrailCloudDeployer) execFromDir(cmdline string, args []string) error
 }
 
 func (c *contrailCloudDeployer) playBook(args []string) error {
-	provisioningAction := provisionProvisioningAction
+	provisioningAction := ProvisionProvisioningAction
 	if c.undercloudData.cloudManagerInfo != nil {
 		provisioningAction = c.undercloudData.cloudManagerInfo.ProvisioningAction
 	}
 	switch provisioningAction {
-	case provisionProvisioningAction, "":
+	case ProvisionProvisioningAction, "":
 		if err := c.execFromDir(addKnownHostsCmd, args); err != nil {
 			return err
 		}
@@ -309,13 +310,13 @@ func (c *contrailCloudDeployer) deleteUndercloud() error {
 
 func (c *contrailCloudDeployer) Deploy() error {
 	switch c.action {
-	case createAction:
+	case CreateAction:
 		err := c.createUndercloud()
 		if err != nil {
 			return err
 		}
 		return nil
-	case updateAction:
+	case UpdateAction:
 		updated, err := c.isUpdated()
 		if err != nil {
 			return err
@@ -328,7 +329,7 @@ func (c *contrailCloudDeployer) Deploy() error {
 			return err
 		}
 		return nil
-	case deleteAction:
+	case DeleteAction:
 		err := c.deleteUndercloud()
 		if err != nil {
 			return err

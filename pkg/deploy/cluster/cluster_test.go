@@ -1,4 +1,4 @@
-package cluster
+package cluster_test
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
+	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -54,11 +55,11 @@ const (
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
-	generatedInstances   = workRoot + "/" + clusterID + "/" + defaultInstanceFile
-	generatedInventory   = workRoot + "/" + clusterID + "/" + defaultInventoryFile
-	generatedVcenterVars = workRoot + "/" + clusterID + "/" + defaultVcenterFile
-	generatedSecret      = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
-	generatedTopology    = workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
+	generatedInstances   = workRoot + "/" + clusterID + "/" + cluster.DefaultInstanceFile
+	generatedInventory   = workRoot + "/" + clusterID + "/" + cluster.DefaultInventoryFile
+	generatedVcenterVars = workRoot + "/" + clusterID + "/" + cluster.DefaultVcenterFile
+	generatedSecret      = workRoot + "/" + clusterID + "/" + cluster.MCWorkDir + "/" + cluster.DefaultSecretFile
+	generatedTopology    = workRoot + "/" + clusterID + "/" + cluster.MCWorkDir + "/" + cluster.DefaultTopologyFile
 	executedPlaybooks    = workRoot + "/" + clusterID + "/" + "executed_ansible_playbook.yml"
 	executedMCCommand    = workRoot + "/" + clusterID + "/" + "executed_cmd.yml"
 
@@ -113,7 +114,7 @@ func verifyClusterDeleted() bool {
 
 func verifyMCDeleted(httpClient *client.HTTP) bool {
 	// Make sure mc working dir is deleted
-	if _, err := os.Stat(workRoot + "/" + clusterID + "/" + mcWorkDir); err == nil || !os.IsNotExist(err) {
+	if _, err := os.Stat(workRoot + "/" + clusterID + "/" + cluster.MCWorkDir); err == nil || !os.IsNotExist(err) {
 		// mc working dir not deleted
 		return false
 	}
@@ -228,19 +229,19 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		createPlaybooks,
 		updatePlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradePlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputePlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}})
 }
 
@@ -258,10 +259,10 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 	s, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
 
-	config := &Config{
+	config := &cluster.Config{
 		APIServer:           s,
 		ClusterID:           clusterID,
-		Action:              createAction,
+		Action:              cluster.CreateAction,
 		LogLevel:            "debug",
 		TemplateRoot:        "templates/",
 		WorkRoot:            workRoot,
@@ -275,10 +276,10 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 		action            string
 		expectedPlaybooks string
 	}{{
-		action:            createAction,
+		action:            cluster.CreateAction,
 		expectedPlaybooks: expectedCreatePlaybooks,
 	}, {
-		action:            updateAction,
+		action:            cluster.UpdateAction,
 		expectedPlaybooks: expectedUpdatePlaybooks,
 	}} {
 		runClusterCreateUpdateTest(
@@ -291,7 +292,7 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 	}
 
 	// delete cluster
-	config.Action = deleteAction
+	config.Action = cluster.DeleteAction
 	removeFile(t, executedPlaybooks)
 	manageCluster(t, config)
 	// make sure cluster is removed
@@ -299,7 +300,7 @@ func runTest(t *testing.T, expectedInstance, expectedInventory string,
 }
 
 func runClusterCreateUpdateTest(
-	t *testing.T, ts *integration.TestScenario, config *Config, action string,
+	t *testing.T, ts *integration.TestScenario, config *cluster.Config, action string,
 	expectedPlaybooks, expectedInstance, expectedInventory string, expectedEndpoints map[string]string) {
 
 	//cleanup old files
@@ -324,8 +325,8 @@ func runClusterCreateUpdateTest(
 	assert.NoError(t, verifyEndpoints(t, ts, expectedEndpoints))
 }
 
-func manageCluster(t *testing.T, c *Config) {
-	clusterDeployer, err := NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
+func manageCluster(t *testing.T, c *cluster.Config) {
+	clusterDeployer, err := cluster.NewCluster(c, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", c.Action)
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -335,27 +336,27 @@ func manageCluster(t *testing.T, c *Config) {
 
 // nolint: gocyclo
 func runClusterActionTest(
-	t *testing.T, ts *integration.TestScenario, config *Config, action, expectedInstance string,
+	t *testing.T, ts *integration.TestScenario, config *cluster.Config, action, expectedInstance string,
 	expectedPlaybooks string, expectedEndpoints map[string]string,
 ) {
 	// set action field in the contrail-cluster resource
-	cluster := map[string]interface{}{"uuid": clusterID, "provisioning_action": action}
-	config.Action = updateAction
+	cl := map[string]interface{}{"uuid": clusterID, "provisioning_action": action}
+	config.Action = cluster.UpdateAction
 	switch action {
-	case upgradeProvisioningAction:
-		cluster["provisioning_state"] = "NOSTATE"
-	case importProvisioningAction:
-		config.Action = createAction
-		cluster["provisioning_action"] = ""
+	case cluster.UpgradeProvisioningAction:
+		cl["provisioning_state"] = "NOSTATE"
+	case cluster.ImportProvisioningAction:
+		config.Action = cluster.CreateAction
+		cl["provisioning_action"] = ""
 		err := os.Remove(generatedInstances)
 		assert.NoError(t, err, "failed to delete instances.yml")
-	case addComputeProvisioningAction, addCVFMProvisioningAction,
-		deleteComputeProvisioningAction, addCSNProvisioningAction, destroyAction:
+	case cluster.AddComputeProvisioningAction, cluster.AddCVFMProvisioningAction,
+		cluster.DeleteComputeProvisioningAction, cluster.AddCSNProvisioningAction, cluster.DestroyAction:
 		err := os.Remove(generatedInstances)
 		assert.NoError(t, err, "failed to delete instances.yml")
 	}
 
-	data := map[string]interface{}{"contrail-cluster": cluster}
+	data := map[string]interface{}{"contrail-cluster": cl}
 	for _, client := range ts.Clients {
 		var response map[string]interface{}
 		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
@@ -412,21 +413,21 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 		createAppformixPlaybooks,
 		updateAppformixPlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradeAppformixPlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addAppformixComputePlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteAppformixComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addAppformixCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}, {
-			action:            destroyAction,
+			action:            cluster.DestroyAction,
 			expectedPlaybooks: destroyPlaybooks,
 		}},
 	)
@@ -437,7 +438,7 @@ func createDummyAppformixFiles(t *testing.T) func() {
 	// create appformix config.yml file
 	configFile := workRoot + "/" + "appformix-ansible-deployer/appformix/config.yml"
 	configData := []byte(`{"appformix_version": "3.0.0"}`)
-	err := fileutil.WriteToFile(configFile, configData, defaultFilePermRWOnly)
+	err := fileutil.WriteToFile(configFile, configData, cluster.DefaultFilePermRWOnly)
 	assert.NoErrorf(t, err, "Unable to write file: %s", configFile)
 
 	return func() {
@@ -468,7 +469,7 @@ func TestXflowOutOfBand(t *testing.T) {
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
-	d, ok := getClusterDeployer(t, &Config{
+	d, ok := getClusterDeployer(t, &cluster.Config{
 		APIServer:           ts.Clients["default"],
 		ClusterID:           clusterID,
 		Action:              "create",
@@ -479,10 +480,10 @@ func TestXflowOutOfBand(t *testing.T) {
 		LogFile:             workRoot + "/deploy.log",
 		ServiceUserID:       integration.ServiceUserName,
 		ServiceUserPassword: integration.ServiceUserPassword,
-	}).(*contrailAnsibleDeployer)
-	require.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
+	}).(*cluster.ContrailAnsibleDeployer)
+	require.True(t, ok, "unable to cast deployer to ContrailAnsibleDeployer")
 
-	err = d.createInventory()
+	err = d.CreateInventory()
 	assert.NoError(t, err, "unable to create inventory")
 
 	expectedInstance := "test_data/expected_xflow_outofband_instances.yaml"
@@ -512,7 +513,7 @@ func TestXflowInBand(t *testing.T) {
 	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
-	d, ok := getClusterDeployer(t, &Config{
+	d, ok := getClusterDeployer(t, &cluster.Config{
 		APIServer:           ts.Clients["default"],
 		ClusterID:           clusterID,
 		Action:              "create",
@@ -523,10 +524,10 @@ func TestXflowInBand(t *testing.T) {
 		LogFile:             workRoot + "/deploy.log",
 		ServiceUserID:       integration.ServiceUserName,
 		ServiceUserPassword: integration.ServiceUserPassword,
-	}).(*contrailAnsibleDeployer)
-	require.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
+	}).(*cluster.ContrailAnsibleDeployer)
+	require.True(t, ok, "unable to cast deployer to ContrailAnsibleDeployer")
 
-	err = d.createInventory()
+	err = d.CreateInventory()
 	assert.NoError(t, err, "unable to create inventory")
 
 	expectedInstance := "test_data/expected_xflow_inband_instances.yaml"
@@ -535,8 +536,8 @@ func TestXflowInBand(t *testing.T) {
 		"Instance file created during cluster create is not as expected")
 }
 
-func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
-	cluster, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+func getClusterDeployer(t *testing.T, config *cluster.Config) base.Deployer {
+	cluster, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := cluster.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -567,21 +568,21 @@ func TestAllInOneVfabricManager(t *testing.T) {
 		createPlaybooks,
 		updatePlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradePlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputePlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}, {
-			action:            addCVFMProvisioningAction,
+			action:            cluster.AddCVFMProvisioningAction,
 			expectedPlaybooks: updatePlaybooks,
 		}})
 }
@@ -607,19 +608,19 @@ func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 		createEncryptPlaybooks,
 		updateEncryptPlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradeEncryptPlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputeEncryptPlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}})
 }
 
@@ -645,19 +646,19 @@ func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
 		createPlaybooks,
 		updatePlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradePlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputePlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}})
 }
 
@@ -691,19 +692,19 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		createPlaybooks,
 		updatePlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradePlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputePlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}})
 }
 
@@ -733,19 +734,19 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 		createPlaybooks,
 		updatePlaybooks,
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradePlaybooks,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputePlaybooks,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooks,
 		}, {
-			action:            addCSNProvisioningAction,
+			action:            cluster.AddCSNProvisioningAction,
 			expectedPlaybooks: addCSNPlaybooks,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}})
 }
 
@@ -764,16 +765,16 @@ func TestKubernetesCluster(t *testing.T) {
 		"./test_data/expected_ansible_create_playbook_kubernetes.yml",
 		"./test_data/expected_ansible_update_playbook_kubernetes.yml",
 		[]clusterActionTestSpec{{
-			action:            upgradeProvisioningAction,
+			action:            cluster.UpgradeProvisioningAction,
 			expectedPlaybooks: upgradePlaybooksKubernetes,
 		}, {
-			action:            addComputeProvisioningAction,
+			action:            cluster.AddComputeProvisioningAction,
 			expectedPlaybooks: addComputePlaybooksKubernetes,
 		}, {
-			action:            deleteComputeProvisioningAction,
+			action:            cluster.DeleteComputeProvisioningAction,
 			expectedPlaybooks: deleteComputePlaybooksKubernetes,
 		}, {
-			action: importProvisioningAction,
+			action: cluster.ImportProvisioningAction,
 		}})
 }
 
@@ -805,10 +806,10 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 	s, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
 
-	config := &Config{
+	config := &cluster.Config{
 		APIServer:           s,
 		ClusterID:           clusterID,
-		Action:              createAction,
+		Action:              cluster.CreateAction,
 		LogLevel:            "debug",
 		TemplateRoot:        "templates/",
 		WorkRoot:            workRoot,
@@ -833,7 +834,7 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 	assert.NoError(t, err)
 
 	// update cluster
-	config.Action = updateAction
+	config.Action = cluster.UpdateAction
 	// remove instances.yml to trigger cluster update
 	removeFile(t, generatedInstances)
 	removeFile(t, executedPlaybooks)
@@ -851,15 +852,15 @@ func runVcenterClusterTest(t *testing.T, expectedInstance, expectedVcenterVars s
 
 	// UPGRADE test
 	runClusterActionTest(t, ts, config,
-		upgradeProvisioningAction, expectedInstance,
+		cluster.UpgradeProvisioningAction, expectedInstance,
 		upgradePlaybooksvcenter, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, ts, config,
-		importProvisioningAction, expectedInstance, "", expectedEndpoints)
+		cluster.ImportProvisioningAction, expectedInstance, "", expectedEndpoints)
 
 	// delete cluster
-	config.Action = deleteAction
+	config.Action = cluster.DeleteAction
 	removeFile(t, executedPlaybooks)
 
 	manageCluster(t, config)
@@ -889,10 +890,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	s, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
 
-	config := &Config{
+	config := &cluster.Config{
 		APIServer:                 s,
 		ClusterID:                 clusterID,
-		Action:                    createAction,
+		Action:                    cluster.CreateAction,
 		LogLevel:                  "debug",
 		TemplateRoot:              "templates/",
 		WorkRoot:                  workRoot,
@@ -911,7 +912,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	removeFile(t, executedPlaybooks)
 	removeFile(t, executedMCCommand)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -919,7 +920,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
-	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, statusCreateFailed)
+	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, cluster.StatusCreateFailed)
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during create")
 
@@ -930,14 +931,14 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 		expectedStatus   string
 	}{{
 		tsPath:           allInOneMCCloudUpdateTemplatePath,
-		action:           createAction,
+		action:           cluster.CreateAction,
 		expectedCommands: expectedMCCreateCmdExecuted,
-		expectedStatus:   statusCreated,
+		expectedStatus:   cluster.StatusCreated,
 	}, {
 		tsPath:           allInOneMCClusterUpdateTemplatePath,
-		action:           updateAction,
+		action:           cluster.UpdateAction,
 		expectedCommands: expectedMCUpdateCmdExecuted,
-		expectedStatus:   statusUpdated,
+		expectedStatus:   cluster.StatusUpdated,
 	}} {
 		//cleanup all the files
 		removeFile(t, executedMCCommand)
@@ -969,7 +970,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	require.NoError(t, err, "failed to load mc cluster test data")
 	_ = integration.RunDirtyTestScenario(t, ts, server)
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err = cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -977,14 +978,14 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	assert.NoError(t, err, "failed to manage(delete) cloud")
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete public cloud secrets during delete")
-	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, statusUpdated)
+	verifyClusterProvisioningStatus(context.Background(), t, config.APIServer, config.ClusterID, cluster.StatusUpdated)
 	assert.True(t, verifyCommandsExecuted(t, expectedMCDeleteCmdExecuted),
 		"commands executed during cluster delete are not as expected")
 	// make sure cluster is removed
 	assert.True(t, verifyMCDeleted(clusterDeployer.APIServer), "MC folder is not deleted during cluster delete")
 
 	// delete cluster itself
-	config.Action = deleteAction
+	config.Action = cluster.DeleteAction
 	manageCluster(t, config)
 	err = isCloudSecretFilesDeleted()
 	require.NoError(t, err, "failed to delete cloud secrets during delete")
@@ -1069,10 +1070,10 @@ func TestTripleoClusterImport(t *testing.T) {
 	s, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
 
-	config := &Config{
+	config := &cluster.Config{
 		APIServer:           s,
 		ClusterID:           clusterID,
-		Action:              createAction,
+		Action:              cluster.CreateAction,
 		LogLevel:            "debug",
 		TemplateRoot:        "templates/",
 		WorkRoot:            workRoot,
@@ -1084,7 +1085,7 @@ func TestTripleoClusterImport(t *testing.T) {
 	// create cluster
 	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to import tripleo cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1109,8 +1110,8 @@ func TestTripleoClusterImport(t *testing.T) {
 	)
 	assert.NoError(t, err)
 	// delete cluster
-	config.Action = deleteAction
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	config.Action = cluster.DeleteAction
+	clusterDeployer, err = cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1145,10 +1146,10 @@ func TestJUJUClusterImport(t *testing.T) {
 	s, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
 
-	config := &Config{
+	config := &cluster.Config{
 		APIServer:           s,
 		ClusterID:           clusterID,
-		Action:              createAction,
+		Action:              cluster.CreateAction,
 		LogLevel:            "debug",
 		TemplateRoot:        "templates/",
 		WorkRoot:            workRoot,
@@ -1160,7 +1161,7 @@ func TestJUJUClusterImport(t *testing.T) {
 	// create cluster
 	removeFile(t, executedPlaybooks)
 
-	clusterDeployer, err := NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	clusterDeployer, err := cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to import juju cluster")
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -1185,8 +1186,8 @@ func TestJUJUClusterImport(t *testing.T) {
 	)
 	assert.NoError(t, err)
 	// delete cluster
-	config.Action = deleteAction
-	clusterDeployer, err = NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
+	config.Action = cluster.DeleteAction
+	clusterDeployer, err = cluster.NewCluster(config, testutil.NewFileWritingExecutor(executedMCCommand))
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")

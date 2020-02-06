@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-type terraformState interface {
+// TerraformState interface allows retrieving Terraform state data.
+type TerraformState interface {
 	GetPublicIP(hostname string) (string, error)
 	GetPrivateIP(hostname string) (string, error)
 }
@@ -18,7 +19,7 @@ type cloudTfStateReader struct {
 	cloudUUID string
 }
 
-func (r cloudTfStateReader) Read() (terraformState, error) {
+func (r cloudTfStateReader) Read() (TerraformState, error) {
 	tfState, err := readStateFile(GetTFStateFile(r.cloudUUID))
 	if err != nil {
 		return nil, err
