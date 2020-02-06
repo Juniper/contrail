@@ -68,6 +68,23 @@
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0bffc21_68d03f7b",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-02-06T21:54:30Z",
+      "side": 1,
+      "message": "I think it would be better to have replicated GetContainerName and GetContrailVersion in pkg/deploy/ansible.go, as this would decouple pkg/deploy/ansible.go with pkg/cloud, and could save some complexity and time to understand if future refactoring occur.",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
