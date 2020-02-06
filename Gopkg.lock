@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:4c07141e725d29c3ef09085dc545b18326bdc81350060640b29a6281b59dd3f8"
+  digest = "1:46c36a63214b3a441affb5d03cb2052555d46831446c8fb539ee53fad419a09f"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apisrv/baseapisrv",
@@ -18,6 +18,7 @@
     "pkg/client",
     "pkg/constants",
     "pkg/db/basedb",
+    "pkg/db/etcd",
     "pkg/errutil",
     "pkg/fileutil",
     "pkg/fileutil/template",
@@ -34,7 +35,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "4da8d435f3e1aaab34341630806279f114f3d887"
+  revision = "f12625565724760bccf3c709af47d7c510390377"
 
 [[projects]]
   branch = "2.x"
@@ -1362,6 +1363,7 @@
     "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/db/basedb",
+    "github.com/Juniper/asf/pkg/db/etcd",
     "github.com/Juniper/asf/pkg/errutil",
     "github.com/Juniper/asf/pkg/fileutil",
     "github.com/Juniper/asf/pkg/fileutil/template",

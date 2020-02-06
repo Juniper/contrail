@@ -42,14 +42,14 @@ func newDeployCluster(c *Cluster, cData *base.Data, moduleName string) *deployCl
 func newReporter(cluster *Cluster) *report.Reporter {
 	return report.NewReporter(
 		cluster.APIServer,
-		fmt.Sprintf("%s/%s", defaultResourcePath, cluster.config.ClusterID),
+		fmt.Sprintf("%s/%s", DefaultResourcePath, cluster.config.ClusterID),
 		logutil.NewFileLogger("reporter", cluster.config.LogFile),
 	)
 }
 
 func (p *deployCluster) isCreated() bool {
 	state := p.clusterData.ClusterInfo.ProvisioningState
-	if p.action == "create" && (state == statusNoState || state == "") {
+	if p.action == "create" && (state == StatusNoState || state == "") {
 		return false
 	}
 	p.Log.Infof("Cluster %s already deployed, STATE: %s", p.clusterID, state)
@@ -67,7 +67,7 @@ func (p *deployCluster) getTemplateRoot() string {
 func (p *deployCluster) getWorkRoot() string {
 	workRoot := p.cluster.config.WorkRoot
 	if workRoot == "" {
-		workRoot = defaultWorkRoot
+		workRoot = DefaultWorkRoot
 	}
 	return workRoot
 }

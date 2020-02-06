@@ -6,8 +6,7 @@ import (
 )
 
 func main() {
-	err := contrail.Contrail.Execute()
-	if err != nil {
+	if err := contrail.Run(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 }

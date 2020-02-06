@@ -24,7 +24,7 @@ type deployUnderCloud struct {
 
 func (p *deployUnderCloud) isCreated() bool {
 	state := p.undercloudData.cloudManagerInfo.ProvisioningState
-	if p.action == createAction && (state == statusNoState || state == "") {
+	if p.action == CreateAction && (state == statusNoState || state == "") {
 		return false
 	}
 	p.Log.Infof("UnderCloud %s already deployed, STATE: %s", p.undercloudID, state)
@@ -85,7 +85,7 @@ func newContrailCloudDeployer(undercloud *UnderCloud, cData *Data) (base.Deploye
 func newDeployerByID(undercloud *UnderCloud) (base.Deployer, error) {
 	var cData *Data
 	var err error
-	if undercloud.config.Action == deleteAction {
+	if undercloud.config.Action == DeleteAction {
 		cData = &Data{}
 	} else {
 		cData = NewData(undercloud.APIServer)
