@@ -225,7 +225,7 @@ func RunCleanTestScenario(
 
 	ctx := context.Background()
 	clients := PrepareClients(ctx, t, ts, server)
-	tracked := runTestScenario(ctx, t, ts, clients, server.APIServer.DBService)
+	tracked := runTestScenario(ctx, t, ts, clients, server.dbService)
 	cleanupTrackedResources(ctx, tracked, clients)
 
 	checkWatchers(t)
@@ -236,7 +236,7 @@ func RunDirtyTestScenario(t *testing.T, ts *TestScenario, server *APIServer) fun
 	logrus.WithField("test-scenario", ts.Name).Debug("Running dirty test scenario")
 	ctx := context.Background()
 	clients := PrepareClients(ctx, t, ts, server)
-	tracked := runTestScenario(ctx, t, ts, clients, server.APIServer.DBService)
+	tracked := runTestScenario(ctx, t, ts, clients, server.dbService)
 	cleanupFunc := func() {
 		cleanupTrackedResources(ctx, tracked, clients)
 	}

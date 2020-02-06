@@ -1,4 +1,4 @@
-package undercloud
+package undercloud_test
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/asf/pkg/services/baseservices"
@@ -117,7 +118,7 @@ func verifyPorts(t *testing.T, hc *client.HTTP, nodeID string, expectedPorts []s
 func runUnderCloudActionTest(
 	t *testing.T,
 	hc *client.HTTP,
-	config *Config,
+	config *undercloud.Config,
 	action,
 	expectedSite,
 	expectedPlaybooks string,
@@ -128,10 +129,10 @@ func runUnderCloudActionTest(
 	cloudManager := map[string]interface{}{"uuid": cloudManagerID,
 		"provisioning_action": action,
 	}
-	config.Action = updateAction
+	config.Action = undercloud.UpdateAction
 	switch action {
-	case importProvisioningAction:
-		config.Action = createAction
+	case undercloud.ImportProvisioningAction:
+		config.Action = undercloud.CreateAction
 		cloudManager["provisioning_action"] = ""
 	}
 	data = map[string]interface{}{"rhospd-cloud-manager": cloudManager}
@@ -148,7 +149,7 @@ func runUnderCloudActionTest(
 			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
 		}
 	}
-	underCloudManager, err := NewUnderCloud(config)
+	underCloudManager, err := undercloud.NewUnderCloud(config)
 	assert.NoErrorf(t, err, "failed to create cloudManager manager to %s cloudManager", config.Action)
 	deployer, err := underCloudManager.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -191,10 +192,10 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	hc, err := integration.NewAdminHTTPClient(server.URL())
 	assert.NoError(t, err)
 
-	config := &Config{
+	config := &undercloud.Config{
 		APIServer:    hc,
 		ResourceID:   cloudManagerID,
-		Action:       createAction,
+		Action:       undercloud.CreateAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
 		WorkRoot:     workRoot,
@@ -202,7 +203,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 		LogFile:      workRoot + "/deploy.log",
 	}
 
-	underCloudManager, err := NewUnderCloud(config)
+	underCloudManager, err := undercloud.NewUnderCloud(config)
 	assert.NoError(t, err, "failed to create cloudManager manager to create cloudManager")
 	deployer, err := underCloudManager.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -222,7 +223,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	assert.NoError(t, err, "failed to verify and delete ports")
 
 	// update cloudManager
-	config.Action = updateAction
+	config.Action = undercloud.UpdateAction
 	// remove site.yml to trriger cloudManager update
 	err = os.Remove(generatedSitePath())
 	if err != nil {
@@ -235,7 +236,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
 		}
 	}
-	underCloudManager, err = NewUnderCloud(config)
+	underCloudManager, err = undercloud.NewUnderCloud(config)
 	assert.NoError(t, err, "failed to create cloudManager manager to update cloudManager")
 	deployer, err = underCloudManager.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
@@ -253,7 +254,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	assert.NoError(t, err, "failed to verify and delete ports")
 
 	// IMPORT test (expected to create endpoints without triggering playbooks)
-	runUnderCloudActionTest(t, hc, config, importProvisioningAction, "", "")
+	runUnderCloudActionTest(t, hc, config, undercloud.ImportProvisioningAction, "", "")
 
 	// verify ports
 	err = verifyPorts(t, hc, controlHostOneID, controlHostOnePorts)
@@ -262,7 +263,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	assert.NoError(t, err, "failed to verify and delete ports")
 
 	// delete cloudManager
-	config.Action = deleteAction
+	config.Action = undercloud.DeleteAction
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
 		// cleanup executed playbook file
 		err = os.Remove(executedPlaybooksPath())
@@ -270,7 +271,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
 		}
 	}
-	underCloudManager, err = NewUnderCloud(config)
+	underCloudManager, err = undercloud.NewUnderCloud(config)
 	assert.NoError(t, err, "failed to create cloudManager manager to delete cloudManager")
 	deployer, err = underCloudManager.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
