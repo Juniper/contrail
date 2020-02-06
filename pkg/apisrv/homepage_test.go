@@ -172,7 +172,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	}
 
 	// TODO(Witaut): Don't use Echo - an internal detail of Server.
-	for _, route := range server.APIServer.Server.Echo.Routes() {
+	for _, route := range server.APIServer.Echo.Routes() {
 		if !assert.Truef(t, routes.contains(route.Path),
 			"Route %s has no corresponding link in homepage discovery."+
 				" Register it in APIServer setup code or add it to the set of excluded routes in the test.",
