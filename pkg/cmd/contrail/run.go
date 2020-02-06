@@ -2,9 +2,18 @@ package contrail
 
 import (
 	"context"
+	"crypto/tls"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/Juniper/asf/pkg/db/basedb"
+	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/neutron"
+	"github.com/Juniper/contrail/pkg/proxy"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,6 +42,7 @@ const (
 	syncRetryInterval = 3 * time.Second
 )
 
+// TODO: remove
 var cacheDB *cache.DB
 
 func init() {
@@ -74,6 +84,7 @@ func MaybeStart(serviceName string, f func(), wg *sync.WaitGroup) {
 	}()
 }
 
+// TODO: move to startServer
 func maybeStartCacheService(wg *sync.WaitGroup) {
 	if !viper.GetBool("cache.enabled") {
 		return
@@ -85,6 +96,7 @@ func maybeStartCacheService(wg *sync.WaitGroup) {
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
 }
 
+// TODO: move to startServer
 func startCassandraWatcher() {
 	logrus.Debug("Cassandra watcher enabled for cache")
 	producer := cassandra.NewEventProducer(cacheDB)
@@ -94,6 +106,7 @@ func startCassandraWatcher() {
 	}
 }
 
+// TODO: move to startServer
 func startEtcdWatcher() {
 	logrus.Debug("etcd watcher enabled for cache")
 	producer, err := etcd.NewEventProducer(cacheDB, "cache-service")
@@ -106,6 +119,7 @@ func startEtcdWatcher() {
 	}
 }
 
+// TODO: move to startServer
 func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
 	processor := &services.EventListProcessor{
@@ -152,7 +166,38 @@ func startAmqpReplicator() {
 func startServer() {
 	es := endpoint.NewStore()
 
-	var plugins []baseapisrv.APIPlugin
+	staticProxyPlugin, err := proxy.NewStaticByViper()
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+
+	collector, err := analytics.NewCollectorFromGlobalConfig()
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	analytics.AddLoggerHook(collector)
+
+	sqlDB, err := basedb.ConnectDB(analytics.WithCommitLatencyReporting(collector))
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	dbService := db.NewService(sqlDB)
+	defer func() {
+		if cErr := dbService.Close(); cErr != nil {
+			logrus.WithError(err).Error("Failed to close DB service")
+		}
+	}()
+
+	dynamicProxy := proxy.NewDynamicFromViper(es, dbService) // TODO(dfurman): it could use head of service chain
+	dynamicProxy.StartEndpointsSync()                        // TODO(dfurman): move to proxy constructor and use context for cancellation
+	defer dynamicProxy.StopEndpointsSync()
+
+	plugins := []baseapisrv.APIPlugin{
+		services.UploadCloudKeysPlugin{},
+		staticProxyPlugin,
+		analytics.BodyDumpPlugin{Collector: collector},
+		dynamicProxy,
+	}
 
 	if viper.GetBool("keystone.local") {
 		k, err := keystone.Init(es)
@@ -166,7 +211,56 @@ func startServer() {
 		plugins = append(plugins, cacheDB)
 	}
 
-	server, err := apisrv.NewServer(es, plugins...)
+	var extraServices []services.Service
+	var neutronService *neutron.Service
+	if viper.GetBool("server.enable_vnc_neutron") {
+		neutronService = &neutron.Service{
+			Keystone: &asfkeystone.Client{
+				URL: viper.GetString("keystone.authurl"),
+				HTTPDoer: analytics.LatencyReportingDoer{
+					Doer: &http.Client{
+						Transport: &http.Transport{
+							TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+						},
+					},
+					Collector:   collector,
+					Operation:   "VALIDATE",
+					Application: "KEYSTONE",
+				},
+			},
+			ReadService:       dbService,
+			MetadataGetter:    dbService,
+			InTransactionDoer: dbService,
+		}
+		extraServices = append(extraServices, neutronService)
+	}
+
+	serviceChain, err := apisrv.SetupServiceChain(dbService, extraServices...)
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+
+	if neutronService != nil {
+		neutronService.WriteService = &services.InternalContextWriteServiceWrapper{
+			WriteService: serviceChain,
+		}
+	}
+
+	plugins = append(plugins, serviceChain)
+
+	if viper.GetBool("server.enable_vnc_neutron") {
+		plugins = append(plugins, &neutron.Server{
+			ReadService:       serviceChain,
+			WriteService:      serviceChain,
+			UserAgentKV:       serviceChain,
+			IDToFQNameService: serviceChain,
+			FQNameToIDService: serviceChain,
+			InTransactionDoer: dbService,
+			Log:               logutil.NewLogger("neutron-server"),
+		})
+	}
+
+	server, err := baseapisrv.NewServer(plugins, noAuthPaths())
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
@@ -192,6 +286,19 @@ func startVNCReplicator(es *endpoint.Store) (vncReplicator *replication.Replicat
 		return nil, err
 	}
 	return vncReplicator, nil
+}
+
+func noAuthPaths() []string {
+	return []string{
+		"/v3/auth/tokens", // TODO(mblotniak): Is this ever used?
+		strings.Join([]string{
+			models.ContrailClusterPluralPath,
+			"?fields=",
+			models.ContrailClusterFieldUUID,
+			",",
+			models.ContrailClusterFieldName,
+		}, ""),
+	}
 }
 
 func startSync() {
