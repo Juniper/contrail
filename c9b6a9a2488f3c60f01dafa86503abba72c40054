@@ -25,6 +25,75 @@
     },
     {
       "key": {
+        "uuid": "a3b73a06_874cb5d3",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "What\u0027s the use of this parameter?",
+      "range": {
+        "startLine": 113,
+        "startChar": 68,
+        "endLine": 113,
+        "endChar": 84
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "83a8c679_571e7817",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "What in case one of them is empty/not a valid path?",
+      "range": {
+        "startLine": 150,
+        "startChar": 26,
+        "endLine": 152,
+        "endChar": 20
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea42111d_ac982dbb",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "You can specify type just once",
+      "range": {
+        "startLine": 160,
+        "startChar": 22,
+        "endLine": 160,
+        "endChar": 87
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "08e3d8f7_66cdd394",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 7
@@ -71,6 +140,52 @@
     },
     {
       "key": {
+        "uuid": "df092fc3_29a6f1c4",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "Unnecessary variables",
+      "range": {
+        "startLine": 67,
+        "startChar": 2,
+        "endLine": 69,
+        "endChar": 69
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce3f7905_104dae58",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "In case more that one of these is empty, returned error will still print that only one field is empty.",
+      "range": {
+        "startLine": 88,
+        "startChar": 1,
+        "endLine": 96,
+        "endChar": 2
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c0bffc21_68d03f7b",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 7
@@ -82,6 +197,103 @@
       "writtenOn": "2020-02-06T21:54:30Z",
       "side": 1,
       "message": "I think it would be better to have replicated GetContainerName and GetContrailVersion in pkg/deploy/ansible.go, as this would decouple pkg/deploy/ansible.go with pkg/cloud, and could save some complexity and time to understand if future refactoring occur.",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "26fa0058_2ae6632c",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "Get prefix is unnecessary",
+      "range": {
+        "startLine": 65,
+        "startChar": 19,
+        "endLine": 65,
+        "endChar": 22
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1a2fd53_4b6849ee",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "Sort imports",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aed6cf80_86c74eb8",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "Align this line to other ones",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0ad76d5_55b1d8ef",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "This variable is not required.",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "95df6b4a_ecdf2ec6",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 1,
+      "message": "ditto L#369",
+      "range": {
+        "startLine": 377,
+        "startChar": 1,
+        "endLine": 378,
+        "endChar": 65
+      },
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

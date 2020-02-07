@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "690af66c_07bc8058",
+        "filename": "schemas/contrail/fabric/contrail_cluster.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-07T21:20:22Z",
+      "side": 0,
+      "message": "?",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 153,
+        "endChar": 14
+      },
+      "revId": "c1ba2706fd24fe6c1a66492e9c04c47ddfc74385",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
