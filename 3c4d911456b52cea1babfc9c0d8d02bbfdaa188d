@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "348f0e34_0888c2fe",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 255,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:03:01Z",
+      "side": 0,
+      "message": "These 2 log messages are not printed anymore. Do we want to preserve them?",
+      "revId": "3c4d911456b52cea1babfc9c0d8d02bbfdaa188d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

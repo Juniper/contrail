@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fb69797c_d9a715c4",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:03:01Z",
+      "side": 1,
+      "message": "`the built`",
+      "range": {
+        "startLine": 15,
+        "startChar": 31,
+        "endLine": 15,
+        "endChar": 36
+      },
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af74585b_36dd4d84",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:03:01Z",
+      "side": 1,
+      "message": "This will put ContrailTypeLogicService after QuotaCheckerService, which wasn\u0027t the case before. I don\u0027t know if this can break anything.\n\nI\u0027m concerned that if ContrailTypeLogicService modifies a request in a way that the request wouldn\u0027t pass the quota check (not sure if the quota check result can differ for a single resource) and passes it through, then the quota will be exceeded.",
+      "range": {
+        "startLine": 60,
+        "startChar": 37,
+        "endLine": 60,
+        "endChar": 50
+      },
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0fce283e_79322812",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:03:01Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8e68d8f5_e1578778",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:03:01Z",
+      "side": 1,
+      "message": "Can this be moved into dbService.Close()? Then this line will just be logutil.FatalWithStackTrace(err).",
+      "range": {
+        "startLine": 182,
+        "startChar": 31,
+        "endLine": 182,
+        "endChar": 59
+      },
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
