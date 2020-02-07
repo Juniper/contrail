@@ -1,0 +1,182 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5f35b3b6_4843413f",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "If Service is changed to ReadService, this can be changed to s.DBService.",
+      "range": {
+        "startLine": 224,
+        "startChar": 46,
+        "endLine": 224,
+        "endChar": 48
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0a7accf1_120ddbe5",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "Make this `ReadService ReadService`.",
+      "range": {
+        "startLine": 12,
+        "startChar": 1,
+        "endLine": 12,
+        "endChar": 25
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ae8c49dd_f9cdbed2",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "`hasPerms2`",
+      "range": {
+        "startLine": 25,
+        "startChar": 5,
+        "endLine": 25,
+        "endChar": 15
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "be8f16aa_eeefb910",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "`objectWithPerms2`",
+      "range": {
+        "startLine": 34,
+        "startChar": 4,
+        "endLine": 34,
+        "endChar": 18
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8a4302b_5c33ed96",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "Move functions to be below their usage.\n\nAlso, call this `checkTypePermissions`.",
+      "range": {
+        "startLine": 25,
+        "startChar": 22,
+        "endLine": 25,
+        "endChar": 38
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2848be36_4e9dc81c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "`checkObjectPermissions`",
+      "range": {
+        "startLine": 30,
+        "startChar": 22,
+        "endLine": 30,
+        "endChar": 36
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "60ded66b_55b36b38",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "`checkAllPermissions`?",
+      "range": {
+        "startLine": 35,
+        "startChar": 22,
+        "endLine": 35,
+        "endChar": 44
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "72e40755_329c900f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-07T19:10:45Z",
+      "side": 1,
+      "message": "The indentation has gotten really out of hand here. I see that most of the file has been rewritten, though, so you can make all the code in this file have only tabs for indentation.",
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
