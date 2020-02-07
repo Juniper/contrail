@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "757cfa64_6c25cb63",
+        "filename": "pkg/apisrv/access_getter.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-07T15:07:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9dda381f_9d627b1f",
+      "revId": "afb9e00dfbe2749f1bdab22d340f1160252fe5d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b5223e47_8384ca68",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 22
@@ -66,6 +84,30 @@
     },
     {
       "key": {
+        "uuid": "acb98d05_f51e7caf",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-07T15:07:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c44466ba_7f9ce148",
+      "range": {
+        "startLine": 224,
+        "startChar": 7,
+        "endLine": 224,
+        "endChar": 27
+      },
+      "revId": "afb9e00dfbe2749f1bdab22d340f1160252fe5d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3ba26b8e_fd88322d",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
         "patchSetId": 22
@@ -86,6 +128,30 @@
       "revId": "afb9e00dfbe2749f1bdab22d340f1160252fe5d3",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c1f96f31_fcd4e98a",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 22
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-07T15:07:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3ba26b8e_fd88322d",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 23
+      },
+      "revId": "afb9e00dfbe2749f1bdab22d340f1160252fe5d3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
