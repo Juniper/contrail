@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "01f6d5a5_78967cd8",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b99bb349_bee701ca",
+      "range": {
+        "startLine": 39,
+        "startChar": 1,
+        "endLine": 39,
+        "endChar": 90
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a3b73a06_874cb5d3",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 7
@@ -36,6 +60,30 @@
       "writtenOn": "2020-02-07T21:20:22Z",
       "side": 1,
       "message": "What\u0027s the use of this parameter?",
+      "range": {
+        "startLine": 113,
+        "startChar": 68,
+        "endLine": 113,
+        "endChar": 84
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "91aa2b3b_493ae42f",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "It defines the directory from which command will be called in the container.",
+      "parentUuid": "a3b73a06_874cb5d3",
       "range": {
         "startLine": 113,
         "startChar": 68,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "7ffea4a4_9078d58a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "I added validation of sources but validating if targets are proper is a bit harder. In case of error it will be returned by Docker lib.",
+      "parentUuid": "83a8c679_571e7817",
+      "range": {
+        "startLine": 150,
+        "startChar": 26,
+        "endLine": 152,
+        "endChar": 20
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ea42111d_ac982dbb",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 7
@@ -82,6 +154,30 @@
       "writtenOn": "2020-02-07T21:20:22Z",
       "side": 1,
       "message": "You can specify type just once",
+      "range": {
+        "startLine": 160,
+        "startChar": 22,
+        "endLine": 160,
+        "endChar": 87
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6e95caa_b0e108b7",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Could you elaborate?",
+      "parentUuid": "ea42111d_ac982dbb",
       "range": {
         "startLine": 160,
         "startChar": 22,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "ac2b9cd1_aaddbcd9",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "08e3d8f7_66cdd394",
+      "range": {
+        "startLine": 219,
+        "startChar": 1,
+        "endLine": 219,
+        "endChar": 62
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a39683e3_2c8c5b66",
         "filename": "pkg/ansible/container_player_test.go",
         "patchSetId": 7
@@ -140,6 +260,30 @@
     },
     {
       "key": {
+        "uuid": "c813ad0f_f1023c49",
+        "filename": "pkg/ansible/container_player_test.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 408,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a39683e3_2c8c5b66",
+      "range": {
+        "startLine": 405,
+        "startChar": 0,
+        "endLine": 408,
+        "endChar": 1
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "df092fc3_29a6f1c4",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 7
@@ -151,6 +295,30 @@
       "writtenOn": "2020-02-07T21:20:22Z",
       "side": 1,
       "message": "Unnecessary variables",
+      "range": {
+        "startLine": 67,
+        "startChar": 2,
+        "endLine": 69,
+        "endChar": 69
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e37d199f_57d9a699",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "df092fc3_29a6f1c4",
       "range": {
         "startLine": 67,
         "startChar": 2,
@@ -186,6 +354,30 @@
     },
     {
       "key": {
+        "uuid": "1c2af115_66477e6b",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ce3f7905_104dae58",
+      "range": {
+        "startLine": 88,
+        "startChar": 1,
+        "endLine": 96,
+        "endChar": 2
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c0bffc21_68d03f7b",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 7
@@ -197,6 +389,24 @@
       "writtenOn": "2020-02-06T21:54:30Z",
       "side": 1,
       "message": "I think it would be better to have replicated GetContainerName and GetContrailVersion in pkg/deploy/ansible.go, as this would decouple pkg/deploy/ansible.go with pkg/cloud, and could save some complexity and time to understand if future refactoring occur.",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6f3055be_c15e5d85",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0bffc21_68d03f7b",
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -226,6 +436,30 @@
     },
     {
       "key": {
+        "uuid": "367f65a7_d980ff45",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "26fa0058_2ae6632c",
+      "range": {
+        "startLine": 65,
+        "startChar": 19,
+        "endLine": 65,
+        "endChar": 22
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e1a2fd53_4b6849ee",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -237,6 +471,24 @@
       "writtenOn": "2020-02-07T21:20:22Z",
       "side": 1,
       "message": "Sort imports",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c72f224_c8aa2cf3",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e1a2fd53_4b6849ee",
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -260,6 +512,24 @@
     },
     {
       "key": {
+        "uuid": "cf6bdc24_3406b855",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "aed6cf80_86c74eb8",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c0ad76d5_55b1d8ef",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -277,6 +547,24 @@
     },
     {
       "key": {
+        "uuid": "850dae16_1bf3585e",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0ad76d5_55b1d8ef",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "95df6b4a_ecdf2ec6",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -288,6 +576,30 @@
       "writtenOn": "2020-02-07T21:20:22Z",
       "side": 1,
       "message": "ditto L#369",
+      "range": {
+        "startLine": 377,
+        "startChar": 1,
+        "endLine": 378,
+        "endChar": 65
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8752eb6c_3a176cdf",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-08T00:17:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "95df6b4a_ecdf2ec6",
       "range": {
         "startLine": 377,
         "startChar": 1,
