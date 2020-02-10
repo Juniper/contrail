@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fb9c2b02_8bb50090",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5f35b3b6_4843413f",
+      "range": {
+        "startLine": 224,
+        "startChar": 46,
+        "endLine": 224,
+        "endChar": 48
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0a7accf1_120ddbe5",
         "filename": "pkg/services/access_getter.go",
         "patchSetId": 23
@@ -45,6 +69,30 @@
       "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e49ca750_8c22489c",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0a7accf1_120ddbe5",
+      "range": {
+        "startLine": 12,
+        "startChar": 1,
+        "endLine": 12,
+        "endChar": 25
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "a5df9b52_cd19910e",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae8c49dd_f9cdbed2",
+      "range": {
+        "startLine": 25,
+        "startChar": 5,
+        "endLine": 25,
+        "endChar": 15
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "be8f16aa_eeefb910",
         "filename": "pkg/services/access_getter.go",
         "patchSetId": 23
@@ -91,6 +163,30 @@
       "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd904239_0dd67c0b",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "be8f16aa_eeefb910",
+      "range": {
+        "startLine": 34,
+        "startChar": 4,
+        "endLine": 34,
+        "endChar": 18
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "a6795074_6c518012",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b8a4302b_5c33ed96",
+      "range": {
+        "startLine": 25,
+        "startChar": 22,
+        "endLine": 25,
+        "endChar": 38
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2848be36_4e9dc81c",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
         "patchSetId": 23
@@ -137,6 +257,30 @@
       "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0357ecf7_01dbc02e",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2848be36_4e9dc81c",
+      "range": {
+        "startLine": 30,
+        "startChar": 22,
+        "endLine": 30,
+        "endChar": 36
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -163,6 +307,30 @@
     },
     {
       "key": {
+        "uuid": "a3ab817a_418cc19d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "60ded66b_55b36b38",
+      "range": {
+        "startLine": 35,
+        "startChar": 22,
+        "endLine": 35,
+        "endChar": 44
+      },
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "72e40755_329c900f",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
         "patchSetId": 23
@@ -177,6 +345,24 @@
       "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2b440b11_c4757ef0",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 23
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-02-10T09:19:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "72e40755_329c900f",
+      "revId": "52f2cf2a1f104bac4f73ad9ddd31f3cecdbd9c07",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
