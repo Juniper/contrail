@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "31e6a079_4bb7a951",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Yes, it is better to have notifier as late as possible. Fixed.",
+      "parentUuid": "eded527e_3cd304f6",
+      "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fe87f997_9758706d",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 4
@@ -33,6 +51,24 @@
       "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fb2eab86_45aab9c4",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Fixed in newer patchsets.",
+      "parentUuid": "fe87f997_9758706d",
+      "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -59,6 +95,30 @@
     },
     {
       "key": {
+        "uuid": "ca403242_47d17ce2",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Instead of that I think we should just resolve following TODO:\n\u003e TODO(dfurman): modify function to call contrail.StartServer() to remove duplication\nIt is out of CR\u0027s scope.",
+      "parentUuid": "94d086ee_e396954a",
+      "range": {
+        "startLine": 169,
+        "startChar": 28,
+        "endLine": 177,
+        "endChar": 3
+      },
+      "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9f42f3b7_ad073d27",
         "filename": "pkg/testutil/integration/api_server.go",
         "patchSetId": 4
@@ -79,6 +139,30 @@
       "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ab78fc0_f59ae2e6",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 341,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9f42f3b7_ad073d27",
+      "range": {
+        "startLine": 341,
+        "startChar": 5,
+        "endLine": 341,
+        "endChar": 20
+      },
+      "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -105,6 +189,30 @@
     },
     {
       "key": {
+        "uuid": "cf26fee1_1a5fe0ea",
+        "filename": "pkg/testutil/integration/api_server.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 391,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a3d0045_caf37999",
+      "range": {
+        "startLine": 391,
+        "startChar": 5,
+        "endLine": 391,
+        "endChar": 16
+      },
+      "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "eb827546_fc0eea13",
         "filename": "vendor/github.com/Juniper/asf/pkg/logutil/logger.go",
         "patchSetId": 4
@@ -125,6 +233,30 @@
       "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "baf0789b_2b3e755a",
+        "filename": "vendor/github.com/Juniper/asf/pkg/logutil/logger.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "eb827546_fc0eea13",
+      "range": {
+        "startLine": 147,
+        "startChar": 2,
+        "endLine": 147,
+        "endChar": 27
+      },
+      "revId": "1bbfdc47ec39fd8f532d80da457b89ec5fe8c794",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

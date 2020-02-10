@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "c1cc3334_e15ab6c7",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fb69797c_d9a715c4",
+      "range": {
+        "startLine": 15,
+        "startChar": 31,
+        "endLine": 15,
+        "endChar": 36
+      },
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "af74585b_36dd4d84",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 3
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "7d4b24f8_3d6b64bd",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "This does not break the tests. I think it is better design to all type logic after quota checker, because heavy type logic such as creating dependent resources (e.g. project -\u003e default APSes) are created only when there is quota for parent resource. Basically quota service errors are returned earlier in current solution.\n\n\u003e I\u0027m concerned that if ContrailTypeLogicService modifies a request in a way that the request wouldn\u0027t pass the quota check (not sure \u003e if the quota check result can differ for a single resource) and passes it through, then the quota will be exceeded.\n\nI am not aware of such case and I don\u0027t think it is a valid one.",
+      "parentUuid": "af74585b_36dd4d84",
+      "range": {
+        "startLine": 60,
+        "startChar": 37,
+        "endLine": 60,
+        "endChar": 50
+      },
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0fce283e_79322812",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 3
@@ -62,6 +110,24 @@
       "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a80e0f59_09a15998",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0fce283e_79322812",
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -85,6 +151,30 @@
       "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0813cf0c_c2fddadf",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-10T17:12:30Z",
+      "side": 1,
+      "message": "Fixed.",
+      "parentUuid": "8e68d8f5_e1578778",
+      "range": {
+        "startLine": 182,
+        "startChar": 31,
+        "endLine": 182,
+        "endChar": 59
+      },
+      "revId": "f8ab80153f74ad06d7207ec3d043c2ba4b5728fa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
