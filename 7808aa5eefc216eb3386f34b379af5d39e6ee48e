@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "f3aafdff_e5c4e8e9",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T14:14:44Z",
+      "side": 1,
+      "message": "Indeed, I\u0027ve missed that.",
+      "parentUuid": "d6109dd5_acd0c42e",
+      "range": {
+        "startLine": 9,
+        "startChar": 37,
+        "endLine": 9,
+        "endChar": 43
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7335a92b_49b8bbf8",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 10
@@ -125,6 +149,24 @@
       "side": 1,
       "message": "cloud.Config() function copies Config struct and I\u0027d like to avoid copying it multple times.",
       "parentUuid": "c77c4adc_987a1c0b",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2f50b476_36eb28c6",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 746,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T14:14:44Z",
+      "side": 1,
+      "message": "I\u0027d argue that copying the struct is not a problem in tests, but it\u0027s not too bad as it is.",
+      "parentUuid": "c677c20b_df1dd76f",
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
