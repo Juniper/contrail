@@ -84,6 +84,30 @@
     },
     {
       "key": {
+        "uuid": "8e9faddb_eb4b2192",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 25
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T14:02:26Z",
+      "side": 1,
+      "message": "This suggestion was wrong, my bad - `model` here is taken from `request`, not an empty struct.\n\nTo avoid this confusion, remove the empty structs (model :\u003d models.{{ schema.JSONSchema.GoName }}{}) and just use the Kind value directly (models.Kind{{ schema.JSONSchema.GoName }}).",
+      "parentUuid": "87f3953f_f34f8351",
+      "range": {
+        "startLine": 50,
+        "startChar": 52,
+        "endLine": 50,
+        "endChar": 62
+      },
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bd329f17_408b9039",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
         "patchSetId": 25
