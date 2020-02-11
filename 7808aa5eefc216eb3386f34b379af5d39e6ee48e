@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7335a92b_49b8bbf8",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-11T12:07:14Z",
+      "side": 1,
+      "message": "It\u0027s rather \"failed to add new notifier service\"",
+      "range": {
+        "startLine": 57,
+        "startChar": 34,
+        "endLine": 57,
+        "endChar": 55
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "468f7520_bcb6d3cd",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-11T12:07:14Z",
+      "side": 1,
+      "message": "IMO it\u0027s a bit tricky to pass configFile before its value is set to the proper one. Is it too late to call this after setting this value?",
+      "range": {
+        "startLine": 55,
+        "startChar": 1,
+        "endLine": 57,
+        "endChar": 3
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f3d2b1c8_c6f161da",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-11T12:07:14Z",
+      "side": 1,
+      "message": "Is it necessary?",
+      "range": {
+        "startLine": 66,
+        "startChar": 2,
+        "endLine": 66,
+        "endChar": 12
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "02870636_8419768a",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-11T12:07:14Z",
+      "side": 1,
+      "message": "Maybe for running contrail a help should appear",
+      "range": {
+        "startLine": 67,
+        "startChar": 2,
+        "endLine": 67,
+        "endChar": 52
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec465c0b_5210fdce",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 261,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-11T12:07:14Z",
+      "side": 1,
+      "message": "redundant variable",
+      "range": {
+        "startLine": 261,
+        "startChar": 2,
+        "endLine": 261,
+        "endChar": 6
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aef6c380_0551e5a1",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 314,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-11T12:07:14Z",
+      "side": 1,
+      "message": "redundant variable",
+      "range": {
+        "startLine": 314,
+        "startChar": 1,
+        "endLine": 314,
+        "endChar": 4
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
