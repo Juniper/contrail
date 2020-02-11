@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "d6109dd5_acd0c42e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done. Also, this is not the title. The title is \"Disintegrate apisrv.NewServer() function\"",
+      "parentUuid": "ce59cddd_bedd6249",
+      "range": {
+        "startLine": 9,
+        "startChar": 37,
+        "endLine": 9,
+        "endChar": 43
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7335a92b_49b8bbf8",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 10
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "ef5fe6f6_b0b9d67e",
+        "filename": "pkg/apisrv/server.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "I think this would be too verbose. See: https://github.com/uber-go/guide/blob/master/style.md#error-wrapping",
+      "parentUuid": "7335a92b_49b8bbf8",
+      "range": {
+        "startLine": 57,
+        "startChar": 34,
+        "endLine": 57,
+        "endChar": 55
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c77c4adc_987a1c0b",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 10
@@ -62,6 +110,24 @@
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c677c20b_df1dd76f",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 746,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "cloud.Config() function copies Config struct and I\u0027d like to avoid copying it multple times.",
+      "parentUuid": "c77c4adc_987a1c0b",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -112,6 +178,30 @@
     },
     {
       "key": {
+        "uuid": "ed813033_72b318b2",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "I we want to remove global variable (and we want), it needs to be done that way. However, I grouped the code.\nBTW, both reading CLI flags and initConfig() is run and managed by cobra within contrailCmd.Execute() call.",
+      "parentUuid": "e9e6ded5_363c3144",
+      "range": {
+        "startLine": 55,
+        "startChar": 1,
+        "endLine": 57,
+        "endChar": 3
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f3d2b1c8_c6f161da",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -132,6 +222,30 @@
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d8aa4188_a25f1d21",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f3d2b1c8_c6f161da",
+      "range": {
+        "startLine": 66,
+        "startChar": 2,
+        "endLine": 66,
+        "endChar": 12
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -158,6 +272,30 @@
     },
     {
       "key": {
+        "uuid": "479caab4_7bca5915",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "A help is displayed if contrail CLI is used not properly, or `contrail -h` is run.",
+      "parentUuid": "02870636_8419768a",
+      "range": {
+        "startLine": 67,
+        "startChar": 2,
+        "endLine": 67,
+        "endChar": 52
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ec465c0b_5210fdce",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -181,6 +319,30 @@
     },
     {
       "key": {
+        "uuid": "52a878a6_bc39b1d2",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 261,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "I\u0027d like not to merge action and error handling into one line.",
+      "parentUuid": "ec465c0b_5210fdce",
+      "range": {
+        "startLine": 261,
+        "startChar": 2,
+        "endLine": 261,
+        "endChar": 6
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ae999663_8a28c644",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -195,6 +357,24 @@
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "78b1d85f_93926ee2",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae999663_8a28c644",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -221,6 +401,30 @@
     },
     {
       "key": {
+        "uuid": "996f767a_05768eb8",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 314,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "I\u0027d like not to merge action and error handling into one line.",
+      "parentUuid": "aef6c380_0551e5a1",
+      "range": {
+        "startLine": 314,
+        "startChar": 1,
+        "endLine": 314,
+        "endChar": 4
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fbfce58c_27c547cf",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -241,6 +445,30 @@
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6794dd10_248e4544",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fbfce58c_27c547cf",
+      "range": {
+        "startLine": 318,
+        "startChar": 27,
+        "endLine": 318,
+        "endChar": 30
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -267,6 +495,30 @@
     },
     {
       "key": {
+        "uuid": "c7142f8d_5a95251e",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "13043c8c_069618ca",
+      "range": {
+        "startLine": 319,
+        "startChar": 14,
+        "endLine": 319,
+        "endChar": 19
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6d387f88_953e559a",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -284,6 +536,24 @@
     },
     {
       "key": {
+        "uuid": "7b245a52_d3066446",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6d387f88_953e559a",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "850ab818_7c4eacb6",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 10
@@ -298,6 +568,24 @@
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57797736_2986be0a",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-11T13:54:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "850ab818_7c4eacb6",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
