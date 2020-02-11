@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "ce59cddd_bedd6249",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "`a usable`. Also, remove the period at the end of the title.",
+      "range": {
+        "startLine": 9,
+        "startChar": 37,
+        "endLine": 9,
+        "endChar": 43
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "7335a92b_49b8bbf8",
         "filename": "pkg/apisrv/server.go",
         "patchSetId": 10
@@ -19,6 +42,23 @@
         "endLine": 57,
         "endChar": 55
       },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c77c4adc_987a1c0b",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 746,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "I\u0027d inline this to be consistent with other usage of `cl.` below. (Same in other tests).",
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -117,6 +157,23 @@
     },
     {
       "key": {
+        "uuid": "ae999663_8a28c644",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "Make dbService.Close() wrap the error with \"failed to close DB service\" - I don\u0027t see it already doing that in the code.",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "aef6c380_0551e5a1",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
@@ -134,6 +191,86 @@
         "endLine": 314,
         "endChar": 4
       },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fbfce58c_27c547cf",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "`a new`",
+      "range": {
+        "startLine": 318,
+        "startChar": 27,
+        "endLine": 318,
+        "endChar": 30
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "13043c8c_069618ca",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "`the first`",
+      "range": {
+        "startLine": 319,
+        "startChar": 14,
+        "endLine": 319,
+        "endChar": 19
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6d387f88_953e559a",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "\"returns ...\"",
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "850ab818_7c4eacb6",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:55:19Z",
+      "side": 1,
+      "message": "`an \"instances\" file`, `an \"inventory\" file`",
       "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
