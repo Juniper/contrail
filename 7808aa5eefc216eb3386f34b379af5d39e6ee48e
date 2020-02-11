@@ -88,6 +88,30 @@
     },
     {
       "key": {
+        "uuid": "e9e6ded5_363c3144",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T13:04:09Z",
+      "side": 1,
+      "message": "If that can\u0027t be done, moving the declaration and this part of the code close to where it\u0027s set would still be useful.",
+      "parentUuid": "468f7520_bcb6d3cd",
+      "range": {
+        "startLine": 55,
+        "startChar": 1,
+        "endLine": 57,
+        "endChar": 3
+      },
+      "revId": "7808aa5eefc216eb3386f34b379af5d39e6ee48e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f3d2b1c8_c6f161da",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 10
