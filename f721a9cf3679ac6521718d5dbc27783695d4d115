@@ -1,0 +1,135 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "edd3568f_03139644",
+        "filename": "pkg/services/access_getter.go",
+        "patchSetId": 25
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "\"... and resources\u0027 Perms2\"",
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fe36c848_4946c42c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 25
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "What about using \"\" explicitly?",
+      "range": {
+        "startLine": 50,
+        "startChar": 52,
+        "endLine": 50,
+        "endChar": 62
+      },
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bd329f17_408b9039",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 25
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "This empty line is unnecessary.",
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3b16ef38_af7cb4b1",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 25
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b1e5347_4adf9a58",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 25
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c708f95f_c951b124",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/rbac_service.go.tmpl",
+        "patchSetId": 25
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "What about using \"\" explicitly?",
+      "range": {
+        "startLine": 86,
+        "startChar": 52,
+        "endLine": 86,
+        "endChar": 62
+      },
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b88594c6_31f373b1",
+        "filename": "vendor/github.com/mailru/easyjson/parser/parser_windows.go",
+        "patchSetId": 25
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-11T12:00:39Z",
+      "side": 1,
+      "message": "Remove this change. Running \"dep ensure\" would be enough to do that.",
+      "revId": "f721a9cf3679ac6521718d5dbc27783695d4d115",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
