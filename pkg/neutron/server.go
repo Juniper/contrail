@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
@@ -29,12 +29,12 @@ type Server struct {
 }
 
 // RegisterHTTPAPI registers Neutron endpoints.
-func (s *Server) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
-	r.POST("/neutron/:type", s.handleNeutronPostRequest, baseapisrv.WithHomepageName("neutron plugin"))
+func (s *Server) RegisterHTTPAPI(r apiserver.HTTPRouter) {
+	r.POST("/neutron/:type", s.handleNeutronPostRequest, apiserver.WithHomepageName("neutron plugin"))
 }
 
 // RegisterGRPCAPI does nothing, as the Neutron plugin does not use GRPC.
-func (s *Server) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+func (s *Server) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
 
 func (s *Server) handleNeutronPostRequest(c echo.Context) error {

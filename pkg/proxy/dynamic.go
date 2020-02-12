@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
@@ -119,19 +119,19 @@ func serviceUserClientConfigFromViper() *asfclient.HTTPConfig {
 }
 
 // RegisterHTTPAPI registers the proxy endpoint at the configured path.
-func (p *Dynamic) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+func (p *Dynamic) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 	r.Group(
 		p.config.Path,
-		baseapisrv.WithMiddleware(p.middleware),
-		baseapisrv.WithNoAuth(),
-		baseapisrv.WithHomepageType(baseapisrv.ProxyEndpoint),
+		apiserver.WithMiddleware(p.middleware),
+		apiserver.WithNoAuth(),
+		apiserver.WithHomepageType(apiserver.ProxyEndpoint),
 	)
 }
 
 // RegisterGRPCAPI does nothing.
-func (p *Dynamic) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {}
+func (p *Dynamic) RegisterGRPCAPI(r apiserver.GRPCRouter) {}
 
-func (p *Dynamic) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+func (p *Dynamic) middleware(next apiserver.HandlerFunc) apiserver.HandlerFunc {
 	return func(ctx echo.Context) error {
 		r := ctx.Request()
 

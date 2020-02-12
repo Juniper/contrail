@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/proxy"
@@ -88,33 +88,33 @@ func Init(es endpointStore) (*Keystone, error) {
 }
 
 // RegisterHTTPAPI registers local Keystone endpoints.
-func (k *Keystone) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
-	r.POST("/keystone/v3/auth/tokens", k.CreateTokenAPI, baseapisrv.WithNoAuth())
-	r.GET("/keystone/v3/auth/tokens", k.ValidateTokenAPI, baseapisrv.WithNoAuth())
+func (k *Keystone) RegisterHTTPAPI(r apiserver.HTTPRouter) {
+	r.POST("/keystone/v3/auth/tokens", k.CreateTokenAPI, apiserver.WithNoAuth())
+	r.GET("/keystone/v3/auth/tokens", k.ValidateTokenAPI, apiserver.WithNoAuth())
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
 	r.GET(
 		"/keystone/v3/auth/projects",
 		k.ListAuthProjectsAPI,
-		baseapisrv.WithNoAuth(),
-		baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint),
+		apiserver.WithNoAuth(),
+		apiserver.WithHomepageType(apiserver.CollectionEndpoint),
 	)
-	r.GET("/keystone/v3/auth/domains", k.listDomainsAPI, baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
+	r.GET("/keystone/v3/auth/domains", k.listDomainsAPI, apiserver.WithHomepageType(apiserver.CollectionEndpoint))
 
 	r.GET(
 		"/keystone/v3/projects",
 		k.ListProjectsAPI,
-		baseapisrv.WithNoAuth(),
-		baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint),
+		apiserver.WithNoAuth(),
+		apiserver.WithHomepageType(apiserver.CollectionEndpoint),
 	)
 	r.GET("/keystone/v3/projects/:id", k.GetProjectAPI)
-	r.GET("/keystone/v3/domains", k.listDomainsAPI, baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
+	r.GET("/keystone/v3/domains", k.listDomainsAPI, apiserver.WithHomepageType(apiserver.CollectionEndpoint))
 
-	r.GET("/keystone/v3/users", k.ListUsersAPI, baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint))
+	r.GET("/keystone/v3/users", k.ListUsersAPI, apiserver.WithHomepageType(apiserver.CollectionEndpoint))
 }
 
 // RegisterGRPCAPI does nothing, as Keystone has no GRPC API.
-func (*Keystone) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+func (*Keystone) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
 
 //GetProjectAPI is an API handler to list projects.

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -41,19 +41,19 @@ type BodyDumpPlugin struct {
 }
 
 // RegisterHTTPAPI registers middleware for all endpoints.
-func (p BodyDumpPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+func (p BodyDumpPlugin) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 	r.Use(middlewareFunc(middleware.BodyDump(func(ctx echo.Context, reqBody, resBody []byte) {
 		p.Send(RESTAPITrace(ctx, reqBody, resBody))
 	})))
 }
 
-// middlewareFunc makes a baseapisrv.MiddlewareFunc from echo.MiddlewareFunc.
-func middlewareFunc(m echo.MiddlewareFunc) baseapisrv.MiddlewareFunc {
-	return func(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
-		return baseapisrv.HandlerFunc(m(echo.HandlerFunc(next)))
+// middlewareFunc makes an apiserver.MiddlewareFunc from echo.MiddlewareFunc.
+func middlewareFunc(m echo.MiddlewareFunc) apiserver.MiddlewareFunc {
+	return func(next apiserver.HandlerFunc) apiserver.HandlerFunc {
+		return apiserver.HandlerFunc(m(echo.HandlerFunc(next)))
 	}
 }
 
 // RegisterGRPCAPI does nothing.
-func (BodyDumpPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+func (BodyDumpPlugin) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
