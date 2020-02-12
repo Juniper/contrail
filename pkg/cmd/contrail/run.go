@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/logutil"
@@ -16,7 +15,7 @@ import (
 	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/agent"
-	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/apiserver"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
@@ -39,6 +38,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	asfapiserver "github.com/Juniper/asf/pkg/apiserver"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
@@ -273,7 +273,7 @@ func startServer() {
 	dynamicProxy.StartEndpointsSync()
 	defer dynamicProxy.StopEndpointsSync()
 
-	plugins := []baseapisrv.APIPlugin{
+	plugins := []asfapiserver.APIPlugin{
 		serviceChain,
 		staticProxyPlugin,
 		dynamicProxy,
@@ -303,7 +303,7 @@ func startServer() {
 		})
 	}
 
-	server, err := baseapisrv.NewServer(plugins, NoAuthPaths())
+	server, err := asfapiserver.NewServer(plugins, NoAuthPaths())
 	logutil.FatalWithStackTraceIfError(err)
 
 	r, err := startVNCReplicator(es)
@@ -350,7 +350,7 @@ func NewServiceChain(dbService *db.Service, c collector.Collector) (*services.Co
 	}
 	extraServices = append(extraServices, typeLogicService)
 
-	serviceChain, err := apisrv.SetupServiceChain(dbService, rbac.NewContrailAccessGetter(dbService), extraServices...)
+	serviceChain, err := apiserver.SetupServiceChain(dbService, rbac.NewContrailAccessGetter(dbService), extraServices...)
 	if err != nil {
 		return nil, err
 	}

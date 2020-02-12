@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -51,18 +51,18 @@ func parseTargetURLs(rawTargetURLs []string) (targetURLs []*url.URL, err error) 
 }
 
 // RegisterHTTPAPI registers the proxy endpoints.
-func (p Static) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+func (p Static) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 	for _, pr := range p.proxies {
 		r.Group(
 			pr.prefix,
-			baseapisrv.WithMiddleware(pr.middleware),
-			baseapisrv.WithHomepageType(baseapisrv.ProxyEndpoint),
+			apiserver.WithMiddleware(pr.middleware),
+			apiserver.WithHomepageType(apiserver.ProxyEndpoint),
 		)
 	}
 }
 
 // RegisterGRPCAPI does nothing.
-func (Static) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {}
+func (Static) RegisterGRPCAPI(r apiserver.GRPCRouter) {}
 
 type staticProxy struct {
 	prefix string
@@ -90,7 +90,7 @@ func newStaticProxy(prefix string, targetURLs []*url.URL, insecure bool) staticP
 	return pr
 }
 
-func (pr staticProxy) middleware(next baseapisrv.HandlerFunc) baseapisrv.HandlerFunc {
+func (pr staticProxy) middleware(next apiserver.HandlerFunc) apiserver.HandlerFunc {
 	return func(c echo.Context) error {
 		r := c.Request()
 		w := c.Response()

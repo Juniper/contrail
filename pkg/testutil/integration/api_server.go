@@ -6,7 +6,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
@@ -71,7 +71,7 @@ const (
 
 // APIServer is embedded API Server for testing purposes.
 type APIServer struct {
-	APIServer  *baseapisrv.Server
+	APIServer  *apiserver.Server
 	testServer *httptest.Server
 	dbService  *db.Service
 	// TODO(Witaut): Remove this when AddKeystoneProjectAndUser is removed.
@@ -150,7 +150,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		return nil, err
 	}
 
-	plugins := []baseapisrv.APIPlugin{
+	plugins := []apiserver.APIPlugin{
 		serviceChain,
 		staticProxyPlugin,
 		dynamicProxy,
@@ -172,7 +172,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		})
 	}
 
-	server, err := baseapisrv.NewServer(plugins, contrail.NoAuthPaths())
+	server, err := apiserver.NewServer(plugins, contrail.NoAuthPaths())
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating API Server failed")
 	}
