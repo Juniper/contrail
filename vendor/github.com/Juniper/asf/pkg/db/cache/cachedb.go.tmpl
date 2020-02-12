@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
@@ -428,12 +428,12 @@ func (db *DB) handleNode(n *node) {
 const WatchPath = "watch"
 
 // RegisterHTTPAPI registers the watch HTTP endpoint.
-func (cache *DB) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+func (cache *DB) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 	r.GET(WatchPath, cache.watchHandler)
 }
 
 // RegisterGRPCAPI does nothing, as there is no GRPC watch API.
-func (cache *DB) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+func (cache *DB) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
 
 func (cache *DB) watchHandler(c echo.Context) error {

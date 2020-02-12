@@ -10,10 +10,10 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:658b7b106cf12f82af2386c72be50c02d8ff64cb1d20e738281f5f600242ea89"
+  digest = "1:f7ee15c456f74aabc84b8cb507df4b1d531796eaa83b874cc9958edb96213557"
   name = "github.com/Juniper/asf"
   packages = [
-    "pkg/apisrv/baseapisrv",
+    "pkg/apiserver",
     "pkg/auth",
     "pkg/client",
     "pkg/db/basedb",
@@ -29,12 +29,13 @@
     "pkg/models/basemodels",
     "pkg/osutil",
     "pkg/proxy",
+    "pkg/rbac",
     "pkg/retry",
     "pkg/schema",
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "eef240bdc0a8ba5051882e91c61f72f6595a9b50"
+  revision = "e2d02b309bb6c84f3fcb07543993c1c71aaf55ac"
 
 [[projects]]
   branch = "2.x"
@@ -1358,7 +1359,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Juniper/asf/pkg/apisrv/baseapisrv",
+    "github.com/Juniper/asf/pkg/apiserver",
     "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/db/basedb",
@@ -1374,6 +1375,7 @@
     "github.com/Juniper/asf/pkg/models/basemodels",
     "github.com/Juniper/asf/pkg/osutil",
     "github.com/Juniper/asf/pkg/proxy",
+    "github.com/Juniper/asf/pkg/rbac",
     "github.com/Juniper/asf/pkg/retry",
     "github.com/Juniper/asf/pkg/schema",
     "github.com/Juniper/asf/pkg/services/baseservices",
