@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b42106a9_bfd30a4c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/etcd/client_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-12T15:39:38Z",
+      "side": 0,
+      "message": "This shouldn\u0027t be removed from asf, as the tests here are not specifically for Contrail resources. It should be possible to refactor this to not use Contrail packages and have the test in asf.",
+      "revId": "3c4d911456b52cea1babfc9c0d8d02bbfdaa188d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
