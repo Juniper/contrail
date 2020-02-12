@@ -1,6 +1,11 @@
-package constants
+package etcd
 
-// Viper keys
+import (
+	"path"
+
+	"github.com/spf13/viper"
+)
+
 const (
 	ETCDEndpointsVK          = "etcd.endpoints"
 	ETCDDialTimeoutVK        = "etcd.dial_timeout"
@@ -13,3 +18,9 @@ const (
 	ETCDTLSTrustedCAPathVK   = "etcd.tls.trusted_ca_path"
 	ETCDUsernameVK           = "etcd.username"
 )
+
+// ResourceKey constructs key for given resource type and UUID.
+// TODO(dfurman): pass ETCDPathVK value instead of reading it from the global configuration.
+func ResourceKey(resourceType, uuid string) string {
+	return path.Join("/", viper.GetString(ETCDPathVK), resourceType, uuid)
+}

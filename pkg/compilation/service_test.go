@@ -6,15 +6,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/compilation"
+	"github.com/Juniper/contrail/pkg/compilation/watch"
+	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/constants"
-
-	"github.com/Juniper/contrail/pkg/compilation"
-	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
+	asfetcd "github.com/Juniper/asf/pkg/db/etcd"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
@@ -27,9 +26,9 @@ const (
 
 // TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
 func setTestConfig() {
-	viper.Set(constants.ETCDEndpointsVK, integrationetcd.Endpoint)
-	viper.Set(constants.ETCDPathVK, testEtcdPath)
-	viper.Set(constants.ETCDGRPCInsecureVK, true)
+	viper.Set(asfetcd.ETCDEndpointsVK, integrationetcd.Endpoint)
+	viper.Set(asfetcd.ETCDPathVK, testEtcdPath)
+	viper.Set(asfetcd.ETCDGRPCInsecureVK, true)
 	viper.Set("compilation.msg_index_string", testMessageIndexString)
 	viper.Set("compilation.number_of_workers", 0)
 	viper.Set("compilation.max_job_queue_len", 0)

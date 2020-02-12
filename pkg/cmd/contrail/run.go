@@ -31,6 +31,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
 	"github.com/Juniper/contrail/pkg/proxy"
+	"github.com/Juniper/contrail/pkg/rbac"
 	"github.com/Juniper/contrail/pkg/replication"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
@@ -349,7 +350,7 @@ func NewServiceChain(dbService *db.Service, c collector.Collector) (*services.Co
 	}
 	extraServices = append(extraServices, typeLogicService)
 
-	serviceChain, err := apisrv.SetupServiceChain(dbService, extraServices...)
+	serviceChain, err := apisrv.SetupServiceChain(dbService, rbac.NewContrailAccessGetter(dbService), extraServices...)
 	if err != nil {
 		return nil, err
 	}
