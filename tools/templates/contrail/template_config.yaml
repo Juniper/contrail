@@ -1,4 +1,7 @@
 - type: all
+  template_path: vendor/github.com/Juniper/asf/pkg/apisrv/service_chain.go.tmpl
+  output_dir: pkg/apisrv
+- type: all
   template_path: vendor/github.com/Juniper/asf/pkg/client/client_grpc.go.tmpl
   output_dir: pkg/client
 - type: all
