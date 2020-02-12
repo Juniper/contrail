@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2de181a7_a33bbbcf",
+        "filename": "pkg/cmd/contrailutil/convert.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-12T15:23:28Z",
+      "side": 0,
+      "message": "Merge the import groups.",
+      "revId": "803442c57ee141042a3948b8691769dd33a1716f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
