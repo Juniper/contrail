@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
@@ -1019,48 +1019,48 @@ func (service *ContrailService) RESTGetObjPerms(c echo.Context) error {
 }
 
 // RegisterHTTPAPI registers REST API and action endpoints.
-func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+func (service *ContrailService) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	r.POST(
 		"{{ schema.Prefix }}{{ schema.PluralPath }}",
 		service.RESTCreate{{ schema.JSONSchema.GoName }},
-		baseapisrv.WithNoHomepageMethod(),
-		baseapisrv.WithHomepageName("{{ schema.Path }}"),
-		baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint),
+		apiserver.WithNoHomepageMethod(),
+		apiserver.WithHomepageName("{{ schema.Path }}"),
+		apiserver.WithHomepageType(apiserver.CollectionEndpoint),
 	)
 	r.GET(
 		"{{ schema.Prefix }}{{ schema.PluralPath }}",
 		service.RESTList{{ schema.JSONSchema.GoName }},
-		baseapisrv.WithNoHomepageMethod(),
-		baseapisrv.WithHomepageName("{{ schema.Path }}"),
-		baseapisrv.WithHomepageType(baseapisrv.CollectionEndpoint),
+		apiserver.WithNoHomepageMethod(),
+		apiserver.WithHomepageName("{{ schema.Path }}"),
+		apiserver.WithHomepageType(apiserver.CollectionEndpoint),
 	)
 
 	r.PUT(
 		"{{ schema.Prefix }}{{ schema.Path }}/:id",
 		service.RESTUpdate{{ schema.JSONSchema.GoName }},
-		baseapisrv.WithNoHomepageMethod(),
-		baseapisrv.WithHomepageName("{{ schema.Path }}"),
+		apiserver.WithNoHomepageMethod(),
+		apiserver.WithHomepageName("{{ schema.Path }}"),
 	)
 	r.GET(
 		"{{ schema.Prefix }}{{ schema.Path }}/:id",
 		service.RESTGet{{ schema.JSONSchema.GoName }},
-		baseapisrv.WithNoHomepageMethod(),
-		baseapisrv.WithHomepageName("{{ schema.Path }}"),
+		apiserver.WithNoHomepageMethod(),
+		apiserver.WithHomepageName("{{ schema.Path }}"),
 	)
 	r.DELETE(
 		"{{ schema.Prefix }}{{ schema.Path }}/:id",
 		service.RESTDelete{{ schema.JSONSchema.GoName }},
-		baseapisrv.WithNoHomepageMethod(),
-		baseapisrv.WithHomepageName("{{ schema.Path }}"),
+		apiserver.WithNoHomepageMethod(),
+		apiserver.WithHomepageName("{{ schema.Path }}"),
 	)
 
 {% endif %}{% endfor %}
 
 	// TODO(dfurman): move registration of those endpoints to external plugins
 	r.POST(SyncPath, service.RESTSync)
-	r.POST(FQNameToIDPath, service.RESTFQNameToUUID, baseapisrv.WithHomepageName("name-to-id"))
-	r.POST(IDToFQNamePath, service.RESTIDToFQName, baseapisrv.WithHomepageName("id-to-name"))
+	r.POST(FQNameToIDPath, service.RESTFQNameToUUID, apiserver.WithHomepageName("name-to-id"))
+	r.POST(IDToFQNamePath, service.RESTIDToFQName, apiserver.WithHomepageName("id-to-name"))
 	r.POST(UserAgentKVPath, service.RESTUserAgentKV)
 	r.POST(RefUpdatePath, service.RESTRefUpdate)
 	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
@@ -1076,7 +1076,7 @@ func (service *ContrailService) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
 }
 
 // RegisterGRPCAPI registers GRPC services.
-func (service *ContrailService) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+func (service *ContrailService) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 	r.RegisterService(&_ContrailService_serviceDesc, service)
 
 	// TODO(dfurman): move registration of those endpoints to external plugins
