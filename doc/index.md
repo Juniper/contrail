@@ -195,11 +195,11 @@ API Server supports Keystone V3 authentication and RBAC.
 API Server has minimal embedded Keystone API V3 support for testing purposes. See "keystone" key [in sample configuration file](https://github.com/Juniper/contrail/blob/master/sample/contrail.yml).
 
 See:
- 
+
 - [REST API documentation](rest_api.md)
 - [Authentication documentation](authentication.md)
 - [Policy documentation](policy.md)
-- [API Server source code](../pkg/apisrv)
+- [API Server source code](../pkg/apiserver)
 
 ## Service Interface & Chain
 
@@ -261,7 +261,7 @@ CONTRAIL_DATABASE_DEBUG=true make test
 ### Testutil package
 
 `Testutil` package is located [here](../pkg/testutil). It contains helpers for automatic tests.
-It contains also `integration` subpackage, which holds utilities and types used for integration testing. This package depends on internal packages, such as `pkg/apisrv` and `pkg/sync`.
+It contains also `integration` subpackage, which holds utilities and types used for integration testing. This package depends on internal packages, such as `pkg/services` and `pkg/sync`.
 
 ### YAML integration testing toolkit
 
@@ -275,7 +275,7 @@ YAML test toolkit reads test scenario from YAML files to `TestScenario` struct. 
 - Specify etcd watchers both on `TestScenario.Watchers` level and `Task.Watchers` level. Each watcher entry holds a key the test is expecting events on (such as `/contrail/project/project_blue_project_uuid`) and list of values of events on that key.
 - Enable Intent Compilation service within test scenario (`TestScenario.IntentCompilerEnabled`).
 
-This toolkit is used in [API Server tests](../pkg/apisrv/server_test.go). Test scenarios are located in ["test_data" directory](../pkg/apisrv/test_data). Only API Server is tested here by performing various HTTP requests to it.
+This toolkit is used in [API Server tests](../pkg/apiserver/server_test.go). Test scenarios are located in ["test_data" directory](../pkg/apiserver/test_data). Only API Server is tested here by performing various HTTP requests to it.
 
 This toolkit is also used in [Contrail integration tests](../pkg/cmd/contrail/integration_test.go). Test scenarios are located in ["tests" directory](../pkg/cmd/contrail/tests). Those scenarios test not only API Server, but also Sync service, etcd and Intent Compilation service.
 

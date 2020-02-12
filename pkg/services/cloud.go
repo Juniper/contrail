@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
+	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/labstack/echo"
 )
 
@@ -111,12 +111,12 @@ func (defaults *KeyFileDefaults) GetGoogleAccountPath() string {
 type UploadCloudKeysPlugin struct{}
 
 // RegisterHTTPAPI registers the upload-cloud-keys endpoint.
-func (UploadCloudKeysPlugin) RegisterHTTPAPI(r baseapisrv.HTTPRouter) {
+func (UploadCloudKeysPlugin) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 	r.POST(UploadCloudKeysPath, RESTUploadCloudKeys)
 }
 
 // RegisterGRPCAPI does nothing, as the API is HTTP-only.
-func (UploadCloudKeysPlugin) RegisterGRPCAPI(r baseapisrv.GRPCRouter) {
+func (UploadCloudKeysPlugin) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
 
 // RESTUploadCloudKeys handles an /upload-cloud-keys REST request.
