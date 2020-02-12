@@ -1,11 +1,11 @@
 package contrailutil
 
 import (
+	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/convert"
 )
 
@@ -42,7 +42,7 @@ var convertCmd = &cobra.Command{
 			CassandraPort:           cassandraPort,
 			CassandraTimeout:        cassandraTimeout,
 			CassandraConnectTimeout: cassandraConnectTimeout,
-			EtcdNotifierPath:        viper.GetString(constants.ETCDEndpointsVK),
+			EtcdNotifierPath:        viper.GetString(etcd.ETCDEndpointsVK),
 			URL:                     url,
 		})
 		if err != nil {

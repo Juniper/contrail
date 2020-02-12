@@ -20,6 +20,8 @@ const (
 // GenerateConfig holds configuration for template-base files generation.
 type GenerateConfig struct {
 	TemplateConfigs    []TemplateConfig
+	DBImportPath       string
+	ETCDImportPath     string
 	ModelsImportPath   string
 	ServicesImportPath string
 	NoRegenerate       bool
@@ -117,6 +119,8 @@ func generateFile(api *API, gc *GenerateConfig, tc *TemplateConfig) error {
 		data, err := tpl.Execute(pongo2.Context{
 			"schemas":            api.Schemas,
 			"types":              api.Types,
+			"dbImportPath":       gc.DBImportPath,
+			"etcdImportPath":     gc.ETCDImportPath,
 			"modelsImportPath":   gc.ModelsImportPath,
 			"servicesImportPath": gc.ServicesImportPath,
 		})

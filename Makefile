@@ -41,6 +41,8 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 	@mkdir -p public/
 	$(CONTRAILSCHEMA) generate --no-regenerate --schemas schemas/contrail --addons schemas/addons \
 		--template-config tools/templates/contrail/template_config.yaml \
+		--db-import-path github.com/Juniper/contrail/pkg/db \
+		--etcd-import-path github.com/Juniper/contrail/pkg/db/etcd \
 		--models-import-path github.com/Juniper/contrail/pkg/models \
 		--services-import-path github.com/Juniper/contrail/pkg/services \
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
@@ -180,7 +182,7 @@ endif
 docker_build: ## Build Docker image with Contrail binary
 	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)
 	sed -e '/FROM/,$$!d' \
-	   	-e 's/FROM $${BASE_IMAGE_REGISTRY}\/$${BASE_IMAGE_REPOSITORY}:$${BASE_IMAGE_TAG}/FROM ${BASE_IMAGE_REGISTRY}\/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}/' ${DOCKER_FILE} > ${DOCKER_FILE}.patched
+		-e 's/FROM $${BASE_IMAGE_REGISTRY}\/$${BASE_IMAGE_REPOSITORY}:$${BASE_IMAGE_TAG}/FROM ${BASE_IMAGE_REGISTRY}\/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}/' ${DOCKER_FILE} > ${DOCKER_FILE}.patched
 	docker build \
 		--build-arg BASE_IMAGE_REGISTRY=$(BASE_IMAGE_REGISTRY) \
 		--build-arg BASE_IMAGE_REPOSITORY=$(BASE_IMAGE_REPOSITORY) \

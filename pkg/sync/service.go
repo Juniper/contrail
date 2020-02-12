@@ -6,7 +6,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
@@ -16,6 +15,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	asfetcd "github.com/Juniper/asf/pkg/db/etcd"
 )
 
 const (
@@ -52,7 +53,7 @@ func NewService() (*Service, error) {
 		return nil, errors.New(`unknown codec set as "sync.storage"`)
 	}
 
-	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString(constants.ETCDPathVK), c)
+	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString(asfetcd.ETCDPathVK), c)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +74,7 @@ func NewService() (*Service, error) {
 
 func setViperDefaults() {
 	viper.SetDefault("log_level", "debug")
-	viper.SetDefault(constants.ETCDDialTimeoutVK, "60s")
+	viper.SetDefault(asfetcd.ETCDDialTimeoutVK, "60s")
 	viper.SetDefault("database.retry_period", "1s")
 	viper.SetDefault("database.connection_retries", 10)
 	viper.SetDefault("database.replication_status_timeout", "10s")
