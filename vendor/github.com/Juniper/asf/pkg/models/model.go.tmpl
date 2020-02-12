@@ -8,13 +8,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"path"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 )
@@ -109,11 +106,6 @@ func (j protoCodec) Decode(data []byte, obj proto.Message) error {
 // Key returns codec identifier.
 func (j protoCodec) Key() string {
 	return "proto"
-}
-
-// ResourceKey constructs key for given codec, resource name and pk.
-func ResourceKey(resourceName, pk string) string {
-	return path.Join("/", viper.GetString(constants.ETCDPathVK), resourceName, pk)
 }
 
 // UpdateData deserializes oldData into same type as object provided in update,

@@ -16,6 +16,8 @@ type generateFlags struct {
 	SchemasDir         string
 	AddonsDir          string
 	TemplateConfigPath string
+	DBImportPath       string
+	ETCDImportPath     string
 	ModelsImportPath   string
 	ServicesImportPath string
 	SchemaOutputPath   string
@@ -39,7 +41,16 @@ func init() {
 		&flags.TemplateConfigPath, "template-config", "t", "",
 		"Path to a file with a list of templates to be applied",
 	)
-	// TODO(dfurman): do not require user to specify those paths
+	// TODO(dfurman): provide a default so that specifying these paths is not required: use "go list -m" to determine
+	// client's package path and concatenate subpackage path, e.g. /pkg/db.
+	generateCmd.Flags().StringVarP(
+		&flags.DBImportPath, "db-import-path", "", "",
+		"Generated db import path, e.g. github.com/client/repository/pkg/db",
+	)
+	generateCmd.Flags().StringVarP(
+		&flags.ETCDImportPath, "etcd-import-path", "", "",
+		"Generated etcd import path, e.g. github.com/client/repository/pkg/etcd",
+	)
 	generateCmd.Flags().StringVarP(
 		&flags.ModelsImportPath, "models-import-path", "", "",
 		"Generated models import path, e.g. github.com/client/repository/pkg/models",
@@ -113,6 +124,8 @@ func generateCode() error {
 
 	if err = schema.GenerateFiles(api, &schema.GenerateConfig{
 		TemplateConfigs:    tcs,
+		DBImportPath:       flags.DBImportPath,
+		ETCDImportPath:     flags.ETCDImportPath,
 		ModelsImportPath:   flags.ModelsImportPath,
 		ServicesImportPath: flags.ServicesImportPath,
 		NoRegenerate:       flags.NoRegenerate,
