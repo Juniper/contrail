@@ -4,9 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
@@ -14,6 +11,8 @@ import (
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 )

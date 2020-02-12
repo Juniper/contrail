@@ -7,15 +7,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/asf/pkg/constants"
-
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/testutil"
@@ -256,7 +254,7 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 
 // JSONEtcdKey returns etcd key of JSON-encoded resource.
 func JSONEtcdKey(schemaID, uuid string) string {
-	return models.ResourceKey(schemaID, uuid)
+	return etcd.ResourceKey(schemaID, uuid)
 }
 
 // RetrieveCreateEvent blocks and retrieves create Event from given watch channel.
