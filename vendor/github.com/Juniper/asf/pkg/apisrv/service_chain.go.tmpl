@@ -1,22 +1,23 @@
 package apisrv
 
 import (
-	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/rbac"
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+
+	asfetcd "github.com/Juniper/asf/pkg/db/etcd"
+	db "{{ dbImportPath }}"
+	etcd "{{ etcdImportPath }}"
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
 )
 
 // SetupServiceChain creates service chain using default services, given extra services and DB service.
 // It puts extra services after default services but before etcd notifier service and DB service.
 // It returns first service of the built service chain.
-// TODO(dfurman): move to ASF template
 // TODO(dfurman): return services.Service when ContrailService is split to plugins.
-func SetupServiceChain(dbService *db.Service, extraServices ...services.Service) (*services.ContrailService, error) {
+func SetupServiceChain(
+		dbService *db.Service, ag services.AccessGetter, extraServices ...services.Service,
+) (*services.ContrailService, error) {
 	tv, err := models.NewTypeValidatorWithFormat()
 	if err != nil {
 		return nil, errors.Wrap(err, "new type validator with format")
@@ -44,7 +45,7 @@ func SetupServiceChain(dbService *db.Service, extraServices ...services.Service)
 		},
 		&services.RBACService{
 			ReadService:  dbService,
-			AccessGetter: rbac.NewContrailAccessGetter(dbService),
+			AccessGetter: ag,
 			AAAMode:      viper.GetString("aaa_mode"),
 		},
 		services.NewQuotaCheckerService(dbService),
@@ -54,7 +55,7 @@ func SetupServiceChain(dbService *db.Service, extraServices ...services.Service)
 
 	if viper.GetBool("server.notify_etcd") {
 		// TODO(Michał): Make the codec configurable
-		en, enErr := etcd.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
+		en, enErr := etcd.NewNotifierService(viper.GetString(asfetcd.ETCDPathVK), models.JSONCodec)
 		if enErr != nil {
 			return nil, errors.Wrap(enErr, "new notifier service")
 		}
