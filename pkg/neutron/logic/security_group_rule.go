@@ -9,7 +9,6 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
@@ -271,7 +270,7 @@ func (*SecurityGroupRule) neutronFromVnc(
 func (sgr *SecurityGroupRule) vncFromNeutron(
 	ctx context.Context, rp RequestParameters,
 ) (*models.PolicyRuleType, error) {
-	nowISOFormat := time.Now().Format(constants.ISO8601TimeFormat)
+	nowISOFormat := time.Now().Format(basemodels.ISO8601TimeFormat)
 	vncSgr := &models.PolicyRuleType{
 		RuleUUID:     sgr.ID,
 		Direction:    models.SRCToDSTDirection,

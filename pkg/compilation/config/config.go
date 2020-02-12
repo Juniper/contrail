@@ -1,10 +1,9 @@
 package config
 
 import (
+	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/Juniper/contrail/pkg/constants"
 )
 
 // DefaultConfig section.
@@ -59,8 +58,8 @@ func ReadConfig() Config {
 			MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
 		},
 		EtcdNotifierCfg: EtcdNotifierConfig{
-			EtcdServers:      viper.GetStringSlice(constants.ETCDEndpointsVK),
-			WatchPath:        viper.GetString(constants.ETCDPathVK),
+			EtcdServers:      viper.GetStringSlice(etcd.ETCDEndpointsVK),
+			WatchPath:        viper.GetString(etcd.ETCDPathVK),
 			MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"), // TODO(Michal): Change to GetDuration
 			MsgIndexString:   viper.GetString("compilation.msg_index_string"),
 			ReadLockString:   viper.GetString("compilation.read_lock_string"),

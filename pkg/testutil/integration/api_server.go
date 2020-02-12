@@ -8,10 +8,10 @@ import (
 
 	"github.com/Juniper/asf/pkg/apisrv/baseapisrv"
 	"github.com/Juniper/asf/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/cmd/contrail"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
-	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/endpoint"
@@ -210,7 +210,7 @@ func setViperConfig(c *APIServerConfig) {
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
 		"database.debug":              false,
-		constants.ETCDPathVK:          integrationetcd.Prefix,
+		etcd.ETCDPathVK:               integrationetcd.Prefix,
 		"keystone.local":              true,
 		"keystone.assignment.type":    "static",
 		"keystone.assignment.data":    keystoneAssignment(),

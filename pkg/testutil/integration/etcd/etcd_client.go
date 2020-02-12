@@ -7,18 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/asf/pkg/db/etcd"
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/contrail/pkg/constants"
-
-	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 // Integration test settings.
@@ -88,7 +85,7 @@ func (e *EtcdClient) DeleteSecurityGroup(t *testing.T, uuid string, opts ...clie
 
 // Clear recursively deletes all keys starting with "etcd.path" prefix.
 func (e *EtcdClient) Clear(t *testing.T) (revision int64) {
-	return e.DeleteKey(t, "/"+viper.GetString(constants.ETCDPathVK), clientv3.WithPrefix())
+	return e.DeleteKey(t, "/"+viper.GetString(etcd.ETCDPathVK), clientv3.WithPrefix())
 }
 
 // GetKey gets etcd key.
@@ -256,7 +253,7 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 
 // JSONEtcdKey returns etcd key of JSON-encoded resource.
 func JSONEtcdKey(schemaID, uuid string) string {
-	return models.ResourceKey(schemaID, uuid)
+	return etcd.ResourceKey(schemaID, uuid)
 }
 
 // RetrieveCreateEvent blocks and retrieves create Event from given watch channel.

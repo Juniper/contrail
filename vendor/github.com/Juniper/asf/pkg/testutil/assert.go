@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
@@ -20,7 +19,8 @@ import (
 )
 
 const (
-	funcPrefix = "$"
+	funcPrefix        = "$"
+	iso8601TimeFormat = "2006-01-02T15:04:05" // ISO8601 time format without a timezone.
 )
 
 // NotNil matches any non-nil value.
@@ -78,7 +78,7 @@ var assertFunctions = map[string]assertFunction{
 	},
 	"datetime_iso": func(path string, _, actual interface{}) error {
 		if val, ok := actual.(string); ok {
-			if _, err := time.Parse(constants.ISO8601TimeFormat, val); err != nil {
+			if _, err := time.Parse(iso8601TimeFormat, val); err != nil {
 				return errors.Errorf("expected datetime stamp ISO8601 but got %s on path %s", actual, path)
 			}
 			return nil
