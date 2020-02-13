@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "661f434f_91742ad2",
+        "filename": "pkg/constants/time.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a4c3801_eca1ba91",
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e1847d03_e572a4a8",
         "filename": "pkg/testutil/integration/compilation.go",
         "patchSetId": 4
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "81b87995_4a80ddfe",
+        "filename": "pkg/testutil/integration/compilation.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e1847d03_e572a4a8",
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5dd813fb_7c16012e",
         "filename": "tools/templates/contrail/template_config.yaml",
         "patchSetId": 4
@@ -50,6 +86,24 @@
       "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f6df3d8_c2e8cd5f",
+        "filename": "tools/templates/contrail/template_config.yaml",
+        "patchSetId": 4
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5dd813fb_7c16012e",
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -76,6 +130,30 @@
     },
     {
       "key": {
+        "uuid": "ac7c940f_bac18d48",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/service_chain.go.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ea76f315_6503763c",
+      "range": {
+        "startLine": 19,
+        "startChar": 1,
+        "endLine": 19,
+        "endChar": 2
+      },
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b5aa2135_d1967e86",
         "filename": "vendor/github.com/Juniper/asf/pkg/cmd/contrailschema/generate.go",
         "patchSetId": 4
@@ -96,6 +174,30 @@
       "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "51a5c101_b6f2b7b0",
+        "filename": "vendor/github.com/Juniper/asf/pkg/cmd/contrailschema/generate.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b5aa2135_d1967e86",
+      "range": {
+        "startLine": 44,
+        "startChar": 19,
+        "endLine": 44,
+        "endChar": 61
+      },
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -122,6 +224,30 @@
     },
     {
       "key": {
+        "uuid": "73a8e85f_22a903c5",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/etcd/etcd.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7ae86675_9f689aa6",
+      "range": {
+        "startLine": 22,
+        "startChar": 40,
+        "endLine": 22,
+        "endChar": 47
+      },
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b0fa90ef_53da8567",
         "filename": "vendor/github.com/Juniper/asf/pkg/db/etcd/etcd.go",
         "patchSetId": 4
@@ -133,6 +259,30 @@
       "writtenOn": "2020-02-12T15:23:28Z",
       "side": 1,
       "message": "Change this to `resourceType, uuid` to be clearer (in the doc comment as well)?",
+      "range": {
+        "startLine": 24,
+        "startChar": 17,
+        "endLine": 24,
+        "endChar": 33
+      },
+      "revId": "42a5047f1484ecee5fe8311811dd48f3b0042c0b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ceb816d7_dd7f64d3",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/etcd/etcd.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:30:38Z",
+      "side": 1,
+      "message": "`pk` hasn\u0027t been changed to `uuid`.",
+      "parentUuid": "b0fa90ef_53da8567",
       "range": {
         "startLine": 24,
         "startChar": 17,
