@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3b416aa6_816eda7a",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:26:01Z",
+      "side": 1,
+      "message": "This can be removed, as there are no tests that use code generated for Contrail anymore. The explicit ./pkg/apiserver can also be removed - `go list ./...` will include it automatically.",
+      "range": {
+        "startLine": 9,
+        "startChar": 55,
+        "endLine": 9,
+        "endChar": 69
+      },
+      "revId": "bc90ff469fd11600cea00d2500638bfa23c113e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3676118f_8ef2b0a6",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/bench_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:26:01Z",
+      "side": 1,
+      "message": "We deviate from the usual way of not removing tests that can be refactored to not depend on Contrail.\n\nWe can either add a build tag to exclude the test (which would make it hard to notice unless looking for it) or keep it removed and make a TODO / task for this.",
+      "revId": "bc90ff469fd11600cea00d2500638bfa23c113e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "160bb13c_031260c8",
+        "filename": "vendor/github.com/Juniper/asf/pkg/apisrv/grpc_test.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T10:26:01Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "bc90ff469fd11600cea00d2500638bfa23c113e8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
