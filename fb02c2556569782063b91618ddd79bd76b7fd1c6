@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6b685f45_423f2dc6",
+        "filename": "pkg/compilation/service_test.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-13T15:54:16Z",
+      "side": 1,
+      "message": "Remove the extra tab - run goimports on this.",
+      "revId": "fb02c2556569782063b91618ddd79bd76b7fd1c6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
