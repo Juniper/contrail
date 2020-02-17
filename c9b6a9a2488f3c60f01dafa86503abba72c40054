@@ -96,6 +96,30 @@
     },
     {
       "key": {
+        "uuid": "6950d0f8_8419ec1d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "I understand what it\u0027s supposed to do, but the variable isn\u0027t actually used anywhere in the function.",
+      "parentUuid": "91aa2b3b_493ae42f",
+      "range": {
+        "startLine": 113,
+        "startChar": 68,
+        "endLine": 113,
+        "endChar": 84
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "83a8c679_571e7817",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 7
@@ -143,6 +167,30 @@
     },
     {
       "key": {
+        "uuid": "340b8b2e_4cfc7f3e",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7ffea4a4_9078d58a",
+      "range": {
+        "startLine": 150,
+        "startChar": 26,
+        "endLine": 152,
+        "endChar": 20
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ea42111d_ac982dbb",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 7
@@ -178,6 +226,30 @@
       "side": 1,
       "message": "Could you elaborate?",
       "parentUuid": "ea42111d_ac982dbb",
+      "range": {
+        "startLine": 160,
+        "startChar": 22,
+        "endLine": 160,
+        "endChar": 87
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a982e0ab_6fccc5ae",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "It\u0027s changed now, but to clarify:\n\"(...) StartExecuteAndRemove(ctx context.Context, imageRef, imageRefUsername, imageRefPassword string, volumes []Volume, ...)\"",
+      "parentUuid": "a6e95caa_b0e108b7",
       "range": {
         "startLine": 160,
         "startChar": 22,
@@ -331,6 +403,30 @@
     },
     {
       "key": {
+        "uuid": "cdbae746_71ff1c6a",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e37d199f_57d9a699",
+      "range": {
+        "startLine": 67,
+        "startChar": 2,
+        "endLine": 69,
+        "endChar": 69
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ce3f7905_104dae58",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 7
@@ -375,6 +471,30 @@
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3a89cb3a_734b6388",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1c2af115_66477e6b",
+      "range": {
+        "startLine": 88,
+        "startChar": 1,
+        "endLine": 96,
+        "endChar": 2
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -460,6 +580,30 @@
     },
     {
       "key": {
+        "uuid": "eff96234_9a99c003",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "367f65a7_d980ff45",
+      "range": {
+        "startLine": 65,
+        "startChar": 19,
+        "endLine": 65,
+        "endChar": 22
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e1a2fd53_4b6849ee",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -492,6 +636,24 @@
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "67e7cc4d_18bda4e4",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c72f224_c8aa2cf3",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -530,6 +692,24 @@
     },
     {
       "key": {
+        "uuid": "1e5f1e60_6c7353fc",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cf6bdc24_3406b855",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c0ad76d5_55b1d8ef",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 7
@@ -562,6 +742,24 @@
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "66bc703d_e26cdb74",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "850dae16_1bf3585e",
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -609,6 +807,30 @@
       "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6895e8c1_f1c8fdcb",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8752eb6c_3a176cdf",
+      "range": {
+        "startLine": 377,
+        "startChar": 1,
+        "endLine": 378,
+        "endChar": 65
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

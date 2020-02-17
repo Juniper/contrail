@@ -1,0 +1,164 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a8c2b60_3311f931",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Why not just pass ContainerExecParameters?",
+      "range": {
+        "startLine": 115,
+        "startChar": 22,
+        "endLine": 116,
+        "endChar": 22
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "223ac420_4bf6fef0",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Why log message starts with lowercase?",
+      "range": {
+        "startLine": 138,
+        "startChar": 14,
+        "endLine": 138,
+        "endChar": 72
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f1f68077_f9d2c63e",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Consider using `switch` statement without condition instead of `else if` tree.",
+      "range": {
+        "startLine": 132,
+        "startChar": 1,
+        "endLine": 140,
+        "endChar": 2
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b2fab335_abd916c6",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "It isn\u0027t necessarily invalid (unless we call every path which cannot be read invalid).\nFor example file/directory which is going to be mounted exists, but user has insufficient permissions - path is valid, permissions are not.",
+      "range": {
+        "startLine": 150,
+        "startChar": 2,
+        "endLine": 152,
+        "endChar": 3
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cdac42e3_3152f348",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Sort imports",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "373f7715_bcf91c13",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_create_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Remove the empty line",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "48c2d20a_7519182b",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_delete_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Remove the empty line",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c9a83ab_ed5cd3d9",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T09:56:27Z",
+      "side": 1,
+      "message": "Remove the empty line",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
