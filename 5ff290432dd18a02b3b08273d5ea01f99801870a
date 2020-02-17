@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "07459116_32b88846",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:42:46Z",
+      "side": 1,
+      "message": "Not done",
+      "parentUuid": "6b11c67e_6706f208",
+      "range": {
+        "startLine": 115,
+        "startChar": 22,
+        "endLine": 116,
+        "endChar": 22
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "223ac420_4bf6fef0",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 15
@@ -93,6 +117,30 @@
       "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3b681cd8_c134a898",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:42:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "54a833d0_12e8e840",
+      "range": {
+        "startLine": 138,
+        "startChar": 14,
+        "endLine": 138,
+        "endChar": 72
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -190,6 +238,30 @@
     },
     {
       "key": {
+        "uuid": "68875384_79ae18f9",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:42:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "25945d2a_6f72f6e0",
+      "range": {
+        "startLine": 150,
+        "startChar": 2,
+        "endLine": 152,
+        "endChar": 3
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cdac42e3_3152f348",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 15
@@ -242,6 +314,24 @@
     },
     {
       "key": {
+        "uuid": "0356a45c_91f4cfe2",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_create_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:42:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "18dd51d7_5e8ecb5b",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "48c2d20a_7519182b",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_delete_cmd_executed.yml",
         "patchSetId": 15
@@ -277,6 +367,24 @@
     },
     {
       "key": {
+        "uuid": "963dc6c3_711162e5",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_delete_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:42:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9c4ab2b3_6cf172e5",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5c9a83ab_ed5cd3d9",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
         "patchSetId": 15
@@ -309,6 +417,24 @@
       "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "19b46551_95a302de",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:42:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a33bd07c_e64c41e2",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
