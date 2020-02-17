@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c7140845_664e449b",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T10:23:30Z",
+      "side": 1,
+      "message": "Remove commented code",
+      "range": {
+        "startLine": 152,
+        "startChar": 1,
+        "endLine": 155,
+        "endChar": 5
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7d0167d2_681c15aa",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T10:23:30Z",
+      "side": 1,
+      "message": "ditto L#151",
+      "range": {
+        "startLine": 172,
+        "startChar": 1,
+        "endLine": 175,
+        "endChar": 5
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "59262bad_f0307a03",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T10:23:30Z",
+      "side": 1,
+      "message": "ditto L#151",
+      "range": {
+        "startLine": 192,
+        "startChar": 0,
+        "endLine": 197,
+        "endChar": 4
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dbc09b19_4f576947",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T10:23:30Z",
+      "side": 1,
+      "message": "Why use templates instead of yaml marshalling/structure comparison?",
+      "range": {
+        "startLine": 113,
+        "startChar": 1,
+        "endLine": 116,
+        "endChar": 3
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "542feb88_12c6462f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/cmd/contrail/cloud.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T10:23:30Z",
+      "side": 1,
+      "message": "?",
+      "range": {
+        "startLine": 6,
+        "startChar": 37,
+        "endLine": 12,
+        "endChar": 81
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
