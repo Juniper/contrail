@@ -262,6 +262,30 @@
     },
     {
       "key": {
+        "uuid": "0b3b4057_89d456d2",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:43:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f89cdaa1_3e74b074",
+      "range": {
+        "startLine": 113,
+        "startChar": 1,
+        "endLine": 116,
+        "endChar": 3
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "542feb88_12c6462f",
         "filename": "vendor/github.com/Juniper/asf/pkg/cmd/contrail/cloud.go",
         "patchSetId": 16
@@ -306,6 +330,30 @@
       "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "838fb4bf_6c0b1460",
+        "filename": "vendor/github.com/Juniper/asf/pkg/cmd/contrail/cloud.go",
+        "patchSetId": 16
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:43:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6164f6d6_95fc8032",
+      "range": {
+        "startLine": 6,
+        "startChar": 37,
+        "endLine": 12,
+        "endChar": 81
+      },
+      "revId": "f6333fdedc6ff9064e531b4dacffeab106665c79",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

@@ -279,6 +279,24 @@
     },
     {
       "key": {
+        "uuid": "02884512_d4c6fef9",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-17T14:43:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cdac42e3_3152f348",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "373f7715_bcf91c13",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_create_cmd_executed.yml",
         "patchSetId": 15
