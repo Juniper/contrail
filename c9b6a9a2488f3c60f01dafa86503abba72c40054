@@ -120,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "ee006cba_98682c5f",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Right. Misunderstood. Removing this.",
+      "parentUuid": "6950d0f8_8419ec1d",
+      "range": {
+        "startLine": 113,
+        "startChar": 68,
+        "endLine": 113,
+        "endChar": 84
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "83a8c679_571e7817",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 7
@@ -250,6 +274,30 @@
       "side": 1,
       "message": "It\u0027s changed now, but to clarify:\n\"(...) StartExecuteAndRemove(ctx context.Context, imageRef, imageRefUsername, imageRefPassword string, volumes []Volume, ...)\"",
       "parentUuid": "a6e95caa_b0e108b7",
+      "range": {
+        "startLine": 160,
+        "startChar": 22,
+        "endLine": 160,
+        "endChar": 87
+      },
+      "revId": "c9b6a9a2488f3c60f01dafa86503abba72c40054",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d5ed3538_81fb432d",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 7
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a982e0ab_6fccc5ae",
       "range": {
         "startLine": 160,
         "startChar": 22,

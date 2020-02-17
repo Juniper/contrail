@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "6b11c67e_6706f208",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a8c2b60_3311f931",
+      "range": {
+        "startLine": 115,
+        "startChar": 22,
+        "endLine": 116,
+        "endChar": 22
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "223ac420_4bf6fef0",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 15
@@ -36,6 +60,30 @@
       "writtenOn": "2020-02-17T09:56:27Z",
       "side": 1,
       "message": "Why log message starts with lowercase?",
+      "range": {
+        "startLine": 138,
+        "startChar": 14,
+        "endLine": 138,
+        "endChar": 72
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54a833d0_12e8e840",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "223ac420_4bf6fef0",
       "range": {
         "startLine": 138,
         "startChar": 14,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "6f6662d0_8a2c91b4",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Moved this to a separate function.",
+      "parentUuid": "f1f68077_f9d2c63e",
+      "range": {
+        "startLine": 132,
+        "startChar": 1,
+        "endLine": 140,
+        "endChar": 2
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b2fab335_abd916c6",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 15
@@ -82,6 +154,30 @@
       "writtenOn": "2020-02-17T09:56:27Z",
       "side": 1,
       "message": "It isn\u0027t necessarily invalid (unless we call every path which cannot be read invalid).\nFor example file/directory which is going to be mounted exists, but user has insufficient permissions - path is valid, permissions are not.",
+      "range": {
+        "startLine": 150,
+        "startChar": 2,
+        "endLine": 152,
+        "endChar": 3
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "25945d2a_6f72f6e0",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "If user has no permissions for certain directory then I assume he cannot mount it as a volume.",
+      "parentUuid": "b2fab335_abd916c6",
       "range": {
         "startLine": 150,
         "startChar": 2,
@@ -128,6 +224,24 @@
     },
     {
       "key": {
+        "uuid": "18dd51d7_5e8ecb5b",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_create_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "373f7715_bcf91c13",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "48c2d20a_7519182b",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_delete_cmd_executed.yml",
         "patchSetId": 15
@@ -145,6 +259,24 @@
     },
     {
       "key": {
+        "uuid": "9c4ab2b3_6cf172e5",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_delete_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "48c2d20a_7519182b",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5c9a83ab_ed5cd3d9",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
         "patchSetId": 15
@@ -156,6 +288,24 @@
       "writtenOn": "2020-02-17T09:56:27Z",
       "side": 1,
       "message": "Remove the empty line",
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a33bd07c_e64c41e2",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-17T14:08:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c9a83ab_ed5cd3d9",
       "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
