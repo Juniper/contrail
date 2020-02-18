@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "748ddb0a_81b87b98",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 15
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-18T10:51:39Z",
+      "side": 1,
+      "message": "I looked at the invalid part of the code.\n\nThis method is used by two different methods: Play and StartExecuteAndRemove. Only second one uses this structure so I would have to wrap those methods with structure in the first method. I would leave this for future refactoring.",
+      "parentUuid": "07459116_32b88846",
+      "range": {
+        "startLine": 115,
+        "startChar": 22,
+        "endLine": 116,
+        "endChar": 22
+      },
+      "revId": "5ff290432dd18a02b3b08273d5ea01f99801870a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "223ac420_4bf6fef0",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 15
