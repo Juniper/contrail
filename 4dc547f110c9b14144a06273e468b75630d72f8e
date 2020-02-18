@@ -194,6 +194,40 @@
       "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "688e5316_73fd2fcb",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-02-18T22:50:21Z",
+      "side": 1,
+      "message": "I think changing player to ansiblePlayer would be more explicit, or a name that can describe the field\u0027s content, otherwise, it might seems a bit unclear to someone not familiar with this part.",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "63e34981_3347f493",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-02-18T22:50:21Z",
+      "side": 1,
+      "message": "I think the mock code could be moved to the end of this file, because mocking logic is not relevant to the testing logic. Moving to the end enhances readability of the test code.",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
