@@ -1,0 +1,199 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "13c2bcd3_793d8404",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "\"ensureContainerRunning\"",
+      "range": {
+        "startLine": 102,
+        "startChar": 26,
+        "endLine": 102,
+        "endChar": 38
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9b5c01a5_1b1ffa16",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "I think it should be run inside createRunningContainer() function, because only this operation needs Docker image.\n\nThen startContainer() should be inlined here.",
+      "range": {
+        "startLine": 103,
+        "startChar": 1,
+        "endLine": 105,
+        "endChar": 2
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "77b0166e_1e66a3dc",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "Why ForceVolumes removes container? Shouldn\u0027t be called e.g. \"ForceContainerRecreate\"?",
+      "range": {
+        "startLine": 122,
+        "startChar": 18,
+        "endLine": 122,
+        "endChar": 30
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f0056152_bc32adca",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "Please put it under usage.",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "58e162f3_22c20fc4",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "Please put it next to first usage, e.g. above Play() method.\nAlternatively below all ContainerPlayer\u0027s methods.",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "55eefbc2_16218dfd",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "dd",
+      "range": {
+        "startLine": 192,
+        "startChar": 0,
+        "endLine": 198,
+        "endChar": 4
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3383e3ea_7435e603",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "\"ImageReference\" In strings below too.",
+      "range": {
+        "startLine": 472,
+        "startChar": 5,
+        "endLine": 472,
+        "endChar": 21
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "16e9af35_ce4d2ad4",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "\"imageTag\" In strings below too.",
+      "range": {
+        "startLine": 472,
+        "startChar": 47,
+        "endLine": 472,
+        "endChar": 59
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cbf80ae4_2228a1ee",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "\"imageName\" In strings below too.",
+      "range": {
+        "startLine": 472,
+        "startChar": 32,
+        "endLine": 472,
+        "endChar": 45
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

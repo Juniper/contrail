@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "150d7d61_cf184734",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 19
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "Please break line for all parameters or none.",
+      "revId": "2cfa8847a5aa69ae0dcf9b99fbeecf2ebdf51206",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "33a41c32_8aea17ad",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 19
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "I\u0027d prefer simpler messages named after function call, such as \"pull and start\". The same in other error.Wrap() usages\nSee: https://github.com/uber-go/guide/blob/master/style.md#error-wrapping",
+      "range": {
+        "startLine": 94,
+        "startChar": 27,
+        "endLine": 94,
+        "endChar": 56
+      },
+      "revId": "2cfa8847a5aa69ae0dcf9b99fbeecf2ebdf51206",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ebc13a9b_970269a1",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 19
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "Please comply to indent style from REVIEW.md",
+      "range": {
+        "startLine": 115,
+        "startChar": 1,
+        "endLine": 116,
+        "endChar": 32
+      },
+      "revId": "2cfa8847a5aa69ae0dcf9b99fbeecf2ebdf51206",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9bc629dd_92946d14",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 19
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-18T18:18:26Z",
+      "side": 1,
+      "message": "pullImage() function should be above startContainer()",
+      "revId": "2cfa8847a5aa69ae0dcf9b99fbeecf2ebdf51206",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
