@@ -105,6 +105,52 @@
     },
     {
       "key": {
+        "uuid": "df6f6acd_d89bb1d5",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T15:57:23Z",
+      "side": 1,
+      "message": "\"for Docker registry\"",
+      "range": {
+        "startLine": 169,
+        "startChar": 0,
+        "endLine": 171,
+        "endChar": 50
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "23117895_d68dcd79",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T15:57:23Z",
+      "side": 1,
+      "message": "dd\nThis is implementation detail that can change.",
+      "range": {
+        "startLine": 173,
+        "startChar": 70,
+        "endLine": 173,
+        "endChar": 93
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "55eefbc2_16218dfd",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
