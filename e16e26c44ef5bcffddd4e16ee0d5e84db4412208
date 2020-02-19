@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e446e5ea_e06b495f",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 12
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T14:07:28Z",
+      "side": 1,
+      "message": "Please adjust it",
+      "revId": "e16e26c44ef5bcffddd4e16ee0d5e84db4412208",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eab1b86d_835ffc96",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 12
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T14:07:28Z",
+      "side": 1,
+      "message": "Please adjust it",
+      "revId": "e16e26c44ef5bcffddd4e16ee0d5e84db4412208",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f00ffb70_759c0706",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 12
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T14:07:28Z",
+      "side": 1,
+      "message": "etcd/client_test has been removed from Contrail, so it needs to be run here, in ASF.\n\nThat test depensd on etcd Docker container, so you need to add to Makefile new \"testenv\" target to allow devs to spawn testing etcd container. \"make testenv\" should call \"docker compose up\". Create docker-compose.yml next to Makefile and define etcd parameters there based on contrail/testenv.sh parameters.\nSee: https://docs.docker.com/compose/",
+      "revId": "e16e26c44ef5bcffddd4e16ee0d5e84db4412208",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f684db10_b0d704c4",
+        "filename": "vendor/github.com/Juniper/asf/pkg/testutil/integration/etcd/etcd_client.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T14:07:28Z",
+      "side": 1,
+      "message": "Please use asf/pkg/etcd constant instead of defining new one.",
+      "revId": "e16e26c44ef5bcffddd4e16ee0d5e84db4412208",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5336adbe_8a6a1e20",
+        "filename": "vendor/github.com/Juniper/asf/pkg/testutil/integration/etcd/etcd_client.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 265,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-19T14:07:28Z",
+      "side": 1,
+      "message": "PleaPlease use asf/pkg/etcd function instead of defining new one.",
+      "revId": "e16e26c44ef5bcffddd4e16ee0d5e84db4412208",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
