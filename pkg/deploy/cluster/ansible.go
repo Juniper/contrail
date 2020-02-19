@@ -513,7 +513,7 @@ func (a *ContrailAnsibleDeployer) playXflowProvision() error {
 		}
 
 		cmd := "bash"
-		cmdArgs := []string{"deploy_xflow.sh", a.getInstanceFile()}
+		cmdArgs := []string{"deploy_xflow.sh", a.getInstanceFile(), "--cluster-id", a.cluster.config.ClusterID}
 		a.Log.Infof("provisioning xflow: %s %s", cmd, strings.Join(cmdArgs, " "))
 		command, err := osutil.VenvCommand(venvDir, cmd, cmdArgs...)
 		if err != nil {
