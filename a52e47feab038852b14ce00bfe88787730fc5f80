@@ -16,6 +16,24 @@
       "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0327fe92_42f0a68a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-20T12:07:04Z",
+      "side": 1,
+      "message": "This function calls ansible-playbook command in line 415.",
+      "parentUuid": "bdc08a4c_d41ea5ed",
+      "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
