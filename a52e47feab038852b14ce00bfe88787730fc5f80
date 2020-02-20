@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bdc08a4c_d41ea5ed",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2020-02-20T05:56:25Z",
+      "side": 1,
+      "message": "Why it is renamed from execCmd to execCmd, we can use this library to execute any command in the container, so why not use generic name \"execCmd\"",
+      "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
