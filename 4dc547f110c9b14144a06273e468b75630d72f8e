@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "68446de4_887ec890",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "22df67b2_591584e8",
+      "range": {
+        "startLine": 102,
+        "startChar": 26,
+        "endLine": 102,
+        "endChar": 38
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9b5c01a5_1b1ffa16",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
@@ -84,6 +108,30 @@
       "side": 1,
       "message": "This is the logic from Jim\u0027s change and I don\u0027t want to change this in this PR.",
       "parentUuid": "9b5c01a5_1b1ffa16",
+      "range": {
+        "startLine": 103,
+        "startChar": 1,
+        "endLine": 105,
+        "endChar": 2
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e9d05058_3159d925",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ok. Please add a TODO then.",
+      "parentUuid": "271c2e44_34df1d3d",
       "range": {
         "startLine": 103,
         "startChar": 1,
@@ -143,6 +191,30 @@
     },
     {
       "key": {
+        "uuid": "5fad3aca_eacb1b2c",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5e4ee36b_42883323",
+      "range": {
+        "startLine": 122,
+        "startChar": 18,
+        "endLine": 122,
+        "endChar": 30
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f0056152_bc32adca",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
@@ -178,6 +250,24 @@
     },
     {
       "key": {
+        "uuid": "9019a629_dc666f6a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f59b3ffc_bead73f6",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "58e162f3_22c20fc4",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
@@ -210,6 +300,24 @@
       "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5035c891_cb9dad80",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1a47dfae_847e107f",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -260,6 +368,30 @@
     },
     {
       "key": {
+        "uuid": "0c8a9965_6a2473c9",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a8daeb7a_186907ee",
+      "range": {
+        "startLine": 169,
+        "startChar": 0,
+        "endLine": 171,
+        "endChar": 50
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "23117895_d68dcd79",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
@@ -307,6 +439,30 @@
     },
     {
       "key": {
+        "uuid": "149cf5a7_a88e4145",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9f063b33_af2f610c",
+      "range": {
+        "startLine": 173,
+        "startChar": 70,
+        "endLine": 173,
+        "endChar": 93
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "55eefbc2_16218dfd",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
@@ -351,6 +507,30 @@
       "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9a8a8f22_6d5e0c20",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9209df13_76bc4ad3",
+      "range": {
+        "startLine": 192,
+        "startChar": 0,
+        "endLine": 198,
+        "endChar": 4
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -492,6 +672,78 @@
       "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4e167840_132676f8",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6038a3eb_85145b1a",
+      "range": {
+        "startLine": 472,
+        "startChar": 5,
+        "endLine": 472,
+        "endChar": 21
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "775fab0e_e979a3bf",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e0657bfb_2b2e0114",
+      "range": {
+        "startLine": 472,
+        "startChar": 47,
+        "endLine": 472,
+        "endChar": 59
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8ccfbd89_e24125dc",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f9968c2d_27283ab5",
+      "range": {
+        "startLine": 472,
+        "startChar": 32,
+        "endLine": 472,
+        "endChar": 45
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

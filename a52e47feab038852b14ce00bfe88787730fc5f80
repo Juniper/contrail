@@ -88,6 +88,24 @@
       "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3aefe0dc_58a7a3ee",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T15:29:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3fc84242_f1982c12",
+      "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
