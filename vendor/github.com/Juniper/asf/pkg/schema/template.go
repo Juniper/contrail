@@ -1,11 +1,15 @@
 package schema
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/flosch/pongo2"
@@ -31,6 +35,7 @@ type GenerateConfig struct {
 type TemplateConfig struct {
 	TemplateType string `yaml:"type"`
 	TemplatePath string `yaml:"template_path"`
+	Module       string `yaml:"module"`
 	OutputDir    string `yaml:"output_dir"`
 	OutputPath   string `yaml:"-"`
 }
@@ -53,7 +58,10 @@ func GenerateFiles(api *API, gc *GenerateConfig) error {
 	}
 
 	for _, tc := range gc.TemplateConfigs {
-		resolveOutputPath(&tc)
+		if err := tc.resolveTemplatePath(); err != nil {
+			return err
+		}
+		tc.resolveOutputPath()
 		if gc.NoRegenerate && !isOutdated(api, &tc) {
 			logrus.WithField(
 				"template-config", fmt.Sprintf("%+v", tc),
@@ -69,14 +77,41 @@ func GenerateFiles(api *API, gc *GenerateConfig) error {
 	return nil
 }
 
-func resolveOutputPath(tc *TemplateConfig) {
+func (tc *TemplateConfig) resolveTemplatePath() error {
+	if mp := tc.Module; mp != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		moduleDir, err := ResolveModuleDirWithGoListContext(ctx, mp)
+		if err != nil {
+			return err
+		}
+		tc.TemplatePath = filepath.Join(moduleDir, tc.TemplatePath)
+	}
+	return nil
+}
+func ResolveModuleDirWithGoList(module string) (string, error) {
+	return ResolveModuleDirWithGoListContext(context.Background(), module)
+}
+
+func ResolveModuleDirWithGoListContext(ctx context.Context, module string) (string, error) {
+	cmd := exec.CommandContext(ctx, "go", "list", "-f", `'{{ .Dir }}'`, module)
+	var out, eout bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &eout
+	if err := cmd.Run(); err != nil {
+		return "", errors.Wrapf(err, "calling %s returned: %s", cmd, eout.String())
+	}
+	path := strings.Trim(strings.TrimSpace(out.String()), "'")
+	return path, nil
+}
+
+func (tc *TemplateConfig) resolveOutputPath() {
 	tDir, tFile := filepath.Split(tc.TemplatePath)
 	if tc.OutputDir != "" {
 		tc.OutputPath = filepath.Join(tc.OutputDir, generatedFileName(tFile))
 	} else {
 		tc.OutputPath = filepath.Join(tDir, generatedFileName(tFile))
 	}
-	return
 }
 
 func generatedFileName(templateFile string) string {

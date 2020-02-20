@@ -2,6 +2,7 @@ package schema
 
 import (
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -134,8 +135,40 @@ func TestResolveOutputPath(t *testing.T) {
 		expectedOutputPath: "relative_output_dir/gen_file.go",
 	}} {
 		t.Run(tt.templateConfig.TemplatePath+tt.templateConfig.OutputDir, func(t *testing.T) {
-			resolveOutputPath(&tt.templateConfig)
+			tt.templateConfig.resolveOutputPath()
 			assert.Equal(t, tt.expectedOutputPath, tt.templateConfig.OutputPath)
+		})
+	}
+}
+
+func TestResolveModuleDirWithGoList(t *testing.T) {
+	tests := []struct {
+		name    string
+		module  string
+		want    string
+		wantErr bool
+	}{{
+		name:    "missing module",
+		module:  "foo.bar/module",
+		wantErr: true,
+	}, {
+		name: "empty module path",
+		want: "pkg/schema",
+	}, {
+		name:   "resolve testify/assert dir",
+		module: "github.com/stretchr/testify/assert",
+		want:   "github.com/stretchr/testify@v1.4.0/assert",
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ResolveModuleDirWithGoList(tt.module)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ResolveModuleDirWithGoList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !strings.HasSuffix(got, tt.want) {
+				t.Errorf("ResolveModuleDirWithGoList() = %q, does not end with %q", got, tt.want)
+			}
 		})
 	}
 }
