@@ -8,14 +8,16 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/asf/pkg/constants"
-
 	"github.com/Juniper/asf/pkg/db/etcd"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services"
-	"github.com/Juniper/asf/pkg/testutil/integration"
+
 	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
+
+        //TODO(mlastawiecki): uncomment once the test is fixed
+        //                    commented due to go mod errors
+        //"github.com/Juniper/asf/pkg/constants"
+        //"github.com/Juniper/asf/pkg/testutil/integration"
 )
 
 func TestEtcdNotifierService(t *testing.T) {

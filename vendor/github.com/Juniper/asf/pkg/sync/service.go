@@ -4,7 +4,7 @@ package sync
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/constants"
+	//"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/db/etcd"

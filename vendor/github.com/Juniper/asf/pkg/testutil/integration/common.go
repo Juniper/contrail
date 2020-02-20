@@ -218,8 +218,6 @@ func RunCleanTestScenario(
 ) {
 	logrus.WithField("test-scenario", ts.Name).Debug("Running clean test scenario")
 	checkWatchers := StartWatchers(t, ts.Name, ts.Watchers)
-	stopIC := startIntentCompiler(t, ts, server)
-	defer stopIC()
 
 	ctx := context.Background()
 	clients := PrepareClients(ctx, t, ts, server)
@@ -349,20 +347,6 @@ func createWatchChecker(task string, collect func() []string, key string, events
 			testutil.AssertEqual(t, e.Data, data, fmt.Sprintf("task: %s\netcd event not equal for %s[%v]", task, key, i))
 		}
 	}
-}
-
-func startIntentCompiler(
-	t *testing.T,
-	ts *TestScenario,
-	server *APIServer,
-) context.CancelFunc {
-	if ts.IntentCompilerEnabled {
-		etcdClient := integrationetcd.NewEtcdClient(t)
-		etcdClient.Clear(t)
-
-		return RunIntentCompilationService(t, server.URL())
-	}
-	return func() {}
 }
 
 // PrepareClients creates HTTP clients based on given configurations and logs them in if needed.

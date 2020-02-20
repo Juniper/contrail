@@ -1,9 +1,12 @@
 package integration
 
 import (
-	"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/models"
 	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
+
+        //TODO(mlastawiecki): uncomment once the file compiles
+        //                    commented due to go mod errors
+        //"github.com/Juniper/asf/pkg/constants"
 )
 
 // SetDefaultSyncConfig sets config options required by sync.
