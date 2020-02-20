@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b28169f4_daceec87",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 14
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T14:45:26Z",
+      "side": 1,
+      "message": "IMO clean should not be run here. Clean is just additional target for devs, but is not essential in checking code.",
+      "revId": "6ef1c75192d693454ec82220c037739fbb16f9dc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "305eec48_abd8c055",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 14
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T14:45:26Z",
+      "side": 1,
+      "message": "Please place it just after \"generate\" target.",
+      "revId": "6ef1c75192d693454ec82220c037739fbb16f9dc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1bdf4a41_688fe28b",
+        "filename": "vendor/github.com/Juniper/asf/docker-compose.yml",
+        "patchSetId": 14
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T14:45:26Z",
+      "side": 1,
+      "message": "Please put image as first service parameter or use alphabeticall order.",
+      "revId": "6ef1c75192d693454ec82220c037739fbb16f9dc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8cf51b36_65828e34",
+        "filename": "vendor/github.com/Juniper/asf/pkg/etcd/client_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T14:45:26Z",
+      "side": 1,
+      "message": "Please use endpoint constant from integrationetcd package - integration test environement constants should remain there.",
+      "revId": "6ef1c75192d693454ec82220c037739fbb16f9dc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
