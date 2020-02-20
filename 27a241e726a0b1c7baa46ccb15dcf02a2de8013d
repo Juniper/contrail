@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "70be0156_7a37e544",
+        "filename": "vendor/github.com/Juniper/asf/pkg/convert/convert.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-20T11:15:28Z",
+      "side": 0,
+      "message": "etcd should be part of asf, so this import shouldn\u0027t be removed. (But this package is not compiled right now anyway.)",
+      "revId": "27a241e726a0b1c7baa46ccb15dcf02a2de8013d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0940aa11_3e0eaaae",
+        "filename": "vendor/github.com/Juniper/asf/pkg/sync/service.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-20T11:15:28Z",
+      "side": 0,
+      "message": "ditto (https://review.opencontrail.org/c/56577/13/vendor/github.com/Juniper/asf/pkg/convert/convert.go#b13)",
+      "revId": "27a241e726a0b1c7baa46ccb15dcf02a2de8013d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2618345e_b34c2c11",
+        "filename": "vendor/github.com/Juniper/asf/pkg/testutil/integration/api_server.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-20T11:15:28Z",
+      "side": 0,
+      "message": "this package is not compiled, so it\u0027s no use to remove the import.",
+      "revId": "27a241e726a0b1c7baa46ccb15dcf02a2de8013d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8358dd43_e7da80d8",
+        "filename": "vendor/github.com/Juniper/asf/pkg/testutil/integration/cache_db.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-20T11:15:28Z",
+      "side": 0,
+      "message": "ditto",
+      "revId": "27a241e726a0b1c7baa46ccb15dcf02a2de8013d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
