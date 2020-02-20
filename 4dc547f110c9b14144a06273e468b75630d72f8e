@@ -512,6 +512,24 @@
     },
     {
       "key": {
+        "uuid": "1c1a7868_8d59654f",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-20T14:59:54Z",
+      "side": 1,
+      "message": "But currently it plays all commands, not only ansibles.",
+      "parentUuid": "688e5316_73fd2fcb",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "63e34981_3347f493",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 22
@@ -526,6 +544,24 @@
       "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4031c90_d0a60ad5",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-20T14:59:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "63e34981_3347f493",
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

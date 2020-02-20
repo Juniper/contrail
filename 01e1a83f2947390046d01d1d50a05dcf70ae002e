@@ -241,6 +241,30 @@
     },
     {
       "key": {
+        "uuid": "24be3ea7_5126606e",
+        "filename": "pkg/deploy/cluster/cluster.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 236,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-20T14:59:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f19743ff_a6d71574",
+      "range": {
+        "startLine": 236,
+        "startChar": 1,
+        "endLine": 236,
+        "endChar": 8
+      },
+      "revId": "01e1a83f2947390046d01d1d50a05dcf70ae002e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "52626ab0_19173636",
         "filename": "pkg/deploy/cluster/mc_ssh.go",
         "patchSetId": 1
