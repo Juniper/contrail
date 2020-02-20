@@ -34,6 +34,24 @@
       "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54e63a8f_dbd8c51a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 23
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-20T12:43:25Z",
+      "side": 1,
+      "message": "Actually currently this function executes \"ansible-playbook [args]\" L415, so it is not generic.",
+      "parentUuid": "bdc08a4c_d41ea5ed",
+      "revId": "a52e47feab038852b14ce00bfe88787730fc5f80",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
