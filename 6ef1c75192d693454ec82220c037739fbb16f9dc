@@ -193,6 +193,24 @@
       "revId": "6ef1c75192d693454ec82220c037739fbb16f9dc",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "45eab546_d252bcde",
+        "filename": "vendor/github.com/Juniper/asf/pkg/etcd/client_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-21T10:26:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6af0b5b1_00630dd1",
+      "revId": "6ef1c75192d693454ec82220c037739fbb16f9dc",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
