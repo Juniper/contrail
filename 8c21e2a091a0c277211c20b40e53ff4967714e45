@@ -66,6 +66,24 @@
     },
     {
       "key": {
+        "uuid": "18946b2a_e092ee08",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-21T14:44:49Z",
+      "side": 1,
+      "message": "... because it is not used AFAIK",
+      "parentUuid": "06f7852f_9b2b13be",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0a5576a9_2333748e",
         "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
         "patchSetId": 1
@@ -95,6 +113,24 @@
       "side": 1,
       "message": "but why?",
       "parentUuid": "0a5576a9_2333748e",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "349f9418_122c8dd4",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-21T14:44:49Z",
+      "side": 1,
+      "message": "Because it is helper function and we don\u0027t need it in client code.\nIf we leave it exported, we need to maintain its behaviour in order not to break usage by clients. We don\u0027t need that hassle.\n\nAs a rule of thumb, I\u0027d like to keep the exported surface of ASF minimal.",
+      "parentUuid": "a1a7658a_340f9d1f",
       "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
