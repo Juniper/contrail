@@ -42,6 +42,30 @@
     },
     {
       "key": {
+        "uuid": "470ee807_f99b576c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-21T13:30:30Z",
+      "side": 1,
+      "message": "ModuleDir name would obscure the fact that this operation is a fragile command call.",
+      "parentUuid": "6145bd70_472f949a",
+      "range": {
+        "startLine": 92,
+        "startChar": 21,
+        "endLine": 92,
+        "endChar": 31
+      },
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0a5576a9_2333748e",
         "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
         "patchSetId": 1
@@ -53,6 +77,24 @@
       "writtenOn": "2020-02-21T11:13:56Z",
       "side": 1,
       "message": "Unexport",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a1a7658a_340f9d1f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-21T13:30:30Z",
+      "side": 1,
+      "message": "but why?",
+      "parentUuid": "0a5576a9_2333748e",
       "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -93,6 +135,24 @@
       "writtenOn": "2020-02-21T12:31:13Z",
       "side": 1,
       "message": "What about printing stdout as well?",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3eff4aec_96bbe157",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-21T13:30:30Z",
+      "side": 1,
+      "message": "stdout is empty in case of error",
+      "parentUuid": "8f6f7af3_aa5ef77c",
       "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
