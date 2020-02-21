@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "06f7852f_9b2b13be",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-21T11:13:56Z",
+      "side": 1,
+      "message": "Delete",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0a5576a9_2333748e",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-21T11:13:56Z",
+      "side": 1,
+      "message": "Unexport",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
