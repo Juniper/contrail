@@ -84,6 +84,24 @@
     },
     {
       "key": {
+        "uuid": "921cbeae_a0d6517e",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-24T11:46:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "18946b2a_e092ee08",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0a5576a9_2333748e",
         "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
         "patchSetId": 1
@@ -155,6 +173,24 @@
     },
     {
       "key": {
+        "uuid": "b159117e_a704ef90",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-24T11:46:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "15987c43_6702ef0b",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5595cf45_2ada3968",
         "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
         "patchSetId": 1
@@ -199,6 +235,30 @@
       "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "12598bce_314b3c17",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-24T11:46:43Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "fd1e8e16_6cfb2943",
+      "range": {
+        "startLine": 97,
+        "startChar": 54,
+        "endLine": 97,
+        "endChar": 55
+      },
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

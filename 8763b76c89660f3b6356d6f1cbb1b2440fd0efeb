@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2934dbd3_48f16b87",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-24T11:46:43Z",
+      "side": 1,
+      "message": "Could initialize it just before for _, tc :\u003d range gc.TemplateConfigs { and pass it to resolveModuleDir()?",
+      "revId": "8763b76c89660f3b6356d6f1cbb1b2440fd0efeb",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
