@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "22761494_ca38bd97",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "39dd99df_446a9bec",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cbabb8ab_626ef1f7",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 27
@@ -30,6 +48,30 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "\"Attaching to\"?",
+      "range": {
+        "startLine": 220,
+        "startChar": 27,
+        "endLine": 220,
+        "endChar": 35
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "926946f7_13967fb0",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cbabb8ab_626ef1f7",
       "range": {
         "startLine": 220,
         "startChar": 27,
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "cd5b55cd_17edc9d7",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 383,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c5f5d4df_abd06d36",
+      "range": {
+        "startLine": 383,
+        "startChar": 26,
+        "endLine": 383,
+        "endChar": 41
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "8ca7e81f_36e2f518",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 27
@@ -76,6 +142,24 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "You could just provide and use here getNetworkMode(hostNetwork string) function and then inline hostConfig() function.",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "10ae8c22_267ffae8",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 394,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "8ca7e81f_36e2f518",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -99,6 +183,24 @@
     },
     {
       "key": {
+        "uuid": "3d1c4643_f1be151d",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ddc7526f_74a59418",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "721d2138_b932a3d3",
         "filename": "pkg/cloud/constants.go",
         "patchSetId": 27
@@ -116,6 +218,24 @@
     },
     {
       "key": {
+        "uuid": "2513f6c2_405aa571",
+        "filename": "pkg/cloud/constants.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "721d2138_b932a3d3",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29645327_789b144e",
         "filename": "pkg/cloud/constants.go",
         "patchSetId": 27
@@ -127,6 +247,30 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "\"MultiCloudDockerImage\"",
+      "range": {
+        "startLine": 21,
+        "startChar": 1,
+        "endLine": 21,
+        "endChar": 20
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "25d43d51_e9fa970a",
+        "filename": "pkg/cloud/constants.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "29645327_789b144e",
       "range": {
         "startLine": 21,
         "startChar": 1,
@@ -162,6 +306,30 @@
     },
     {
       "key": {
+        "uuid": "d24ae120_e7acfd14",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6c1755fd_f97c9822",
+      "range": {
+        "startLine": 66,
+        "startChar": 14,
+        "endLine": 66,
+        "endChar": 20
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1848533c_4c2e5799",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 27
@@ -173,6 +341,30 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Please name it the same as interface.",
+      "range": {
+        "startLine": 74,
+        "startChar": 1,
+        "endLine": 74,
+        "endChar": 7
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e04e71b_8f21081d",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1848533c_4c2e5799",
       "range": {
         "startLine": 74,
         "startChar": 1,
@@ -208,6 +400,30 @@
     },
     {
       "key": {
+        "uuid": "449ad235_f10d5ee5",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "81bbdf95_a0722056",
+      "range": {
+        "startLine": 107,
+        "startChar": 32,
+        "endLine": 107,
+        "endChar": 79
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4fffa4bb_74c1ac5a",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -219,6 +435,30 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Redundant variable",
+      "range": {
+        "startLine": 35,
+        "startChar": 1,
+        "endLine": 35,
+        "endChar": 8
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fc431155_ba894be2",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4fffa4bb_74c1ac5a",
       "range": {
         "startLine": 35,
         "startChar": 1,
@@ -254,6 +494,30 @@
     },
     {
       "key": {
+        "uuid": "cff95c71_952aab09",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a5b072e5_88750ba4",
+      "range": {
+        "startLine": 47,
+        "startChar": 27,
+        "endLine": 47,
+        "endChar": 68
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e1d00999_4c7e1de7",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -265,6 +529,30 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "errors.Wrap with message \"cannot get MultiCloud image reference\"",
+      "range": {
+        "startLine": 51,
+        "startChar": 9,
+        "endLine": 51,
+        "endChar": 12
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a69f8e5c_f6cb231a",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e1d00999_4c7e1de7",
       "range": {
         "startLine": 51,
         "startChar": 9,
@@ -294,6 +582,24 @@
     },
     {
       "key": {
+        "uuid": "c623543c_c38a232d",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "85ff3faa_71674f01",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "79186de4_65c3ce9a",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -305,6 +611,30 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "\"get contrail cluster\"",
+      "range": {
+        "startLine": 74,
+        "startChar": 31,
+        "endLine": 74,
+        "endChar": 66
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6ae8dab_a8adac1b",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "79186de4_65c3ce9a",
       "range": {
         "startLine": 74,
         "startChar": 31,
@@ -334,6 +664,24 @@
     },
     {
       "key": {
+        "uuid": "c8764d52_57d0d335",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "68df1753_76764647",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bb754130_781114ae",
         "filename": "pkg/cloud/test_data/aws/expected_commands.yml",
         "patchSetId": 27
@@ -351,6 +699,24 @@
     },
     {
       "key": {
+        "uuid": "1b9b1df2_693a2655",
+        "filename": "pkg/cloud/test_data/aws/expected_commands.yml",
+        "patchSetId": 27
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bb754130_781114ae",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "64990aad_3380c7d9",
         "filename": "pkg/cloud/test_data/azure/expected_commands.yml",
         "patchSetId": 27
@@ -362,6 +728,24 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Please remove that file after impoving the ContainerPlayer mock.",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "771a31f1_adc00ce1",
+        "filename": "pkg/cloud/test_data/azure/expected_commands.yml",
+        "patchSetId": 27
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "64990aad_3380c7d9",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -402,6 +786,24 @@
     },
     {
       "key": {
+        "uuid": "fedbb23c_cf7c6503",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "852e2515_0799d472",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c64c9210_a75e0331",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 27
@@ -413,6 +815,24 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Please move pkg/cloud.mockContainerPlayer to pkg/ansible/ansiblemock, export it and use in both cloud and cluster tests.\nThen remove the code below.",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e56d220c_5bc2abe1",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 1232,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c64c9210_a75e0331",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -442,6 +862,30 @@
     },
     {
       "key": {
+        "uuid": "9594373f_d4be87dc",
+        "filename": "pkg/deploy/cluster/mc_ssh.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8adef891_fdbd83a3",
+      "range": {
+        "startLine": 24,
+        "startChar": 50,
+        "endLine": 24,
+        "endChar": 84
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f8d1bf70_7d063171",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_create_cmd_executed.yml",
         "patchSetId": 27
@@ -453,6 +897,24 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Ditto: delete",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86718660_398440c7",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_create_cmd_executed.yml",
+        "patchSetId": 27
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8d1bf70_7d063171",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -476,6 +938,24 @@
     },
     {
       "key": {
+        "uuid": "6eb347c7_08f02202",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_delete_cmd_executed.yml",
+        "patchSetId": 27
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7d9f9d36_70451f85",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ad4502b3_1f25581e",
         "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
         "patchSetId": 27
@@ -487,6 +967,24 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Ditto: delete",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea885020_714b47f3",
+        "filename": "pkg/deploy/cluster/test_data/expected_mc_update_cmd_executed.yml",
+        "patchSetId": 27
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ad4502b3_1f25581e",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -521,6 +1019,24 @@
       "writtenOn": "2020-02-20T16:29:13Z",
       "side": 1,
       "message": "Please remove that.",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc0ae504_17a9ea01",
+        "filename": "vendor/github.com/Juniper/asf/pkg/cmd/contrail/cloud.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-24T15:33:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0af24d1_c8440037",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
