@@ -210,6 +210,24 @@
       "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "85134b47_8a1bb14b",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-24T10:40:00Z",
+      "side": 1,
+      "message": "I don\u0027t see a point in handling such radical API changes. It\u0027s a simple command line tool call that returns a string, it\u0027s covered by unit tests and it is used only in non critical dev environments. Should I also prepare for the case where the output is delivered by stderr and the error is in stdout?\n\nIMO the risk factor is way to low to pollute the error message or the code with stdout which probably will be empty forever.",
+      "parentUuid": "f1026cb4_20a1d0ed",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
