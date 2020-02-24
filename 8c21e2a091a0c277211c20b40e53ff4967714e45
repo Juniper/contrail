@@ -137,6 +137,24 @@
     },
     {
       "key": {
+        "uuid": "15987c43_6702ef0b",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-24T10:42:49Z",
+      "side": 1,
+      "message": "Ok, I think I got convinced. The use case of this function is indeed very narrow.",
+      "parentUuid": "349f9418_122c8dd4",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5595cf45_2ada3968",
         "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
         "patchSetId": 1
@@ -148,6 +166,30 @@
       "writtenOn": "2020-02-21T12:31:13Z",
       "side": 1,
       "message": "Are the quotes needed?",
+      "range": {
+        "startLine": 97,
+        "startChar": 54,
+        "endLine": 97,
+        "endChar": 55
+      },
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fd1e8e16_6cfb2943",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-24T10:42:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5595cf45_2ada3968",
       "range": {
         "startLine": 97,
         "startChar": 54,
