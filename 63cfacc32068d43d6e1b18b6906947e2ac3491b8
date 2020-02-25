@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa722f0_6816b599",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-25T10:44:32Z",
+      "side": 1,
+      "message": "nit: I\u0027d return \"dir, nil\" here explicitly.",
+      "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e104fe3_9c3d3f0a",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service.proto.tmpl",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-25T10:44:32Z",
+      "side": 1,
+      "message": "Is it possible to keep the asf prefix? I think it would be useful for seeing the difference between this and {{ modelsImportPath}} below in the generated file.",
+      "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

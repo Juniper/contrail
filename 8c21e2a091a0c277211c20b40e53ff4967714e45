@@ -330,6 +330,24 @@
       "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "99c48134_0e5e5f2b",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-25T10:44:32Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "85134b47_8a1bb14b",
+      "revId": "8c21e2a091a0c277211c20b40e53ff4967714e45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
