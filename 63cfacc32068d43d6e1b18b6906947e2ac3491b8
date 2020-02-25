@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9f7a51e0_1acd6985",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-25T11:54:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5aa722f0_6816b599",
+      "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5e104fe3_9c3d3f0a",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service.proto.tmpl",
         "patchSetId": 6
@@ -51,6 +69,24 @@
       "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9471c0b8_7fd7d60f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service.proto.tmpl",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-02-25T11:54:44Z",
+      "side": 1,
+      "message": "My reasoning was that the generated file ends up in Contrail. Anyway, I\u0027m satisfied with the explanation.",
+      "parentUuid": "f024a07c_7241ca91",
+      "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
