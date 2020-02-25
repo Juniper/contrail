@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a75a4822_2d9d472e",
+        "filename": "pkg/ansible/ansiblemock/container_executor.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Thank you ^^",
+      "parentUuid": "9b674a72_796d6870",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b099a53d_918a62c2",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 33
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "24fa5d31_55bcc2d9",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b099a53d_918a62c2",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "00393666_1d334782",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 33
@@ -47,6 +83,24 @@
       "writtenOn": "2020-02-25T09:16:37Z",
       "side": 1,
       "message": "Why tests use containerExecutor and production ansibleClient? It is a code smell.",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0bd453a_16f5b0f6",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 507,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "This ansible will be called from container in the future and ansibleClient won\u0027t be required anymore. For most of the logic and testing purposes we use containerExecutor. This is a temporary solution before ansibleClient is removed completely.  \nI will add TODO for this.",
+      "parentUuid": "00393666_1d334782",
       "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -87,6 +141,24 @@
     },
     {
       "key": {
+        "uuid": "c1911e5d_0f68d832",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ee2019dd_8d64d0e5",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b67aa2bd_61566cf6",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 33
@@ -98,6 +170,24 @@
       "writtenOn": "2020-02-25T09:16:37Z",
       "side": 1,
       "message": "Please transform those variables into functions returning playbookArgs in order to avoid overwrite bugs. Functions could all have \"Arg\" prefix.",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ced5a2b_0c76a086",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b67aa2bd_61566cf6",
       "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -127,6 +217,30 @@
     },
     {
       "key": {
+        "uuid": "7cb30004_a76027fc",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 925,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5e93c046_1ca091e0",
+      "range": {
+        "startLine": 924,
+        "startChar": 1,
+        "endLine": 925,
+        "endChar": 38
+      },
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "69766385_aa011394",
         "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_dpdk_instances.yml",
         "patchSetId": 33
@@ -138,6 +252,24 @@
       "writtenOn": "2020-02-25T09:16:37Z",
       "side": 1,
       "message": "Please mention that change in commit description",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d6c9f710_d190c818",
+        "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_dpdk_instances.yml",
+        "patchSetId": 33
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "In tests we were using two tags without any certain reason.\nIt makes testing easier. This is not the change of code logic.",
+      "parentUuid": "69766385_aa011394",
       "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

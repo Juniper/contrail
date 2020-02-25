@@ -427,6 +427,30 @@
     },
     {
       "key": {
+        "uuid": "43b9867d_bb6b35e2",
+        "filename": "pkg/cloud/constants.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Already changed.",
+      "parentUuid": "201575c2_697a6707",
+      "range": {
+        "startLine": 21,
+        "startChar": 1,
+        "endLine": 21,
+        "endChar": 20
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6c1755fd_f97c9822",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 27
@@ -640,6 +664,30 @@
     },
     {
       "key": {
+        "uuid": "7421eccd_b8e3be5f",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c9807e2a_3482f713",
+      "range": {
+        "startLine": 107,
+        "startChar": 32,
+        "endLine": 107,
+        "endChar": 79
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4fffa4bb_74c1ac5a",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -782,6 +830,30 @@
     },
     {
       "key": {
+        "uuid": "0491a827_2b9ff47f",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "8f3d0f35_509690ed",
+      "range": {
+        "startLine": 47,
+        "startChar": 27,
+        "endLine": 47,
+        "endChar": 68
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e1d00999_4c7e1de7",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -841,6 +913,30 @@
       "side": 1,
       "message": "A little mistake by me. Please remove \"cannot\" word.",
       "parentUuid": "a69f8e5c_f6cb231a",
+      "range": {
+        "startLine": 51,
+        "startChar": 9,
+        "endLine": 51,
+        "endChar": 12
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2bd86108_0f62208e",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4738155d_b8878c0b",
       "range": {
         "startLine": 51,
         "startChar": 9,
@@ -965,6 +1061,30 @@
       "side": 1,
       "message": "Please remove \"cannot\" word",
       "parentUuid": "a6ae8dab_a8adac1b",
+      "range": {
+        "startLine": 74,
+        "startChar": 31,
+        "endLine": 74,
+        "endChar": 66
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3b3ff716_761c60da",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f013117b_f144eef1",
       "range": {
         "startLine": 74,
         "startChar": 31,
@@ -1536,6 +1656,24 @@
       "side": 1,
       "message": "Please run make fast_generate \u0026\u0026 dep ensure \u0026\u0026 make check in ASF",
       "parentUuid": "5397184d_8708099e",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0b40f5b4_8ad5aeb1",
+        "filename": "vendor/github.com/Juniper/asf/go.mod",
+        "patchSetId": 27
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-02-25T15:11:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d2390fcd_026a5cb1",
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
