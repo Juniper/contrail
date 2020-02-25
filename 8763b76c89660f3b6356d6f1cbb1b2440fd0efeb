@@ -34,6 +34,24 @@
       "revId": "8763b76c89660f3b6356d6f1cbb1b2440fd0efeb",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d247582e_f943e022",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T09:24:11Z",
+      "side": 1,
+      "message": "Because young kittens die, when you use globals.\nAnother argument is that there is a consensus in community that one should not use globals to store state.\nSee: https://dave.cheney.net/2017/06/11/go-without-package-scoped-variables\nSee: https://peter.bourgon.org/blog/2017/06/09/theory-of-modern-go.html",
+      "parentUuid": "89acb128_c604545f",
+      "revId": "8763b76c89660f3b6356d6f1cbb1b2440fd0efeb",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
