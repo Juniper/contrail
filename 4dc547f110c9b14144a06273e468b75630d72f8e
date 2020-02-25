@@ -144,6 +144,30 @@
     },
     {
       "key": {
+        "uuid": "931015e5_557a9a9a",
+        "filename": "pkg/ansible/container_player.go",
+        "patchSetId": 22
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T09:16:37Z",
+      "side": 1,
+      "message": "Pleasa add a TODO just above `if err :\u003d p.pullImage(c)`",
+      "parentUuid": "e9d05058_3159d925",
+      "range": {
+        "startLine": 103,
+        "startChar": 1,
+        "endLine": 105,
+        "endChar": 2
+      },
+      "revId": "4dc547f110c9b14144a06273e468b75630d72f8e",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "77b0166e_1e66a3dc",
         "filename": "pkg/ansible/container_player.go",
         "patchSetId": 22
