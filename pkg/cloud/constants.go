@@ -5,6 +5,8 @@ const (
 	defaultCloudResource     = "cloud"
 	DefaultCloudResourcePath = "/" + defaultCloudResource
 
+	DefaultCloudLogPath = "/var/log/contrail/cloud.log"
+
 	DefaultWorkRoot           = "/var/tmp/cloud"
 	DefaultTemplateRoot       = "./pkg/cloud/configs"
 	DefaultGenInventoryScript = "transform/generate_inventories.py"
