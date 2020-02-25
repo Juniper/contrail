@@ -52,6 +52,24 @@
       "revId": "8763b76c89660f3b6356d6f1cbb1b2440fd0efeb",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "459044df_06f9db96",
+        "filename": "vendor/github.com/Juniper/asf/pkg/schema/template.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T09:44:49Z",
+      "side": 1,
+      "message": "As discussed offline, there are practically no risk with this global var.",
+      "parentUuid": "d247582e_f943e022",
+      "revId": "8763b76c89660f3b6356d6f1cbb1b2440fd0efeb",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
