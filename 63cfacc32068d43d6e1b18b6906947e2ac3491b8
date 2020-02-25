@@ -33,6 +33,24 @@
       "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f024a07c_7241ca91",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service.proto.tmpl",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-02-25T11:18:59Z",
+      "side": 1,
+      "message": "It\u0027s not possible because don\u0027t have proper directory structure. That was valid with vendor, however in gomod approach the import paths would include version tags which is fragile and impossible to use in this case (asf won\u0027t shouldn\u0027t refer to it\u0027s version, I guess).\n\nVendor like directory structure would require much more hacking because protoc doesn\u0027t read symlinks.\n\nAbove solution is the simplest for now and not that invalid either. IMO it\u0027s fine for ASF to mention it\u0027s imports as relative. It would be much worse if we did it in contrail.",
+      "parentUuid": "5e104fe3_9c3d3f0a",
+      "revId": "63cfacc32068d43d6e1b18b6906947e2ac3491b8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
