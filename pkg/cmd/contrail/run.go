@@ -422,15 +422,18 @@ func startCompilationService() {
 }
 
 func startAgent() {
-	a, err := agent.NewAgentByConfig()
+	agent, err := agent.NewAgentByConfig()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	for {
-		if err = a.Watch(context.Background()); err != nil {
-			logrus.Warn(err)
-		}
+
+	err = agent.Start()
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
 	}
+	// TODO(dji): VNCReplicator's defer stop() was outside start VNCReplicator function
+	// TODO(dji): , where should I put this agent.Stop()
+	defer agent.Stop()
 }
 
 func startCollectorWatcher() {

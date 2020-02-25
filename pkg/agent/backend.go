@@ -13,8 +13,7 @@ type backend interface {
 	remove(string) error
 }
 
-type fileBackend struct {
-}
+type fileBackend struct{}
 
 func newBackend(t string) (backend, error) {
 	switch t {
