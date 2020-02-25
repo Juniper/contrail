@@ -110,6 +110,24 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 	return NewCloud(&c, cloudTfStateReader{c.CloudID}, player, client, reporter)
 }
 
+// NewCloudManagerByConfig creates cloud fields by a given *cloud.Config
+func NewCloudManagerByConfig(c *Config) (*Cloud, error) {
+	client := NewCloudHTTPClient(c)
+
+	reporter := report.NewReporter(
+		client,
+		fmt.Sprintf("%s/%s", DefaultCloudResourcePath, c.CloudID),
+		logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
+	)
+
+	player, err := ansible.NewContainerPlayer(reporter, c.LogFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "new container player")
+	}
+
+	return NewCloud(c, cloudTfStateReader{c.CloudID}, player, client, reporter)
+}
+
 // NewCloudHTTPClient returns a new HTTP client based on Cloud Config.
 func NewCloudHTTPClient(c *Config) *client.HTTP {
 	return client.NewHTTP(&asfclient.HTTPConfig{
