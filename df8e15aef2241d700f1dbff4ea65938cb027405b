@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "5db9d02c_9c0cc186",
+        "filename": "pkg/ansible/ansiblemock/container_executor.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a75a4822_2d9d472e",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b099a53d_918a62c2",
         "filename": "pkg/cloud/cloud_test.go",
         "patchSetId": 33
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "babccd55_c1420d0f",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "24fa5d31_55bcc2d9",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "00393666_1d334782",
         "filename": "pkg/deploy/cluster/ansible.go",
         "patchSetId": 33
@@ -104,6 +140,24 @@
       "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d7ccf424_d1c2f9c1",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 507,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c0bd453a_16f5b0f6",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -159,6 +213,24 @@
     },
     {
       "key": {
+        "uuid": "0cff8481_5ac20288",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c1911e5d_0f68d832",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b67aa2bd_61566cf6",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 33
@@ -191,6 +263,24 @@
       "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9dc7cbcf_6dfcfc12",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3ced5a2b_0c76a086",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -241,6 +331,30 @@
     },
     {
       "key": {
+        "uuid": "8071d586_06206946",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 33
+      },
+      "lineNbr": 925,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7cb30004_a76027fc",
+      "range": {
+        "startLine": 924,
+        "startChar": 1,
+        "endLine": 925,
+        "endChar": 38
+      },
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "69766385_aa011394",
         "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_dpdk_instances.yml",
         "patchSetId": 33
@@ -273,6 +387,24 @@
       "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9fec003a_199b87ad",
+        "filename": "pkg/deploy/cluster/test_data/expected_all_in_one_dpdk_instances.yml",
+        "patchSetId": 33
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d6c9f710_d190c818",
+      "revId": "df8e15aef2241d700f1dbff4ea65938cb027405b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

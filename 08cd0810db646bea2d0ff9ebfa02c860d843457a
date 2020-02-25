@@ -451,6 +451,30 @@
     },
     {
       "key": {
+        "uuid": "ad52a3c4_06a98fbc",
+        "filename": "pkg/cloud/constants.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "43b9867d_bb6b35e2",
+      "range": {
+        "startLine": 21,
+        "startChar": 1,
+        "endLine": 21,
+        "endChar": 20
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6c1755fd_f97c9822",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 27
@@ -688,6 +712,30 @@
     },
     {
       "key": {
+        "uuid": "e6afe665_1b0a5b18",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7421eccd_b8e3be5f",
+      "range": {
+        "startLine": 107,
+        "startChar": 32,
+        "endLine": 107,
+        "endChar": 79
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4fffa4bb_74c1ac5a",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -854,6 +902,30 @@
     },
     {
       "key": {
+        "uuid": "b2d98862_4dadfa8d",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0491a827_2b9ff47f",
+      "range": {
+        "startLine": 47,
+        "startChar": 27,
+        "endLine": 47,
+        "endChar": 68
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e1d00999_4c7e1de7",
         "filename": "pkg/cloud/terraform.go",
         "patchSetId": 27
@@ -946,6 +1018,30 @@
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b7701270_3ae2b07a",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2bd86108_0f62208e",
+      "range": {
+        "startLine": 51,
+        "startChar": 9,
+        "endLine": 51,
+        "endChar": 12
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -1094,6 +1190,30 @@
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b1c70244_70a2ef1d",
+        "filename": "pkg/cloud/terraform.go",
+        "patchSetId": 27
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3b3ff716_761c60da",
+      "range": {
+        "startLine": 74,
+        "startChar": 31,
+        "endLine": 74,
+        "endChar": 66
+      },
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -1677,6 +1797,24 @@
       "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "efae9150_6cb2fc96",
+        "filename": "vendor/github.com/Juniper/asf/go.mod",
+        "patchSetId": 27
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0b40f5b4_8ad5aeb1",
+      "revId": "08cd0810db646bea2d0ff9ebfa02c860d843457a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {

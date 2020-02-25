@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4e922f02_84707eea",
+        "filename": "pkg/cloud/cloud_test.go",
+        "patchSetId": 35
+      },
+      "lineNbr": 653,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-02-25T16:31:15Z",
+      "side": 1,
+      "message": "Tactical Janek Kos",
+      "revId": "bdc961f18a46200b56bc93440a284c044310cd62",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
