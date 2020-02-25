@@ -166,6 +166,11 @@ func NewCloud(
 	}, nil
 }
 
+// NewCloudConfigAndCommandExecutor returns a new Cloud instance
+func NewCloudConfigAndCommandExecutor(c *Config, e CommandExecutor) (*Cloud, error) {
+	return NewCloud(c, cloudTfStateReader{c.CloudID}, e)
+}
+
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
 	if err := c.manage(); err != nil {
