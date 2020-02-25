@@ -17,6 +17,7 @@
     "pkg/auth",
     "pkg/client",
     "pkg/db/basedb",
+    "pkg/db/etcd",
     "pkg/errutil",
     "pkg/etcd",
     "pkg/fileutil",
@@ -708,14 +709,6 @@
   revision = "c2b33e84"
 
 [[projects]]
-  digest = "1:442baaf193e432b3432e26465fb36aed31484866ddb0ee11f68caceb130e317e"
-  name = "github.com/joho/godotenv"
-  packages = ["."]
-  pruneopts = ""
-  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
-  version = "v1.2.0"
-
-[[projects]]
   branch = "master"
   digest = "1:b38a66184fb38b517900ab365f43557ea7e4efe36f939e2fcb53ec0aa92b29c5"
   name = "github.com/juju/errors"
@@ -1394,7 +1387,9 @@
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
     "github.com/hashicorp/terraform/terraform",
-    "github.com/joho/godotenv",
+    "github.com/jackc/pgx",
+    "github.com/jackc/pgx/pgtype",
+    "github.com/kyleconroy/pgoutput",
     "github.com/labstack/echo",
     "github.com/labstack/echo/middleware",
     "github.com/mattn/go-shellwords",
