@@ -166,6 +166,20 @@ func NewCloud(
 	}, nil
 }
 
+// NewCloudConfigOnly returns a new Cloud instance
+func NewCloudConfigOnly(c *Config) (*Cloud, error) {
+	return NewCloud(c, cloudTfStateReader{c.CloudID}, osCommandExecutor{})
+}
+
+// TODO(dji) Determine how to use the one in /pkg/cmd/run
+type osCommandExecutor struct{}
+
+func (e *osCommandExecutor) ExecCmdAndWait(
+	r *report.Reporter, cmd string, args []string, dir string, envVars ...string,
+) error {
+	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
+}
+
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
 	if err := c.manage(); err != nil {
