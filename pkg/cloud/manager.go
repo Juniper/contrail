@@ -81,8 +81,8 @@ type Cloud struct {
 	ctx context.Context
 }
 
-// NewCloudManager creates cloud fields by reading config from given configPath
-func NewCloudManager(configPath string) (*Cloud, error) {
+// NewCloudManagerFromConfigFile creates cloud fields by reading config from given configPath
+func NewCloudManagerFromConfigFile(configPath string) (*Cloud, error) {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,12 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, err
 	}
 
-	client := NewCloudHTTPClient(&c)
+	return NewCloudManager(&c)
+}
+
+// NewCloudManager creates cloud fields by a given *cloud.Config
+func NewCloudManager(c *Config) (*Cloud, error) {
+	client := NewCloudHTTPClient(c)
 
 	reporter := report.NewReporter(
 		client,
@@ -107,7 +112,7 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 		return nil, errors.Wrap(err, "new container player")
 	}
 
-	return NewCloud(&c, cloudTfStateReader{c.CloudID}, player, client, reporter)
+	return NewCloud(c, cloudTfStateReader{c.CloudID}, player, client, reporter)
 }
 
 // NewCloudHTTPClient returns a new HTTP client based on Cloud Config.

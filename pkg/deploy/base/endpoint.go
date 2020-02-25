@@ -327,6 +327,9 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 			}
 		}
 	}
+
+	e.Log.Infof("Finished creating service endpoints for cluster: %s", e.ClusterID)
+
 	return nil
 }
 
@@ -338,6 +341,7 @@ func (e *EndpointData) Update() error {
 		return err
 	}
 	err = e.Create()
+	e.Log.Infof("Finished updating service endpoints for cluster: %s", e.ClusterID)
 	return err
 }
 
@@ -386,5 +390,11 @@ func (e *EndpointData) remove(prefixes []string) error {
 			return err
 		}
 	}
+
+	e.Log.WithFields(logrus.Fields{
+		"prefixes":     prefixes,
+		"cluster-uuid": e.ClusterID,
+	}).Info("Finished deleting service endpoints for cluster")
+
 	return nil
 }
