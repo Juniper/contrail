@@ -264,6 +264,8 @@ func (a *ContrailAnsibleDeployer) compareInventory() (identical bool, err error)
 
 // CreateInventory creates an "instances" file and an "inventory" file.
 func (a *ContrailAnsibleDeployer) CreateInventory() error {
+	a.Log.Info("Contrail ansible deployer creating inventory")
+
 	if err := a.createInstancesFile(a.getInstanceFile()); err != nil {
 		return err
 	}
@@ -275,6 +277,9 @@ func (a *ContrailAnsibleDeployer) CreateInventory() error {
 	if a.clusterData.ClusterInfo.DatapathEncryption {
 		return a.createDatapathEncryptionInventory(a.getInventoryFile())
 	}
+
+	a.Log.Info("Contrail ansible deployer inventory creation complete")
+
 	return nil
 }
 
@@ -736,6 +741,9 @@ func (a *ContrailAnsibleDeployer) createCluster() error {
 
 	status[StatusField] = StatusCreated
 	a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
+
+	a.Log.Infof("Complete %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
+
 	return nil
 }
 
@@ -777,6 +785,9 @@ func (a *ContrailAnsibleDeployer) updateCluster() error {
 
 	status[StatusField] = StatusUpdated
 	a.Reporter.ReportStatus(context.Background(), status, DefaultResource)
+
+	a.Log.Infof("Finished %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
+
 	return nil
 }
 
@@ -836,6 +847,7 @@ func (a *ContrailAnsibleDeployer) handleDelete() error {
 
 // Deploy handles create/update/delete deployment action.
 func (a *ContrailAnsibleDeployer) Deploy() error {
+	a.Log.Infof("Contrail ansible deployer's action is: %s", a.action)
 	switch a.action {
 	case CreateAction:
 		return a.handleCreate()
