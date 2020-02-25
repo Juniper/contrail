@@ -114,7 +114,7 @@ func initConfig(configFile string) {
 }
 
 func manageCloud(configFile string) {
-	manager, err := cloud.NewCloudManager(configFile)
+	manager, err := cloud.NewCloudManagerFromConfigFile(configFile)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
@@ -408,14 +408,15 @@ func startCompilationService() {
 }
 
 func startAgent() {
-	a, err := agent.NewAgentByConfig()
+	agent, err := agent.NewAgentByConfig()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	for {
-		if err = a.Watch(context.Background()); err != nil {
-			logrus.Warn(err)
-		}
+	defer agent.Stop()
+
+	err = agent.Start()
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
 	}
 }
 

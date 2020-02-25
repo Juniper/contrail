@@ -116,6 +116,7 @@ func (r *ResourceManager) getResource(resPath string, resID string) (map[string]
 		return nil, err
 	}
 	res := strings.TrimLeft(resPath, "/")
+	r.log.Infof("Get res: %v", res)
 	data, ok := rawResInfo[res].(map[string]interface{})
 	if !ok {
 		return nil, errors.New("invalid resource type")
