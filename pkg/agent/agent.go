@@ -2,34 +2,23 @@ package agent
 
 import (
 	"context"
-	"path"
-	"path/filepath"
-	"strings"
-	"sync"
-	"time"
 
-	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/schema"
-	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/config"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	asfclient "github.com/Juniper/asf/pkg/client"
+	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
-// Agent constants.
-const (
-	FileBackend    = "file"
-	PollingWatcher = "polling"
+type handler interface {
+	handleCluster(e *services.Event, c *Config) error
+	handleCloud(e *services.Event, c *Config) error
+}
 
-	serverSchemaRoot = "/public/"
-	serverSchemaFile = "schema.json"
-)
-
-// Config represents Agent configuration.
+// Config holds info
 type Config struct {
 	// ID of Agent account.
 	ID string `yaml:"id"`
@@ -55,8 +44,6 @@ type Config struct {
 	Backend string `yaml:"backend"`
 	// Watcher specifies resource event watching strategy to be used (values: "polling").
 	Watcher string `yaml:"watcher"`
-	// List of tasks for Agent to perform on events that involve specified resources.
-	Tasks []*task `yaml:"tasks"`
 	// InSecure https connection to endpoint
 	InSecure bool `yaml:"insecure"`
 	// Enabled
@@ -67,15 +54,12 @@ type Config struct {
 	ServiceUserPassword string `yaml:"service_user_password"`
 }
 
-// Agent represents Agent service.
+// Agent is here
 type Agent struct {
-	config    *Config
-	backend   backend
-	APIServer *client.HTTP
-	serverAPI *schema.API
-	// schemas map schema IDs to API Server schemas.
-	schemas map[string]*schema.Schema
-	log     *logrus.Entry
+	config             *Config
+	handler            handler
+	stopServiceContext context.CancelFunc
+	log                *logrus.Entry
 }
 
 // NewAgentByConfig creates Agent reading configuration from viper config.
@@ -107,101 +91,50 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
-	s := client.NewHTTP(&asfclient.HTTPConfig{
-		ID:       c.ID,
-		Password: c.Password,
-		Endpoint: c.Endpoint,
-		AuthURL:  c.AuthURL,
-		Scope: keystone.NewScope(
-			c.DomainID,
-			c.DomainName,
-			c.ProjectID,
-			c.ProjectName,
-		),
-		Insecure: c.InSecure,
-	})
-
-	serverSchema := filepath.Join(serverSchemaRoot, serverSchemaFile)
-	if c.SchemaRoot != "" {
-		serverSchema = filepath.Join(c.SchemaRoot, serverSchemaFile)
-	}
-	api, err := fetchServerAPI(context.Background(), s, serverSchema)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := newBackend(c.Backend)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Agent{
-		APIServer: s,
-		config:    c,
-		backend:   b,
-		serverAPI: api,
-		schemas:   buildSchemaMapping(api.Schemas),
-		log:       logutil.NewLogger("agent"),
+		config:  c,
+		handler: newEventHandler(),
+		log:     logutil.NewLogger("agent"),
 	}, nil
 }
 
-func fetchServerAPI(ctx context.Context, server *client.HTTP, serverSchema string) (*schema.API, error) {
-	var api schema.API
-	for {
-		_, err := server.Read(ctx, serverSchema, &api)
-		if err == nil {
-			break
-		}
-		logrus.Warnf("failed to connect server %v. reconnecting...", err)
-		time.Sleep(time.Second)
+// Start replication service
+func (a *Agent) Start() error {
+	processor := &services.EventListProcessor{
+		EventProcessor:    a,
+		InTransactionDoer: services.NoTransaction,
 	}
-	return &api, nil
+
+	producer, err := syncp.NewEventProducer("agent", processor, services.NoTransaction)
+	if err != nil {
+		return err
+	}
+
+	var ctx context.Context
+	ctx, a.stopServiceContext = context.WithCancel(context.Background())
+
+	return producer.Start(ctx)
 }
 
-func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
-	s := make(map[string]*schema.Schema)
-	for _, schema := range schemas {
-		// Compensate for empty Path and PluralPath fields in schema
-		// TODO(daniel): remove this after following issue is fixed: https://github.com/Juniper/contrail/issues/72
-		schema.Path = path.Join(schema.Prefix, strings.Replace(schema.ID, "_", "-", -1))
-		schema.PluralPath = path.Join(schema.Prefix, strings.Replace(schema.Plural, "_", "-", -1))
-		s[schema.ID] = schema
+// Process processes event by sending requests to all registered clusters.
+func (a *Agent) Process(ctx context.Context, e *services.Event) (*services.Event, error) { //nolint: gocyclo
+	a.log.Infof("Received event: %v", e)
+	if e == nil {
+		return nil, nil
 	}
-	return s
+
+	var err error
+	switch e.Kind() {
+	case "contrail-cluster", "rhospd-cloud-manager":
+		err = a.handler.handleCluster(e, a.config)
+	case "cloud":
+		err = a.handler.handleCloud(e, a.config)
+	}
+
+	return e, errors.Wrap(err, "agent processing event failed")
 }
 
-// Watch starts watching for events on API Server resources.
-func (a *Agent) Watch(ctx context.Context) error {
-	a.log.Info("Starting watching for events")
-	if err := a.APIServer.Login(ctx); err != nil {
-		return errors.Wrap(err, "login to API Server failed")
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(len(a.config.Tasks))
-
-	for _, task := range a.config.Tasks {
-		task.init(a)
-
-		for k := range a.schemas {
-			for _, schemaID := range task.SchemaIDs {
-				if schemaID != k {
-					continue
-				}
-
-				watcher, err := newWatcher(a, task, k)
-				if err != nil {
-					return err
-				}
-
-				go func() {
-					defer wg.Done()
-					watcher.watch(ctx)
-				}()
-			}
-		}
-	}
-
-	wg.Wait()
-	return nil
+// Stop replication routine
+func (a *Agent) Stop() {
+	a.stopServiceContext()
 }
