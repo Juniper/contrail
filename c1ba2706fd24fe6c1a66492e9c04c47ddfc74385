@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "a0966abe_ce57398a",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-26T12:07:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "78c22972_6b88618c",
+      "revId": "c1ba2706fd24fe6c1a66492e9c04c47ddfc74385",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1b9be967_a2cb07b7",
         "filename": "schemas/contrail/core/types.yml",
         "patchSetId": 1
@@ -50,6 +68,24 @@
       "revId": "c1ba2706fd24fe6c1a66492e9c04c47ddfc74385",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "395d89e8_7b7a5a7f",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 685,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-02-26T12:07:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1b9be967_a2cb07b7",
+      "revId": "c1ba2706fd24fe6c1a66492e9c04c47ddfc74385",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
