@@ -11,7 +11,10 @@ import (
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services"
-	"github.com/Juniper/asf/pkg/testutil/integration"
+
+        //TODO(mlastawiecki): uncomment once the test is fixed
+        //                    commented due to go mod errors
+        //"github.com/Juniper/asf/pkg/testutil/integration"
 )
 
 const (

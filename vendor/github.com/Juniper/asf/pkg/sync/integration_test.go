@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/constants"
+	//"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/models/basemodels"

@@ -5,8 +5,6 @@ import (
 	"path"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/apisrv"
-	"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db/cache"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
@@ -19,6 +17,11 @@ import (
 
 	kstypes "github.com/Juniper/asf/pkg/keystone"
 	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
+
+        //TODO(mlastawiecki): uncomment once the file compiles
+        //                    commented due to go mod errors
+        //"github.com/Juniper/asf/pkg/apisrv"
+        //"github.com/Juniper/asf/pkg/constants"
 )
 
 const (

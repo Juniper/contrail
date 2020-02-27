@@ -3,10 +3,13 @@ package integration
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/constants"
 	"github.com/Juniper/asf/pkg/db/cache"
 	"github.com/Juniper/asf/pkg/db/etcd"
 	integrationetcd "github.com/Juniper/asf/pkg/testutil/integration/etcd"
+
+        //TODO(mlastawiecki): uncomment once the file compiles
+        //                    commented due to go mod errors
+        //"github.com/Juniper/asf/pkg/constants"
 )
 
 const (
