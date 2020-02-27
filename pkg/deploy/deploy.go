@@ -72,7 +72,6 @@ type Deploy struct {
 	config       *Config
 	APIServer    *client.HTTP
 	log          *logrus.Entry
-	streamServer *logutil.StreamServer
 }
 
 // NewDeployManager creates Deploy reading configuration from given file.
@@ -125,15 +124,11 @@ func NewDeploy(c *Config) (*Deploy, error) {
 		APIServer:    s,
 		config:       c,
 		log:          logutil.NewFileLogger("deploy", c.LogFile),
-		streamServer: logutil.NewStreamServer(c.LogFile),
 	}, nil
 }
 
 // Manage starts managing the resource.
 func (c *Deploy) Manage() error {
-	c.streamServer.Serve()
-	defer c.streamServer.Close()
-
 	c.log.Infof("start handling %s", c.config.ResourceType)
 	if err := c.APIServer.Login(context.Background()); err != nil {
 		return errors.Wrap(err, "login to API Server failed")

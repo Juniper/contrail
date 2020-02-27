@@ -74,7 +74,6 @@ type Cloud struct {
 	commandExecutor      CommandExecutor
 	log                  *logrus.Entry
 	reporter             *report.Reporter
-	streamServer         *logutil.StreamServer
 	terraformStateReader terraformStateReader
 	// TODO(dfurman): Do not store Contexts inside a struct type; instead, pass a Context explicitly to each function
 	// that needs it. See: https://golang.org/pkg/context/
@@ -141,7 +140,6 @@ func NewCloud(c *Config, terraformStateReader terraformStateReader, e CommandExe
 			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
 			logutil.NewFileLogger("reporter", c.LogFile).WithField("cloudID", c.CloudID),
 		),
-		streamServer:         logutil.NewStreamServer(c.LogFile),
 		commandExecutor:      e,
 		terraformStateReader: terraformStateReader,
 		ctx:                  ctx,
@@ -191,9 +189,6 @@ func (c *Cloud) provisioningSetToNonState() (bool, error) {
 
 // HandleCloudRequest handles Cloud create/update/delete request.
 func (c *Cloud) HandleCloudRequest() error {
-	c.streamServer.Serve()
-	defer c.streamServer.Close()
-
 	isDeleteReq, err := c.isCloudDeleteRequest()
 	if err != nil {
 		return err
