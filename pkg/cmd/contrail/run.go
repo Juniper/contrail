@@ -11,8 +11,6 @@ import (
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/logutil/report"
-	"github.com/Juniper/asf/pkg/osutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apiserver"
@@ -116,22 +114,13 @@ func initConfig(configFile string) {
 }
 
 func manageCloud(configFile string) {
-	manager, err := cloud.NewCloudManager(configFile, &osCommandExecutor{})
+	manager, err := cloud.NewCloudManager(configFile)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 	if err = manager.Manage(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-}
-
-// TODO(apasyniuk) Export this into asf/osutils
-type osCommandExecutor struct{}
-
-func (e *osCommandExecutor) ExecCmdAndWait(
-	r *report.Reporter, cmd string, args []string, dir string, envVars ...string,
-) error {
-	return osutil.ExecCmdAndWait(r, cmd, args, dir, envVars...)
 }
 
 func manageCluster(configFile string) {
