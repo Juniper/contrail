@@ -1,4 +1,4 @@
-all: deps generate test
+all: deps generate testenv test
 
 deps:
 	./tools/install_proto.sh
@@ -6,18 +6,20 @@ deps:
 generate:
 	go generate ./...
 
+testenv:
+	docker-compose up -d
+
 # TODO(dfurman): use go test ./...
 # TODO(dfurman): remove or fix the package compilation and tests for following packages:
 # cmd/contrailcli
 # cmd/contrailutil
 # pkg/bench
+# pkg/cache
+# pkg/cassandra
 # pkg/cmd/contrailcli
 # pkg/cmd/contrailutil
-# pkg/db/cache
 # pkg/convert
 # pkg/db
-# pkg/db/cassandra
-# pkg/db/etcd
 # pkg/endpoint
 # pkg/models
 # pkg/rbac TODO(dfurman): this definitely needs to be fixed
@@ -35,6 +37,7 @@ TESTPKGS=./cmd/contrailschema \
 	./pkg/config \
 	./pkg/db/basedb \
 	./pkg/errutil \
+	./pkg/etcd \
 	./pkg/fileutil \
 	./pkg/fileutil/template \
 	./pkg/format \
@@ -52,5 +55,8 @@ TESTPKGS=./cmd/contrailschema \
 test:
 	# TODO(mblotniak): After fixing the package compilation and tests please add it to $$TESTPKGS above.
 	go test $(TESTPKGS)
+
+clean:
+	docker-compose down
 
 .PHONY: test generate
