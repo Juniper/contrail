@@ -590,7 +590,7 @@ func upgradeAppformixPlaybookExecutions() []ansiblemock.ContainerExecution {
 
 func createDummyAppformixFiles(t *testing.T) func() {
 	// create appformix config.yml file
-	configFile := workRoot + "/" + "appformix-ansible-deployer/appformix/config.yml"
+	configFile := workRoot + "/" + "appformix-ansible-deployer/config.yml"
 	configData := []byte(`{"appformix_version": "3.0.0"}`)
 	err := fileutil.WriteToFile(configFile, configData, cluster.DefaultFilePermRWOnly)
 	assert.NoErrorf(t, err, "Unable to write file: %s", configFile)
