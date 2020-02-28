@@ -51,7 +51,7 @@
             interface: eth0
           - name: compute
             roles:
-              - compute_node
+              - compute
             provision: true
             username: centos
             os: centos7
