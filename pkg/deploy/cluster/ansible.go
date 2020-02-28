@@ -477,7 +477,7 @@ type AppformixConfig struct {
 func (a *ContrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
 		repoDir := a.getAppformixAnsibleDeployerRepoDir()
-		configFile := repoDir + "/" + "config.yml"
+		configFile := repoDir + "/../" + "config.yml"
 		data, ioerr := ioutil.ReadFile(configFile)
 		if ioerr != nil {
 			return ioerr
