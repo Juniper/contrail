@@ -309,7 +309,7 @@ func (i *publicInstance) Fill(ctx context.Context, cli *client.HTTP, instanceUUI
 	}
 	i.Username = username
 
-	i.fillRoles(node.Node.CloudInfo.Roles)
+	i.Roles = instanceRoles(node.Node.CloudInfo.Roles)
 
 	for _, gw := range node.Node.ContrailMulticloudGWNodeBackRefs {
 		if err = i.fillGWDetails(ctx, cli, gw.UUID); err != nil {
@@ -330,14 +330,19 @@ func (i *publicInstance) Fill(ctx context.Context, cli *client.HTTP, instanceUUI
 	return nil
 }
 
-func (i *publicInstance) fillRoles(roles []string) {
-	for _, r := range roles {
-		if instanceRole(r) == bareInstanceRole {
-			i.Roles = []instanceRole{bareInstanceRole}
-		} else {
-			i.Roles = append(i.Roles, instanceRole(r))
+func instanceRoles(rolesString []string) []instanceRole {
+	var roles []instanceRole
+	for _, r := range rolesString {
+		switch r {
+		case string(bareInstanceRole):
+			return []instanceRole{bareInstanceRole}
+		case "compute":
+			roles = append(roles, computeNodeInstanceRole)
+		default:
+			roles = append(roles, instanceRole(r))
 		}
 	}
+	return roles
 }
 
 func (i *publicInstance) fillGWDetails(ctx context.Context, cli *client.HTTP, gwUUID string) error {
