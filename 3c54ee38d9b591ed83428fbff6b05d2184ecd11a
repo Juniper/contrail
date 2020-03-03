@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b8e9104c_e48df043",
+        "filename": "pkg/cloud/private.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-03T10:31:18Z",
+      "side": 1,
+      "message": "Pls use:\n\n var privateSubnets []string",
+      "revId": "3c54ee38d9b591ed83428fbff6b05d2184ecd11a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "69c7cf57_7df9af74",
+        "filename": "pkg/cloud/private.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 390,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-03T10:31:18Z",
+      "side": 1,
+      "message": "Fix format",
+      "revId": "3c54ee38d9b591ed83428fbff6b05d2184ecd11a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b783d87_8526619f",
+        "filename": "pkg/cloud/private.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 390,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-03T10:31:18Z",
+      "side": 1,
+      "message": "Pls use shorter var name",
+      "range": {
+        "startLine": 390,
+        "startChar": 2,
+        "endLine": 390,
+        "endChar": 19
+      },
+      "revId": "3c54ee38d9b591ed83428fbff6b05d2184ecd11a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "66fa1745_bc68a665",
+        "filename": "pkg/cloud/private.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 394,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-03T10:31:18Z",
+      "side": 1,
+      "message": "This can be in one line",
+      "range": {
+        "startLine": 392,
+        "startChar": 3,
+        "endLine": 394,
+        "endChar": 4
+      },
+      "revId": "3c54ee38d9b591ed83428fbff6b05d2184ecd11a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
