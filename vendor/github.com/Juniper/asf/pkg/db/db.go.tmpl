@@ -9,7 +9,6 @@ import (
 	"net"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
@@ -50,147 +49,6 @@ func NewService(db *sql.DB) *Service {
 	}
 	dbService.initQueryBuilders()
 	return dbService
-}
-
-// delete deletes a resource
-func (db *Service) delete(
-		ctx context.Context,
-		qb *basedb.QueryBuilder,
-		uuid string,
-		backrefFields map[string][]string,
-) error {
-	if err := db.checkPolicy(ctx, qb, uuid); err != nil {
-		return err
-	}
-
-	tx := basedb.GetTransaction(ctx)
-
-	for backref := range backrefFields {
-		_, err := tx.ExecContext(ctx, qb.DeleteRelaxedBackrefsQuery(backref), uuid)
-		if err != nil {
-			return errors.Wrapf(
-				basedb.FormatDBError(err),
-				"deleting all relaxed references from %s to resource with UUID '%v' from DB failed",
-				backref, uuid,
-			)
-		}
-	}
-
-	_, err := tx.ExecContext(ctx, qb.DeleteQuery(), uuid)
-	if err != nil {
-		err = basedb.FormatDBError(err)
-		return errors.Wrapf(err, "deleting resource with UUID '%v' from DB failed", uuid)
-	}
-
-	return db.DeleteMetadata(ctx, uuid)
-}
-
-func (db *Service) count(
-		ctx context.Context, qb *basedb.QueryBuilder, spec *baseservices.ListSpec,
-) (count int64, err error) {
-	query, values := qb.CountQuery(auth.GetIdentity(ctx), spec)
-
-	tx := basedb.GetTransaction(ctx)
-	row := tx.QueryRowContext(ctx, query, values...)
-
-	if err = row.Scan(&count); err != nil {
-		return 0, errors.Wrap(basedb.FormatDBError(err), "count query failed")
-	}
-
-	return count, nil
-}
-
-// checkPolicy check ownership of resources.
-func (db *Service) checkPolicy(ctx context.Context, qb *basedb.QueryBuilder, uuid string) (err error) {
-	tx := basedb.GetTransaction(ctx)
-	auth := auth.GetIdentity(ctx)
-
-	selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
-
-	var row *sql.Row
-	if auth.IsAdmin() {
-		row = tx.QueryRowContext(ctx, selectQuery, uuid)
-	} else {
-		row = tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID())
-	}
-
-	var count int
-	err = row.Scan(&count)
-	if err != nil {
-		return basedb.FormatDBError(err)
-	}
-	if count == 0 {
-		return errutil.ErrorNotFound
-	}
-
-	return nil
-}
-
-type childObject interface {
-	GetUUID() string
-	GetParentUUID() string
-	GetParentType() string
-}
-
-func (db *Service) createParentReference(
-		ctx context.Context,
-		obj childObject,
-		qb *basedb.QueryBuilder,
-		possibleParents []string,
-		optional bool,
-) (err error) {
-	parentSchemaID := basemodels.KindToSchemaID(obj.GetParentType())
-
-	if !format.ContainsString(possibleParents, parentSchemaID) {
-		if optional {
-			return nil
-		}
-		return errutil.ErrorBadRequest("invalid parent type")
-	}
-
-	tx := basedb.GetTransaction(ctx)
-	_, err = tx.ExecContext(ctx, qb.CreateParentRefQuery(parentSchemaID), obj.GetUUID(), obj.GetParentUUID())
-
-	return errors.Wrapf(
-		basedb.FormatDBError(err), "creating resource %T with UUID '%v' in DB failed", obj, obj.GetUUID(),
-	)
-}
-
-func (db *Service) createRef(
-		ctx context.Context,
-		fromID, toID string,
-		fromSchemaID, toSchemaID string,
-		attrs ...interface{},
-) error {
-	qb := db.QueryBuilders[fromSchemaID]
-	tx := basedb.GetTransaction(ctx)
-
-	_, err := tx.ExecContext(ctx, qb.CreateRefQuery(toSchemaID), append([]interface{}{fromID, toID}, attrs...)...)
-	if err != nil {
-		return errors.Wrapf(
-			basedb.FormatDBError(err),
-			"%s_ref create failed for object %s with UUID: '%v' and ref UUID '%v'",
-			toSchemaID, fromSchemaID, fromID, toID,
-		)
-	}
-	return nil
-}
-
-func (db *Service) deleteRef(
-		ctx context.Context,
-		fromID, toID string,
-		fromSchemaID, toSchemaID string,
-) error {
-	query := db.QueryBuilders[fromSchemaID].DeleteRefQuery(toSchemaID)
-	tx := basedb.GetTransaction(ctx)
-
-	_, err := tx.ExecContext(ctx, query, fromID, toID)
-
-	return errors.Wrapf(
-		basedb.FormatDBError(err),
-		"%s_ref delete failed for object %s with UUID: '%v' and ref UUID '%v'",
-		toSchemaID, fromSchemaID, fromID, toID,
-	)
 }
 
 func listSpecForGet(uuid string, fields []string) *baseservices.ListSpec {
@@ -940,7 +798,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}Reference(
 	request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
 	{% for linkTo, reference in schema.References %}
 	for _, ref := range request.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs {
-		if err := db.createRef(
+		if err := db.CreateRef(
 			ctx,
 			request.{{ schema.JSONSchema.GoName }}.UUID, ref.UUID,
 			"{{ schema.ID }}", "{{ linkTo | lower }}",
@@ -987,7 +845,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 	{% endif %}
 
 	{% if schema.HasParents() %}
-	err = db.createParentReference(ctx, request.{{ schema.JSONSchema.GoName }}, qb, {{ schema.JSONSchema.GoName }}Parents, {% if schema.ParentOptional %}true{% else %}false{% endif %})
+	err = db.CreateParentReference(ctx, request.{{ schema.JSONSchema.GoName }}, qb, {{ schema.JSONSchema.GoName }}Parents, {% if schema.ParentOptional %}true{% else %}false{% endif %})
 	if err != nil {
 		return errors.Wrap(err, "creating parent reference for {{ schema.JSONSchema.GoName }} failed")
 	}
@@ -1164,15 +1022,11 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAt
 }
 {% endif %}{% endfor %}
 
+
 // list{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
-	qb := db.QueryBuilders["{{ schema.ID }}"]
-	query, columns, values := qb.ListQuery(auth.GetIdentity(ctx), request.Spec)
-
-	tx := basedb.GetTransaction(ctx)
-	rows, err := tx.QueryContext(ctx, query, values...)
+	rows, err := db.ListRows(ctx, "{{ schema.ID }}", request.Spec)
 	if err != nil {
-		err = basedb.FormatDBError(err)
 		return nil, errors.Wrap(err, "select query failed")
 	}
 
@@ -1184,18 +1038,9 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 
 	result := []*models.{{ schema.JSONSchema.GoName }}{}
 	for rows.Next() {
-			valuesMap := map[string]interface{}{}
-			values := make([]interface{}, len(columns))
-			valuesPointers := make([]interface{}, len(columns))
-			for _, index := range columns {
-				valuesPointers[index] = &values[index]
-			}
-			if err := rows.Scan(valuesPointers...); err != nil {
-					return nil, errors.Wrap(err, "scan failed")
-			}
-			for column, index := range columns {
-				val := valuesPointers[index].(*interface{})
-				valuesMap[column] = *val
+			valuesMap, err := rows.ReadMap()
+			if err != nil {
+				return nil, errors.Wrap(err, "scan failed")
 			}
 			m, _, err := db.scan{{ schema.JSONSchema.GoName }}(valuesMap)
 			if err != nil {
@@ -1204,12 +1049,10 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 			result = append(result, m)
 	}
 
-	response = &services.List{{ schema.JSONSchema.GoName }}Response{
+	return &services.List{{ schema.JSONSchema.GoName }}Response{
 		{{ schema.JSONSchema.GoName }}s: result,
 		{{ schema.JSONSchema.GoName }}Count: int64(len(result)),
-	}
-
-	return response, nil
+	}, nil
 }
 
 // Update{{ schema.JSONSchema.GoName }} updates a resource
@@ -1221,7 +1064,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
 	qb := db.QueryBuilders["{{ schema.ID }}"]
 	model := request.{{ schema.JSONSchema.GoName }}
 
-	if err := db.checkPolicy(ctx, qb, model.UUID); err != nil {
+	if err := db.CheckPolicy(ctx, qb, model.UUID); err != nil {
 		return err
 	}
 
@@ -1330,7 +1173,7 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, req
 	if err := db.DoInTransaction(
 		ctx,
 		func (ctx context.Context) error {
-			return db.delete(ctx, db.QueryBuilders["{{ schema.ID }}"], id, {{schema.JSONSchema.GoName}}BackRefFields)
+			return db.Delete(ctx, db.QueryBuilders["{{ schema.ID }}"], id, {{schema.JSONSchema.GoName}}BackRefFields)
 		}); err != nil {
 		return nil, err
 	}
@@ -1354,7 +1197,7 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
 	if err := db.DoInTransaction(
 		ctx,
 		func (ctx context.Context) error {
-			return db.createRef(
+			return db.CreateRef(
 				ctx,
 				request.ID, ref.UUID,
 				"{{ schema.ID }}", "{{ linkTo | lower }}",
@@ -1384,7 +1227,7 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
 	if err := db.DoInTransaction(
 		ctx,
 		func (ctx context.Context) error {
-			return db.deleteRef(ctx, request.ID, ref.UUID, "{{ schema.ID }}", "{{ linkTo | lower }}")
+			return db.DeleteRef(ctx, request.ID, ref.UUID, "{{ schema.ID }}", "{{ linkTo | lower }}")
 		}); err != nil {
 		return nil, err
 	}
@@ -1428,7 +1271,7 @@ func (db *Service) List{{ schema.JSONSchema.GoName }}(
 		func (ctx context.Context) error {
 			if spec.Count {
 				var count int64
-				count, err = db.count(ctx, db.QueryBuilders["{{ schema.ID }}"], request.Spec)
+				count, err = db.Count(ctx, db.QueryBuilders["{{ schema.ID }}"], request.Spec)
 				if err == nil {
 					response = &services.List{{ schema.JSONSchema.GoName }}Response{
 						{{ schema.JSONSchema.GoName }}Count: count,
