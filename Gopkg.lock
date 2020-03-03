@@ -10,13 +10,14 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:1e7c8544137868602682ef481a2c319a307600c466a41c4d8d54845f2dfdac18"
+  digest = "1:dfd19e84679a7d684a1d2025e466a8be94f5eba1caa616ad5a59e81f89d6905d"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apiserver",
     "pkg/auth",
     "pkg/client",
     "pkg/db/basedb",
+    "pkg/db/etcd",
     "pkg/errutil",
     "pkg/etcd",
     "pkg/fileutil",
@@ -35,7 +36,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "ea209fe1c7b24735489f31cc6eb6907ff317a5fd"
+  revision = "d9d65235245c387a0923994e4ce7db371a4448a8"
 
 [[projects]]
   branch = "2.x"
@@ -1363,6 +1364,7 @@
     "github.com/Juniper/asf/pkg/auth",
     "github.com/Juniper/asf/pkg/client",
     "github.com/Juniper/asf/pkg/db/basedb",
+    "github.com/Juniper/asf/pkg/db/etcd",
     "github.com/Juniper/asf/pkg/errutil",
     "github.com/Juniper/asf/pkg/etcd",
     "github.com/Juniper/asf/pkg/fileutil",
@@ -1381,6 +1383,9 @@
     "github.com/Juniper/asf/pkg/services/baseservices",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
+    "github.com/coreos/etcd/clientv3/concurrency",
+    "github.com/coreos/etcd/mvcc/mvccpb",
+    "github.com/coreos/etcd/pkg/transport",
     "github.com/docker/docker/api/types",
     "github.com/docker/docker/api/types/container",
     "github.com/docker/docker/api/types/mount",
@@ -1426,6 +1431,7 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",
+    "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
     "gopkg.in/yaml.v2",
