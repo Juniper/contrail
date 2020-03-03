@@ -42,7 +42,7 @@ type Config struct { // nolint: maligned
 	AuthURL string `yaml:"auth_url"`
 	// Endpoint of API Server.
 	Endpoint string `yaml:"endpoint"`
-	// InSecure https connection to endpoint
+	// InSecure https connection to endpoint.
 	InSecure bool `yaml:"insecure"`
 	// UUID of cloud to be managed.
 	CloudID string `yaml:"cloud_id,omitempty"`
