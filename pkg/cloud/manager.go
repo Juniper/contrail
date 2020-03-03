@@ -24,7 +24,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// Config represents cloud configuration needed by cloudManager
+// Config represents cloud configuration needed by cloudManager.
 type Config struct { // nolint: maligned
 	// ID of cloud
 	ID string `yaml:"id"`
