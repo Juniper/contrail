@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/auth"
+	"github.com/Juniper/asf/pkg/keystone"
 )
 
 func TestCheckCommonPermissions(t *testing.T) {
@@ -286,16 +287,14 @@ func TestCheckObjectPermissions(t *testing.T) {
 }
 
 func userAuth(ctx context.Context, tenant string) context.Context {
-	Context := auth.NewContext(
-		"default-domain", tenant, "bob", []string{"Member"}, "", auth.NewObjPerms(nil))
-	return auth.WithIdentity(ctx, Context)
+	return auth.WithIdentity(ctx, keystone.NewAuthIdentity("default-domain", tenant, "bob", []string{"Member"}))
 }
 
 func globalAccessRuleList() []*APIAccessList {
 	list := make([]*APIAccessList, 0)
 	model := makeAPIAccessList()
 	model.FQName = []string{"default-global-system-config"}
-	model.ParentType = KindGlobalSystemConfig
+	model.ParentType = globalSystemConfigScope
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
 }
@@ -304,7 +303,7 @@ func domainAccessRuleList() []*APIAccessList {
 	list := make([]*APIAccessList, 0)
 	model := makeAPIAccessList()
 	model.FQName = []string{"default-domain"}
-	model.ParentType = KindDomain
+	model.ParentType = domainScope
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
 }
@@ -313,7 +312,7 @@ func projectAccessRuleList() []*APIAccessList {
 	list := make([]*APIAccessList, 0)
 	model := makeAPIAccessList()
 	model.FQName = []string{"default-domain", "default-project"}
-	model.ParentType = KindProject
+	model.ParentType = projectScope
 	rbacRuleEntryAdd(model, "projects")
 	return append(list, model)
 }
@@ -322,7 +321,7 @@ func wildcardGlobalAccessRuleList() []*APIAccessList {
 	list := make([]*APIAccessList, 0)
 	model := makeAPIAccessList()
 	model.FQName = []string{"default-global-system-config"}
-	model.ParentType = KindGlobalSystemConfig
+	model.ParentType = globalSystemConfigScope
 	rbacRuleEntryAdd(model, "*")
 	return append(list, model)
 }
@@ -358,7 +357,7 @@ func rbacRuleEntryAdd(l *APIAccessList, kind string) {
 func makeRbacRuleType() *RuleType {
 	return &RuleType{
 		RuleObject: "",
-		RulePerms: makeRbacPermTypeSlice(),
+		RulePerms:  makeRbacPermTypeSlice(),
 	}
 }
 
