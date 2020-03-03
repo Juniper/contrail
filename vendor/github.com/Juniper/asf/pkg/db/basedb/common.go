@@ -3,8 +3,15 @@ package basedb
 import (
 	"encoding/json"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/pkg/errors"
 )
+
+// Object is generic database model instance.
+type Object interface {
+	proto.Message
+	ToMap() map[string]interface{}
+}
 
 // ParseFQName parses fqName string read from DB to string slice
 func ParseFQName(fqNameStr string) ([]string, error) {
@@ -22,4 +29,12 @@ func fqNameToString(fqName []string) (string, error) {
 		return "", errors.Errorf("failed to parse fq name to string: %v", err)
 	}
 	return string(fqNameStr), nil
+}
+
+func makeInterfacePointerArray(length int) []interface{} {
+	arr := make([]interface{}, length)
+	for i := range arr {
+		arr[i] = new(interface{})
+	}
+	return arr
 }
