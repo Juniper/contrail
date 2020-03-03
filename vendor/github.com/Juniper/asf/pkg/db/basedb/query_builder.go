@@ -17,6 +17,9 @@ import (
 	"github.com/Juniper/asf/pkg/services/baseservices"
 )
 
+// UUIDColumn is name of column that stores object's UUID.
+const UUIDColumn = "uuid"
+
 //TODO(ijohnson) remove when global share table is supported.
 var globalResources = []string{"contrail_cluster", "endpoint"}
 
@@ -235,7 +238,7 @@ func (qb *QueryBuilder) buildParentFQNameFilter(ctx *queryContext, columnJSON st
 
 func (qb *QueryBuilder) join(fromTable, fromProperty, toTable string) string {
 	return "left join " + qb.Quote(fromTable) + " on " +
-		qb.Quote(toTable, "uuid") + " = " + qb.Quote(fromTable, fromProperty)
+		qb.Quote(toTable, UUIDColumn) + " = " + qb.Quote(fromTable, fromProperty)
 }
 
 func (qb *QueryBuilder) as(a, b string) string {
@@ -245,7 +248,7 @@ func (qb *QueryBuilder) as(a, b string) string {
 func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 	spec := ctx.spec
 	filters := spec.Filters
-	filters = baseservices.AppendFilter(filters, "uuid", spec.ObjectUUIDs...)
+	filters = baseservices.AppendFilter(filters, UUIDColumn, spec.ObjectUUIDs...)
 	filters = baseservices.AppendFilter(filters, "parent_uuid", spec.ParentUUIDs...)
 	if spec.ParentType != "" {
 		filters = baseservices.AppendFilter(filters, "parent_type", spec.ParentType)
@@ -272,7 +275,7 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 	if spec.Marker != "" {
 		ctx.values = append(ctx.values, spec.Marker)
 		ctx.where = append(ctx.where,
-			fmt.Sprintf("%s > %s", qb.Quote(qb.TableAlias, "uuid"), qb.Placeholder(len(ctx.values))))
+			fmt.Sprintf("%s > %s", qb.Quote(qb.TableAlias, UUIDColumn), qb.Placeholder(len(ctx.values))))
 	}
 }
 
@@ -325,7 +328,7 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 			shareTables := []string{"domain_share_" + qb.Table, "tenant_share_" + qb.Table}
 			for i, shareTable := range shareTables {
 				ctx.joins = append(ctx.joins,
-					qb.join(shareTable, "uuid", qb.TableAlias))
+					qb.join(shareTable, UUIDColumn, qb.TableAlias))
 				where = append(where, fmt.Sprintf("(%s.to = %s and %s.access >= 4)",
 					qb.Quote(shareTable), qb.Placeholder(len(ctx.values)+i+1), qb.Quote(shareTable)))
 			}
@@ -359,11 +362,11 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	// We use 'group by' to eliminate duplicates arising from using joins.
 	// TODO (Kamil): we should consider a perhaps more efficient "WHERE EXISTS" query instead of using joins.
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
-		WriteStrings(query, " group by ", qb.Quote(qb.TableAlias, "uuid"))
+		WriteStrings(query, " group by ", qb.Quote(qb.TableAlias, UUIDColumn))
 	}
 
 	// Ordering by uuid to support pagination with uuid index.
-	WriteStrings(query, " order by ", qb.Quote(qb.TableAlias, "uuid"))
+	WriteStrings(query, " order by ", qb.Quote(qb.TableAlias, UUIDColumn))
 
 	if spec.Limit > 0 {
 		WriteStrings(
@@ -403,8 +406,8 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 			qb.as(qb.jsonAggRef(refTable+"_t", refFields...), qb.Quote(refTable+"_ref")) +
 			" from " + qb.as(qb.Quote(refTable), refTable+"_t") +
 			" left join " + "metadata" +
-			" on " + qb.Quote(refTable+"_t", "to") + " = " + qb.Quote("metadata", "uuid") +
-			" where " + qb.Quote(qb.TableAlias, "uuid") + " = " + qb.Quote(refTable+"_t", "from") +
+			" on " + qb.Quote(refTable+"_t", "to") + " = " + qb.Quote("metadata", UUIDColumn) +
+			" where " + qb.Quote(qb.TableAlias, UUIDColumn) + " = " + qb.Quote(refTable+"_t", "from") +
 			" group by " + qb.Quote(refTable+"_t", "from") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
@@ -439,7 +442,7 @@ func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 		subQuery := "(select " +
 			qb.as(qb.jsonAgg(child+"_t", childFields...), qb.Quote(child+"_ref")) +
 			" from " + qb.as(qb.Quote(child), child+"_t") +
-			" where " + qb.Quote(qb.TableAlias, "uuid") + " = " + qb.Quote(child+"_t", "parent_uuid") +
+			" where " + qb.Quote(qb.TableAlias, UUIDColumn) + " = " + qb.Quote(child+"_t", "parent_uuid") +
 			" group by " + qb.Quote(child+"_t", "parent_uuid") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
@@ -463,8 +466,8 @@ func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 			qb.as(qb.jsonAgg(backrefTable+"_t", backrefFields...), qb.Quote(refTable+"_backref")) +
 			" from " + qb.as(qb.Quote(backrefTable), backrefTable+"_t") +
 			" inner join " + qb.as(refTable, refTable+"_t") +
-			" on " + qb.Quote(refTable+"_t", "from") + " = " + qb.Quote(backrefTable+"_t", "uuid") +
-			" where " + qb.Quote(refTable+"_t", "to") + " = " + qb.Quote(qb.TableAlias, "uuid") + " )"
+			" on " + qb.Quote(refTable+"_t", "from") + " = " + qb.Quote(backrefTable+"_t", UUIDColumn) +
+			" where " + qb.Quote(refTable+"_t", "to") + " = " + qb.Quote(qb.TableAlias, UUIDColumn) + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
 			subQuery)
@@ -539,7 +542,7 @@ func (qb *QueryBuilder) CountQuery(auth authContext, spec *baseservices.ListSpec
 	// We use 'distinct' to eliminate duplicates arising from using joins.
 	// TODO (Kamil): consider using 'COUNT(*)' when no joins are used.
 	// More tests should be performed to check if it causes any significant performance changes.
-	WriteStrings(query, "select count(distinct ", qb.Quote(qb.TableAlias, "uuid"), ") from ",
+	WriteStrings(query, "select count(distinct ", qb.Quote(qb.TableAlias, UUIDColumn), ") from ",
 		qb.as(qb.Table, qb.TableAlias), " ")
 
 	if len(ctx.joins) > 0 {
