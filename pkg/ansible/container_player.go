@@ -206,6 +206,7 @@ func (p *ContainerPlayer) createRunningContainer(ctx context.Context, imageRef, 
 		ctx,
 		&container.Config{Tty: true, Image: imageRef},
 		&container.HostConfig{
+			NetworkMode: "host",
 			Mounts: []mount.Mount{
 				{
 					Type:   mount.TypeBind,
