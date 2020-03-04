@@ -408,6 +408,7 @@ func (a *ContrailAnsibleDeployer) playInContainer(ansibleArgs []string, workingD
 			},
 		},
 		ContainerPrefix: AnsibleContainerPrefix,
+		HostNetwork:     true,
 	}, append([]string{ansible.PlaybookCmd, ansibleArgs[len(ansibleArgs)-1]}, ansibleArgs[:len(ansibleArgs)-1]...))
 }
 
@@ -540,6 +541,7 @@ func (a *ContrailAnsibleDeployer) mockPlay(workingDirectory string, ansibleArgs 
 			},
 		},
 		ContainerPrefix: AnsibleContainerPrefix,
+		HostNetwork:     true,
 	}, append([]string{ansible.PlaybookCmd, ansibleArgs[len(ansibleArgs)-1]}, ansibleArgs[:len(ansibleArgs)-1]...))
 }
 
