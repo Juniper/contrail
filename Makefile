@@ -63,6 +63,7 @@ Mpkg/services/baseservices/base.proto=github.com/Juniper/asf/pkg/services/basese
 plugins=grpc:$(GOPATH)/src/ $<
 	go tool fix $@
 
+MOCKGEN = $(shell go list -f "{{ .Target }}" ./vendor/github.com/golang/mock/mockgen)
 MOCKS := pkg/types/mock/service.go \
 	pkg/services/mock/gen_service_interface.go \
 	pkg/services/mock/fqname_to_id.go \
@@ -74,7 +75,7 @@ MOCKS := pkg/types/mock/service.go \
 define create-generate-mock-target
   $1: $(shell dirname $(shell dirname $1))/$(shell basename $1)
 	mkdir -p $(shell dirname $1)
-	mockgen -destination=$1 \
+	$(MOCKGEN) -destination=$1 \
 	-package=$(shell basename $(shell dirname $(shell dirname $1)))mock \
 	-source $(shell dirname $(shell dirname $1))/$(shell basename $1)
 endef
