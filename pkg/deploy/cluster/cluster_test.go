@@ -279,6 +279,7 @@ func ansibleContainerParameters(
 			},
 		},
 		ContainerPrefix: cluster.AnsibleContainerPrefix,
+		HostNetwork:     true,
 	}
 }
 
