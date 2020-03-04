@@ -1,0 +1,198 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b852b18a_5ab108a5",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "Please handle this error (probably by adding logging). Right now it writes error to the err variable, but it is not used because the Start() function has already exited.",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f230722_2728c3e7",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "Please consider returning here:\n\n return e, processCluster(e, a.config)",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6b2c0801_8f06e423",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "Ditto L148",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "30966528_6ef5eafa",
+        "filename": "pkg/agent/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "I don\u0027t understand one concept - why are we creating context with all that values and then we use some of them? Also map[string]string is not perfect here, because when we access it we aren\u0027t assured by the compiler that those values will be inside this map.\n\nPlease correct me if I missed something, but I think we could do one of:\n1. Instantiate cloud.Config in the first function (instead of map) and pass it along with the configDir variable\n2. Define additional struct for UUID, SchemaID and configDir and pass it to helpers\n3. Pass services.Event from the start to fill the cloud.Config instead of map.\n\nThose solutions would leverage compile time type checking, which can prevent us from future bugs, where using map does not.",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cfac3c4f_52b0811b",
+        "filename": "pkg/agent/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "I think we can use map initializer here:\n schemaID :\u003d basemodels.KindToSchemaID(e.Kind())\n uuid :\u003d e.GetUUID()\n provisionerType, ok :\u003d e.GetResource().ToMap()[\"provisioner_type\"].(string)\n if !ok {\n     return errors.New(\"provisioner type conversion failed\")\n }\n context :\u003d map[string]string{\n     \"schemaID\": schemaID,\n     \"uuid\": uuid,\n     \"action\": e.Operation(),\n     \"schema_id\": schemaID,\n     // ...\n }\n\nThat way it\u0027s more straightforward and potentially more efficient (by a tiny bit, map already knows how many elements it will contain).\n\nMoreover we could then extract this into function, like `getCloudContext(e *services.Event) (map[string]string, error)`",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0a3e19c5_845f081c",
+        "filename": "pkg/agent/cluster.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "Ditto pkg/agent/cloud.go\n\nWe are creating a map just to read it inside the same file. IMO we should use structs to leverage compile time checking.",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86c10663_4cd46d41",
+        "filename": "pkg/agent/common_handler.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "Please split it into 2 functions. Changing behavior based on string that must be hardcoded by the user gives no advantage over using two different functions. If we would split it it would look like:\n\n directoryHandler(\"create\", dir) -\u003e createDirectory(dir)\n directoryHandler(\"delete\", dir) -\u003e deleteDirectory(dir)\n\nFrom caller perspective it\u0027s just moving some letters from one place to another, but the real value is that it prevents us from doing:\n\n directoryHandler(\"whatever\", dir)",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 1
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dfd70fa1_00dc0ac7",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "To avoid duplication please call `NewCloudManagerByConfig` here.",
+      "range": {
+        "startLine": 97,
+        "startChar": 1,
+        "endLine": 110,
+        "endChar": 77
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c777062f_1f139bbd",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "IMO this should be called NewCloudManager and the func above (L85) should be called NewCloudManagerFromConfigFile(configPath string), because the func above (L85) is a special case of the one that you\u0027ve extracted.",
+      "range": {
+        "startLine": 114,
+        "startChar": 5,
+        "endLine": 114,
+        "endChar": 28
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "12e934d9_6808fa7a",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 425,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-04T13:32:45Z",
+      "side": 1,
+      "message": "I think the problem is that agent.Start() has become a non blocking method. It should be blocking because startAgent is already called in a goroutine. \n\nAbove implementation starts the agent, then exits the startAgent function and calls defer agent.Stop(). The agent is being stopped moments after starting.\n\nIMO to solve this agent.Start() should not use goroutine inside and be a blocking method.",
+      "range": {
+        "startLine": 418,
+        "startChar": 0,
+        "endLine": 425,
+        "endChar": 19
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
