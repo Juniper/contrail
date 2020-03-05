@@ -290,14 +290,22 @@ type MapRows struct {
 	columns Columns
 }
 
-func (r *MapRows) ReadMap() (map[string]interface{}, error) {
-	values := makeInterfacePointerArray(len(r.columns))
-	if err := r.Scan(values...); err != nil {
+func (r *MapRows) ReadMap() (RowData, error) {
+	return scanRow(r, r.columns)
+}
+
+type sqlScanner interface {
+	Scan(...interface{}) error
+}
+
+func scanRow(s sqlScanner, c Columns) (RowData, error) {
+	values := makeInterfacePointerArray(len(c))
+	if err := s.Scan(values...); err != nil {
 		return nil, errors.Wrap(err, "scan failed")
 	}
 
-	valuesMap := make(map[string]interface{}, len(r.columns))
-	for column, index := range r.columns {
+	valuesMap := make(map[string]interface{}, len(c))
+	for column, index := range c {
 		val := values[index].(*interface{})
 		valuesMap[column] = *val
 	}
@@ -329,22 +337,22 @@ func (db *BaseDB) ListRows(ctx context.Context, schemaID string, spec *baseservi
 //
 // An example application of that function is loading initial database snapshot
 // in Watcher.
-func (db *BaseDB) Dump(ctx context.Context) ([][]map[string]interface{}, error) {
-	var result [][]map[string]interface{}
+func (db *BaseDB) Dump(ctx context.Context) (DatabaseData, error) {
+	var result DatabaseData
 
 	for schemaID := range db.QueryBuilders {
-		objs, err := db.dumpSchema(ctx, schemaID)
+		table, err := db.dumpTable(ctx, schemaID)
 		if err != nil {
 			return nil, errors.Wrap(err, "select query failed")
 		}
-		result = append(result, objs)
+		result[schemaID] = table
 	}
 
 	return result, nil
 }
 
-func (db *BaseDB) dumpSchema(ctx context.Context, schemaID string) ([]map[string]interface{}, error) {
-	var result []map[string]interface{}
+func (db *BaseDB) dumpTable(ctx context.Context, schemaID string) (TableData, error) {
+	var result TableData
 	rows, err := db.ListRows(ctx, schemaID, &baseservices.ListSpec{})
 	if err != nil {
 		return nil, err
