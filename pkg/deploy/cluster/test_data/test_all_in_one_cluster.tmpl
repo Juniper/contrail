@@ -290,7 +290,7 @@ test_data:
     fq_name: ["default-global-system-config", {{CLUSTER_NAME}}, "appformix"]
     parent_type: contrail-cluster
     name: "appformix"
-    prefix: "appformix"
+    prefix: "insights"
     public_url: "http://127.0.0.1:9001"
 {% if VFABRIC_MANAGER %}
   all_in_one_vCenter: &all_in_one_vCenter
@@ -738,7 +738,7 @@ workflow:
   expect:
     endpoint:
       uuid: endpoint_user_created_uuid
-      prefix: appformix
+      prefix: insights
       fq_name: ["default-global-system-config", {{CLUSTER_NAME}}, "appformix"]
       parent_type: contrail-cluster
       parent_uuid: test_cluster_uuid
