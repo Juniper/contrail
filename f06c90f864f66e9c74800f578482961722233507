@@ -53,6 +53,29 @@
     },
     {
       "key": {
+        "uuid": "62b8361f_cbb62c73",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-05T17:21:50Z",
+      "side": 1,
+      "message": "I think it\u0027s better to describe event trigger resources in the configuration yml.\n\nWe cannot import cloud/deploy packages in agent so there is no validation if those resources exist. Also for case where the user has to change the list of event resources he would require an access for repository, know how to rebuilt this and place the binary file in the right place. Instead of that he could simply change the yml value.",
+      "range": {
+        "startLine": 144,
+        "startChar": 1,
+        "endLine": 151,
+        "endChar": 2
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "30966528_6ef5eafa",
         "filename": "pkg/agent/cloud.go",
         "patchSetId": 6
@@ -98,6 +121,52 @@
       "writtenOn": "2020-03-04T13:32:45Z",
       "side": 1,
       "message": "Ditto pkg/agent/cloud.go\n\nWe are creating a map just to read it inside the same file. IMO we should use structs to leverage compile time checking.",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3cef86a3_528e37d8",
+        "filename": "pkg/agent/common_handler.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-05T17:21:50Z",
+      "side": 1,
+      "message": "if err :\u003d ...; err !\u003d nil { ... }",
+      "range": {
+        "startLine": 12,
+        "startChar": 2,
+        "endLine": 15,
+        "endChar": 3
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f1c53869_0046a8fd",
+        "filename": "pkg/agent/common_handler.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-05T17:21:50Z",
+      "side": 1,
+      "message": "if err :\u003d ...; err !\u003d nil { ... }",
+      "range": {
+        "startLine": 17,
+        "startChar": 2,
+        "endLine": 20,
+        "endChar": 3
+      },
       "revId": "f06c90f864f66e9c74800f578482961722233507",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
