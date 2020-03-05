@@ -10,12 +10,13 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:746e142d88d28ddffa248c618cc7550526ec98c85eee4821249f05cf57a7ff1e"
+  digest = "1:8c8278aad8a571dcc268440c22631d4290f0f2e3a88f80d3cdf9faccd2a13621"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apiserver",
     "pkg/auth",
     "pkg/client",
+    "pkg/db",
     "pkg/db/basedb",
     "pkg/errutil",
     "pkg/etcd",
@@ -26,16 +27,20 @@
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
+    "pkg/models",
     "pkg/models/basemodels",
     "pkg/osutil",
     "pkg/proxy",
     "pkg/rbac",
     "pkg/retry",
     "pkg/schema",
+    "pkg/services",
     "pkg/services/baseservices",
+    "pkg/sync",
+    "pkg/sync/replication",
   ]
   pruneopts = ""
-  revision = "5fa4f1c17b3e91edd8c221dafc28aa7a893882fc"
+  revision = "698967eb9ef93bdcc8671b8c0d9f3009e71fe8de"
 
 [[projects]]
   branch = "2.x"
@@ -1379,6 +1384,7 @@
     "github.com/Juniper/asf/pkg/retry",
     "github.com/Juniper/asf/pkg/schema",
     "github.com/Juniper/asf/pkg/services/baseservices",
+    "github.com/Juniper/asf/pkg/sync",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
     "github.com/docker/docker/api/types",
