@@ -137,7 +137,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			var ctx context.Context
 			ctx, cancel = context.WithCancel(context.Background())
 
-			err := w.Watch(ctx)
+			err := w.Start(ctx)
 
 			if tt.watchError {
 				assert.Error(t, err)
@@ -170,24 +170,11 @@ func TestPostgresWatcherContextCancellation(t *testing.T) {
 
 	// when
 	cancel()
-	err := w.Watch(ctx)
+	err := w.Start(ctx)
 
 	// then
 	assert.Equal(t, closeErr, errors.Cause(err))
 	pwc.AssertExpectations(t)
-}
-
-func TestPostgresWatcherClose(t *testing.T) {
-	canceled := false
-	cancel := func() {
-		canceled = true
-	}
-	w := givenPostgresWatcher("", "", &mockPostgresWatcherConnection{}, nil)
-	w.cancel = cancel
-
-	w.Close()
-
-	assert.True(t, canceled)
 }
 
 func getBeginData(m pgoutput.Begin) []byte {
@@ -202,18 +189,16 @@ func getBeginData(m pgoutput.Begin) []byte {
 func givenPostgresWatcher(
 	slot, publication string,
 	conn postgresWatcherConnection,
-	handler Handler,
 ) *PostgresWatcher {
 	return &PostgresWatcher{
-		conf: PostgresSubscriptionConfig{
+		conf: WatcherOptions{
 			StatusTimeout: time.Second,
 			Slot:          slot,
 			Publication:   publication,
+			NoDump:        false,
 		},
 		conn:       conn,
-		handler:    handler,
 		log:        logutil.NewLogger("postgres-watcher"),
-		shouldDump: true,
 		dumpDoneCh: make(chan struct{}),
 	}
 }

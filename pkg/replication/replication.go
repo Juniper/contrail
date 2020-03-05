@@ -69,11 +69,7 @@ func New(epStore *endpoint.Store) (*Replicator, error) {
 
 // Start replication service
 func (r *Replicator) Start() error {
-	processor := &services.EventListProcessor{
-		EventProcessor:    r,
-		InTransactionDoer: services.NoTransaction,
-	}
-	producer, err := syncp.NewEventProducer("replicator-watcher", processor)
+	producer, err := syncp.NewEventProducer("replicator-watcher", r, services.NoTransaction)
 	if err != nil {
 		return err
 	}
@@ -84,11 +80,10 @@ func (r *Replicator) Start() error {
 	r.serviceWaitGroup.Add(1)
 	go func() {
 		defer r.serviceWaitGroup.Done()
-		defer producer.Close()
 
 		err = producer.Start(ctx)
 	}()
-	<-producer.Watcher.DumpDone()
+	<-producer.DumpDone()
 
 	return err
 }
