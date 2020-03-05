@@ -65,17 +65,6 @@ func TestSyncService(t *testing.T) {
 								"owner_access": 7,
 							},
 							"virtual_network_network_id": 1,
-							"routing_instances": []interface{}{
-								map[string]interface{}{
-									"uuid": "d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0",
-									"fq_name": []interface{}{
-										"default-domain",
-										"default-project",
-										"default-virtual-network",
-										"default-virtual-network",
-									},
-								},
-							},
 						},
 					},
 				},
@@ -570,7 +559,8 @@ func deleteVirtualNetworksFromAPIServer(t *testing.T, hc *integration.HTTPAPICli
 func checkSyncedVirtualNetwork(t *testing.T, event *clientv3.Event, expectedVN *models.VirtualNetwork) {
 	syncedVN := decodeVirtualNetworkJSON(t, event.Kv.Value)
 	removeHrefsFromResource(expectedVN)
-	assert.Equal(t, expectedVN, syncedVN, "synced VN does not match created VN")
+	expectedVN.RoutingInstances = nil // child references are not replicated by sync
+	assert.Equal(t, *expectedVN, *syncedVN, "synced VN does not match created VN")
 }
 
 func decodeVirtualNetworkJSON(t *testing.T, vnBytes []byte) *models.VirtualNetwork {

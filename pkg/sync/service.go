@@ -4,14 +4,12 @@ package sync
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
-	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -29,11 +27,6 @@ type watchCloser interface {
 	Close()
 }
 
-type eventProcessor interface {
-	services.EventProcessor
-	ProcessList(context.Context, *services.EventList) (*services.EventList, error)
-}
-
 // Service represents Sync service.
 type Service struct {
 	watcher watchCloser
@@ -43,7 +36,6 @@ type Service struct {
 // NewService creates Sync service with given configuration.
 // Close needs to be explicitly called on service teardown.
 func NewService() (*Service, error) {
-
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
@@ -93,49 +85,25 @@ func determineCodecType() models.Codec {
 
 func createWatcher(id string, processor eventProcessor) (watchCloser, error) {
 	setViperDefaults()
-	sqlDB, err := basedb.ConnectDB()
+
+	conn, err := replication.NewPostgresConnection()
 	if err != nil {
 		return nil, err
 	}
 
-	dbService := db.NewService(sqlDB)
+	dbService, err := db.NewServiceFromConfig()
 	if err != nil {
 		return nil, err
 	}
+	handler := &EventChangeHandler{processor: processor, decoder: dbService}
 
-	return createPostgreSQLWatcher(id, dbService, processor)
-}
-
-func createPostgreSQLWatcher(
-	id string, dbService *db.Service, processor eventProcessor,
-) (watchCloser, error) {
-	handler := replication.NewPgoutputHandler(processor, dbService)
-
-	connConfig := pgx.ConnConfig{
-		Host:     viper.GetString("database.host"),
-		Database: viper.GetString("database.name"),
-		User:     viper.GetString("database.user"),
-		Password: viper.GetString("database.password"),
-	}
-
-	replConn, err := pgx.ReplicationConnect(connConfig)
-	if err != nil {
-		return nil, err
-	}
 	conf := replication.PostgresSubscriptionConfig{
 		Slot:          replication.SlotName(id),
 		Publication:   replication.PostgreSQLPublicationName,
 		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
 	}
 
-	return replication.NewPostgresWatcher(
-		conf,
-		dbService,
-		replConn,
-		handler.Handle,
-		processor,
-		viper.GetBool("sync.dump"),
-	)
+	return replication.NewPostgresWatcher(conf, conn, handler, viper.GetBool("sync.dump")), nil
 }
 
 // Run runs Sync service.
