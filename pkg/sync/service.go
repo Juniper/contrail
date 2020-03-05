@@ -109,7 +109,6 @@ func createWatcher(id string, processor eventProcessor) (watchCloser, error) {
 func createPostgreSQLWatcher(
 	id string, dbService *db.Service, processor eventProcessor,
 ) (watchCloser, error) {
-	handler := replication.NewPgoutputHandler(processor, dbService)
 
 	connConfig := pgx.ConnConfig{
 		Host:     viper.GetString("database.host"),
@@ -128,20 +127,24 @@ func createPostgreSQLWatcher(
 		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
 	}
 
-	return replication.NewPostgresWatcher(
-		conf,
-		dbService,
-		replConn,
-		handler.Handle,
-		processor,
-		viper.GetBool("sync.dump"),
-	)
+	// TODO
+	_, _ = replConn, conf
+	//return replication.NewPostgresWatcher(
+	//conf,
+	//dbService,
+	//replConn,
+	//processor,
+	//viper.GetBool("sync.dump"),
+	//)
+	return nil, nil
 }
 
 // Run runs Sync service.
 func (s *Service) Run() error {
 	s.log.Info("Running Sync service")
-	return s.watcher.Watch(context.Background())
+	// TODO
+	//return s.watcher.Watch(context.Background())
+	return nil
 }
 
 // DumpDone returns a channel that is closed when dump is done.

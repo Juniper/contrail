@@ -43,12 +43,13 @@ type PostgresWatcher struct {
 
 	lsnCounter lsnCounter
 
-	cancel  context.CancelFunc
-	conn    postgresWatcherConnection
-	handler Handler
+	cancel context.CancelFunc
+	conn   postgresWatcherConnection
 
-	db        services.Service
-	processor services.EventProcessor
+	db *db.Service
+
+	consumer ChangeHandler
+	decoder  *pgoutputDecoder
 
 	log *logrus.Entry
 
@@ -60,8 +61,8 @@ type PostgresWatcher struct {
 func NewPostgresWatcher(
 	config PostgresSubscriptionConfig,
 	dbs *db.Service, replConn pgxReplicationConn,
-	handler Handler,
 	processor services.EventProcessor,
+	consumer ChangeHandler,
 	shouldDump bool,
 ) (*PostgresWatcher, error) {
 	log := logutil.NewLogger("postgres-watcher")
@@ -75,9 +76,9 @@ func NewPostgresWatcher(
 	w := &PostgresWatcher{
 		conf:       config,
 		conn:       conn,
-		handler:    handler,
 		db:         dbs,
-		processor:  processor,
+		consumer:   consumer,
+		decoder:    newPgoutputDecoder(),
 		shouldDump: shouldDump,
 		dumpDoneCh: make(chan struct{}),
 		log:        log,
@@ -127,9 +128,7 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 		return wrapError(errors.Wrap(err, "failed to start replication"))
 	}
 
-	feed := make(chan *pgx.ReplicationMessage)
-	go w.runMessageConsumer(ctx, feed)
-	return wrapError(w.runMessageProducer(ctx, feed))
+	return wrapError(w.runMessageProducer(ctx))
 }
 
 func (w *PostgresWatcher) dumpIfShould(ctx context.Context, snapshotName string) error {
@@ -149,21 +148,23 @@ func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
 	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 
+	var dumpData [][]map[string]interface{}
 	if err := w.conn.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
-		es, err := services.Dump(ctx, w.db)
+		var err error
+		dumpData, err = w.db.Dump(ctx)
 		if err != nil {
 			return err
 		}
-		for _, e := range es.Events {
-			_, err = w.processor.Process(ctx, e)
-			if err != nil {
-				return errors.Wrapf(err, "error processing event: %v", e)
-			}
-		}
-
 		return nil
 	}); err != nil {
 		return errors.Wrap(w.muteCancellationError(err), "dumping snapshot failed")
+	}
+
+	changes := make([]Change, 0, countRows(dumpData))
+	for _, table := range dumpData {
+		for _, row := range table {
+			changes = append(changes, change{})
+		}
 	}
 	w.log.WithField("dumpTime", time.Since(dumpStart)).Debug("Dump phase finished - starting replication")
 
@@ -178,55 +179,43 @@ func (w *PostgresWatcher) muteCancellationError(err error) error {
 	return err
 }
 
-func (w *PostgresWatcher) runMessageConsumer(ctx context.Context, feed <-chan *pgx.ReplicationMessage) {
-	func() {
-		for msg := range feed {
-			if err := w.handleMessage(ctx, msg); err != nil {
-				w.log.Error("Error while handling replication message: ", err)
-			}
-		}
-	}()
+func countRows(data [][]map[string]interface{}) int {
+	var count int
+	for _, table := range data {
+		count += len(table)
+	}
+	return count
 }
 
-func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *pgx.ReplicationMessage) error {
-	tick := time.NewTicker(w.conf.StatusTimeout).C
+func (w *PostgresWatcher) runMessageProducer(ctx context.Context) error {
+	ticker := time.NewTicker(w.conf.StatusTimeout)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
+			w.log.Debug("Stopping watching events on PostgreSQL replication slot")
 			return w.muteCancellationError(w.conn.Close())
-		case <-tick:
+		case <-ticker.C:
 			if err := w.sendStatus(); err != nil {
 				return err
 			}
 		default:
-			msg, err := w.waitForMessageWithTimeout(ctx)
-			if err != nil {
-				return err
+			wctx, cancel := context.WithTimeout(ctx, w.conf.StatusTimeout)
+			defer cancel()
+
+			msg, err := w.conn.WaitForReplicationMessage(wctx)
+			if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
+				return errors.Wrap(err, "replication failed")
 			}
+
 			if msg != nil {
-				if msg.WalMessage != nil {
-					w.lsnCounter.txnStarted()
+				if err := w.handleMessage(ctx, msg); err != nil {
+					w.log.Error("Error while handling replication message: ", err)
 				}
-				feed <- msg
 			}
 		}
 	}
-}
-
-func (w *PostgresWatcher) waitForMessageWithTimeout(ctx context.Context) (*pgx.ReplicationMessage, error) {
-	wctx, cancel := context.WithTimeout(ctx, w.conf.StatusTimeout)
-	defer cancel()
-
-	msg, err := w.conn.WaitForReplicationMessage(wctx)
-
-	if err == context.DeadlineExceeded || err == context.Canceled {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "replication failed")
-	}
-
-	return msg, nil
 }
 
 func (w *PostgresWatcher) handleMessage(ctx context.Context, msg *pgx.ReplicationMessage) error {
@@ -246,32 +235,32 @@ func (w *PostgresWatcher) handleMessage(ctx context.Context, msg *pgx.Replicatio
 }
 
 func (w *PostgresWatcher) handleWalMessage(ctx context.Context, msg *pgx.WalMessage) error {
+	w.lsnCounter.txnStarted()
 	defer w.lsnCounter.txnFinished(msg.WalStart)
 
-	var msgLSN uint64
-	if msg.WalStart < msg.ServerWalEnd {
-		msgLSN = msg.ServerWalEnd
-	} else {
-		msgLSN = msg.WalStart
-	}
-	w.lsnCounter.updateReceivedLSN(msgLSN)
+	w.lsnCounter.updateReceivedLSN(msgLSN(msg))
 
-	logmsg, err := pgoutput.Parse(msg.WalData)
+	changes, err := w.decoder.DecodeChanges(msg.WalData)
 	if err != nil {
-		return errors.Wrap(err, "invalid pgoutput message")
+		return errors.Wrap(err, "error decoding pgoutput changes")
 	}
 
-	if err := w.handler(ctx, logmsg); err != nil {
-		return errors.Wrap(err, "error handling waldata")
+	if len(changes) == 0 {
+		return nil
 	}
+	return w.consumer.Handle(changes)
+}
 
-	return nil
+func msgLSN(msg *pgx.WalMessage) uint64 {
+	if msg.WalStart < msg.ServerWalEnd {
+		return msg.ServerWalEnd
+	}
+	return msg.WalStart
 }
 
 func (w *PostgresWatcher) handleServerHeartbeat(shb *pgx.ServerHeartbeat) error {
 	w.lsnCounter.updateReceivedLSN(shb.ServerWalEnd)
 	if shb.ReplyRequested == 1 {
-		w.log.Info("Server requested reply")
 		return w.sendStatus()
 	}
 	return nil
@@ -288,6 +277,5 @@ func (w *PostgresWatcher) sendStatus() error {
 
 // Close stops subscription by calling cancel function of context passed in Watch.
 func (w *PostgresWatcher) Close() {
-	w.log.Debug("Stopping watching events on PostgreSQL replication slot")
 	w.cancel()
 }
