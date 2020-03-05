@@ -196,15 +196,10 @@ func startEtcdWatcher() {
 // TODO: move to startServer
 func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
-	processor := &services.EventListProcessor{
-		EventProcessor:    cacheDB,
-		InTransactionDoer: services.NoTransaction,
-	}
-	producer, err := syncp.NewEventProducer("cache-watcher", processor)
+	producer, err := syncp.NewEventProducer("cache-watcher", cacheDB, services.NoTransaction)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	defer producer.Close()
 	err = producer.Start(context.Background())
 	if err != nil {
 		logrus.Warn(err)
