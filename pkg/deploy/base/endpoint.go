@@ -24,8 +24,8 @@ const (
 	ironic               = "baremetal"
 	glance               = "glance"
 	swift                = "swift"
-	appformix            = "appformix"
-	xflow                = "xflow"
+	appformix            = "insights"
+	xflow                = "flows"
 	defaultAdminUser     = "admin"
 	defaultAdminPassword = "contrail123"
 )
