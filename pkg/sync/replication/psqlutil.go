@@ -1,11 +1,10 @@
 package replication
 
 import (
-	"context"
 	"strings"
 	"sync"
 
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/jackc/pgx"
 )
 
 const (
@@ -18,64 +17,55 @@ func SlotName(id string) string {
 	return strings.Replace(id, "-", "_", -1)
 }
 
-type eventListProcessor interface {
-	ProcessList(context.Context, *services.EventList) (*services.EventList, error)
+type LSN uint64
+
+func (l LSN) String() string {
+	return pgx.FormatLSN(uint64(l))
 }
 
-type transaction struct {
-	events    services.EventList
-	processor eventListProcessor
-}
-
-func beginTransaction(p eventListProcessor) *transaction {
-	return &transaction{
-		processor: p,
+func MessageLSN(msg *pgx.WalMessage) LSN {
+	if msg.WalStart < msg.ServerWalEnd {
+		return LSN(msg.ServerWalEnd)
 	}
+	return LSN(msg.WalStart)
 }
 
-func (t *transaction) add(e *services.Event) {
-	t.events.Events = append(t.events.Events, e)
-}
-
-func (t *transaction) Commit(ctx context.Context) error {
-	if t == nil {
-		return nil
-	}
-	_, err := t.processor.ProcessList(ctx, &t.events)
-	return err
+func ParseLSN(s string) (LSN, error) {
+	l, err := pgx.ParseLSN(s)
+	return LSN(l), err
 }
 
 type lsnCounter struct {
 	// receivedLSN holds max WAL LSN value received from master.
-	receivedLSN uint64
+	received LSN
 
 	// savedLSN holds max WAL LSN value saved in etcd.
 	// We can also assume that savedLSN <= receivedLSN.
-	savedLSN uint64
+	saved LSN
 
 	txnsInProgress int
 
 	m sync.Mutex
 }
 
-func (c *lsnCounter) updateReceivedLSN(lsn uint64) {
+func (c *lsnCounter) updateReceivedLSN(value LSN) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	if c.receivedLSN < lsn {
-		c.receivedLSN = lsn
+	if c.received < value {
+		c.received = value
 	}
 }
 
-func (c *lsnCounter) lsnValues() (receivedLSN, savedLSN uint64) {
+func (c *lsnCounter) lsnValues() (received, saved LSN) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
 	if c.txnsInProgress == 0 {
-		c.savedLSN = c.receivedLSN
+		c.saved = c.received
 	}
 
-	return c.receivedLSN, c.savedLSN
+	return c.received, c.saved
 }
 
 func (c *lsnCounter) txnStarted() {
@@ -85,12 +75,12 @@ func (c *lsnCounter) txnStarted() {
 	c.txnsInProgress++
 }
 
-func (c *lsnCounter) txnFinished(processedLSN uint64) {
+func (c *lsnCounter) txnFinished(processed LSN) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	if c.savedLSN < processedLSN {
-		c.savedLSN = processedLSN
+	if c.saved < processed {
+		c.saved = processed
 	}
 
 	if c.txnsInProgress > 0 {
