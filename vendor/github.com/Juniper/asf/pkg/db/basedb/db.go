@@ -394,14 +394,10 @@ func ConnectDB(wrappers ...DriverWrapper) (*sql.DB, error) {
 	if debug := viper.GetBool("database.debug"); debug {
 		wrappers = append(wrappers, WithInstrumentedSQL())
 	}
+	config := ConnectionConfigFromViper()
+	config.DriverWrappers = wrappers
 
-	db, err := OpenConnection(ConnectionConfig{
-		DriverWrappers: wrappers,
-		User:           viper.GetString("database.user"),
-		Password:       viper.GetString("database.password"),
-		Host:           viper.GetString("database.host"),
-		Name:           viper.GetString("database.name"),
-	})
+	db, err := OpenConnection(config)
 	if err != nil {
 		return nil, err
 	}
@@ -430,6 +426,16 @@ type ConnectionConfig struct {
 	Password       string
 	Host           string
 	Name           string
+}
+
+// ConnectionConfigFromViper loads ConnectionConfig from viper.
+func ConnectionConfigFromViper() ConnectionConfig {
+	return ConnectionConfig{
+		User:     viper.GetString("database.user"),
+		Password: viper.GetString("database.password"),
+		Host:     viper.GetString("database.host"),
+		Name:     viper.GetString("database.name"),
+	}
 }
 
 // OpenConnection opens DB connection.
