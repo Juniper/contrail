@@ -29,11 +29,6 @@ type watchCloser interface {
 	Close()
 }
 
-type eventProcessor interface {
-	services.EventProcessor
-	ProcessList(context.Context, *services.EventList) (*services.EventList, error)
-}
-
 // Service represents Sync service.
 type Service struct {
 	watcher watchCloser
@@ -103,13 +98,14 @@ func createWatcher(id string, processor eventProcessor) (watchCloser, error) {
 		return nil, err
 	}
 
-	return createPostgreSQLWatcher(id, dbService, processor)
+	handler := &EventChangeHandler{processor: processor, decoder: dbService}
+
+	return createPostgreSQLWatcher(id, dbService, handler)
 }
 
 func createPostgreSQLWatcher(
-	id string, dbService *db.Service, processor eventProcessor,
+	id string, dbService *db.Service, handler replication.ChangeHandler,
 ) (watchCloser, error) {
-	handler := replication.NewPgoutputHandler(processor, dbService)
 
 	connConfig := pgx.ConnConfig{
 		Host:     viper.GetString("database.host"),
@@ -132,8 +128,7 @@ func createPostgreSQLWatcher(
 		conf,
 		dbService,
 		replConn,
-		handler.Handle,
-		processor,
+		handler,
 		viper.GetBool("sync.dump"),
 	)
 }
