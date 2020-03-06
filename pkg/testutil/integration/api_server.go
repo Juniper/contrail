@@ -159,6 +159,12 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		k,
 		c.CacheDB,
 	}
+	plugins = append(plugins, services.ContrailPlugins(
+		serviceChain,
+		dbService,
+		dbService,
+		serviceChain,
+	)...)
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		plugins = append(plugins, &neutron.Server{

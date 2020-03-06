@@ -122,15 +122,6 @@ message Event {
 	}
 }
 
-service Chown {
-	rpc Chown(ChownRequest) returns (google.protobuf.Empty);
-}
-
-message ChownRequest {
-	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
-	string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
-}
-
 service RefRelax {
 	rpc RelaxRef (RelaxRefRequest) returns (RelaxRefResponse);
 }
@@ -190,24 +181,6 @@ message SetIntRequest {
 message DeallocateIntRequest {
 	string Pool = 1 [(gogoproto.customname) = "Pool"];
 	int64 Value = 2 [(gogoproto.customname) = "Value"];
-}
-
-service SetTag {
-	rpc SetTag(SetTagRequest) returns (google.protobuf.Empty);
-}
-
-message SetTagRequest {
-	string ObjUUID = 1 [(gogoproto.customname) = "ObjUUID",(gogoproto.jsontag) = "obj_uuid"];
-	string ObjType = 2 [(gogoproto.customname) = "ObjType",(gogoproto.jsontag) = "obj_type"];
-	repeated SetTagAttr Tags = 3 [(gogoproto.customname) = "Tags"];
-}
-
-message SetTagAttr {
-	string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
-	google.protobuf.StringValue Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
-	bool IsGlobal = 3 [(gogoproto.customname) = "IsGlobal",(gogoproto.jsontag) = "is_global"];
-	repeated string AddValues = 4 [(gogoproto.customname) = "AddValues",(gogoproto.jsontag) = "add_values"];
-	repeated string DeleteValues = 5 [(gogoproto.customname) = "DeleteValues",(gogoproto.jsontag) = "delete_values"];
 }
 
 service Watch {
@@ -292,31 +265,4 @@ message IDToFQNameRequest {
 message IDToFQNameResponse {
 	repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
 	string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
-}
-
-service PropCollectionUpdate {
-	rpc PropCollectionUpdate(PropCollectionUpdateRequest) returns (google.protobuf.Empty);
-}
-
-message PropCollectionUpdateRequest {
-	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
-	repeated PropCollectionChange Updates = 2 [(gogoproto.jsontag) = "updates"];
-}
-
-message PropCollectionChange {
-	string Field = 1 [(gogoproto.customname) = "Field",(gogoproto.jsontag) = "field"];
-	string Operation = 2 [(gogoproto.customname) = "Operation",(gogoproto.jsontag) = "operation"];
-	oneof Position {
-		int32 PositionInt = 3;
-		string PositionString = 4;
-	};
-{% if types | length > 0 %}
-	oneof Value {
- {% set index = 5 %}{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
-	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
-	{% if itemType != "string" %}models.{% endif %}{{ itemType }} {{ itemType }}Value = {{ index }};
-	{% set index = index + 1 %}
-	{% endif %}{% endfor %}
-	};
-{% endif %}
 }
