@@ -1,0 +1,26 @@
+package services
+
+import (
+	"github.com/Juniper/contrail/pkg/models"
+)
+
+func (c *PropCollectionChange) SetValue(v interface{}) {
+	switch t := v.(type) {
+	{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	case {% if itemType != "string" %}*models.{% endif %}{{ itemType }}:
+		c.Value = &PropCollectionChange_{{itemType | capfirst}}Value{t}
+	{% endif %}{% endfor %}
+	}
+}
+
+func (c *PropCollectionChange) ValueAsInterface() interface{} {
+	switch v := c.Value.(type) {
+{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	case *PropCollectionChange_{{itemType | capfirst}}Value:
+		return v.{{itemType | capfirst}}Value
+{% endif %}{% endfor %}
+	}
+	return nil
+}
