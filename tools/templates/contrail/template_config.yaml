@@ -28,6 +28,9 @@
 - type: alltype
   template_path: vendor/github.com/Juniper/asf/pkg/models/model.go.tmpl
   output_dir: pkg/models
+- type: alltype
+  template_path: pkg/models/prop_collection.go.tmpl
+  output_dir: pkg/models
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/models/type_validation.go.tmpl
   output_dir: pkg/models
@@ -62,10 +65,16 @@
   template_path: vendor/github.com/Juniper/asf/pkg/services/list_response_encoding.go.tmpl
   output_dir: pkg/services
 - type: all
+  template_path: pkg/services/prop_collection_update.go.tmpl
+  output_dir: pkg/services
+- type: all
   template_path: vendor/github.com/Juniper/asf/pkg/models/model.proto.tmpl
   output_dir: proto/github.com/Juniper/contrail/pkg/models
 - type: all
   template_path: vendor/github.com/Juniper/asf/pkg/services/service.proto.tmpl
+  output_dir: proto/github.com/Juniper/contrail/pkg/services
+- type: all
+  template_path: pkg/services/plugin.proto.tmpl
   output_dir: proto/github.com/Juniper/contrail/pkg/services
 - type: all
   template_path: vendor/github.com/Juniper/asf/tools/init_psql.sql.tmpl
