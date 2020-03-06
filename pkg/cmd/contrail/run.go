@@ -264,6 +264,12 @@ func startServer() {
 		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
 	}
+	plugins = append(plugins, services.ContrailPlugins(
+		serviceChain,
+		dbService,
+		dbService,
+		serviceChain,
+	)...)
 
 	if viper.GetBool("keystone.local") {
 		k, initErr := keystone.Init(es)
