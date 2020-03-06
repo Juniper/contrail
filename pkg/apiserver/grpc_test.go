@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
@@ -252,7 +251,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 			UUID: project.UUID,
 			Updates: []*services.PropCollectionChange{{
 				Field:     models.DomainFieldAnnotations,
-				Operation: basemodels.PropCollectionUpdateOperationSet,
+				Operation: models.PropCollectionUpdateOperationSet,
 				Value: &services.PropCollectionChange_KeyValuePairValue{
 					KeyValuePairValue: &models.KeyValuePair{
 						Key:   "some-key",
@@ -272,7 +271,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 			UUID: project.UUID,
 			Updates: []*services.PropCollectionChange{{
 				Field:     models.DomainFieldAnnotations,
-				Operation: basemodels.PropCollectionUpdateOperationSet,
+				Operation: models.PropCollectionUpdateOperationSet,
 				Value: &services.PropCollectionChange_KeyValuePairValue{
 					KeyValuePairValue: &models.KeyValuePair{
 						Key:   "some-key",
@@ -287,7 +286,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 			UUID: project.UUID,
 			Updates: []*services.PropCollectionChange{{
 				Field:     models.DomainFieldAnnotations,
-				Operation: basemodels.PropCollectionUpdateOperationDelete,
+				Operation: models.PropCollectionUpdateOperationDelete,
 				Position: &services.PropCollectionChange_PositionString{
 					PositionString: "some-key",
 				},

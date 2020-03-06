@@ -1,0 +1,80 @@
+syntax = "proto3";
+package services;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/wrappers.proto";
+
+import "pkg/services/baseservices/base.proto";
+import "{{ modelsImportPath }}/gen_model.proto";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+option (gogoproto.gostring_all) = false;
+option (gogoproto.equal_all) = false;
+option (gogoproto.verbose_equal_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = false;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = false;
+option (gogoproto.protosizer_all) = false;
+
+
+service Chown {
+	rpc Chown(ChownRequest) returns (google.protobuf.Empty);
+}
+
+message ChownRequest {
+	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+	string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
+}
+
+
+service SetTag {
+	rpc SetTag(SetTagRequest) returns (google.protobuf.Empty);
+}
+
+message SetTagRequest {
+	string ObjUUID = 1 [(gogoproto.customname) = "ObjUUID",(gogoproto.jsontag) = "obj_uuid"];
+	string ObjType = 2 [(gogoproto.customname) = "ObjType",(gogoproto.jsontag) = "obj_type"];
+	repeated SetTagAttr Tags = 3 [(gogoproto.customname) = "Tags"];
+}
+
+message SetTagAttr {
+	string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+	google.protobuf.StringValue Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+	bool IsGlobal = 3 [(gogoproto.customname) = "IsGlobal",(gogoproto.jsontag) = "is_global"];
+	repeated string AddValues = 4 [(gogoproto.customname) = "AddValues",(gogoproto.jsontag) = "add_values"];
+	repeated string DeleteValues = 5 [(gogoproto.customname) = "DeleteValues",(gogoproto.jsontag) = "delete_values"];
+}
+
+
+service PropCollectionUpdate {
+	rpc PropCollectionUpdate(PropCollectionUpdateRequest) returns (google.protobuf.Empty);
+}
+
+message PropCollectionUpdateRequest {
+	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+	repeated PropCollectionChange Updates = 2 [(gogoproto.jsontag) = "updates"];
+}
+
+message PropCollectionChange {
+	string Field = 1 [(gogoproto.customname) = "Field",(gogoproto.jsontag) = "field"];
+	string Operation = 2 [(gogoproto.customname) = "Operation",(gogoproto.jsontag) = "operation"];
+	oneof Position {
+		int32 PositionInt = 3;
+		string PositionString = 4;
+	};
+{% if types | length > 0 %}
+	oneof Value {
+ {% set index = 5 %}{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	{% if itemType != "string" %}models.{% endif %}{{ itemType }} {{ itemType }}Value = {{ index }};
+	{% set index = index + 1 %}
+	{% endif %}{% endfor %}
+	};
+{% endif %}
+}
