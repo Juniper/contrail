@@ -259,6 +259,12 @@ func startServer() {
 
 	plugins := []asfapiserver.APIPlugin{
 		serviceChain,
+		&services.ContrailEndpointPlugin{
+			Service:           serviceChain,
+			InTransactionDoer: dbService,
+			MetadataGetter:    dbService,
+			IDToFQNameService: serviceChain,
+		},
 		staticProxyPlugin,
 		dynamicProxy,
 		services.UploadCloudKeysPlugin{},

@@ -34,7 +34,7 @@ generate: fast_generate format_gen ## Generate source code and documentation
 
 fast_generate: generate_pb_go generate_mocks doc/proto.md ## Generate source code and documentation without formatting
 
-generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/gen_service.pb.go ## Generate *pb.go files from *.proto definitions
+generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/gen_service.pb.go pkg/services/gen_plugin.pb.go ## Generate *pb.go files from *.proto definitions
 
 generate_go: install_contrailschema ## Generate source code from templates and schema
 	# Generate for contrail resources.
