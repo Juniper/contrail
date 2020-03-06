@@ -16,7 +16,7 @@ import (
 )
 
 // RESTSetTag handles set-tag request.
-func (service *ContrailService) RESTSetTag(c echo.Context) error {
+func (p *ContrailEndpointPlugin) RESTSetTag(c echo.Context) error {
 	var rawJSON map[string]json.RawMessage
 	if err := c.Bind(&rawJSON); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
@@ -31,8 +31,8 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		_, err := service.SetTag(ctx, setTag)
+	err := p.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		_, err := p.SetTag(ctx, setTag)
 		return err
 	})
 
@@ -43,12 +43,12 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 }
 
 // SetTag allows setting tags based on SetTagRequest.
-func (service *ContrailService) SetTag(ctx context.Context, setTag *SetTagRequest) (*types.Empty, error) {
+func (p *ContrailEndpointPlugin) SetTag(ctx context.Context, setTag *SetTagRequest) (*types.Empty, error) {
 	if err := setTag.validate(); err != nil {
 		return nil, err
 	}
 
-	obj, err := GetObject(ctx, service.Next(), setTag.ObjType, setTag.ObjUUID)
+	obj, err := GetObject(ctx, p.Service, setTag.ObjType, setTag.ObjUUID)
 	if err != nil {
 		return nil, errutil.ErrorBadRequestf(
 			"error: %v, while getting %v with UUID %v", err, setTag.ObjType, setTag.ObjUUID,
@@ -58,7 +58,7 @@ func (service *ContrailService) SetTag(ctx context.Context, setTag *SetTagReques
 	references := obj.GetTagReferences()
 
 	for _, tagAttr := range setTag.Tags {
-		if references, err = service.handleTagAttr(ctx, tagAttr, obj, references); err != nil {
+		if references, err = p.handleTagAttr(ctx, tagAttr, obj, references); err != nil {
 			return nil, err
 		}
 	}
@@ -72,12 +72,12 @@ func (service *ContrailService) SetTag(ctx context.Context, setTag *SetTagReques
 		return nil, err
 	}
 
-	_, err = e.Process(ctx, service)
+	_, err = e.Process(ctx, p.Service)
 
 	return &types.Empty{}, err
 }
 
-func (service *ContrailService) handleTagAttr(
+func (p *ContrailEndpointPlugin) handleTagAttr(
 	ctx context.Context, tagAttr *SetTagAttr, obj basemodels.Object, refs basemodels.References,
 ) (basemodels.References, error) {
 	switch {
@@ -86,12 +86,12 @@ func (service *ContrailService) handleTagAttr(
 	case tagAttr.hasTypeUniquePerObject():
 		refs = removeTagsOfType(refs, tagAttr.GetType())
 
-		uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagAttr.GetValue().GetValue(), tagAttr.IsGlobal, obj)
+		uuid, err := p.getTagUUIDInScope(ctx, tagAttr.GetType(), tagAttr.GetValue().GetValue(), tagAttr.IsGlobal, obj)
 
 		return append(refs, basemodels.NewUUIDReference(uuid, models.KindTag)), err
 	case tagAttr.hasAddValues():
 		for _, tagValue := range tagAttr.AddValues {
-			uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
+			uuid, err := p.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
 			if err != nil {
 				return nil, err
 			}
@@ -102,7 +102,7 @@ func (service *ContrailService) handleTagAttr(
 	case tagAttr.hasDeleteValues():
 		toDelete := map[string]bool{}
 		for _, tagValue := range tagAttr.DeleteValues {
-			uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
+			uuid, err := p.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
 			if err != nil {
 				return nil, err
 			}
@@ -137,7 +137,7 @@ func cannotDetermineTagScopeError(tagName string) error {
 	return errutil.ErrorNotFoundf("Not able to determine the scope of the tag '%s'", tagName)
 }
 
-func (service *ContrailService) getTagFQNameInScope(
+func (p *ContrailEndpointPlugin) getTagFQNameInScope(
 	ctx context.Context, tagName string, isGlobal bool, obj basemodels.Object,
 ) ([]string, error) {
 	tl, ok := obj.(TagLocator)
@@ -155,7 +155,7 @@ func (service *ContrailService) getTagFQNameInScope(
 		fqName[len(fqName)-1] = tagName
 		return fqName, nil
 	case tl.GetPerms2() != nil:
-		data, err := service.MetadataGetter.GetMetadata(
+		data, err := p.MetadataGetter.GetMetadata(
 			ctx, basemodels.Metadata{UUID: tl.GetPerms2().GetOwner()},
 		)
 		if err != nil {
@@ -167,17 +167,17 @@ func (service *ContrailService) getTagFQNameInScope(
 	}
 }
 
-func (service *ContrailService) getTagUUIDInScope(
+func (p *ContrailEndpointPlugin) getTagUUIDInScope(
 	ctx context.Context, tagType, tagValue string, isGlobal bool, obj basemodels.Object,
 ) (string, error) {
 	tagName := models.CreateTagName(tagType, tagValue)
 
-	fqName, err := service.getTagFQNameInScope(ctx, tagName, isGlobal, obj)
+	fqName, err := p.getTagFQNameInScope(ctx, tagName, isGlobal, obj)
 	if err != nil {
 		return "", err
 	}
 
-	m, err := service.MetadataGetter.GetMetadata(
+	m, err := p.MetadataGetter.GetMetadata(
 		ctx, basemodels.Metadata{FQName: fqName, Type: models.KindTag},
 	)
 	if err != nil {

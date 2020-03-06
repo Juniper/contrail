@@ -30,7 +30,6 @@ const (
 )
 
 const (
-	chownPath      = "/chown"
 	fqNameToIDPath = "/fqname-to-id"
 )
 
@@ -132,29 +131,6 @@ func (c *HTTPAPIClient) FQNameToID(t *testing.T, fqName []string, resourceType s
 	assert.NoError(t, err, "FQName to ID failed\n response: %+v\n responseData: %+v", r, responseData)
 
 	return responseData.UUID
-}
-
-type chownRequest struct {
-	Owner string `json:"owner"`
-	UUID  string `json:"uuid"`
-}
-
-// Chown performs "chown" request.
-func (c *HTTPAPIClient) Chown(t *testing.T, owner, uuid string) {
-	var responseData interface{}
-	r, err := c.Do(
-		context.Background(),
-		echo.POST,
-		chownPath,
-		nil,
-		&chownRequest{
-			Owner: owner,
-			UUID:  uuid,
-		},
-		&responseData,
-		[]int{http.StatusOK},
-	)
-	assert.NoError(t, err, "Chown failed\n response: %+v\n responseData: %+v", r, responseData)
 }
 
 // CheckResourceDoesNotExist checks that there is no resource with given path.
