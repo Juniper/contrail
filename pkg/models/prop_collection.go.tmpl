@@ -1,0 +1,70 @@
+{% autoescape off %}
+package models
+
+import (
+	"strings"
+
+	"github.com/pkg/errors"
+)
+
+{% for schema in schemas %}
+
+{% if schema.JSONSchema.Type == "object" %}
+{% if schema.TypeName %}
+
+func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *PropCollectionUpdate) (map[string]interface{}, error) {
+	switch (u.Field) { {% for property in schema.JSONSchema.OrderedProperties %}{% if property.CollectionType %}
+{% set listType = property.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
+{% if itemType != "string" %}{% set itemType = "*" | add:itemType %}{% endif %}
+{% if property.CollectionType == "list" %}
+	case {{ schema.JSONSchema.GoName }}Field{{ property.GoName }}:
+		pos, err := u.PositionForList()
+		if err != nil {
+			return nil, err
+		}
+		value, ok := u.Value.({{itemType}})
+		switch strings.ToLower(u.Operation) {
+		case PropCollectionUpdateOperationAdd:
+			if !ok {
+				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
+			}
+			m.{{property.GoName}}.AddInList(value)
+		case PropCollectionUpdateOperationModify:
+			if !ok {
+				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
+			}
+			m.{{property.GoName}}.ModifyInList(value, pos)
+		case PropCollectionUpdateOperationDelete:
+			m.{{property.GoName}}.DeleteInList(pos)
+		}
+		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
+{% elif property.CollectionType == "map" %}
+	case {{ schema.JSONSchema.GoName }}Field{{ property.GoName }}:
+		key, err := u.KeyForMap()
+		if err != nil {
+			return nil, err
+		}
+		switch strings.ToLower(u.Operation) {
+		case PropCollectionUpdateOperationSet:
+			value, ok := u.Value.({{itemType}})
+			if !ok {
+				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
+			}
+			if err := m.{{property.GoName}}.SetInMap(value); err != nil {
+				return nil, err
+			}
+		case PropCollectionUpdateOperationDelete:
+			m.{{property.GoName}}.DeleteInMap(key)
+		}
+		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
+{% endif %}{% endif %}{% endfor %}
+	default:
+		return nil, errors.Errorf("type {{ schema.TypeName }} has no prop collection field named: %s", u.Field)
+	}
+}
+
+{% endif %}
+{% endif %}
+
+{% endfor %}
+{% endautoescape %}

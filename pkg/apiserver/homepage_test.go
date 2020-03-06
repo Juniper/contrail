@@ -167,6 +167,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		&keystone.Keystone{},
 		services.UploadCloudKeysPlugin{},
 		&services.ContrailService{},
+		&services.ContrailEndpointPlugin{},
 	} {
 		plugin.RegisterHTTPAPI(&routes)
 	}
