@@ -25,6 +25,138 @@
     },
     {
       "key": {
+        "uuid": "9eea5097_d7f0b8f3",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "Move this to be below ListRows, as it\u0027s used later in db.go.tmpl.",
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "37703e09_8d542c20",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "`and returns`",
+      "range": {
+        "startLine": 323,
+        "startChar": 42,
+        "endLine": 323,
+        "endChar": 49
+      },
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29ee0b10_ac9625c0",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "`Each subslice` or `Subslices contain`.",
+      "range": {
+        "startLine": 324,
+        "startChar": 50,
+        "endLine": 324,
+        "endChar": 58
+      },
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd3f27a1_60b0d85d",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "`in the form`",
+      "range": {
+        "startLine": 324,
+        "startChar": 76,
+        "endLine": 324,
+        "endChar": 85
+      },
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6d2312f1_0faebac2",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 327,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "`load,`",
+      "range": {
+        "startLine": 327,
+        "startChar": 59,
+        "endLine": 327,
+        "endChar": 63
+      },
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "431cae50_70326a6f",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 330,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "`the initial`",
+      "range": {
+        "startLine": 330,
+        "startChar": 54,
+        "endLine": 330,
+        "endChar": 61
+      },
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3e1cb9a2_ddfef992",
         "filename": "vendor/github.com/Juniper/asf/pkg/db/db.go.tmpl",
         "patchSetId": 3
@@ -36,6 +168,29 @@
       "writtenOn": "2020-03-05T14:10:04Z",
       "side": 1,
       "message": "Please remove",
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f09aaffd_79519ebf",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/db.go.tmpl",
+        "patchSetId": 3
+      },
+      "lineNbr": 1043,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-06T10:01:57Z",
+      "side": 1,
+      "message": "`ReadMap failed`?",
+      "range": {
+        "startLine": 1043,
+        "startChar": 34,
+        "endLine": 1043,
+        "endChar": 45
+      },
       "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
