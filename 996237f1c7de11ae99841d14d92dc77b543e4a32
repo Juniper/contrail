@@ -84,6 +84,30 @@
     },
     {
       "key": {
+        "uuid": "12572ab4_07fa0d43",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-03-09T10:19:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9a081c81_86d41b5a",
+      "range": {
+        "startLine": 293,
+        "startChar": 18,
+        "endLine": 293,
+        "endChar": 25
+      },
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "37703e09_8d542c20",
         "filename": "vendor/github.com/Juniper/asf/pkg/db/basedb/db.go",
         "patchSetId": 3
@@ -351,6 +375,24 @@
       "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6148e945_362b8e95",
+        "filename": "vendor/github.com/Juniper/asf/pkg/db/db.go.tmpl",
+        "patchSetId": 3
+      },
+      "lineNbr": 1025,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2020-03-09T10:19:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8e5fbdd6_eeb644a5",
+      "revId": "996237f1c7de11ae99841d14d92dc77b543e4a32",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
