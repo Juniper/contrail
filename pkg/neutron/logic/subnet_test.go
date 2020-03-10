@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/plugin"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	neutronmock "github.com/Juniper/contrail/pkg/neutron/mock"
@@ -260,7 +261,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 	}
 
 	type mockKVs struct {
-		Response *services.RetrieveValuesResponse
+		Response *plugin.RetrieveValuesResponse
 		Error    error
 	}
 
@@ -428,7 +429,7 @@ func TestSubnet_Read(t *testing.T) {
 	}
 
 	type mockKVs struct {
-		Response *services.RetrieveValuesResponse
+		Response *plugin.RetrieveValuesResponse
 		Error    error
 	}
 
@@ -518,7 +519,7 @@ func mockReadService(
 
 func mockUserAgentService(
 	mockCtrl *gomock.Controller,
-	res *services.RetrieveValuesResponse,
+	res *plugin.RetrieveValuesResponse,
 	err error,
 ) *neutronmock.MockuserAgentKVServer {
 	mock := neutronmock.NewMockuserAgentKVServer(mockCtrl)

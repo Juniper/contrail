@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/keystone"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/client"
@@ -36,7 +37,7 @@ const serviceName = "intent-compiler"
 func SetupService(
 	WriteService services.WriteService,
 	ReadService services.ReadService,
-	allocator services.IntPoolAllocator,
+	allocator intpool.IntPoolAllocator,
 ) (services.Service, error) {
 	reactions, err := dependencies.ParseReactions(
 		[]byte(logic.ReactionsYAML),

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/asf/pkg/plugin"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -77,7 +78,7 @@ type RequestParameters struct {
 	RequestContext    RequestContext
 	ReadService       services.ReadService
 	WriteService      services.WriteService
-	UserAgentKV       services.UserAgentKVServer
+	UserAgentKV       plugin.UserAgentKVServer
 	IDToFQNameService services.IDToFQNameService
 	FQNameToIDService services.FQNameToIDService
 	FieldMask         types.FieldMask

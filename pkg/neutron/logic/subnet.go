@@ -15,6 +15,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/plugin"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -121,7 +122,7 @@ func getVirtualNetworkIDsFromKV(
 	ctx context.Context, rp RequestParameters, keys []string,
 ) (ids []string, err error) {
 	kvsResponse, err := rp.UserAgentKV.RetrieveValues(
-		ctx, &services.RetrieveValuesRequest{Keys: keys},
+		ctx, &plugin.RetrieveValuesRequest{Keys: keys},
 	)
 	if err != nil {
 		return nil, err

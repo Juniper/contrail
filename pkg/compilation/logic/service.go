@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/services"
@@ -15,7 +16,7 @@ type Service struct {
 	services.BaseService
 	// WriteService is used to create/update/delete lower-level resources
 	WriteService        services.WriteService
-	IntPoolAllocator    services.IntPoolAllocator
+	IntPoolAllocator    intpool.IntPoolAllocator
 	ReadService         services.ReadService
 	cache               *intent.Cache
 	dependencyProcessor *dependencies.DependencyProcessor
@@ -25,7 +26,7 @@ type Service struct {
 func NewService(
 	apiClient services.WriteService,
 	readService services.ReadService,
-	allocator services.IntPoolAllocator,
+	allocator intpool.IntPoolAllocator,
 	cache *intent.Cache,
 	dependencyProcessor *dependencies.DependencyProcessor,
 ) *Service {

@@ -22,7 +22,6 @@ testenv:
 # pkg/db
 # pkg/endpoint
 # pkg/models
-# pkg/rbac TODO(dfurman): this definitely needs to be fixed
 # pkg/services
 # pkg/sync
 # pkg/sync/replication
@@ -47,6 +46,7 @@ TESTPKGS=./cmd/contrailschema \
 	./pkg/models/basemodels \
 	./pkg/osutil \
 	./pkg/proxy \
+	./pkg/rbac \
 	./pkg/retry \
 	./pkg/schema \
 	./pkg/services/baseservices \
