@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:1e7c8544137868602682ef481a2c319a307600c466a41c4d8d54845f2dfdac18"
+  digest = "1:d3dfda316994092a2cf8e1d3b17465ff04f9871d7c14347691af11bc8d8739bd"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apiserver",
@@ -23,6 +23,7 @@
     "pkg/fileutil/template",
     "pkg/format",
     "pkg/httputil",
+    "pkg/intpool",
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
@@ -35,7 +36,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "ea209fe1c7b24735489f31cc6eb6907ff317a5fd"
+  revision = "47b7a9fdb19cedd8b881a470f59b57a1b815f799"
 
 [[projects]]
   branch = "2.x"
@@ -1369,6 +1370,7 @@
     "github.com/Juniper/asf/pkg/fileutil/template",
     "github.com/Juniper/asf/pkg/format",
     "github.com/Juniper/asf/pkg/httputil",
+    "github.com/Juniper/asf/pkg/intpool",
     "github.com/Juniper/asf/pkg/keystone",
     "github.com/Juniper/asf/pkg/logutil",
     "github.com/Juniper/asf/pkg/logutil/report",

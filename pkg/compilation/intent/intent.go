@@ -3,6 +3,7 @@ package intent
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -11,7 +12,7 @@ import (
 type EvaluateContext struct {
 	WriteService     services.WriteService
 	ReadService      services.ReadService
-	IntPoolAllocator services.IntPoolAllocator
+	IntPoolAllocator intpool.IntPoolAllocator
 	IntentLoader     Loader
 }
 

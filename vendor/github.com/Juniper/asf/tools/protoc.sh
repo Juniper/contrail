@@ -9,7 +9,8 @@ PROTOC_BIN=$BASEDIR/../bin/protoc
 
 GOGOPROTO_DIR=$(go list -f '{{ .Dir }}' -m github.com/gogo/protobuf)
 
-PROTOC_ARGS="-I $GOGOPROTO_DIR -I $GOGOPROTO_DIR/protobuf -I. --gogofaster_out=plugins=grpc:."
+PROTOC_ARGS="-I $GOGOPROTO_DIR -I $GOGOPROTO_DIR/protobuf -I. \
+    --gogofaster_out=Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,plugins=grpc:."
 
 
 exec $PROTOC_BIN $PROTOC_ARGS "$@"

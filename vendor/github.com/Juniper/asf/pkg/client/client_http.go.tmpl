@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/Juniper/asf/pkg/client"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/pkg/errors"
 
 	models "{{ modelsImportPath }}"
@@ -41,9 +42,9 @@ func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end 
 	_, err := h.Do(
 		ctx,
 		http.MethodPost,
-		"/"+services.IntPoolsPath,
+		"/"+intpool.IntPoolsPath,
 		nil,
-		&services.CreateIntPoolRequest{
+		&intpool.CreateIntPoolRequest{
 			Pool:  pool,
 			Start: start,
 			End:   end,
@@ -64,7 +65,7 @@ func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (strin
 		Owner string `json:"owner"`
 	}
 
-	_, err := h.Do(ctx, http.MethodGet, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
+	_, err := h.Do(ctx, http.MethodGet, "/"+intpool.IntPoolPath, q, nil, &output, []int{http.StatusOK})
 	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
 }
 
@@ -74,9 +75,9 @@ func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
 	_, err := h.Do(
 		ctx,
 		http.MethodDelete,
-		"/"+services.IntPoolsPath,
+		"/"+intpool.IntPoolsPath,
 		nil,
-		&services.DeleteIntPoolRequest{
+		&intpool.DeleteIntPoolRequest{
 			Pool: pool,
 		},
 		&struct{}{},
@@ -94,9 +95,9 @@ func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, erro
 	_, err := h.Do(
 		ctx,
 		http.MethodPost,
-		"/"+services.IntPoolPath,
+		"/"+intpool.IntPoolPath,
 		nil,
-		&services.IntPoolAllocationBody{
+		&intpool.IntPoolAllocationBody{
 			Pool:  pool,
 			Owner: owner,
 		},
@@ -112,9 +113,9 @@ func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner strin
 	_, err := h.Do(
 		ctx,
 		http.MethodPost,
-		"/"+services.IntPoolPath,
+		"/"+intpool.IntPoolPath,
 		nil,
-		&services.IntPoolAllocationBody{
+		&intpool.IntPoolAllocationBody{
 			Pool:  pool,
 			Value: &value,
 			Owner: owner,
@@ -131,9 +132,9 @@ func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) erro
 	_, err := h.Do(
 		ctx,
 		http.MethodDelete,
-		"/"+services.IntPoolPath,
+		"/"+intpool.IntPoolPath,
 		nil,
-		&services.IntPoolAllocationBody{
+		&intpool.IntPoolAllocationBody{
 			Pool:  pool,
 			Value: &value,
 		},
