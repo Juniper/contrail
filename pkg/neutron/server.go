@@ -8,6 +8,7 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/plugin"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
@@ -104,8 +105,8 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 }
 
 type userAgentKVServer interface {
-	StoreKeyValue(context.Context, *services.StoreKeyValueRequest) (*google_protobuf3.Empty, error)
-	RetrieveValues(context.Context, *services.RetrieveValuesRequest) (*services.RetrieveValuesResponse, error)
-	RetrieveKVPs(context.Context, *google_protobuf3.Empty) (*services.RetrieveKVPsResponse, error)
-	DeleteKey(context.Context, *services.DeleteKeyRequest) (*google_protobuf3.Empty, error)
+	StoreKeyValue(context.Context, *plugin.StoreKeyValueRequest) (*google_protobuf3.Empty, error)
+	RetrieveValues(context.Context, *plugin.RetrieveValuesRequest) (*plugin.RetrieveValuesResponse, error)
+	RetrieveKVPs(context.Context, *google_protobuf3.Empty) (*plugin.RetrieveKVPsResponse, error)
+	DeleteKey(context.Context, *plugin.DeleteKeyRequest) (*google_protobuf3.Empty, error)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/asf/pkg/plugin"
 )
 
 // StoreKeyValue stores a value under given key.
@@ -41,7 +41,7 @@ func (db *Service) DeleteKey(ctx context.Context, key string) error {
 }
 
 // RetrieveKVPs returns the entire store as a list of (key, value) pairs.
-func (db *Service) RetrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error) {
+func (db *Service) RetrieveKVPs(ctx context.Context) (kvps []*plugin.KeyValuePair, err error) {
 	if err = db.DoInTransaction(ctx, func(ctx context.Context) error {
 		kvps, err = db.retrieveKVPs(ctx)
 		return err
@@ -122,7 +122,7 @@ func (db *Service) deleteKey(ctx context.Context, key string) error {
 	return nil
 }
 
-func (db *Service) retrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error) {
+func (db *Service) retrieveKVPs(ctx context.Context) (kvps []*plugin.KeyValuePair, err error) {
 	d := db.Dialect
 	query := fmt.Sprintf(
 		"select %s from kv_store",
@@ -134,9 +134,9 @@ func (db *Service) retrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePai
 		return nil, errors.Wrap(basedb.FormatDBError(err), "failed to get store")
 	}
 
-	kvps = []*models.KeyValuePair{}
+	kvps = []*plugin.KeyValuePair{}
 	for rows.Next() {
-		var kvp models.KeyValuePair
+		var kvp plugin.KeyValuePair
 		err = rows.Scan(&kvp.Key, &kvp.Value)
 		if err != nil {
 			return nil, errors.Wrap(basedb.FormatDBError(err), "failed to retrieve key value pair")

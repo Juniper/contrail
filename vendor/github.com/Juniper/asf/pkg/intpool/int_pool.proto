@@ -1,0 +1,68 @@
+syntax = "proto3";
+package github.com.Juniper.asf.pkg.intpool;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+option (gogoproto.gostring_all) = false;
+option (gogoproto.equal_all) = false;
+option (gogoproto.verbose_equal_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = false;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = false;
+option (gogoproto.protosizer_all) = false;
+
+option go_package = "intpool";
+
+service IPAM {
+    rpc CreateIntPool (CreateIntPoolRequest) returns (google.protobuf.Empty);
+    rpc GetIntOwner (GetIntOwnerRequest) returns (GetIntOwnerResponse);
+    rpc DeleteIntPool (DeleteIntPoolRequest) returns (google.protobuf.Empty);
+    rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
+    rpc SetInt (SetIntRequest) returns (google.protobuf.Empty);
+    rpc DeallocateInt (DeallocateIntRequest) returns (google.protobuf.Empty);
+}
+
+message GetIntOwnerRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message GetIntOwnerResponse {
+    string Owner = 1 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
+}
+
+message CreateIntPoolRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
+    int64 Start = 2 [(gogoproto.customname) = "Start",(gogoproto.jsontag) = "start"];
+    int64 End = 3 [(gogoproto.customname) = "End",(gogoproto.jsontag) = "end"];
+}
+
+message DeleteIntPoolRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
+}
+
+message AllocateIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
+}
+
+message AllocateIntResponse {
+    int64 Value = 1 [(gogoproto.customname) = "Value"];
+}
+
+message SetIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value"];
+    string Owner = 3 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
+}
+
+message DeallocateIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value"];
+}

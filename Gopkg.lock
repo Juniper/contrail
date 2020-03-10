@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:1e7c8544137868602682ef481a2c319a307600c466a41c4d8d54845f2dfdac18"
+  digest = "1:65ebe2cb08d88723997c8f7a81a1fd05919237ed35f83e160e13844e998e58b9"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apiserver",
@@ -23,11 +23,13 @@
     "pkg/fileutil/template",
     "pkg/format",
     "pkg/httputil",
+    "pkg/intpool",
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
     "pkg/models/basemodels",
     "pkg/osutil",
+    "pkg/plugin",
     "pkg/proxy",
     "pkg/rbac",
     "pkg/retry",
@@ -35,7 +37,7 @@
     "pkg/services/baseservices",
   ]
   pruneopts = ""
-  revision = "ea209fe1c7b24735489f31cc6eb6907ff317a5fd"
+  revision = "f605a2171b3acc06039b86991ac4cc9bd7dbd759"
 
 [[projects]]
   branch = "2.x"
@@ -1369,11 +1371,13 @@
     "github.com/Juniper/asf/pkg/fileutil/template",
     "github.com/Juniper/asf/pkg/format",
     "github.com/Juniper/asf/pkg/httputil",
+    "github.com/Juniper/asf/pkg/intpool",
     "github.com/Juniper/asf/pkg/keystone",
     "github.com/Juniper/asf/pkg/logutil",
     "github.com/Juniper/asf/pkg/logutil/report",
     "github.com/Juniper/asf/pkg/models/basemodels",
     "github.com/Juniper/asf/pkg/osutil",
+    "github.com/Juniper/asf/pkg/plugin",
     "github.com/Juniper/asf/pkg/proxy",
     "github.com/Juniper/asf/pkg/rbac",
     "github.com/Juniper/asf/pkg/retry",

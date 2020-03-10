@@ -29,9 +29,7 @@ func SetupServiceChain(
 		TypeValidator:      tv,
 		MetadataGetter:     dbService,
 		InTransactionDoer:  dbService,
-		IntPoolAllocator:   dbService,
 		RefRelaxer:         dbService,
-		UserAgentKVService: dbService,
 	}
 
 	serviceChain := []services.Service{

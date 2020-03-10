@@ -1,0 +1,57 @@
+syntax = "proto3";
+package github.com.Juniper.asf.pkg.plugin;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+option (gogoproto.gostring_all) = false;
+option (gogoproto.equal_all) = false;
+option (gogoproto.verbose_equal_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = false;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = false;
+option (gogoproto.protosizer_all) = false;
+
+option go_package = "plugin";
+
+service UserAgentKV {
+    rpc StoreKeyValue(StoreKeyValueRequest) returns (google.protobuf.Empty);
+    rpc RetrieveValues(RetrieveValuesRequest) returns (RetrieveValuesResponse);
+    rpc RetrieveKVPs(google.protobuf.Empty) returns (RetrieveKVPsResponse);
+    rpc DeleteKey(DeleteKeyRequest) returns (google.protobuf.Empty);
+}
+
+message StoreKeyValueRequest {
+    string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+    string Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveValuesRequest {
+    repeated string Keys = 1 [(gogoproto.customname) = "Keys",(gogoproto.jsontag) = "key"];
+}
+
+message RetrieveValuesResponse {
+    repeated string Values = 1 [(gogoproto.customname) = "Values",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveKVPsResponse {
+    repeated KeyValuePair value = 1 [(gogoproto.customname) = "KeyValuePairs",(gogoproto.jsontag) = "value"];
+}
+
+message DeleteKeyRequest {
+    string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+}
+
+message KeyValuePair {
+    string value = 1 [(gogoproto.customname) = "Value", (gogoproto.moretags) = "yaml:\"value,omitempty\"", (gogoproto.jsontag) = "value"];
+    string key = 2 [(gogoproto.customname) = "Key", (gogoproto.moretags) = "yaml:\"key,omitempty\"", (gogoproto.jsontag) = "key"];
+}
+
+message KeyValuePairs {
+    repeated KeyValuePair key_value_pair = 1 [(gogoproto.customname) = "KeyValuePair", (gogoproto.moretags) = "yaml:\"key_value_pair,omitempty\""];
+}

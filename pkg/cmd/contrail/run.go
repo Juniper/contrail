@@ -10,7 +10,9 @@ import (
 
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/plugin"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apiserver"
@@ -268,6 +270,14 @@ func startServer() {
 		dynamicProxy,
 		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
+		&intpool.IntPoolPlugin{
+			Allocator:         dbService,
+			InTransactionDoer: dbService,
+		},
+		&plugin.UserAgentKVPlugin{
+			UserAgentKVService: dbService,
+		},
+		&plugin.ObjPermsPlugin{},
 	}
 
 	if viper.GetBool("keystone.local") {
@@ -284,7 +294,9 @@ func startServer() {
 		plugins = append(plugins, &neutron.Server{
 			ReadService:       serviceChain,
 			WriteService:      serviceChain,
-			UserAgentKV:       serviceChain,
+			UserAgentKV:       &plugin.UserAgentKVPlugin{
+				UserAgentKVService: dbService,
+			},
 			IDToFQNameService: serviceChain,
 			FQNameToIDService: serviceChain,
 			InTransactionDoer: dbService,

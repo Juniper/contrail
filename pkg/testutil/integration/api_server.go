@@ -9,7 +9,9 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/etcd"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/plugin"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/cmd/contrail"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
@@ -156,6 +158,14 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		dynamicProxy,
 		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
+		&intpool.IntPoolPlugin{
+			Allocator:         dbService,
+			InTransactionDoer: dbService,
+		},
+		&plugin.ObjPermsPlugin{},
+		&plugin.UserAgentKVPlugin{
+			UserAgentKVService: dbService,
+		},
 		k,
 		c.CacheDB,
 	}
@@ -164,7 +174,9 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		plugins = append(plugins, &neutron.Server{
 			ReadService:       serviceChain,
 			WriteService:      serviceChain,
-			UserAgentKV:       serviceChain,
+			UserAgentKV:       &plugin.UserAgentKVPlugin{
+				UserAgentKVService: dbService,
+			},
 			IDToFQNameService: serviceChain,
 			FQNameToIDService: serviceChain,
 			InTransactionDoer: dbService,
