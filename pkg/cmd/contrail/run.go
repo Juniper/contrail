@@ -10,6 +10,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/retry"
 	"github.com/Juniper/contrail/pkg/agent"
@@ -268,6 +269,10 @@ func startServer() {
 		dynamicProxy,
 		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
+		&intpool.IntPoolPlugin{
+			Allocator: dbService,
+			InTransactionDoer: dbService,
+		},
 	}
 
 	if viper.GetBool("keystone.local") {

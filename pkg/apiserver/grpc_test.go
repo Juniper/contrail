@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
@@ -159,14 +160,14 @@ func TestChownGRPC(t *testing.T) {
 
 func TestIPAMGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewIPAMClient(conn)
-		allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{
+		c := intpool.NewIPAMClient(conn)
+		allocateResp, err := c.AllocateInt(ctx, &intpool.AllocateIntRequest{
 			Pool:  types.VirtualNetworkIDPoolKey,
 			Owner: db.EmptyIntOwner,
 		})
 		assert.NoError(t, err)
 
-		_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
+		_, err = c.DeallocateInt(ctx, &intpool.DeallocateIntRequest{
 			Pool:  types.VirtualNetworkIDPoolKey,
 			Value: allocateResp.GetValue(),
 		})

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/apiserver"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/proxy"
@@ -67,11 +68,11 @@ func TestHomepageResources(t *testing.T) {
 			link(addr, "action", "POST", services.PropCollectionUpdatePath),
 			link(addr, "action", "POST", services.SetTagPath),
 			link(addr, "action", "POST", services.ChownPath),
-			link(addr, "action", "GET", services.IntPoolPath),
-			link(addr, "action", "POST", services.IntPoolPath),
-			link(addr, "action", "DELETE", services.IntPoolPath),
-			link(addr, "action", "POST", services.IntPoolsPath),
-			link(addr, "action", "DELETE", services.IntPoolsPath),
+			link(addr, "action", "GET", intpool.IntPoolPath),
+			link(addr, "action", "POST", intpool.IntPoolPath),
+			link(addr, "action", "DELETE", intpool.IntPoolPath),
+			link(addr, "action", "POST", intpool.IntPoolsPath),
+			link(addr, "action", "DELETE", intpool.IntPoolsPath),
 			link(addr, "action", "GET", services.ObjPerms),
 
 			link(addr, "action", "POST", services.UploadCloudKeysPath),
@@ -167,6 +168,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		&keystone.Keystone{},
 		services.UploadCloudKeysPlugin{},
 		&services.ContrailService{},
+		&intpool.IntPoolPlugin{},
 	} {
 		plugin.RegisterHTTPAPI(&routes)
 	}

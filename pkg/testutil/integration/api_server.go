@@ -9,6 +9,7 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/etcd"
+	"github.com/Juniper/asf/pkg/intpool"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/cmd/contrail"
@@ -156,6 +157,10 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 		dynamicProxy,
 		services.UploadCloudKeysPlugin{},
 		analytics.BodyDumpPlugin{Collector: analyticsCollector},
+		&intpool.IntPoolPlugin{
+			Allocator: dbService,
+			InTransactionDoer: dbService,
+		},
 		k,
 		c.CacheDB,
 	}
