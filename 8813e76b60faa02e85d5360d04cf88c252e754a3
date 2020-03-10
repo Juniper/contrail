@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "edfafb4e_be86abbd",
+        "filename": "pkg/services/chown.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-10T12:33:11Z",
+      "side": 1,
+      "message": "why?",
+      "range": {
+        "startLine": 10,
+        "startChar": 1,
+        "endLine": 10,
+        "endChar": 48
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "68efe55e_038dfa5f",
+        "filename": "pkg/services/plugin.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-10T12:33:11Z",
+      "side": 1,
+      "message": "I think paths should start with \"/\"",
+      "range": {
+        "startLine": 9,
+        "startChar": 1,
+        "endLine": 11,
+        "endChar": 35
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b81cdff6_090c323b",
+        "filename": "pkg/services/prop_collection_update.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-10T12:33:11Z",
+      "side": 1,
+      "message": "Why?",
+      "range": {
+        "startLine": 8,
+        "startChar": 1,
+        "endLine": 8,
+        "endChar": 18
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f6213923_5f19e3de",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 648,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-10T12:33:11Z",
+      "side": 1,
+      "message": "Why do we generate this?",
+      "range": {
+        "startLine": 631,
+        "startChar": 0,
+        "endLine": 648,
+        "endChar": 1
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
