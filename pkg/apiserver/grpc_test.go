@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
@@ -27,6 +26,7 @@ import (
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	protocodec "github.com/gogo/protobuf/codec"
 	uuid "github.com/satori/go.uuid"
 )
@@ -252,7 +252,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 			UUID: project.UUID,
 			Updates: []*services.PropCollectionChange{{
 				Field:     models.DomainFieldAnnotations,
-				Operation: basemodels.PropCollectionUpdateOperationSet,
+				Operation: asfmodels.PropCollectionUpdateOperationSet,
 				Value: &services.PropCollectionChange_KeyValuePairValue{
 					KeyValuePairValue: &models.KeyValuePair{
 						Key:   "some-key",
@@ -272,7 +272,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 			UUID: project.UUID,
 			Updates: []*services.PropCollectionChange{{
 				Field:     models.DomainFieldAnnotations,
-				Operation: basemodels.PropCollectionUpdateOperationSet,
+				Operation: asfmodels.PropCollectionUpdateOperationSet,
 				Value: &services.PropCollectionChange_KeyValuePairValue{
 					KeyValuePairValue: &models.KeyValuePair{
 						Key:   "some-key",
@@ -287,7 +287,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 			UUID: project.UUID,
 			Updates: []*services.PropCollectionChange{{
 				Field:     models.DomainFieldAnnotations,
-				Operation: basemodels.PropCollectionUpdateOperationDelete,
+				Operation: asfmodels.PropCollectionUpdateOperationDelete,
 				Position: &services.PropCollectionChange_PositionString{
 					PositionString: "some-key",
 				},

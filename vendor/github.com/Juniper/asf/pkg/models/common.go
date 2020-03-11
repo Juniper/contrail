@@ -1,4 +1,4 @@
-package basemodels
+package models
 
 import (
 	"fmt"

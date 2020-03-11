@@ -16,7 +16,7 @@ import (
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -496,7 +496,7 @@ func cleanByFQNameAndKind(
 	client *client.HTTP,
 	m baseservices.MetadataGetter,
 ) error {
-	metadata, err := m.GetMetadata(ctx, basemodels.Metadata{
+	metadata, err := m.GetMetadata(ctx, models.Metadata{
 		Type:   kind,
 		FQName: fqName,
 	})

@@ -3,7 +3,7 @@ package intent
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -20,9 +20,9 @@ type UUIDSet map[string]struct{}
 
 // Intent contains Intent Compiler state for a resource.
 type Intent interface {
-	basemodels.Object
+	models.Object
 	Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
-	GetObject() basemodels.Object
+	GetObject() models.Object
 	GetDependencies() map[string]UUIDSet
 	AddDependentIntent(i Intent)
 	RemoveDependentIntent(i Intent)

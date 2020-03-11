@@ -3,7 +3,7 @@ package analytics
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/services"
@@ -35,7 +35,7 @@ func (p *payloadMessageBusNotifyTrace) Build() *collector.Message {
 }
 
 // MessageBusNotifyTrace sends message with type MessageBusNotifyTrace
-func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels.Object) collector.MessageBuilder {
+func MessageBusNotifyTrace(ctx context.Context, operation string, obj models.Object) collector.MessageBuilder {
 	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 	requestID := services.GetRequestID(ctx)
 	var objDict interface{}
@@ -48,7 +48,7 @@ func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels
 		Body: &bodyMessageBusNotifyTrace{
 			Operation: operation,
 			RequestID: requestID,
-			Type:      basemodels.KindToSchemaID(obj.Kind()),
+			Type:      models.KindToSchemaID(obj.Kind()),
 			UUID:      obj.GetUUID(),
 			FQName:    obj.GetFQName(),
 			ObjDict:   objDict,

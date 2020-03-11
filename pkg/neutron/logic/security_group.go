@@ -8,10 +8,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 var sgNoRuleFQName = []string{defaultDomainName, defaultProjectName, noRuleSecurityGroup}
@@ -84,12 +85,12 @@ func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id st
 
 func (sg *SecurityGroup) update(ctx context.Context, rp RequestParameters, sgVnc *models.SecurityGroup) error {
 	var fm types.FieldMask
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(SecurityGroupFieldDescription)) {
-		basemodels.FieldMaskAppend(&fm, models.SecurityGroupFieldIDPerms, models.IdPermsTypeFieldDescription)
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(SecurityGroupFieldDescription)) {
+		asfmodels.FieldMaskAppend(&fm, models.SecurityGroupFieldIDPerms, models.IdPermsTypeFieldDescription)
 	}
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(SecurityGroupFieldName)) {
-		basemodels.FieldMaskAppend(&fm, models.SecurityGroupFieldName)
-		basemodels.FieldMaskAppend(&fm, models.SecurityGroupFieldDisplayName)
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(SecurityGroupFieldName)) {
+		asfmodels.FieldMaskAppend(&fm, models.SecurityGroupFieldName)
+		asfmodels.FieldMaskAppend(&fm, models.SecurityGroupFieldDisplayName)
 	}
 
 	_, err := rp.WriteService.UpdateSecurityGroup(ctx, &services.UpdateSecurityGroupRequest{
@@ -256,7 +257,7 @@ func (sg *SecurityGroup) convertVncSecurityGroupsToNeutron(
 ) ([]*SecurityGroupResponse, error) {
 	neutronSGs := make([]*SecurityGroupResponse, 0)
 	for _, vncSg := range vncSgs {
-		if basemodels.FQNameEquals(vncSg.GetFQName(), sgNoRuleFQName) {
+		if asfmodels.FQNameEquals(vncSg.GetFQName(), sgNoRuleFQName) {
 			continue
 		}
 

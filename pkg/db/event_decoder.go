@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
@@ -42,7 +42,7 @@ func decodeResourceEvent(
 ) (*services.Event, error) {
 	m := obj.ToMap()
 	if fm != nil {
-		m = basemodels.ApplyFieldMask(m, *fm)
+		m = models.ApplyFieldMask(m, *fm)
 	}
 	return services.NewEvent(services.EventOption{
 		UUID:      pk[0],

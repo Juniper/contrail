@@ -10,8 +10,9 @@ import (
 	"github.com/labstack/echo"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 var (
@@ -121,7 +122,7 @@ func (t *SetTagRequest) parseTagAttrs(rawJSON map[string]json.RawMessage) error 
 
 func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefOperation) (*Event, error) {
 	return NewRefUpdateEvent(RefUpdateOption{
-		ReferenceType: basemodels.ReferenceKind(t.ObjType, models.KindTag),
+		ReferenceType: asfmodels.ReferenceKind(t.ObjType, models.KindTag),
 		FromUUID:      t.ObjUUID,
 		ToUUID:        tagUUID,
 		Operation:     operation,
