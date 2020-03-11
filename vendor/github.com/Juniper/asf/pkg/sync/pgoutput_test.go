@@ -1,4 +1,4 @@
-package replication
+package sync
 
 import (
 	"testing"

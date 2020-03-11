@@ -52,12 +52,13 @@ func TestMain(m *testing.M, s **APIServer) {
 		defer testutil.LogFatalIfError(cancelEtcdEventProducer)
 
 		if viper.GetBool("sync.enabled") {
-			sync, err := sync.NewService()
+			sync, err := sync.NewEtcdFeeder("integration-test-sync")
 			if err != nil {
 				logutil.FatalWithStackTrace(errors.Wrap(err, "failed to initialize Sync"))
 			}
-			errChan := RunConcurrently(sync)
-			defer CloseFatalIfError(sync, errChan)
+			ctx, cancel := context.WithCancel(context.Background())
+			errChan := RunConcurrently(RunnerFunc(func() error { return sync.Start(ctx) }))
+			defer CloseFatalIfError(CloserFunc(cancel), errChan)
 			<-sync.DumpDone()
 		}
 
