@@ -21,7 +21,6 @@ testenv:
 # pkg/convert
 # pkg/db
 # pkg/endpoint
-# pkg/models
 # pkg/services
 # pkg/sync
 # pkg/sync/replication
@@ -43,7 +42,7 @@ TESTPKGS=./cmd/contrailschema \
 	./pkg/httputil \
 	./pkg/keystone \
 	./pkg/logutil \
-	./pkg/models/basemodels \
+	./pkg/models \
 	./pkg/osutil \
 	./pkg/proxy \
 	./pkg/rbac \

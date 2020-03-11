@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -23,7 +23,7 @@ func (sv *ContrailTypeLogicService) CreateServiceTemplate(
 					return err
 				}
 			}
-			err = svcTemplate.GetPerms2().EnableDomainSharing(domainUUID, basemodels.PermsRX)
+			err = svcTemplate.GetPerms2().EnableDomainSharing(domainUUID, models.PermsRX)
 			if err != nil {
 				return err
 			}

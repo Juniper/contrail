@@ -3,14 +3,14 @@ package dependencies_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const testReactionsYAML = `
@@ -149,7 +149,7 @@ func TestRemoveDependentIntent(t *testing.T) {
 	assert.NotContains(t, l, "Network-Policy-1")
 }
 
-func loadIntentByResource(c intent.Loader, r basemodels.Object) intent.Intent {
+func loadIntentByResource(c intent.Loader, r asfmodels.Object) intent.Intent {
 	return c.Load(r.Kind(), intent.ByUUID(r.GetUUID()))
 }
 

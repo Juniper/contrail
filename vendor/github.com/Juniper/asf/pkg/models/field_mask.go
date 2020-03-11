@@ -1,12 +1,11 @@
-package basemodels
+package models
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
-
 	"github.com/Juniper/asf/pkg/format"
+	"github.com/gogo/protobuf/types"
 )
 
 // MapToFieldMask returns updated fields masks.
