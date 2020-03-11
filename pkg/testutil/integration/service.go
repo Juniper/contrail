@@ -19,6 +19,12 @@ type Runner interface {
 	Run() error
 }
 
+// RunnerFunc is a function that implements the Runner interface.
+type RunnerFunc func() error
+
+// Run calls the function.
+func (f RunnerFunc) Run() error { return f() }
+
 // RunConcurrently runs runner in separate goroutine and returns a channel to read Run error.
 func RunConcurrently(r Runner) <-chan error {
 	runError := make(chan error)
@@ -33,6 +39,12 @@ func RunConcurrently(r Runner) <-chan error {
 type Closer interface {
 	Close()
 }
+
+// CloserFunc is a function that implements Closer interface.
+type CloserFunc func()
+
+// Close calls the function.
+func (f CloserFunc) Close() { f() }
 
 // CloseNoError calls close and expects that error channel is closed without an error.
 func CloseNoError(t *testing.T, c Closer, errChan <-chan error) {
