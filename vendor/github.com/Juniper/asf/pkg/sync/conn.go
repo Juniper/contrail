@@ -1,4 +1,4 @@
-package replication
+package sync
 
 import (
 	"context"
@@ -7,12 +7,11 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/asf/pkg/logutil"
 )
 
 type pgxReplicationConn interface {
@@ -25,21 +24,31 @@ type pgxReplicationConn interface {
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 }
 
-type dbService interface {
+// DB is a DB access interface.
+type DB interface {
 	DB() *sql.DB
 	DoInTransactionWithOpts(ctx context.Context, do func(context.Context) error, opts *sql.TxOptions) error
+	Dump(context.Context) (basedb.DatabaseData, error)
 }
 
-type postgresReplicationConnection struct {
+// PostgresConnection is a connection that uses replication connection to manage logical subscription.
+type PostgresConnection struct {
 	replConn pgxReplicationConn
-	db       dbService
+	db       DB
 	log      *logrus.Entry
 }
 
-func newPostgresReplicationConnection(
-	db dbService, replConn pgxReplicationConn,
-) (*postgresReplicationConnection, error) {
-	return &postgresReplicationConnection{
+// NewPostgresConnection returns a postgres Connection.
+func NewPostgresConnection(db DB) (*PostgresConnection, error) {
+	c := basedb.ConnectionConfigFromViper()
+	replConn, err := pgx.ReplicationConnect(
+		pgx.ConnConfig{Host: c.Host, Database: c.Name, User: c.User, Password: c.Password},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PostgresConnection{
 		db:       db,
 		replConn: replConn,
 		log:      logutil.NewLogger("postgres-replication-connection"),
@@ -47,9 +56,7 @@ func newPostgresReplicationConnection(
 }
 
 // GetReplicationSlot gets replication slot for replication.
-func (c *postgresReplicationConnection) GetReplicationSlot(
-	name string,
-) (maxWal uint64, snapshotName string, err error) {
+func (c *PostgresConnection) GetReplicationSlot(name string) (maxWal LSN, snapshotName string, err error) {
 	if dropErr := c.replConn.DropReplicationSlot(name); err != nil {
 		c.log.WithError(dropErr).Info("Could not drop replication slot just before getting new one - safely ignoring")
 	}
@@ -63,7 +70,7 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 		}
 	}
 
-	maxWal, err = pgx.ParseLSN(consistentPoint)
+	maxWal, err = ParseLSN(consistentPoint)
 	if err != nil {
 		return 0, "", fmt.Errorf("error parsing received LSN: %v", err)
 	}
@@ -71,7 +78,7 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 }
 
 // RenewPublication ensures that publication exists for all tables.
-func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, name string) error {
+func (c *PostgresConnection) RenewPublication(ctx context.Context, name string) error {
 	return c.db.DoInTransactionWithOpts(
 		ctx,
 		func(ctx context.Context) error {
@@ -90,7 +97,7 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 }
 
 // IsInRecovery checks is database server is in recovery mode.
-func (c *postgresReplicationConnection) IsInRecovery(ctx context.Context) (isInRecovery bool, err error) {
+func (c *PostgresConnection) IsInRecovery(ctx context.Context) (isInRecovery bool, err error) {
 	return isInRecovery, c.db.DoInTransactionWithOpts(
 		ctx,
 		func(ctx context.Context) error {
@@ -110,7 +117,8 @@ func (c *postgresReplicationConnection) IsInRecovery(ctx context.Context) (isInR
 	)
 }
 
-func (c *postgresReplicationConnection) DoInTransactionSnapshot(
+// DoInTransactionSnapshot does snapshot in transaction.
+func (c *PostgresConnection) DoInTransactionSnapshot(
 	ctx context.Context,
 	snapshotName string,
 	do func(context.Context) error,
@@ -134,29 +142,48 @@ func (c *postgresReplicationConnection) DoInTransactionSnapshot(
 	)
 }
 
+// DumpSnapshot performs snapshot in transaction.
+func (c *PostgresConnection) DumpSnapshot(
+	ctx context.Context, snapshotName string,
+) (dump basedb.DatabaseData, err error) {
+	if err = c.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
+		dump, err = c.db.Dump(ctx)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return dump, nil
+}
+
 func pluginArgs(publication string) string {
 	return fmt.Sprintf(`("proto_version" '1', "publication_names" '%s')`, publication)
 }
 
 // StartReplication sends start replication message to server.
-func (c *postgresReplicationConnection) StartReplication(slot, publication string, startLSN uint64) error {
+func (c *PostgresConnection) StartReplication(slot, publication string, start LSN) error {
 	// timeline argument should be -1 otherwise postgres reutrns error - pgx library bug
-	return c.replConn.StartReplication(slot, startLSN, -1, pluginArgs(publication))
+	return c.replConn.StartReplication(slot, uint64(start), -1, pluginArgs(publication))
 }
 
 // WaitForReplicationMessage blocks until message arrives on replication connection.
-func (c *postgresReplicationConnection) WaitForReplicationMessage(
-	ctx context.Context,
-) (*pgx.ReplicationMessage, error) {
+func (c *PostgresConnection) WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error) {
 	return c.replConn.WaitForReplicationMessage(ctx)
 }
 
 // SendStatus sends standby status to server connected with replication connection.
-func (c *postgresReplicationConnection) SendStatus(receivedLSN, savedLSN uint64) error {
+func (c *PostgresConnection) SendStatus(received, saved LSN) error {
+	c.log.WithFields(logrus.Fields{
+		"receivedLSN": received,
+		"savedLSN":    saved,
+	}).Info("Sending standby status")
 	k, err := pgx.NewStandbyStatus(
-		savedLSN,    // flush - savedLSN is already stored in etcd so we can say that it's flushed
-		savedLSN,    // apply - savedLSN is stored and visible in etcd so it's also applied
-		receivedLSN, // write - receivedLSN is last wal segment that was received by watcher
+		uint64(saved),    // flush - savedLSN is already stored in etcd so we can say that it's flushed
+		uint64(saved),    // apply - savedLSN is stored and visible in etcd so it's also applied
+		uint64(received), // write - receivedLSN is last wal segment that was received by watcher
 	)
 	if err != nil {
 		return errors.Wrap(err, "error creating standby status")
@@ -168,7 +195,7 @@ func (c *postgresReplicationConnection) SendStatus(receivedLSN, savedLSN uint64)
 }
 
 // Close closes underlying connections.
-func (c *postgresReplicationConnection) Close() error {
+func (c *PostgresConnection) Close() error {
 	var errs []string
 	if dbErr := c.db.DB().Close(); dbErr != nil {
 		errs = append(errs, dbErr.Error())
