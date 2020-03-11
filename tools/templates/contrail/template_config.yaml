@@ -62,6 +62,9 @@
   template_path: vendor/github.com/Juniper/asf/pkg/services/list_response_encoding.go.tmpl
   output_dir: pkg/services
 - type: all
+  template_path: vendor/github.com/Juniper/asf/pkg/sync/producer.go.tmpl
+  output_dir: pkg/sync
+- type: all
   template_path: vendor/github.com/Juniper/asf/pkg/models/model.proto.tmpl
   output_dir: proto/github.com/Juniper/contrail/pkg/models
 - type: all
