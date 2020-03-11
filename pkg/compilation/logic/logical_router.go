@@ -3,13 +3,13 @@ package logic
 import (
 	"context"
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // LogicalRouterIntent contains Intent Compiler state for LogicalRouter.
@@ -22,7 +22,7 @@ type LogicalRouterIntent struct {
 }
 
 // GetObject returns embedded resource object
-func (i *LogicalRouterIntent) GetObject() basemodels.Object {
+func (i *LogicalRouterIntent) GetObject() asfmodels.Object {
 	return i.LogicalRouter
 }
 

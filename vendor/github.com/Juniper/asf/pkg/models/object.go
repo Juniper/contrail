@@ -1,4 +1,4 @@
-package basemodels
+package models
 
 import (
 	"github.com/gogo/protobuf/proto"

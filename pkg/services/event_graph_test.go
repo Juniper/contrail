@@ -5,8 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 var projectEvent = &Event{
@@ -95,7 +96,7 @@ func TestCycle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			refMap := make(map[*Event]basemodels.References)
+			refMap := make(map[*Event]asfmodels.References)
 			for _, ev := range tt.events {
 				refMap[ev] = ev.getReferences()
 			}
@@ -133,7 +134,7 @@ func TestSort(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			refMap := make(map[*Event]basemodels.References)
+			refMap := make(map[*Event]asfmodels.References)
 			for _, ev := range tt.events {
 				refMap[ev] = ev.getReferences()
 			}
@@ -360,7 +361,7 @@ func TestIsSortRequired(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			refMap := make(map[*Event]basemodels.References)
+			refMap := make(map[*Event]asfmodels.References)
 			for _, ev := range tt.events {
 				refMap[ev] = ev.getReferences()
 			}

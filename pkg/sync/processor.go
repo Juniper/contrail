@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -47,7 +47,7 @@ func (p *FQNameCache) updateFQNameCache(event *services.Event) {
 }
 
 type resourceRequest interface {
-	GetResource() basemodels.Object
+	GetResource() models.Object
 }
 
 type deleteRequest interface {
