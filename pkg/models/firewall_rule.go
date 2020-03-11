@@ -4,11 +4,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // FirewallRule constants.
@@ -28,7 +27,7 @@ var protocolIDs = map[string]int64{
 
 // CheckAssociatedRefsInSameScope checks scope of Firewall Rule references.
 func (fr *FirewallRule) CheckAssociatedRefsInSameScope(fqName []string) error {
-	var refs []basemodels.Reference
+	var refs []models.Reference
 	for _, ref := range fr.GetAddressGroupRefs() {
 		refs = append(refs, ref)
 	}
@@ -47,7 +46,7 @@ func (fr *FirewallRule) CheckAssociatedRefsInSameScope(fqName []string) error {
 // AddDefaultMatchTag sets default matchTag if not defined in the request.
 func (fr *FirewallRule) AddDefaultMatchTag(fm *types.FieldMask) {
 	if fr.GetMatchTags().GetTagList() == nil && (fm == nil ||
-		basemodels.FieldMaskContains(fm, FirewallRuleFieldMatchTags)) {
+		models.FieldMaskContains(fm, FirewallRuleFieldMatchTags)) {
 		fr.MatchTags = &FirewallRuleMatchTagsType{
 			TagList: []string{DefaultMatchTagType},
 		}

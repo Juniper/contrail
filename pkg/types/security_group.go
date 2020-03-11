@@ -7,10 +7,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // CreateSecurityGroup performs type specific validation and setup for creating security groups.
@@ -129,7 +130,7 @@ func (sv *ContrailTypeLogicService) disallowManualSecurityGroupID(
 		return errutil.ErrorForbidden("cannot set the security group ID, it's allocated by the server")
 	}
 
-	if !basemodels.FieldMaskContains(fieldMask, models.SecurityGroupFieldSecurityGroupID) {
+	if !asfmodels.FieldMaskContains(fieldMask, models.SecurityGroupFieldSecurityGroupID) {
 		return nil
 	}
 

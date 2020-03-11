@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -101,16 +101,16 @@ func serviceTemplateSetupMetadataMock(s *ContrailTypeLogicService) {
 	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
-		func(_ context.Context, requested basemodels.Metadata) (
-			response *basemodels.Metadata, err error,
+		func(_ context.Context, requested asfmodels.Metadata) (
+			response *asfmodels.Metadata, err error,
 		) {
 			return serviceTemplateSetupMetadata(requested)
 		},
 	).AnyTimes()
 }
 
-func serviceTemplateSetupMetadata(requested basemodels.Metadata) (
-	*basemodels.Metadata, error) {
+func serviceTemplateSetupMetadata(requested asfmodels.Metadata) (
+	*asfmodels.Metadata, error) {
 	if len(requested.FQName) == 0 {
 		return nil, errutil.ErrorBadRequest("FQ name is empty")
 	}
@@ -120,7 +120,7 @@ func serviceTemplateSetupMetadata(requested basemodels.Metadata) (
 			return nil, errutil.ErrorNotFound
 		}
 
-		return &basemodels.Metadata{
+		return &asfmodels.Metadata{
 			UUID:   "beefbeef-beef-beef-beef-beefbeef0002",
 			FQName: requested.FQName,
 		}, nil

@@ -9,13 +9,13 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 
 	models "{{ modelsImportPath }}"
 	services "{{ servicesImportPath }}"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // TODO(dfurman): move non-template code out of template
@@ -197,7 +197,7 @@ func (db *DB) update(event *services.Event) {
 	}
 
 	existingNode, ok := db.idMap[uuid]
-	var backRefs, children []basemodels.Object
+	var backRefs, children []asfmodels.Object
 	if ok {
 		// We should consider throwing error if operation is create here
 		oldResource := existingNode.event.GetResource()
@@ -261,8 +261,8 @@ func (db *DB) removeTooOldNodesIfNeeded() {
 }
 
 func (db *DB) addDependencies(
-		resource basemodels.Object,
-		backRefs, children []basemodels.Object,
+		resource asfmodels.Object,
+		backRefs, children []asfmodels.Object,
 ) {
 	for _, backRef := range backRefs {
 		resource.AddBackReference(backRef)
@@ -288,7 +288,7 @@ func (db *DB) addDependencies(
 	}
 }
 
-func (db *DB) removeDependencies(resource basemodels.Object) {
+func (db *DB) removeDependencies(resource asfmodels.Object) {
 	for _, backRef := range resource.GetBackReferences() {
 		resource.RemoveBackReference(backRef)
 	}
@@ -319,7 +319,7 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 
 func (db *DB) updateDependentNodes(
 		event services.ResourceEvent,
-		backRefs, children []basemodels.Object,
+		backRefs, children []asfmodels.Object,
 ) {
 	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
 		db.addDependencies(event.GetResource(), backRefs, children)

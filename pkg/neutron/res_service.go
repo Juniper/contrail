@@ -6,12 +6,13 @@ import (
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/keystone"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 type keystoneClient interface {
@@ -141,7 +142,7 @@ func (sv *Service) deleteDefaultSecurityGroup(ctx context.Context, projectUUID s
 		return err
 	}
 
-	metadata, err := sv.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{
+	metadata, err := sv.MetadataGetter.GetMetadata(ctx, asfmodels.Metadata{
 		FQName: projectResponse.GetProject().DefaultSecurityGroupFQName(),
 		Type:   models.KindSecurityGroup,
 	})

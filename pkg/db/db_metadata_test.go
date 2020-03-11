@@ -5,14 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 func TestService_ListMetadata(t *testing.T) {
 
-	dbMetadatas := []*basemodels.Metadata{
+	dbMetadatas := []*models.Metadata{
 		{
 			UUID:   "uuid-a",
 			FQName: []string{"default", "uuid-a"},
@@ -32,13 +31,13 @@ func TestService_ListMetadata(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		args    []*basemodels.Metadata
-		want    []*basemodels.Metadata
+		args    []*models.Metadata
+		want    []*models.Metadata
 		wantErr bool
 	}{
 		{
 			name: "Get multiple metadatas using UUID and FQName",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
@@ -47,7 +46,7 @@ func TestService_ListMetadata(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			want: []*basemodels.Metadata{
+			want: []*models.Metadata{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
@@ -62,7 +61,7 @@ func TestService_ListMetadata(t *testing.T) {
 		},
 		{
 			name: "Get multiple metadatas using UUIDs",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
@@ -70,7 +69,7 @@ func TestService_ListMetadata(t *testing.T) {
 					UUID: "uuid-c",
 				},
 			},
-			want: []*basemodels.Metadata{
+			want: []*models.Metadata{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
@@ -85,7 +84,7 @@ func TestService_ListMetadata(t *testing.T) {
 		},
 		{
 			name: "Get multiple metadatas using FQNames",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},
 					Type:   "hoge",
@@ -95,7 +94,7 @@ func TestService_ListMetadata(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			want: []*basemodels.Metadata{
+			want: []*models.Metadata{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
@@ -110,7 +109,7 @@ func TestService_ListMetadata(t *testing.T) {
 		},
 		{
 			name: "Provide only FQNames - fail",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},
 				},
@@ -122,13 +121,13 @@ func TestService_ListMetadata(t *testing.T) {
 		},
 		{
 			name: "Get metadata using FQName",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},
 					Type:   "hoge",
 				},
 			},
-			want: []*basemodels.Metadata{
+			want: []*models.Metadata{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
@@ -138,12 +137,12 @@ func TestService_ListMetadata(t *testing.T) {
 		},
 		{
 			name: "Get metadata using UUID",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
 			},
-			want: []*basemodels.Metadata{
+			want: []*models.Metadata{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
@@ -154,7 +153,7 @@ func TestService_ListMetadata(t *testing.T) {
 
 		{
 			name: "Get single metadata using UUID and FQName",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
@@ -163,7 +162,7 @@ func TestService_ListMetadata(t *testing.T) {
 					Type:   "hoge",
 				},
 			},
-			want: []*basemodels.Metadata{
+			want: []*models.Metadata{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},

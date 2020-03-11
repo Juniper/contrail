@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -232,10 +232,10 @@ func createVncFilters(f Filters) []*baseservices.Filter {
 
 func createFieldMaskForUpdate(rp RequestParameters) types.FieldMask {
 	var paths []string
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(FloatingipFieldFloatingIPAddress)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(FloatingipFieldFloatingIPAddress)) {
 		paths = append(paths, models.FloatingIPFieldFloatingIPAddress)
 	}
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(FloatingipFieldPortID)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(FloatingipFieldPortID)) {
 		paths = append(paths, models.FloatingIPFieldFloatingIPFixedIPAddress)
 		paths = append(paths, models.FloatingIPFieldVirtualMachineInterfaceRefs)
 	}

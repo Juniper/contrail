@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 //CreateInstanceIP does pre-check for instance-ip
@@ -334,7 +335,7 @@ func (sv *ContrailTypeLogicService) checkIfIPAddressUpdate(request *services.Upd
 	databaseIPAddress := databaseInstanceIP.GetInstanceIPAddress()
 	fieldMask := request.GetFieldMask()
 
-	if basemodels.FieldMaskContains(&fieldMask, models.InstanceIPFieldInstanceIPAddress) &&
+	if asfmodels.FieldMaskContains(&fieldMask, models.InstanceIPFieldInstanceIPAddress) &&
 		requestIPAddress != "" && requestIPAddress != databaseIPAddress {
 		return true
 	}
