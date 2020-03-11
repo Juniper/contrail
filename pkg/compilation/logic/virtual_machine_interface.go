@@ -6,10 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // VirtualMachineInterfaceIntent intent
@@ -19,7 +20,7 @@ type VirtualMachineInterfaceIntent struct {
 }
 
 // GetObject returns embedded resource object
-func (i *VirtualMachineInterfaceIntent) GetObject() basemodels.Object {
+func (i *VirtualMachineInterfaceIntent) GetObject() asfmodels.Object {
 	return i.VirtualMachineInterface
 }
 

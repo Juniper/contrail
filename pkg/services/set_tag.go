@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Juniper/asf/pkg/apiserver"
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/asf/pkg/apiserver"
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/models"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // SetTagPath is the path and the name of the set-tag endpoint.
@@ -100,8 +100,8 @@ func (p *SetTagPlugin) SetTag(ctx context.Context, setTag *SetTagRequest) (*type
 }
 
 func (p *SetTagPlugin) handleTagAttr(
-	ctx context.Context, tagAttr *SetTagAttr, obj basemodels.Object, refs basemodels.References,
-) (basemodels.References, error) {
+	ctx context.Context, tagAttr *SetTagAttr, obj asfmodels.Object, refs asfmodels.References,
+) (asfmodels.References, error) {
 	switch {
 	case tagAttr.isDeleteRequest():
 		return removeTagsOfType(refs, tagAttr.GetType()), nil
@@ -110,7 +110,7 @@ func (p *SetTagPlugin) handleTagAttr(
 
 		uuid, err := p.getTagUUIDInScope(ctx, tagAttr.GetType(), tagAttr.GetValue().GetValue(), tagAttr.IsGlobal, obj)
 
-		return append(refs, basemodels.NewUUIDReference(uuid, models.KindTag)), err
+		return append(refs, asfmodels.NewUUIDReference(uuid, models.KindTag)), err
 	case tagAttr.hasAddValues():
 		for _, tagValue := range tagAttr.AddValues {
 			uuid, err := p.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
@@ -118,7 +118,7 @@ func (p *SetTagPlugin) handleTagAttr(
 				return nil, err
 			}
 
-			refs = append(refs, basemodels.NewUUIDReference(uuid, models.KindTag))
+			refs = append(refs, asfmodels.NewUUIDReference(uuid, models.KindTag))
 		}
 		return refs, nil
 	case tagAttr.hasDeleteValues():
@@ -131,7 +131,7 @@ func (p *SetTagPlugin) handleTagAttr(
 
 			toDelete[uuid] = true
 		}
-		return refs.Filter(func(r basemodels.Reference) bool {
+		return refs.Filter(func(r asfmodels.Reference) bool {
 			return !toDelete[r.GetUUID()]
 		}), nil
 	default:
@@ -139,8 +139,8 @@ func (p *SetTagPlugin) handleTagAttr(
 	}
 }
 
-func removeTagsOfType(r basemodels.References, tagType string) basemodels.References {
-	return r.Filter(func(ref basemodels.Reference) bool {
+func removeTagsOfType(r asfmodels.References, tagType string) asfmodels.References {
+	return r.Filter(func(ref asfmodels.Reference) bool {
 		tType, _ := models.TagTypeValueFromFQName(ref.GetTo())
 		return tType != tagType
 	})
@@ -160,7 +160,7 @@ func cannotDetermineTagScopeError(tagName string) error {
 }
 
 func (p *SetTagPlugin) getTagFQNameInScope(
-	ctx context.Context, tagName string, isGlobal bool, obj basemodels.Object,
+	ctx context.Context, tagName string, isGlobal bool, obj asfmodels.Object,
 ) ([]string, error) {
 	tl, ok := obj.(TagLocator)
 	if !ok {
@@ -171,26 +171,26 @@ func (p *SetTagPlugin) getTagFQNameInScope(
 	case isGlobal:
 		return []string{tagName}, nil
 	case tl.Kind() == "project":
-		return basemodels.ChildFQName(tl.GetFQName(), tagName), nil
+		return asfmodels.ChildFQName(tl.GetFQName(), tagName), nil
 	case tl.GetParentType() == "project" && len(tl.GetFQName()) > 1:
 		fqName := tl.GetFQName()
 		fqName[len(fqName)-1] = tagName
 		return fqName, nil
 	case tl.GetPerms2() != nil:
 		data, err := p.MetadataGetter.GetMetadata(
-			ctx, basemodels.Metadata{UUID: tl.GetPerms2().GetOwner()},
+			ctx, asfmodels.Metadata{UUID: tl.GetPerms2().GetOwner()},
 		)
 		if err != nil {
 			return nil, errors.Wrapf(err, "cannot find %s %s owner", tagName, tl.GetUUID())
 		}
-		return basemodels.ChildFQName(data.FQName, tagName), nil
+		return asfmodels.ChildFQName(data.FQName, tagName), nil
 	default:
 		return nil, cannotDetermineTagScopeError(tagName)
 	}
 }
 
 func (p *SetTagPlugin) getTagUUIDInScope(
-	ctx context.Context, tagType, tagValue string, isGlobal bool, obj basemodels.Object,
+	ctx context.Context, tagType, tagValue string, isGlobal bool, obj asfmodels.Object,
 ) (string, error) {
 	tagName := models.CreateTagName(tagType, tagValue)
 
@@ -200,7 +200,7 @@ func (p *SetTagPlugin) getTagUUIDInScope(
 	}
 
 	m, err := p.MetadataGetter.GetMetadata(
-		ctx, basemodels.Metadata{FQName: fqName, Type: models.KindTag},
+		ctx, asfmodels.Metadata{FQName: fqName, Type: models.KindTag},
 	)
 	if err != nil {
 		return "", errors.Wrapf(err, "not able to determine the scope of the tag %s", tagName)

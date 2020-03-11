@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
@@ -25,6 +24,7 @@ import (
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 	asfkeystone "github.com/Juniper/asf/pkg/keystone"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -829,7 +829,7 @@ func contrailClusterName(t *testing.T, suffix string) string {
 func createContrailCluster(t *testing.T, hc *integration.HTTPAPIClient, clusterName string) (cleanup func()) {
 	integration.CreateContrailCluster(t, hc, &models.ContrailCluster{
 		UUID:       contrailClusterUUID(clusterName),
-		FQName:     []string{basemodels.DefaultNameForKind(models.KindGlobalSystemConfig), clusterName},
+		FQName:     []string{asfmodels.DefaultNameForKind(models.KindGlobalSystemConfig), clusterName},
 		ParentType: models.KindGlobalSystemConfig,
 	})
 	return func() {

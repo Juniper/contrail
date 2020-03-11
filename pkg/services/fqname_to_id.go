@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // FQNameToIDService interface.
@@ -39,7 +39,7 @@ func (svc *ContrailService) FQNameToID(
 	ctx context.Context,
 	request *FQNameToIDRequest,
 ) (*FQNameToIDResponse, error) {
-	metadata, err := svc.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: request.Type, FQName: request.FQName})
+	metadata, err := svc.MetadataGetter.GetMetadata(ctx, models.Metadata{Type: request.Type, FQName: request.FQName})
 	if err != nil {
 		//TODO adding Project
 		errMsg := fmt.Sprintf("Failed to retrieve metadata for FQName %v and Type %v", request.FQName, request.Type)

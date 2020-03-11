@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -243,14 +243,14 @@ func setupReadServiceMock(s *ContrailTypeLogicService, databaseFP *models.Firewa
 	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
-		func(_ context.Context, requested basemodels.Metadata) (
-			response *basemodels.Metadata, err error,
+		func(_ context.Context, requested asfmodels.Metadata) (
+			response *asfmodels.Metadata, err error,
 		) {
 			if requested.UUID == "firewall-rule-uuid-1" {
 				return nil, errutil.ErrorNotFound
 			}
 
-			return &basemodels.Metadata{
+			return &asfmodels.Metadata{
 				UUID:   "firewall-rule-uuid-2",
 				FQName: []string{"firewall-rule-uuid-2"},
 			}, nil

@@ -6,10 +6,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const defaultGSCName = "default-global-system-config"
@@ -162,7 +163,7 @@ func (sv *ContrailTypeLogicService) getDefaultGlobalSystemConfigUUID(ctx context
 	defaultGSCFqName := sv.getDefaultGlobalSystemConfigFqName()
 	defaultGSCMeta, err := sv.MetadataGetter.GetMetadata(
 		ctx,
-		basemodels.Metadata{
+		asfmodels.Metadata{
 			FQName: defaultGSCFqName,
 			Type:   models.KindGlobalSystemConfig,
 		},

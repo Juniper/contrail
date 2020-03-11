@@ -5,10 +5,11 @@ import (
 	"strconv"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // CreateForwardingClass performs type specific validation.
@@ -52,7 +53,7 @@ func (sv *ContrailTypeLogicService) UpdateForwardingClass(
 			}
 
 			reqFrwdClassID := forwardingClass.GetForwardingClassID()
-			if basemodels.FieldMaskContains(&fm, models.ForwardingClassFieldForwardingClassID) &&
+			if asfmodels.FieldMaskContains(&fm, models.ForwardingClassFieldForwardingClassID) &&
 				databaseFC.GetForwardingClassID() != reqFrwdClassID {
 
 				err = checkForwardingClassID(ctx, sv, reqFrwdClassID)
