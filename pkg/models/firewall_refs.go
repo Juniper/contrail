@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // checkAssociatedRefsInSameScope checks scope of firewall resources references
 // so that global firewall resource cannot reference scoped resources.
-func checkAssociatedRefsInSameScope(obj basemodels.Object, fqName []string, refs []basemodels.Reference) error {
+func checkAssociatedRefsInSameScope(obj models.Object, fqName []string, refs []models.Reference) error {
 	if isScopedFirewallResource(fqName) {
 		return nil
 	}
@@ -31,7 +31,7 @@ func isScopedFirewallResource(fqName []string) bool {
 	return len(fqName) != 2
 }
 
-func checkRefInSameScope(obj basemodels.Object, ref basemodels.Reference, fqName []string) error {
+func checkRefInSameScope(obj models.Object, ref models.Reference, fqName []string) error {
 	if len(ref.GetTo()) == 2 {
 		return nil
 	}
@@ -39,10 +39,10 @@ func checkRefInSameScope(obj basemodels.Object, ref basemodels.Reference, fqName
 	return fmt.Errorf(
 		"global %s %s (%s) cannot reference a scoped %s %s (%s)",
 		formatResourceKind(obj.Kind()),
-		basemodels.FQNameToString(fqName),
+		models.FQNameToString(fqName),
 		obj.GetUUID(),
 		formatResourceKind(ref.GetToKind()),
-		basemodels.FQNameToString(ref.GetTo()),
+		models.FQNameToString(ref.GetTo()),
 		ref.GetUUID(),
 	)
 }

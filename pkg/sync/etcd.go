@@ -1,9 +1,9 @@
 package sync
 
 import (
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/sync"
 	"github.com/Juniper/contrail/pkg/etcd"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"

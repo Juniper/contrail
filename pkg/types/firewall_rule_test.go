@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -73,22 +73,22 @@ func firewallRuleSetupMetadataMocks(s *ContrailTypeLogicService) {
 	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
-		func(_ context.Context, requested basemodels.Metadata) (
-			response *basemodels.Metadata, err error,
+		func(_ context.Context, requested asfmodels.Metadata) (
+			response *asfmodels.Metadata, err error,
 		) {
 			return firewallRuleSetupMetadata(requested)
 		},
 	).AnyTimes()
 }
 
-func firewallRuleSetupMetadata(requested basemodels.Metadata) (
-	*basemodels.Metadata, error) {
+func firewallRuleSetupMetadata(requested asfmodels.Metadata) (
+	*asfmodels.Metadata, error) {
 	if requested.Type == models.KindVirtualNetwork {
 		if requested.UUID == "virtual-network-uuid-1" {
 			return nil, errutil.ErrorNotFound
 		}
 
-		return &basemodels.Metadata{
+		return &asfmodels.Metadata{
 			UUID:   "virtual-network-uuid-2",
 			FQName: []string{"virtual-network-uuid-2"},
 		}, nil
@@ -99,33 +99,33 @@ func firewallRuleSetupMetadata(requested basemodels.Metadata) (
 			return nil, errutil.ErrorNotFound
 		}
 
-		return &basemodels.Metadata{
+		return &asfmodels.Metadata{
 			UUID:   "address-group-uuid-2",
 			FQName: []string{"address-group-uuid-2"},
 		}, nil
 	}
 
 	if requested.Type == models.KindTagType {
-		return &basemodels.Metadata{
+		return &asfmodels.Metadata{
 			UUID: "tag-type-uuid",
 		}, nil
 	}
 
 	if requested.FQName[0] == "namespace=default" {
-		return &basemodels.Metadata{
+		return &asfmodels.Metadata{
 			UUID:   "tag-uuid-1",
 			FQName: []string{"namespace=default"},
 		}, nil
 	}
 
 	if requested.FQName[0] == "domain-uuid" {
-		return &basemodels.Metadata{
+		return &asfmodels.Metadata{
 			UUID:   "tag-uuid-2",
 			FQName: []string{"domain-uuid", "project-uuid", "namespace=default"},
 		}, nil
 	}
 
-	return &basemodels.Metadata{
+	return &asfmodels.Metadata{
 		UUID:   "tag-uuid-3",
 		FQName: []string{"namespace=contrail"},
 	}, nil
@@ -634,7 +634,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						basemodels.JoinPath(
+						asfmodels.JoinPath(
 							models.FirewallRuleFieldService,
 							models.FirewallServiceTypeFieldProtocol,
 						),
@@ -712,7 +712,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						basemodels.JoinPath(
+						asfmodels.JoinPath(
 							models.FirewallRuleFieldService,
 							models.FirewallServiceTypeFieldProtocol,
 						),
@@ -748,11 +748,11 @@ func TestUpdateFirewallRule(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						basemodels.JoinPath(
+						asfmodels.JoinPath(
 							models.FirewallRuleFieldEndpoint1,
 							models.FirewallRuleEndpointTypeFieldAddressGroup,
 						),
-						basemodels.JoinPath(
+						asfmodels.JoinPath(
 							models.FirewallRuleFieldEndpoint1,
 							models.FirewallRuleEndpointTypeFieldAny,
 						),
@@ -778,7 +778,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						basemodels.JoinPath(
+						asfmodels.JoinPath(
 							models.FirewallRuleFieldEndpoint1,
 							models.FirewallRuleEndpointTypeFieldTags,
 						),
@@ -823,7 +823,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						basemodels.JoinPath(
+						asfmodels.JoinPath(
 							models.FirewallRuleFieldEndpoint1,
 							models.FirewallRuleEndpointTypeFieldAddressGroup,
 						),

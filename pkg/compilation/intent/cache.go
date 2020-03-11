@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/sirupsen/logrus"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // Cache stores intents.
@@ -147,7 +146,7 @@ func (s *intentStore) storeInternal(i Intent) {
 	s.uuidToType[i.GetUUID()] = i.Kind()
 }
 
-func (s *intentStore) addDependencies(i Intent, backRefs, children []basemodels.Object) {
+func (s *intentStore) addDependencies(i Intent, backRefs, children []models.Object) {
 	for _, backRef := range backRefs {
 		i.AddBackReference(backRef)
 	}
@@ -220,5 +219,5 @@ func (s *intentStore) removeDependencies(typeName string, q Query) {
 }
 
 func fqNameKey(fqName []string) string {
-	return basemodels.FQNameToString(fqName)
+	return models.FQNameToString(fqName)
 }

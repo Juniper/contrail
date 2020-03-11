@@ -10,11 +10,12 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 //CreateVirtualNetwork do pre check and post setup for virtual network.
@@ -196,19 +197,19 @@ func checkMultiPolicyServiceChainConfig(
 	updateVN := request.GetVirtualNetwork()
 	fm := request.GetFieldMask()
 
-	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldMultiPolicyServiceChainsEnabled) {
+	if asfmodels.FieldMaskContains(&fm, models.VirtualNetworkFieldMultiPolicyServiceChainsEnabled) {
 		currentVN.MultiPolicyServiceChainsEnabled = updateVN.MultiPolicyServiceChainsEnabled
 	}
 	if !currentVN.MultiPolicyServiceChainsEnabled {
 		return nil
 	}
-	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldImportRouteTargetList) {
+	if asfmodels.FieldMaskContains(&fm, models.VirtualNetworkFieldImportRouteTargetList) {
 		currentVN.ImportRouteTargetList = updateVN.ImportRouteTargetList
 	}
-	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldExportRouteTargetList) {
+	if asfmodels.FieldMaskContains(&fm, models.VirtualNetworkFieldExportRouteTargetList) {
 		currentVN.ExportRouteTargetList = updateVN.ExportRouteTargetList
 	}
-	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldRouteTargetList) {
+	if asfmodels.FieldMaskContains(&fm, models.VirtualNetworkFieldRouteTargetList) {
 		currentVN.RouteTargetList = updateVN.RouteTargetList
 	}
 
@@ -291,7 +292,7 @@ func (sv *ContrailTypeLogicService) processVxlanIDUpdate(
 	currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
 	fieldMask *protobuf.FieldMask,
 ) error {
-	if !basemodels.FieldMaskContains(
+	if !asfmodels.FieldMaskContains(
 		fieldMask,
 		models.VirtualNetworkFieldVirtualNetworkProperties,
 		models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
@@ -464,7 +465,7 @@ func (sv *ContrailTypeLogicService) updateVnSubnetsInAddrMgmt(
 	fieldMask *protobuf.FieldMask,
 ) error {
 
-	if !basemodels.FieldMaskContains(fieldMask, models.VirtualNetworkFieldNetworkIpamRefs) {
+	if !asfmodels.FieldMaskContains(fieldMask, models.VirtualNetworkFieldNetworkIpamRefs) {
 		return nil
 	}
 

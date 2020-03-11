@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	proto "github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 func TestUpdateData(t *testing.T) {
@@ -20,35 +18,35 @@ func TestUpdateData(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		old, update basemodels.Object
+		old, update Object
 		fm          types.FieldMask
-		want        basemodels.Object
+		want        Object
 		fails       bool
 	}{
 		{name: "empty"},
 		{
 			name: "empty vn",
-			old:  &VirtualNetwork{},
-			want: &VirtualNetwork{},
+			old:  &stubObject{},
+			want: &stubObject{},
 		},
 		{
 			name:   "empty vn with empty update",
-			old:    &VirtualNetwork{},
-			update: &VirtualNetwork{},
-			want:   &VirtualNetwork{},
+			old:    &stubObject{},
+			update: &stubObject{},
+			want:   &stubObject{},
 		},
 		{
 			name:   "empty fieldmask",
-			old:    &VirtualNetwork{UUID: "old-uuid", Name: "old-name"},
-			update: &VirtualNetwork{UUID: "new-uuid"},
-			want:   &VirtualNetwork{UUID: "old-uuid", Name: "old-name"},
+			old:    &stubObject{UUID: "old-uuid", Name: "old-name"},
+			update: &stubObject{UUID: "new-uuid"},
+			want:   &stubObject{UUID: "old-uuid", Name: "old-name"},
 		},
 		{
 			name:   "set UUID",
-			old:    &VirtualNetwork{UUID: "old-uuid", Name: "old-name", DisplayName: "old-dn"},
-			update: &VirtualNetwork{UUID: "new-uuid", DisplayName: "new-dn"},
+			old:    &stubObject{UUID: "old-uuid", Name: "old-name", DisplayName: "old-dn"},
+			update: &stubObject{UUID: "new-uuid", DisplayName: "new-dn"},
 			fm:     types.FieldMask{Paths: []string{"uuid"}},
-			want:   &VirtualNetwork{UUID: "new-uuid", Name: "old-name", DisplayName: "old-dn"},
+			want:   &stubObject{UUID: "new-uuid", Name: "old-name", DisplayName: "old-dn"},
 		},
 	}
 	for _, tt := range tests {

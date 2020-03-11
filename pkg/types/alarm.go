@@ -5,9 +5,10 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 //CreateAlarm does pre check for alarm.
@@ -49,7 +50,7 @@ func (sv *ContrailTypeLogicService) UpdateAlarm(
 		func(ctx context.Context) error {
 
 			// check if alarm rules was present in JSON
-			if basemodels.FieldMaskContains(&fm, models.AlarmFieldAlarmRules) {
+			if asfmodels.FieldMaskContains(&fm, models.AlarmFieldAlarmRules) {
 
 				// check if alarm rules are valid
 				if err = alarm.Validate(); err != nil {
