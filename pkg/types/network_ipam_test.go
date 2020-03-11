@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -416,7 +416,7 @@ func TestUpdateNetworkIpam(t *testing.T) {
 			}
 			if tt.newNetworkIpamParams != nil {
 				newNetworkIpam = createTestNetworkIpam(tt.newNetworkIpamParams)
-				fMask = basemodels.MapToFieldMask(newNetworkIpam.ToMap())
+				fMask = asfmodels.MapToFieldMask(newNetworkIpam.ToMap())
 			}
 
 			getNetworkIpamResponse := &services.GetNetworkIpamResponse{NetworkIpam: oldNetworkIpam}

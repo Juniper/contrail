@@ -6,7 +6,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -192,13 +192,13 @@ func permsAccessAllowed(rq *request, access int64) bool {
 func actionToPerms(a Action) int64 {
 	switch a {
 	case ActionCreate:
-		return basemodels.PermsW
+		return models.PermsW
 	case ActionDelete:
-		return basemodels.PermsW
+		return models.PermsW
 	case ActionUpdate:
-		return basemodels.PermsW
+		return models.PermsW
 	case ActionRead:
-		return basemodels.PermsR
+		return models.PermsR
 	}
-	return basemodels.PermsR
+	return models.PermsR
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // IDToFQNameService interface.
@@ -39,7 +39,7 @@ func (svc *ContrailService) IDToFQName(
 	ctx context.Context,
 	request *IDToFQNameRequest,
 ) (*IDToFQNameResponse, error) {
-	metadata, err := svc.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: request.UUID})
+	metadata, err := svc.MetadataGetter.GetMetadata(ctx, models.Metadata{UUID: request.UUID})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to retrieve metadata for UUID %v", request.UUID)
 	}

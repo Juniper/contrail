@@ -43,7 +43,7 @@ TESTPKGS=./cmd/contrailschema \
 	./pkg/httputil \
 	./pkg/keystone \
 	./pkg/logutil \
-	./pkg/models/basemodels \
+	./pkg/models \
 	./pkg/osutil \
 	./pkg/proxy \
 	./pkg/rbac \
