@@ -49,6 +49,7 @@ TESTPKGS=./cmd/contrailschema \
 	./pkg/rbac \
 	./pkg/retry \
 	./pkg/schema \
+	./pkg/sync \
 	./pkg/services/baseservices \
 	./pkg/testutil
 

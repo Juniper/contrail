@@ -376,19 +376,21 @@ func startVNCReplicator(es *endpoint.Store) (vncReplicator *replication.Replicat
 	return vncReplicator, nil
 }
 
+const (
+	syncID = "sync-service"
+)
+
 func startSync() {
 	if err := retry.Do(func() (retry bool, err error) {
-		s, err := syncp.NewService()
+		producer, err := syncp.NewEtcdFeeder(syncID)
 		if err != nil {
-			logutil.FatalWithStackTrace(err)
+			return false, err
 		}
-		defer s.Close()
-
-		err = s.Run()
+		err = producer.Start(context.Background())
 
 		return errutil.ShouldRetry(err), err
 	}, retry.WithLog(logrus.StandardLogger()), retry.WithInterval(syncRetryInterval)); err != nil {
-		logrus.Warn(err)
+		logutil.FatalWithStackTrace(err)
 	}
 }
 
