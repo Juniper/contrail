@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 func TestTagTypeValueFromTagFQName(t *testing.T) {
@@ -20,7 +20,7 @@ func TestTagTypeValueFromTagFQName(t *testing.T) {
 		{[]string{"grandparent", "parent", "foo=bar"}, "foo", "bar"},
 	}
 	for _, tt := range tests {
-		t.Run(basemodels.FQNameToString(tt.fqName), func(t *testing.T) {
+		t.Run(models.FQNameToString(tt.fqName), func(t *testing.T) {
 			gotTagType, gotTagValue := TagTypeValueFromFQName(tt.fqName)
 			assert.Equal(t, tt.wantTagType, gotTagType)
 			assert.Equal(t, tt.wantTagValue, gotTagValue)

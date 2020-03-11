@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -60,7 +60,7 @@ func TestCreateDomain(t *testing.T) {
 				UUID: "uuid",
 				Perms2: &models.PermType2{
 					Share: []*models.ShareType{{
-						TenantAccess: basemodels.PermsRW,
+						TenantAccess: asfmodels.PermsRW,
 						Tenant:       "domain:any_uuid",
 					}},
 				},
@@ -78,7 +78,7 @@ func TestCreateDomain(t *testing.T) {
 			createDomainResponse, err := service.CreateDomain(ctx, tt.createRequest)
 			assert.NoError(t, err)
 			assert.NotNil(t, createDomainResponse)
-			assert.Equal(t, getTenantAccess(createDomainResponse, tt.createRequest.Domain.UUID), int64(basemodels.PermsRW))
+			assert.Equal(t, getTenantAccess(createDomainResponse, tt.createRequest.Domain.UUID), int64(asfmodels.PermsRW))
 		})
 	}
 }

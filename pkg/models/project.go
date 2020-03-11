@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -13,7 +13,7 @@ const (
 
 // DefaultSecurityGroup returns the default SecurityGroup for the project.
 func (m *Project) DefaultSecurityGroup() *SecurityGroup {
-	thisSecurityGroup := basemodels.FQNameToString(m.DefaultSecurityGroupFQName())
+	thisSecurityGroup := models.FQNameToString(m.DefaultSecurityGroupFQName())
 	return &SecurityGroup{
 		Name:       DefaultSecurityGroupName,
 		ParentUUID: m.GetUUID(),
@@ -49,7 +49,7 @@ func (m *Project) DefaultSecurityGroup() *SecurityGroup {
 
 // DefaultSecurityGroupFQName returns the FQName of the project's default SecurityGroup.
 func (m *Project) DefaultSecurityGroupFQName() []string {
-	return basemodels.ChildFQName(m.GetFQName(), DefaultSecurityGroupName)
+	return models.ChildFQName(m.GetFQName(), DefaultSecurityGroupName)
 }
 
 // MakeDefaultSecurityGroupPolicyRule makes a policy rule for the default SecurityGroup.

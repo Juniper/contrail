@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // TODO: move to ASF
@@ -22,9 +22,9 @@ func TestUpdateData(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		old, update basemodels.Object
+		old, update models.Object
 		fm          types.FieldMask
-		want        basemodels.Object
+		want        models.Object
 		fails       bool
 	}{
 		{name: "empty"},
