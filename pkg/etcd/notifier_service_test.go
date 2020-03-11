@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	asfetcd "github.com/Juniper/asf/pkg/etcd"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
@@ -157,7 +158,7 @@ func TestEtcdNotifierService(t *testing.T) {
 			ec.Clear(t)
 
 			check := integration.StartWatchers(t, tt.name, tt.watchers)
-			sv, err := etcd.NewNotifierService(etcdPath, models.JSONCodec)
+			sv, err := etcd.NewNotifierService(etcdPath, asfmodels.JSONCodec)
 			require.NoError(t, err)
 
 			tt.ops(t, context.Background(), sv)

@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 
 	asfetcd "github.com/Juniper/asf/pkg/etcd"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	db "{{ dbImportPath }}"
 	etcd "{{ etcdImportPath }}"
 	models "{{ modelsImportPath }}"
@@ -55,7 +56,7 @@ func SetupServiceChain(
 
 	if viper.GetBool("server.notify_etcd") {
 		// TODO(Michał): Make the codec configurable
-		en, enErr := etcd.NewNotifierService(viper.GetString(asfetcd.ETCDPathVK), models.JSONCodec)
+		en, enErr := etcd.NewNotifierService(viper.GetString(asfetcd.ETCDPathVK), asfmodels.JSONCodec)
 		if enErr != nil {
 			return nil, errors.Wrap(enErr, "new notifier service")
 		}

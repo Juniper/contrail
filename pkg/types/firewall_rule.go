@@ -8,10 +8,11 @@ import (
 	"github.com/gogo/protobuf/types"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // CreateFirewallRule performs types specific validation,
@@ -163,12 +164,12 @@ func CheckServiceProperties(
 	fr *models.FirewallRule, databaseFR *models.FirewallRule, fm *types.FieldMask,
 ) error {
 	serviceGroupRefs := fr.GetServiceGroupRefs()
-	if fm != nil && !basemodels.FieldMaskContains(fm, models.FirewallRuleFieldServiceGroupRefs) {
+	if fm != nil && !asfmodels.FieldMaskContains(fm, models.FirewallRuleFieldServiceGroupRefs) {
 		serviceGroupRefs = databaseFR.GetServiceGroupRefs()
 	}
 
 	service := fr.GetService()
-	if fm != nil && !basemodels.FieldMaskContains(fm, models.FirewallRuleFieldService) {
+	if fm != nil && !asfmodels.FieldMaskContains(fm, models.FirewallRuleFieldService) {
 		service = databaseFR.GetService()
 	}
 
@@ -190,7 +191,7 @@ func CheckServiceProperties(
 // SetProtocolID sets protocolID based on protocol property
 func SetProtocolID(fr *models.FirewallRule, fm *types.FieldMask) error {
 	if fr.GetService() == nil || (fm != nil &&
-		!basemodels.FieldMaskContains(
+		!asfmodels.FieldMaskContains(
 			fm,
 			models.FirewallRuleFieldService,
 			models.FirewallServiceTypeFieldProtocol,
@@ -201,7 +202,7 @@ func SetProtocolID(fr *models.FirewallRule, fm *types.FieldMask) error {
 	protocolID, err := fr.GetProtocolID()
 	fr.Service.ProtocolID = protocolID
 
-	basemodels.FieldMaskAppend(fm, models.FirewallRuleFieldService, models.FirewallServiceTypeFieldProtocolID)
+	asfmodels.FieldMaskAppend(fm, models.FirewallRuleFieldService, models.FirewallServiceTypeFieldProtocolID)
 	return err
 }
 
@@ -231,7 +232,7 @@ func (sv *ContrailTypeLogicService) setMatchTagTypes(
 	}
 
 	if len(fr.GetMatchTagTypes().GetTagType()) > 0 {
-		basemodels.FieldMaskAppend(
+		asfmodels.FieldMaskAppend(
 			fm,
 			models.FirewallRuleFieldMatchTagTypes,
 			models.FirewallRuleMatchTagsTypeIdListFieldTagType,
@@ -250,7 +251,7 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 
 	m, err := sv.MetadataGetter.GetMetadata(
 		ctx,
-		basemodels.Metadata{
+		asfmodels.Metadata{
 			FQName: []string{tagType},
 			Type:   models.KindTagType,
 		},
@@ -291,7 +292,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 
 	fr.TagRefs = []*models.FirewallRuleTagRef{}
 
-	basemodels.FieldMaskAppend(fm, models.FirewallRuleFieldTagRefs)
+	asfmodels.FieldMaskAppend(fm, models.FirewallRuleFieldTagRefs)
 	return sv.setTagRefs(ctx, fr, databaseFR, fm)
 }
 
@@ -310,13 +311,13 @@ func (sv *ContrailTypeLogicService) setTagRefs(
 			continue
 		}
 
-		if ep == nil && !basemodels.FieldMaskContains(fm, fields[i]) {
+		if ep == nil && !asfmodels.FieldMaskContains(fm, fields[i]) {
 			ep = dbEndpoints[i]
 		}
 
-		if ep != nil && basemodels.FieldMaskContains(fm, fields[i]) {
+		if ep != nil && asfmodels.FieldMaskContains(fm, fields[i]) {
 			ep.TagIds = nil
-			basemodels.FieldMaskAppend(fm, fields[i], models.FirewallRuleEndpointTypeFieldTagIds)
+			asfmodels.FieldMaskAppend(fm, fields[i], models.FirewallRuleEndpointTypeFieldTagIds)
 		}
 
 		if err := sv.processTags(ctx, fr, databaseFR, ep); err != nil {
@@ -393,7 +394,7 @@ func (sv *ContrailTypeLogicService) getTagByFQName(
 ) (*models.Tag, error) {
 	m, err := sv.MetadataGetter.GetMetadata(
 		ctx,
-		basemodels.Metadata{
+		asfmodels.Metadata{
 			FQName: tagFQName,
 			Type:   models.KindTag,
 		},
@@ -435,7 +436,7 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 			continue
 		}
 
-		if ep == nil && !basemodels.FieldMaskContains(fm, fields[i]) {
+		if ep == nil && !asfmodels.FieldMaskContains(fm, fields[i]) {
 			ep = dbEndpoints[i]
 		}
 
@@ -450,7 +451,7 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 
 func handleAddressGroupRefsFieldMask(fr *models.FirewallRule, fm *types.FieldMask) {
 	if len(fr.GetAddressGroupRefs()) > 0 {
-		basemodels.FieldMaskAppend(fm, models.FirewallRuleFieldAddressGroupRefs)
+		asfmodels.FieldMaskAppend(fm, models.FirewallRuleFieldAddressGroupRefs)
 	}
 }
 
@@ -459,14 +460,14 @@ func (sv *ContrailTypeLogicService) addAddressGroupRef(
 	fr *models.FirewallRule,
 	fqname string,
 ) error {
-	fqName := basemodels.ParseFQName(fqname)
+	fqName := asfmodels.ParseFQName(fqname)
 	if fqName == nil {
 		return nil
 	}
 
 	m, err := sv.MetadataGetter.GetMetadata(
 		ctx,
-		basemodels.Metadata{
+		asfmodels.Metadata{
 			FQName: fqName,
 			Type:   models.KindAddressGroup,
 		},

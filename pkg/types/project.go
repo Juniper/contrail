@@ -7,9 +7,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // CreateProject creates a project and ensures a default application policy set for it.
@@ -96,7 +97,7 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 	requestedProject := request.GetProject()
 
 	fm := request.GetFieldMask()
-	isVxlanChangeRequested := basemodels.FieldMaskContains(&fm, models.ProjectFieldVxlanRouting)
+	isVxlanChangeRequested := asfmodels.FieldMaskContains(&fm, models.ProjectFieldVxlanRouting)
 	if !isVxlanChangeRequested {
 		return nil
 	}
@@ -118,12 +119,12 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 	ctx context.Context, project *models.Project,
 ) error {
-	apsName := basemodels.DefaultNameForKind(models.KindApplicationPolicySet)
+	apsName := asfmodels.DefaultNameForKind(models.KindApplicationPolicySet)
 
 	response, err := sv.WriteService.CreateApplicationPolicySet(
 		ctx, &services.CreateApplicationPolicySetRequest{
 			ApplicationPolicySet: &models.ApplicationPolicySet{
-				FQName:          basemodels.ChildFQName(project.GetFQName(), apsName),
+				FQName:          asfmodels.ChildFQName(project.GetFQName(), apsName),
 				ParentType:      project.Kind(),
 				ParentUUID:      project.GetUUID(),
 				Name:            apsName,
@@ -169,7 +170,7 @@ func (sv *ContrailTypeLogicService) deleteDefaultApplicationPolicySet(
 		return errors.Wrap(err, "failed to delete application policy set refs")
 	}
 
-	defaultAPSName := basemodels.DefaultNameForKind(models.KindApplicationPolicySet)
+	defaultAPSName := asfmodels.DefaultNameForKind(models.KindApplicationPolicySet)
 
 	for _, aps := range project.GetApplicationPolicySets() {
 		if aps.GetName() == defaultAPSName {

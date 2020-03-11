@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -489,7 +489,7 @@ func TestDeleteLogicalRouter(t *testing.T) {
 
 			metadataCall := service.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT( //nolint: errcheck
 			).GetMetadata(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-				&basemodels.Metadata{
+				&asfmodels.Metadata{
 					UUID: "internal-virtual-network-uuid",
 				},
 				nil,

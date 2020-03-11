@@ -2,7 +2,8 @@ package integration
 
 import (
 	"github.com/Juniper/asf/pkg/etcd"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/asf/pkg/models"
+
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 

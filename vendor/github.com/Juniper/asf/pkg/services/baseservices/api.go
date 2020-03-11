@@ -5,9 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/labstack/echo"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 // Block of constants consumed by client code.
@@ -59,7 +58,7 @@ func GetListSpec(c echo.Context) *ListSpec {
 		Count:        parseBool(c.QueryParam(CountKey)),
 		Shared:       parseBool(c.QueryParam(SharedKey)),
 		ExcludeHrefs: parseBool(c.QueryParam(ExcludeHRefsKey)),
-		ParentFQName: basemodels.ParseFQName(c.QueryParam(ParentFQNameKey)),
+		ParentFQName: models.ParseFQName(c.QueryParam(ParentFQNameKey)),
 		ParentType:   c.QueryParam(ParentTypeKey),
 		ParentUUIDs:  parseStringList(c.QueryParam(ParentUUIDsKey)),
 		BackRefUUIDs: parseStringList(c.QueryParam(BackrefUUIDsKey)),
@@ -88,7 +87,7 @@ func (s *ListSpec) URLQuery() url.Values {
 	addQueryBool(query, SharedKey, s.Shared)
 	addQueryBool(query, ExcludeHRefsKey, s.ExcludeHrefs)
 	addQuery(query, ParentTypeKey, s.ParentType)
-	addQuery(query, ParentFQNameKey, basemodels.FQNameToString(s.ParentFQName))
+	addQuery(query, ParentFQNameKey, models.FQNameToString(s.ParentFQName))
 	addQuery(query, ParentUUIDsKey, encodeStringList(s.ParentUUIDs))
 	addQuery(query, BackrefUUIDsKey, encodeStringList(s.BackRefUUIDs))
 	// TODO(Daniel): handle RefUUIDs
