@@ -5,16 +5,16 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/asf/pkg/models"
+	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/services"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
 const (
@@ -195,7 +195,7 @@ func loadNeutronRequest(t *testing.T, path string) (r Request) {
 	var requestMap map[string]interface{}
 	require.NoError(t, fileutil.LoadFile(path, &requestMap))
 	require.NoError(t, format.ApplyMap(requestMap, &r))
-	r.Data.FieldMask = basemodels.MapToFieldMask(requestMap)
+	r.Data.FieldMask = models.MapToFieldMask(requestMap)
 	require.NoError(t, fileutil.LoadFile(path, &r))
 	return r
 }

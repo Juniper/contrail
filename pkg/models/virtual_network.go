@@ -5,7 +5,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // Virtual network forwarding modes.
@@ -24,11 +24,11 @@ const (
 //MakeNeutronCompatible makes this resource data neutron compatible.
 func (m *VirtualNetwork) MakeNeutronCompatible() {
 	//  neutorn <-> vnc sharing
-	if m.Perms2.GlobalAccess == basemodels.PermsRWX {
+	if m.Perms2.GlobalAccess == models.PermsRWX {
 		m.IsShared = true
 	}
 	if m.IsShared {
-		m.Perms2.GlobalAccess = basemodels.PermsRWX
+		m.Perms2.GlobalAccess = models.PermsRWX
 	}
 }
 
@@ -137,16 +137,16 @@ func (m *VirtualNetwork) MakeDefaultRoutingInstance() *RoutingInstance {
 
 // DefaultRoutingInstanceFQName returns the FQName of the network's default RoutingInstance.
 func (m *VirtualNetwork) DefaultRoutingInstanceFQName() []string {
-	return basemodels.ChildFQName(m.FQName, m.FQName[len(m.FQName)-1])
+	return models.ChildFQName(m.FQName, m.FQName[len(m.FQName)-1])
 }
 
 // IsLinkLocal returns true if virtual network FQName fits Link Local
 func (m *VirtualNetwork) IsLinkLocal() bool {
 	fq := []string{"default-domain", "default-project", "__link_local__"}
-	return basemodels.FQNameEquals(fq, m.GetFQName())
+	return models.FQNameEquals(fq, m.GetFQName())
 }
 
 // VxLANIntOwner returns the owner for allocating the network's VxLAN IDs.
 func (m *VirtualNetwork) VxLANIntOwner() string {
-	return fmt.Sprintf("%s_vxlan", basemodels.FQNameToString(m.GetFQName()))
+	return fmt.Sprintf("%s_vxlan", models.FQNameToString(m.GetFQName()))
 }

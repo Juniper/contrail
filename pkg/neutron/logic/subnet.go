@@ -14,10 +14,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -316,7 +317,7 @@ func (s *Subnet) Update(ctx context.Context, rp RequestParameters, id string) (R
 	if err != nil {
 		return nil, err
 	}
-	subnet.LastModified = basemodels.ToVNCTime(time.Now())
+	subnet.LastModified = asfmodels.ToVNCTime(time.Now())
 
 	_, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
 		VirtualNetwork: vn,
@@ -331,11 +332,11 @@ func (s *Subnet) Update(ctx context.Context, rp RequestParameters, id string) (R
 }
 
 func (s *Subnet) checkNotUpdatableFields(fm types.FieldMask) error {
-	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(SubnetFieldGatewayIP)) {
+	if asfmodels.FieldMaskContains(&fm, buildDataResourcePath(SubnetFieldGatewayIP)) {
 		return newSubnetError(badRequest, "update of gateway is not supported")
 	}
 
-	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(SubnetFieldAllocationPools)) {
+	if asfmodels.FieldMaskContains(&fm, buildDataResourcePath(SubnetFieldAllocationPools)) {
 		return newSubnetError(badRequest, "update of allocation_pools is not allowed")
 	}
 
@@ -369,16 +370,16 @@ func (s *Subnet) applyChangesToVncSubnet(
 	subnetUUID, vnUUID string,
 ) error {
 	fm := &rp.FieldMask
-	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldName)) {
+	if asfmodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldName)) {
 		vncSubnet.SubnetName = s.Name
 	}
-	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldEnableDHCP)) {
+	if asfmodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldEnableDHCP)) {
 		vncSubnet.EnableDHCP = s.EnableDHCP
 	}
-	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldDNSNameservers)) {
+	if asfmodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldDNSNameservers)) {
 		vncSubnet.SetDNSNameservers(s.DNSNameservers)
 	}
-	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldHostRoutes)) {
+	if asfmodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldHostRoutes)) {
 		if applySubnetHostRoutes() {
 			cidr := vncSubnet.GetSubnet().CIDR()
 			oldHostRoutes := vncHostRoutesToNeutronHostRoutes(vncSubnet.GetHostRoutes())
@@ -507,7 +508,7 @@ func portRemoveIfaceRouteTable(
 		irtName := getInterfaceRouteTableName(subnetUUID, vmi.GetUUID())
 
 		irt := vmi.FindInterfaceRouteTableRef(func(ref *models.VirtualMachineInterfaceInterfaceRouteTableRef) bool {
-			return basemodels.FQNameToName(ref.To) == irtName
+			return asfmodels.FQNameToName(ref.To) == irtName
 		})
 
 		if irt == nil {
@@ -598,7 +599,7 @@ func locateInterfaceRouteTableWithSubnet(
 ) (*models.InterfaceRouteTable, error) {
 	// TODO: Ensure that vmi object always contain valid fqname
 	irtName := getInterfaceRouteTableName(subnetUUID, vmi.GetUUID())
-	irtFQName := basemodels.ChildFQName(vmi.GetFQName(), irtName)
+	irtFQName := asfmodels.ChildFQName(vmi.GetFQName(), irtName)
 
 	if irt, err := findInterfaceRouteTable(ctx, rp, irtFQName); err != nil {
 		return nil, err
@@ -740,7 +741,7 @@ func (s *Subnet) getNetworkIpam(
 	}
 
 	parentFQName := vn.GetFQName()[:len(vn.GetFQName())-1]
-	ipamFQName := basemodels.ChildFQName(parentFQName, defaultNetworkIpamName)
+	ipamFQName := asfmodels.ChildFQName(parentFQName, defaultNetworkIpamName)
 
 	networkIpamRes, err := rp.ReadService.ListNetworkIpam(ctx, &services.ListNetworkIpamRequest{
 		Spec: &baseservices.ListSpec{
