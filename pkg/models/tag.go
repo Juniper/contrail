@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // TagTypeValueFromFQName extracts type and value from tag's fqName.
 func TagTypeValueFromFQName(fqName []string) (tagType, tagValue string) {
-	return TagTypeValueFromName(basemodels.FQNameToName(fqName))
+	return TagTypeValueFromName(models.FQNameToName(fqName))
 }
 
 // TagTypeValueFromName extracts type and value from tag's name.

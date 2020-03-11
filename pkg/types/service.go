@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
@@ -33,8 +33,8 @@ type IntPoolAllocator interface {
 
 //MetadataGetter provides getter for metadata.
 type MetadataGetter interface {
-	GetMetadata(ctx context.Context, requested basemodels.Metadata) (*basemodels.Metadata, error)
-	ListMetadata(ctx context.Context, requested []*basemodels.Metadata) ([]*basemodels.Metadata, error)
+	GetMetadata(ctx context.Context, requested models.Metadata) (*models.Metadata, error)
+	ListMetadata(ctx context.Context, requested []*models.Metadata) ([]*models.Metadata, error)
 }
 
 // ContrailTypeLogicService is a service for implementing type specific logic
@@ -55,7 +55,7 @@ func (sv *ContrailTypeLogicService) FQNameToUUID(
 	fqName []string,
 	resourceType string,
 ) (string, error) {
-	metadata, err := sv.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: resourceType, FQName: fqName})
+	metadata, err := sv.MetadataGetter.GetMetadata(ctx, models.Metadata{Type: resourceType, FQName: fqName})
 	if err != nil {
 		return "", err
 	}

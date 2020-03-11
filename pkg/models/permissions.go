@@ -1,15 +1,15 @@
 package models
 
 import (
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 var defaultPermissions = &PermType{
 	Owner:       "cloud-admin",
-	OwnerAccess: basemodels.PermsRWX,
-	OtherAccess: basemodels.PermsRWX,
+	OwnerAccess: models.PermsRWX,
+	OtherAccess: models.PermsRWX,
 	Group:       "cloud-admin-group",
-	GroupAccess: basemodels.PermsRWX,
+	GroupAccess: models.PermsRWX,
 }
 
 // Merge sets undefined fields from source values

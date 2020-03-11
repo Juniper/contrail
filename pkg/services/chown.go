@@ -7,13 +7,13 @@ import (
 
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -59,7 +59,7 @@ func (p *ChownPlugin) Chown(ctx context.Context, request *ChownRequest) (*types.
 	}
 
 	if err := p.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		metadata, err := p.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: request.GetUUID()})
+		metadata, err := p.MetadataGetter.GetMetadata(ctx, asfmodels.Metadata{UUID: request.GetUUID()})
 		if err != nil {
 			return errors.Wrapf(err, "failed to change the owner of the resource with UUID '%v'", request.GetUUID())
 		}
@@ -68,7 +68,7 @@ func (p *ChownPlugin) Chown(ctx context.Context, request *ChownRequest) (*types.
 		// TODO: check permissions, see https://github.com/Juniper/contrail-controller/blob/137e2a08025e1ae7084621c0f081f7b99d1b04cd/src/config/api-server/vnc_cfg_api_server/vnc_cfg_api_server.py#L2409
 
 		var fm types.FieldMask
-		basemodels.FieldMaskAppend(&fm, basemodels.CommonFieldPerms2, models.PermType2FieldOwner)
+		asfmodels.FieldMaskAppend(&fm, asfmodels.CommonFieldPerms2, models.PermType2FieldOwner)
 
 		event, err := NewEvent(EventOption{
 			UUID:      request.GetUUID(),

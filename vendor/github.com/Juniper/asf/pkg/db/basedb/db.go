@@ -11,7 +11,7 @@ import (
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -230,7 +230,7 @@ func (db *BaseDB) CreateParentReference(
 	possibleParents []string,
 	optional bool,
 ) (err error) {
-	parentSchemaID := basemodels.KindToSchemaID(obj.GetParentType())
+	parentSchemaID := models.KindToSchemaID(obj.GetParentType())
 
 	if !format.ContainsString(possibleParents, parentSchemaID) {
 		if optional {
