@@ -13,7 +13,6 @@ import (
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -22,6 +21,7 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 	models "{{ modelsImportPath }}"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // TODO(dfurman): move non-template code out of template
@@ -44,7 +44,7 @@ const (
 )
 
 // Reference is a generic reference that can be retrieved from ref update event.
-type Reference = basemodels.Reference
+type Reference = asfmodels.Reference
 
 // Chain setup chain of services.
 func Chain(services ...Service) {
@@ -229,7 +229,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	if data.RefUUID == "" {
-		m, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
+		m, err := service.MetadataGetter.GetMetadata(ctx, asfmodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
 		if err != nil {
 			return errutil.ToHTTPError(errutil.ErrorBadRequestf("error resolving ref-uuid using ref-fq-name: %v", err))
 		}
@@ -237,7 +237,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	}
 
 	e, err := NewRefUpdateEvent(RefUpdateOption{
-		ReferenceType: basemodels.ReferenceKind(data.Type, data.RefType),
+		ReferenceType: asfmodels.ReferenceKind(data.Type, data.RefType),
 		FromUUID:      data.UUID,
 		ToUUID:        data.RefUUID,
 		Operation:     data.Operation,
@@ -314,7 +314,7 @@ func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest
 	}
 
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		metadata, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: request.GetUUID()})
+		metadata, err := service.MetadataGetter.GetMetadata(ctx, asfmodels.Metadata{UUID: request.GetUUID()})
 		if err != nil {
 			return errors.Wrapf(err, "failed to change the owner of the resource with UUID '%v'", request.GetUUID())
 		}
@@ -323,7 +323,7 @@ func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest
 		// TODO: check permissions, see https://github.com/Juniper/contrail-controller/blob/137e2a08025e1ae7084621c0f081f7b99d1b04cd/src/config/api-server/vnc_cfg_api_server/vnc_cfg_api_server.py#L2409
 
 		var fm types.FieldMask
-		basemodels.FieldMaskAppend(&fm, basemodels.CommonFieldPerms2, models.PermType2FieldOwner)
+		asfmodels.FieldMaskAppend(&fm, asfmodels.CommonFieldPerms2, models.PermType2FieldOwner)
 
 		event, err := NewEvent(EventOption{
 			UUID:      request.GetUUID(),
@@ -692,8 +692,8 @@ func sortDelete(ctx context.Context, service *ContrailService, events *EventList
 
 func getRefMapFromObjects(
 		ctx context.Context, service *ContrailService, events []*Event,
-) (map[*Event]basemodels.References, error) {
-	refMap := make(map[*Event]basemodels.References)
+) (map[*Event]asfmodels.References, error) {
+	refMap := make(map[*Event]asfmodels.References)
 	for i, ev := range events {
 		obj, _, err := service.getObjectAndType(ctx, ev.GetUUID())
 		if err != nil {
@@ -709,7 +709,7 @@ func getRefMapFromObjects(
 	return refMap, nil
 }
 
-func syncSort(events *EventList, refMap map[*Event]basemodels.References) (*EventList, error) {
+func syncSort(events *EventList, refMap map[*Event]asfmodels.References) (*EventList, error) {
 	g := NewEventGraph(events.Events, refMap)
 	if g.HasCycle() {
 		return events, errors.New("cycle found in reference graph")
@@ -760,8 +760,8 @@ func (e *EventList) separateListByOperation() (*EventList, *EventList, *EventLis
 	return createList, updateList, deleteList
 }
 
-func getRefMapFromEvents(events []*Event) map[*Event]basemodels.References {
-	refMap := map[*Event]basemodels.References{}
+func getRefMapFromEvents(events []*Event) map[*Event]asfmodels.References {
+	refMap := map[*Event]asfmodels.References{}
 	for _, ev := range events {
 		refMap[ev] = ev.getReferences()
 	}
@@ -876,7 +876,7 @@ func (service *ContrailService) PropCollectionUpdate(
 func (service *ContrailService) getObjectAndType(
 		ctx context.Context,
 		uuid string,
-) (basemodels.Object, string, error) {
+) (asfmodels.Object, string, error) {
 	idResp, err := service.IDToFQName(ctx, &IDToFQNameRequest{UUID: uuid})
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "error getting type for provided UUID: %v", uuid)
@@ -892,7 +892,7 @@ func (service *ContrailService) getObjectAndType(
 func (service *ContrailService) updatePropCollection(
 		ctx context.Context,
 		request *PropCollectionUpdateRequest,
-		obj basemodels.Object,
+		obj asfmodels.Object,
 		objType string,
 ) error {
 	updateMap, err := createUpdateMap(obj, request.Updates)
@@ -915,11 +915,11 @@ func (service *ContrailService) updatePropCollection(
 }
 
 func createUpdateMap(
-		object basemodels.Object, updates []*PropCollectionChange,
+		object asfmodels.Object, updates []*PropCollectionChange,
 ) (map[string]interface{}, error) {
 	updateMap := map[string]interface{}{}
 	for _, update := range updates {
-		updated, err := object.ApplyPropCollectionUpdate(&basemodels.PropCollectionUpdate{
+		updated, err := object.ApplyPropCollectionUpdate(&asfmodels.PropCollectionUpdate{
 			Field:     update.Field,
 			Operation: update.Operation,
 			Value:     update.ValueAsInterface(),
@@ -1091,11 +1091,11 @@ func (service *ContrailService) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 }
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.
-func GetObject(ctx context.Context, rs ReadService, typeName, uuid string) (basemodels.Object, error) {
+func GetObject(ctx context.Context, rs ReadService, typeName, uuid string) (asfmodels.Object, error) {
 	return getObject(ctx, rs, typeName, uuid, nil)
 }
 
-func getObject(ctx context.Context, rs ReadService, typeName, uuid string, fields []string) (basemodels.Object, error) {
+func getObject(ctx context.Context, rs ReadService, typeName, uuid string, fields []string) (asfmodels.Object, error) {
 	kind := strings.Replace(typeName, "_", "-", -1)
 	switch kind {
 		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

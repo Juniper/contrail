@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // CreateBGPAsAService creates BGP as a service instance and ensures that shared one have IP address
@@ -34,7 +35,7 @@ func (sv *ContrailTypeLogicService) UpdateBGPAsAService(
 		ctx,
 		func(ctx context.Context) error {
 			fm := request.GetFieldMask()
-			if basemodels.FieldMaskContains(&fm, models.BGPAsAServiceFieldBgpaasShared) {
+			if asfmodels.FieldMaskContains(&fm, models.BGPAsAServiceFieldBgpaasShared) {
 				bgpaas, terr := sv.ReadService.GetBGPAsAService(ctx, &services.GetBGPAsAServiceRequest{ID: id})
 				if terr != nil {
 					return terr
