@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -241,26 +241,26 @@ func (port *Port) handleUpdateOfFields(
 	vn *models.VirtualNetwork,
 	fm *types.FieldMask,
 ) error {
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldName)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldName)) {
 		vmi.DisplayName = port.Name
-		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldDisplayName)
+		asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldDisplayName)
 	}
 
 	if port.setBindings(vmi) {
-		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings)
+		asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings)
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldMacAddress)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldMacAddress)) {
 		// TODO Verify if mac address change allowed
 		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
 			MacAddress: []string{port.MacAddress},
 		}
-		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceMacAddresses)
+		asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceMacAddresses)
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldPortSecurityEnabled)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldPortSecurityEnabled)) {
 		vmi.PortSecurityEnabled = port.PortSecurityEnabled
-		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldPortSecurityEnabled)
+		asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldPortSecurityEnabled)
 	}
 
 	if err := port.handleAllowedAddressPairs(rp, vmi, fm); err != nil {
@@ -298,7 +298,7 @@ func (port *Port) handleAllowedAddressPairs(
 	vmi *models.VirtualMachineInterface,
 	fm *types.FieldMask,
 ) error {
-	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldAllowedAddressPairs)) {
+	if !asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldAllowedAddressPairs)) {
 		return nil
 	}
 	pairs := models.AllowedAddressPairs{}
@@ -325,7 +325,7 @@ func (port *Port) handleAllowedAddressPairs(
 			IP:          &subnet,
 		})
 	}
-	basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceAllowedAddressPairs)
+	asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceAllowedAddressPairs)
 	vmi.VirtualMachineInterfaceAllowedAddressPairs = &pairs
 	return nil
 }
@@ -336,10 +336,10 @@ func (port *Port) checkFixedIPs(
 	vmi *models.VirtualMachineInterface,
 	isUpdate bool,
 ) error {
-	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldFixedIps)) {
+	if !asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldFixedIps)) {
 		return nil
 	}
-	if !basemodels.FieldMaskContains(&rp.FieldMask,
+	if !asfmodels.FieldMaskContains(&rp.FieldMask,
 		buildDataResourcePath(PortFieldFixedIps, FixedIpFieldIPAddress)) {
 		return nil
 	}
@@ -417,7 +417,7 @@ func (port *Port) listInstanceIPForNetwork(
 
 func (port *Port) getNetworkID(ctx context.Context, rp RequestParameters) (string, error) {
 	netID := port.NetworkID // Try net id from request, if none read it
-	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldNetworkID)) {
+	if !asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldNetworkID)) {
 		net, err := port.getVirtualNetwork(ctx, rp)
 		if err != nil {
 			return "", err
@@ -434,14 +434,14 @@ func (port *Port) handleSecurityGroupUpdate(
 	vn *models.VirtualNetwork,
 	fm *types.FieldMask,
 ) error {
-	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldSecurityGroups)) {
+	if !asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldSecurityGroups)) {
 		return nil
 	}
 
 	if err := port.setPortSecurity(ctx, rp, vmi, vn); err != nil {
 		return err
 	}
-	basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldSecurityGroupRefs)
+	asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldSecurityGroupRefs)
 
 	return nil
 }
@@ -456,18 +456,18 @@ func (port *Port) handleDeviceUpdate(
 		if err := port.setVMInstance(ctx, rp, vmi); err != nil {
 			return errors.Wrapf(err, "failed to set virtual machine (device) to %q", port.DeviceID)
 		}
-		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
+		asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldDeviceOwner)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldDeviceOwner)) {
 		vmi.VirtualMachineInterfaceDeviceOwner = port.DeviceOwner
-		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceDeviceOwner)
+		asfmodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceDeviceOwner)
 	}
 	return nil
 }
 
 func shouldChangeDevice(deviceOwner string, fm *types.FieldMask) bool {
-	return basemodels.FieldMaskContains(fm, buildDataResourcePath(PortFieldDeviceID)) &&
+	return asfmodels.FieldMaskContains(fm, buildDataResourcePath(PortFieldDeviceID)) &&
 		deviceOwner != "network:router_interface" &&
 		deviceOwner != "network:router_gateway"
 }
@@ -638,7 +638,7 @@ func (port *Port) setVMInstance(
 		for _, vmRef := range vmi.GetVirtualMachineRefs() {
 			vmi.RemoveVirtualMachineRef(vmRef)
 			mask := types.FieldMask{}
-			basemodels.FieldMaskAppend(&mask, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
+			asfmodels.FieldMaskAppend(&mask, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
 			_, err := rp.WriteService.UpdateVirtualMachineInterface(ctx, &services.UpdateVirtualMachineInterfaceRequest{
 				VirtualMachineInterface: vmi,
 				FieldMask:               mask,

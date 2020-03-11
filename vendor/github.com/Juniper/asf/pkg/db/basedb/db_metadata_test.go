@@ -5,20 +5,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 func TestBuildMetadataFilter(t *testing.T) {
 	tests := []struct {
 		name           string
-		args           []*basemodels.Metadata
+		args           []*models.Metadata
 		want           string
 		expectedFilter string
 		fails          bool
 	}{
 		{
 			name: "Get multiple metadatas using UUID and FQName",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
@@ -31,7 +31,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 		},
 		{
 			name: "Get multiple metadatas using UUIDs",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
@@ -43,7 +43,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 		},
 		{
 			name: "Get multiple metadatas using FQNames",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},
 					Type:   "hoge",
@@ -57,7 +57,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 		},
 		{
 			name: "Provide only FQNames - fail",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},
 				},
@@ -68,7 +68,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 		},
 		{
 			name: "Get metadata using FQName",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},
 					Type:   "hoge",
@@ -78,7 +78,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 		},
 		{
 			name: "Get metadata using UUID",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},
@@ -88,7 +88,7 @@ func TestBuildMetadataFilter(t *testing.T) {
 
 		{
 			name: "Get single metadata using UUID and FQName",
-			args: []*basemodels.Metadata{
+			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
 				},

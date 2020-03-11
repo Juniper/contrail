@@ -13,7 +13,6 @@ import (
 	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/schema"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/apparentlymart/go-cidr/cidr"
@@ -22,6 +21,7 @@ import (
 
 	models "{{ modelsImportPath }}"
 	services "{{ servicesImportPath }}"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // TODO(dfurman): move non-template code out of template
@@ -139,7 +139,7 @@ func (db *Service) createParentReference(
 		possibleParents []string,
 		optional bool,
 ) (err error) {
-	parentSchemaID := basemodels.KindToSchemaID(obj.GetParentType())
+	parentSchemaID := asfmodels.KindToSchemaID(obj.GetParentType())
 
 	if !format.ContainsString(possibleParents, parentSchemaID) {
 		if optional {
@@ -865,14 +865,14 @@ func (db *Service) RelaxRef(ctx context.Context, request *services.RelaxRefReque
 }
 
 func (db *Service) getSchemaID(ctx context.Context, uuid string) (string, error) {
-	metadata, err := db.GetMetadata(ctx, basemodels.Metadata{
+	metadata, err := db.GetMetadata(ctx, asfmodels.Metadata{
 		UUID: uuid,
 	})
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to get metadata for the resource with UUID '%v'", uuid)
 	}
 
-	return basemodels.KindToSchemaID(metadata.Type), nil
+	return asfmodels.KindToSchemaID(metadata.Type), nil
 }
 
 func (db *Service) relaxRef(ctx context.Context, schemaID, linkTo string, request *services.RelaxRefRequest) error {
@@ -993,7 +993,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 	}
 	{% endif %}
 
-	metaData := &basemodels.Metadata{
+	metaData := &asfmodels.Metadata{
 		UUID: model.UUID,
 		Type: "{{ schema.TypeName }}",
 		FQName: model.FQName,
