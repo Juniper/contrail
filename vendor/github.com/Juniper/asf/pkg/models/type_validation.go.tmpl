@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // TODO(dfurman): move non-template code out of template
@@ -15,7 +15,7 @@ import (
 
 //NewTypeValidatorWithFormat creates new TypeValidator with format validators
 func NewTypeValidatorWithFormat() (*TypeValidator, error) {
-	base, err := basemodels.NewBaseValidatorWithFormat()
+	base, err := models.NewBaseValidatorWithFormat()
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func NewTypeValidatorWithFormat() (*TypeValidator, error) {
 
 //SchemaValidator implementing basic checks based on information in schema
 type SchemaValidator struct {
-	*basemodels.BaseValidator
+	*models.BaseValidator
 }
 
 //TypeValidator embedding SchemaValidator validator. It enables defining custom validation for each type

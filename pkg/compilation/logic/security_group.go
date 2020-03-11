@@ -3,15 +3,15 @@ package logic
 import (
 	"context"
 
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/compilation/intent"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // SecurityGroupIntent contains Intent Compiler state for SecurityGroup
@@ -34,7 +34,7 @@ func LoadSecurityGroupIntent(loader intent.Loader, query intent.Query) *Security
 }
 
 // GetObject returns embedded resource object
-func (i *SecurityGroupIntent) GetObject() basemodels.Object {
+func (i *SecurityGroupIntent) GetObject() asfmodels.Object {
 	return i.SecurityGroup
 }
 
@@ -219,7 +219,7 @@ func checkAddressIsReferred(
 	if !address.IsSecurityGroupNameAReference() {
 		return false, nil
 	}
-	fqName := basemodels.ParseFQName(address.GetSecurityGroup())
+	fqName := asfmodels.ParseFQName(address.GetSecurityGroup())
 	sg := LoadSecurityGroupIntent(ec.IntentLoader, intent.ByFQName(fqName))
 	return sg != nil, sg
 }
@@ -241,7 +241,7 @@ func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *
 	}
 	i := LoadSecurityGroupIntent(
 		ec.IntentLoader,
-		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
+		intent.ByFQName(asfmodels.ParseFQName(addr.SecurityGroup)))
 	if i == nil {
 		return
 	}

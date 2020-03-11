@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/etcd"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -22,6 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
@@ -579,7 +579,7 @@ func decodeVirtualNetworkJSON(t *testing.T, vnBytes []byte) *models.VirtualNetwo
 	return &vn
 }
 
-func removeHrefsFromResource(object basemodels.Object) {
+func removeHrefsFromResource(object asfmodels.Object) {
 	object.SetHref("")
 	for _, ref := range object.GetReferences() {
 		ref.SetHref("")

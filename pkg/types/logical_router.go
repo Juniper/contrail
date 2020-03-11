@@ -6,12 +6,12 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -257,7 +257,7 @@ func (sv *ContrailTypeLogicService) checkForExternalGateway(
 	vxLanRouting bool,
 ) error {
 
-	if fm != nil && !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualNetworkRefs) {
+	if fm != nil && !asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualNetworkRefs) {
 		return nil
 	}
 
@@ -284,7 +284,7 @@ func (sv *ContrailTypeLogicService) getLogicalRouterParentProject(
 ) (*models.Project, error) {
 
 	projectUUID := ""
-	if fm != nil && !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldParentUUID) {
+	if fm != nil && !asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldParentUUID) {
 		projectUUID = dbLogicalRouter.GetParentUUID()
 	} else {
 		projectUUID = logicalRouter.GetParentUUID()
@@ -448,7 +448,7 @@ func (sv *ContrailTypeLogicService) updateVxlanID(
 	project *models.Project,
 ) error {
 
-	if !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
+	if !asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
 		return nil
 	}
 
@@ -486,8 +486,8 @@ func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
 		return err
 	}
 
-	if !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldConfiguredRouteTargetList) &&
-		!basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
+	if !asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldConfiguredRouteTargetList) &&
+		!asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
 		return nil
 	}
 
@@ -507,13 +507,13 @@ func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
 	updateVN.UUID = uuid
 	var updatePaths []string
 
-	if basemodels.FieldMaskContains(fm, models.LogicalRouterFieldConfiguredRouteTargetList) {
+	if asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldConfiguredRouteTargetList) {
 		updateVN.RouteTargetList = logicalRouter.GetConfiguredRouteTargetList()
 		updatePaths = append(updatePaths, models.VirtualNetworkFieldRouteTargetList)
 	}
 
 	var vxlanNetworkID int64
-	if basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
+	if asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
 		vxlanNetworkID, err = logicalRouter.ConvertVXLanIDToInt()
 		if err != nil {
 			return err
@@ -525,7 +525,7 @@ func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
 
 		updatePaths = append(
 			updatePaths,
-			basemodels.JoinPath(
+			asfmodels.JoinPath(
 				models.VirtualNetworkFieldVirtualNetworkProperties,
 				models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
 			),
@@ -648,19 +648,19 @@ func (sv *ContrailTypeLogicService) checkRouterHasBGPVPNAssocViaNetwork(
 
 func isBGPVPNOrVMIChangeRequested(fm *types.FieldMask) bool {
 	return fm == nil ||
-		basemodels.FieldMaskContains(fm, models.LogicalRouterFieldBGPVPNRefs) ||
-		basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualMachineInterfaceRefs)
+		asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldBGPVPNRefs) ||
+		asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualMachineInterfaceRefs)
 }
 
 func hasBGPVPNRefs(lr, dbLR *models.LogicalRouter, fm *types.FieldMask) bool {
-	if fm == nil || basemodels.FieldMaskContains(fm, models.LogicalRouterFieldBGPVPNRefs) {
+	if fm == nil || asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldBGPVPNRefs) {
 		return len(lr.GetBGPVPNRefs()) != 0
 	}
 	return len(dbLR.GetBGPVPNRefs()) != 0
 }
 
 func getVMIRefs(lr, dbLR *models.LogicalRouter, fm *types.FieldMask) []*models.LogicalRouterVirtualMachineInterfaceRef {
-	if fm == nil || basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualMachineInterfaceRefs) {
+	if fm == nil || asfmodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualMachineInterfaceRefs) {
 		return lr.GetVirtualMachineInterfaceRefs()
 	}
 	return dbLR.GetVirtualMachineInterfaceRefs()

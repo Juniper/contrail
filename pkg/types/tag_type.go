@@ -6,10 +6,11 @@ import (
 	"strconv"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -53,8 +54,8 @@ func (sv *ContrailTypeLogicService) UpdateTagType(
 	var response *services.UpdateTagTypeResponse
 
 	fm := request.GetFieldMask()
-	if basemodels.FieldMaskContains(&fm, models.TagTypeFieldDisplayName) ||
-		basemodels.FieldMaskContains(&fm, models.TagTypeFieldTagTypeID) {
+	if asfmodels.FieldMaskContains(&fm, models.TagTypeFieldDisplayName) ||
+		asfmodels.FieldMaskContains(&fm, models.TagTypeFieldTagTypeID) {
 		return response, errutil.ErrorBadRequest("Tag Type value nor ID cannot be updated")
 	}
 
