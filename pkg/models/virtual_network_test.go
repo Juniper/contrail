@@ -3,9 +3,8 @@ package models
 import (
 	"testing"
 
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 )
 
 func TestCheckMultiPolicyServiceChainConfig(t *testing.T) {
@@ -73,7 +72,7 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsRWX,
+					GlobalAccess: models.PermsRWX,
 				},
 			},
 		},
@@ -82,13 +81,13 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			virtualNetwork: &VirtualNetwork{
 				IsShared: false,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsRWX,
+					GlobalAccess: models.PermsRWX,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsRWX,
+					GlobalAccess: models.PermsRWX,
 				},
 			},
 		},
@@ -97,13 +96,13 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			virtualNetwork: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsRWX,
+					GlobalAccess: models.PermsRWX,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsRWX,
+					GlobalAccess: models.PermsRWX,
 				},
 			},
 		},
@@ -112,28 +111,28 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			virtualNetwork: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsW,
+					GlobalAccess: models.PermsW,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsRWX,
+					GlobalAccess: models.PermsRWX,
 				},
 			},
 		},
 		{
-			name: "check for basemodels.PermsW global access ",
+			name: "check for models.PermsW global access ",
 			virtualNetwork: &VirtualNetwork{
 				IsShared: false,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsW,
+					GlobalAccess: models.PermsW,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: false,
 				Perms2: &PermType2{
-					GlobalAccess: basemodels.PermsW,
+					GlobalAccess: models.PermsW,
 				},
 			},
 		},

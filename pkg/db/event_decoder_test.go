@@ -3,12 +3,12 @@ package db
 import (
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 func TestDecodeRowEvent(t *testing.T) {
@@ -87,7 +87,7 @@ func TestDecodeRowEvent(t *testing.T) {
 						FieldMask: types.FieldMask{Paths: []string{
 							models.VirtualNetworkFieldVirtualNetworkNetworkID,
 							models.VirtualNetworkFieldUUID,
-							basemodels.JoinPath(
+							asfmodels.JoinPath(
 								models.VirtualNetworkFieldIDPerms,
 								models.IdPermsTypeFieldCreator,
 							),
@@ -115,7 +115,7 @@ func TestDecodeRowEvent(t *testing.T) {
 						},
 						FieldMask: types.FieldMask{Paths: []string{
 							models.VirtualNetworkFieldVirtualNetworkNetworkID,
-							basemodels.JoinPath(
+							asfmodels.JoinPath(
 								models.VirtualNetworkFieldIDPerms,
 								models.IdPermsTypeFieldCreator,
 							),

@@ -7,7 +7,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
@@ -49,7 +49,7 @@ func (s *Server) handleNeutronPostRequest(c echo.Context) error {
 	if t := c.Param("type"); request.GetType() != t {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", t))
 	}
-	request.Data.FieldMask = basemodels.MapToFieldMask(requestMap)
+	request.Data.FieldMask = models.MapToFieldMask(requestMap)
 	var response logic.Response
 	if err := s.InTransactionDoer.DoInTransaction(c.Request().Context(), func(ctx context.Context) error {
 		var err error

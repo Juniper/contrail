@@ -10,7 +10,7 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
-  digest = "1:5cd88c8e4dd8adf8e2b402efba3df63f4fbc46bc3af1a03e75b0c1ef2ebeb297"
+  digest = "1:3a3cf041fcbfda6923176ad4c8944e73907a1da2c2c791371493979a62573abb"
   name = "github.com/Juniper/asf"
   packages = [
     "pkg/apiserver",
@@ -26,7 +26,7 @@
     "pkg/keystone",
     "pkg/logutil",
     "pkg/logutil/report",
-    "pkg/models/basemodels",
+    "pkg/models",
     "pkg/osutil",
     "pkg/proxy",
     "pkg/rbac",
@@ -36,7 +36,7 @@
     "pkg/sync",
   ]
   pruneopts = ""
-  revision = "398c30bc4817719f1af5d74ec4ef174b9ed4cee3"
+  revision = "3b987e1f93dac52a5cf8975ff3417acf2923a794"
 
 [[projects]]
   branch = "2.x"
@@ -1365,7 +1365,7 @@
     "github.com/Juniper/asf/pkg/keystone",
     "github.com/Juniper/asf/pkg/logutil",
     "github.com/Juniper/asf/pkg/logutil/report",
-    "github.com/Juniper/asf/pkg/models/basemodels",
+    "github.com/Juniper/asf/pkg/models",
     "github.com/Juniper/asf/pkg/osutil",
     "github.com/Juniper/asf/pkg/proxy",
     "github.com/Juniper/asf/pkg/rbac",

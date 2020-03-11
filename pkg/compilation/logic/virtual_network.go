@@ -3,12 +3,12 @@ package logic
 import (
 	"context"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/sirupsen/logrus"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // VirtualNetworkIntent intent
@@ -18,7 +18,7 @@ type VirtualNetworkIntent struct {
 }
 
 // GetObject returns embedded resource object
-func (i *VirtualNetworkIntent) GetObject() basemodels.Object {
+func (i *VirtualNetworkIntent) GetObject() asfmodels.Object {
 	return i.VirtualNetwork
 }
 

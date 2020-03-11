@@ -6,9 +6,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -82,14 +83,14 @@ func (sv *ContrailTypeLogicService) UpdateVirtualMachineInterface(
 			oldVMI := vmiResp.GetVirtualMachineInterface()
 			kvps := oldVMI.GetVirtualMachineInterfaceBindings()
 
-			if basemodels.FieldMaskContains(&fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs) &&
+			if asfmodels.FieldMaskContains(&fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs) &&
 				kvps.GetValue(vnicKeyName) == vnicTypeDirect {
 				if err = sv.updateVirtualRouterToVirtualMachinesRefLinks(ctx, oldVMI, newVMI); err != nil {
 					return err
 				}
 			}
 
-			if basemodels.FieldMaskContains(&fm, models.VirtualMachineInterfaceFieldServiceHealthCheckRefs) {
+			if asfmodels.FieldMaskContains(&fm, models.VirtualMachineInterfaceFieldServiceHealthCheckRefs) {
 				if err = sv.checkVirtualMachineInterfaceServiceHealthCheckType(ctx, oldVMI, newVMI); err != nil {
 					return err
 				}

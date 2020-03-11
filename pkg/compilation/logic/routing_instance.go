@@ -6,10 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // RoutingInstanceIntent contains Intent Compiler state for RoutingInstance.
@@ -19,7 +20,7 @@ type RoutingInstanceIntent struct {
 }
 
 // GetObject returns embedded resource object
-func (i *RoutingInstanceIntent) GetObject() basemodels.Object {
+func (i *RoutingInstanceIntent) GetObject() asfmodels.Object {
 	return i.RoutingInstance
 }
 

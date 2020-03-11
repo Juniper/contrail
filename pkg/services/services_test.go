@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -34,7 +34,7 @@ func TestGetObject(t *testing.T) {
 		initMock func(*servicesmock.MockReadService)
 		schemaID string
 		uuid     string
-		want     basemodels.Object
+		want     asfmodels.Object
 		fails    bool
 	}{
 		{
