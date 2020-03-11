@@ -25,6 +25,8 @@ import (
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
+const testSyncID = "test-sync"
+
 func TestSyncService(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -385,10 +387,13 @@ func TestSyncService(t *testing.T) {
 
 			check := integration.StartWatchers(t, tt.name, tt.watchers, clientv3.WithRev(rev+1))
 
-			sync, err := sync.NewService()
+			sync, err := sync.NewEtcdFeeder(testSyncID)
 			require.NoError(t, err)
-
-			defer integration.RunNoError(t, sync)(t)
+			ctx, cancel := context.WithCancel(context.Background())
+			errChan := integration.RunConcurrently(integration.RunnerFunc(func() error {
+				return sync.Start(ctx)
+			}))
+			defer integration.CloseNoError(t, integration.CloserFunc(cancel), errChan)
 			<-sync.DumpDone()
 
 			if tt.ops != nil {
@@ -445,10 +450,14 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	vnBlue := integration.GetVirtualNetwork(t, hc, vnBlueUUID)
 
 	integration.SetDefaultSyncConfig(true)
-	sync, err := sync.NewService()
+	sync, err := sync.NewEtcdFeeder(testSyncID)
 	require.NoError(t, err)
 
-	defer integration.RunNoError(t, sync)(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	errChan := integration.RunConcurrently(integration.RunnerFunc(func() error {
+		return sync.Start(ctx)
+	}))
+	defer integration.CloseNoError(t, integration.CloserFunc(cancel), errChan)
 
 	<-sync.DumpDone()
 

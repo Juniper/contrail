@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDatabaseData_RowsCount(t *testing.T) {
+func TestDatabaseData_RowCount(t *testing.T) {
 	tests := []struct {
 		name      string
 		d         DatabaseData
@@ -23,7 +23,7 @@ func TestDatabaseData_RowsCount(t *testing.T) {
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotCount := tt.d.RowsCount(); gotCount != tt.wantCount {
+			if gotCount := tt.d.RowCount(); gotCount != tt.wantCount {
 				t.Errorf("DatabaseData.RowsCount() = %v, want %v", gotCount, tt.wantCount)
 			}
 		})
