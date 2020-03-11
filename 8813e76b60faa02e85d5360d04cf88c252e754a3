@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "32ec5a63_802c0726",
+        "filename": "pkg/services/chown.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-11T10:26:47Z",
+      "side": 1,
+      "message": "Maybe I copied it from a template that had `models \"{{ modelsImportPath }}\"` and didn\u0027t remove the import rename. Fixed.",
+      "parentUuid": "edfafb4e_be86abbd",
+      "range": {
+        "startLine": 10,
+        "startChar": 1,
+        "endLine": 10,
+        "endChar": 48
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "68efe55e_038dfa5f",
         "filename": "pkg/services/plugin.go",
         "patchSetId": 5
@@ -71,6 +95,30 @@
     },
     {
       "key": {
+        "uuid": "eb707424_5bd57335",
+        "filename": "pkg/services/prop_collection_update.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-11T10:26:47Z",
+      "side": 1,
+      "message": "No idea how it happened. Fixed.",
+      "parentUuid": "b81cdff6_090c323b",
+      "range": {
+        "startLine": 8,
+        "startChar": 1,
+        "endLine": 8,
+        "endChar": 18
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f6213923_5f19e3de",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
         "patchSetId": 5
@@ -82,6 +130,30 @@
       "writtenOn": "2020-03-10T12:33:11Z",
       "side": 1,
       "message": "Why do we generate this?",
+      "range": {
+        "startLine": 631,
+        "startChar": 0,
+        "endLine": 648,
+        "endChar": 1
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6028079_43a37463",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 648,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-11T10:26:47Z",
+      "side": 1,
+      "message": "This used to be a method of *ContrailService, and was copied into the template so that the generated ContrailService code can use it.\nI\u0027ve only moved this function within this file.\n\nActually, this can\u0027t be moved to (non-generated) baseservices as is, as it takes a ReadService, which is generated.",
+      "parentUuid": "f6213923_5f19e3de",
       "range": {
         "startLine": 631,
         "startChar": 0,
