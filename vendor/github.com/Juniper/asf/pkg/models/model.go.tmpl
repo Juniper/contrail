@@ -13,7 +13,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // TODO(dfurman): move non-template code out of template
@@ -110,7 +110,7 @@ func (j protoCodec) Key() string {
 
 // UpdateData deserializes oldData into same type as object provided in update,
 // applies an update and then serializes the result.
-func UpdateData(c Codec, oldData []byte, update basemodels.Object, fm types.FieldMask) ([]byte, error) {
+func UpdateData(c Codec, oldData []byte, update models.Object, fm types.FieldMask) ([]byte, error) {
 	if update == nil || len(fm.Paths) == 0 {
 		return oldData, nil
 	}
@@ -122,8 +122,8 @@ func UpdateData(c Codec, oldData []byte, update basemodels.Object, fm types.Fiel
 		return nil, err
 	}
 
-	updateData := basemodels.ApplyFieldMask(update.ToMap(), fm)
-	output, ok := oldObj.(basemodels.Object)
+	updateData := models.ApplyFieldMask(update.ToMap(), fm)
+	output, ok := oldObj.(models.Object)
 	if !ok {
 		return nil, errors.Errorf("proto.Clone returned bad object type - %T (library bug)", oldObj)
 	}
@@ -426,12 +426,12 @@ func (m *{{ schema.JSONSchema.GoName }}) SetHref(href string) {
 	m.Href = href
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
+func (m *{{ schema.JSONSchema.GoName }}) GetReferences() models.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var refs basemodels.References
+	var refs models.References
 	{% for _, reference in schema.References %}
 	for _, ref := range m.{{ reference.GoName }}Refs {
 		refs = append(refs, ref)
@@ -449,19 +449,19 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveReferences() {
 	{%- endfor %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs basemodels.References) {
+func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs models.References) {
 	for _, ref := range m.GetTagRefs() {
 		refs = append(refs, ref)
 	}
 	return refs
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
+func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []models.Object {
 	{%- if schema.BackReferences|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var backRefs []basemodels.Object
+	var backRefs []models.Object
 	{%- for _, backref in schema.BackReferences %}
 	for _, backRef := range m.{{ backref.LinkTo.JSONSchema.GoName }}BackRefs {
 		backRefs = append(backRefs, backRef)
@@ -473,12 +473,12 @@ func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object
 	{%- endif %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []basemodels.Object {
+func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []models.Object {
 	{%- if schema.Children|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var children []basemodels.Object
+	var children []models.Object
 	{% for _, reference in schema.Children %}
 	for _, child := range m.{{ reference.LinkTo.JSONSchema.GoName }}s {
 		children = append(children, child)
@@ -560,7 +560,7 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveChild(i interface{}) {
 	{%- endif %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels.PropCollectionUpdate) (map[string]interface{}, error) {
+func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *models.PropCollectionUpdate) (map[string]interface{}, error) {
 	switch (u.Field) { {% for property in schema.JSONSchema.OrderedProperties %}{% if property.CollectionType %}
 {% set listType = property.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
 {% if itemType != "string" %}{% set itemType = "*" | add:itemType %}{% endif %}
@@ -572,17 +572,17 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels
 		}
 		value, ok := u.Value.({{itemType}})
 		switch strings.ToLower(u.Operation) {
-		case basemodels.PropCollectionUpdateOperationAdd:
+		case models.PropCollectionUpdateOperationAdd:
 			if !ok {
 				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
 			}
 			m.{{property.GoName}}.AddInList(value)
-		case basemodels.PropCollectionUpdateOperationModify:
+		case models.PropCollectionUpdateOperationModify:
 			if !ok {
 				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
 			}
 			m.{{property.GoName}}.ModifyInList(value, pos)
-		case basemodels.PropCollectionUpdateOperationDelete:
+		case models.PropCollectionUpdateOperationDelete:
 			m.{{property.GoName}}.DeleteInList(pos)
 		}
 		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
@@ -593,7 +593,7 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels
 			return nil, err
 		}
 		switch strings.ToLower(u.Operation) {
-		case basemodels.PropCollectionUpdateOperationSet:
+		case models.PropCollectionUpdateOperationSet:
 			value, ok := u.Value.({{itemType}})
 			if !ok {
 				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
@@ -601,7 +601,7 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels
 			if err := m.{{property.GoName}}.SetInMap(value); err != nil {
 				return nil, err
 			}
-		case basemodels.PropCollectionUpdateOperationDelete:
+		case models.PropCollectionUpdateOperationDelete:
 			m.{{property.GoName}}.DeleteInMap(key)
 		}
 		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
@@ -711,7 +711,7 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetToKind() st
 	return Kind{{ reference.GoName }}
 }
 
-func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetAttribute() basemodels.RefAttribute {
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetAttribute() models.RefAttribute {
 	{%- if reference.RefType %}
 	return r.GetAttr()
 	{%- else %}
@@ -738,7 +738,7 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(i inte
 	var err error
 
 	result := []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
-	if ok := basemodels.ForEach(i, func(elem interface{}){
+	if ok := models.ForEach(i, func(elem interface{}){
 		switch e := elem.(type) {
 			case map[string]interface{}:
 				uuid, uuidError := format.InterfaceToStringE(e["uuid"])
@@ -765,7 +765,7 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsE(i inte
 				result = append(result, &e)
 			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
 				result = append(result, e)
-			case basemodels.Reference:
+			case models.Reference:
 				result = append(
 					result,
 					&{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID: e.GetUUID(), To: e.GetTo()},

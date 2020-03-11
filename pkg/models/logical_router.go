@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -29,7 +29,7 @@ func (lr *LogicalRouter) GetInternalVNName() string {
 
 // GetInternalVNFQName returns internal virtual network fqName
 func (lr *LogicalRouter) GetInternalVNFQName(parentProject *Project) []string {
-	return basemodels.ChildFQName(parentProject.GetFQName(), lr.GetInternalVNName())
+	return models.ChildFQName(parentProject.GetFQName(), lr.GetInternalVNName())
 }
 
 // ConvertVXLanIDToInt converts vxlan network id form string to int

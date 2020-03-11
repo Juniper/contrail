@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -270,7 +270,7 @@ func (*SecurityGroupRule) neutronFromVnc(
 func (sgr *SecurityGroupRule) vncFromNeutron(
 	ctx context.Context, rp RequestParameters,
 ) (*models.PolicyRuleType, error) {
-	nowISOFormat := time.Now().Format(basemodels.ISO8601TimeFormat)
+	nowISOFormat := time.Now().Format(asfmodels.ISO8601TimeFormat)
 	vncSgr := &models.PolicyRuleType{
 		RuleUUID:     sgr.ID,
 		Direction:    models.SRCToDSTDirection,
@@ -347,7 +347,7 @@ func (sgr *SecurityGroupRule) initAddressType(
 			})
 		}
 		addrType = &models.AddressType{
-			SecurityGroup: basemodels.FQNameToString(sgResponse.GetSecurityGroup().GetFQName()),
+			SecurityGroup: asfmodels.FQNameToString(sgResponse.GetSecurityGroup().GetFQName()),
 		}
 	}
 
@@ -411,7 +411,7 @@ func addressTypeNeutronFromVnc(
 		responseSgr.RemoteIPPrefix = getFullNetworkAddress(subnet.GetIPPrefix(), subnet.GetIPPrefixLen())
 	} else if remoteAddr.IsSecurityGroupNameAReference() {
 		remoteSG := remoteAddr.GetSecurityGroup()
-		if remoteSG == basemodels.FQNameToString(sg.GetFQName()) {
+		if remoteSG == asfmodels.FQNameToString(sg.GetFQName()) {
 			responseSgr.RemoteGroupID = sg.GetUUID()
 		} else {
 			// TODO implement it when service FQNameToID will be available in Neutron package.
