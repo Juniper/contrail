@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "053562df_2572c244",
+        "filename": "pkg/sync/etcd.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-11T13:53:06Z",
+      "side": 1,
+      "message": "Please pass it as parameter to NewEtcdFeeder()",
+      "range": {
+        "startLine": 22,
+        "startChar": 53,
+        "endLine": 22,
+        "endChar": 88
+      },
+      "revId": "ea75f86be17229be4558bf5545d2d232c4449ad3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
