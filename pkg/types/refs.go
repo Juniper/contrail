@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
+	"github.com/Juniper/asf/pkg/models"
 )
 
 // complementRefs checks if to fields in resource refs are filled
-func (sv *ContrailTypeLogicService) complementRefs(ctx context.Context, obj basemodels.Object) error {
+func (sv *ContrailTypeLogicService) complementRefs(ctx context.Context, obj models.Object) error {
 	for _, ref := range obj.GetReferences() {
 		if err := sv.fillToFieldInRef(ctx, ref); err != nil {
 			return err
@@ -18,14 +18,14 @@ func (sv *ContrailTypeLogicService) complementRefs(ctx context.Context, obj base
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) fillToFieldInRef(ctx context.Context, ref basemodels.Reference) error {
+func (sv *ContrailTypeLogicService) fillToFieldInRef(ctx context.Context, ref models.Reference) error {
 	if len(ref.GetTo()) != 0 {
 		return nil
 	}
 
 	m, err := sv.MetadataGetter.GetMetadata(
 		ctx,
-		basemodels.Metadata{
+		models.Metadata{
 			UUID: ref.GetUUID(),
 			Type: ref.GetToKind(),
 		},
@@ -38,14 +38,14 @@ func (sv *ContrailTypeLogicService) fillToFieldInRef(ctx context.Context, ref ba
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) fillUUIDFieldInRef(ctx context.Context, ref basemodels.Reference) error {
+func (sv *ContrailTypeLogicService) fillUUIDFieldInRef(ctx context.Context, ref models.Reference) error {
 	if ref.GetUUID() != "" {
 		return nil
 	}
 
 	m, err := sv.MetadataGetter.GetMetadata(
 		ctx,
-		basemodels.Metadata{
+		models.Metadata{
 			FQName: ref.GetTo(),
 			Type:   ref.GetToKind(),
 		},

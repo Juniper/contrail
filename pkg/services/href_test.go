@@ -8,10 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/asf/pkg/fileutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -84,7 +85,7 @@ func TestApplyHref(t *testing.T) {
 	})
 }
 
-func deleteResource(ctx context.Context, t *testing.T, client services.Service, object basemodels.Object) {
+func deleteResource(ctx context.Context, t *testing.T, client services.Service, object asfmodels.Object) {
 	e, err := services.NewEvent(services.EventOption{
 		UUID:      object.GetUUID(),
 		Kind:      object.Kind(),
@@ -99,8 +100,8 @@ func createResource(
 	ctx context.Context,
 	t *testing.T,
 	client services.Service,
-	object basemodels.Object,
-) (basemodels.Object, func()) {
+	object asfmodels.Object,
+) (asfmodels.Object, func()) {
 	e, err := services.NewEvent(services.EventOption{
 		UUID: object.GetUUID(),
 		Kind: object.Kind(),

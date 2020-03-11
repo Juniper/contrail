@@ -1,9 +1,10 @@
 package logic
 
 import (
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // NetworkPolicyIntent intent
@@ -13,6 +14,6 @@ type NetworkPolicyIntent struct {
 }
 
 // GetObject returns embedded resource object
-func (i *NetworkPolicyIntent) GetObject() basemodels.Object {
+func (i *NetworkPolicyIntent) GetObject() asfmodels.Object {
 	return i.NetworkPolicy
 }

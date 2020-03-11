@@ -7,15 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/asf/pkg/auth"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 	tests := []struct {
 		name     string
 		model    models.AccessControlList
-		metadata basemodels.Metadata
+		metadata asfmodels.Metadata
 		want     models.AccessControlList
 		fails    bool
 	}{
@@ -32,7 +33,7 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 			},
-			metadata: basemodels.Metadata{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
+			metadata: asfmodels.Metadata{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
 			want: models.AccessControlList{
 				UUID:       "4789f49b-a6df-4744-1ecf-60b0958e45e6",
 				ParentUUID: "parent-uuid",
@@ -43,7 +44,7 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
 				Perms2: &models.PermType2{
 					Owner:       "default-project",
-					OwnerAccess: basemodels.PermsRWX,
+					OwnerAccess: asfmodels.PermsRWX,
 					Share:       []*models.ShareType{},
 				},
 				IDPerms: &models.IdPermsType{
@@ -83,7 +84,7 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
 				Perms2: &models.PermType2{
 					Owner:       "default-project",
-					OwnerAccess: basemodels.PermsRWX,
+					OwnerAccess: asfmodels.PermsRWX,
 					Share:       []*models.ShareType{},
 				},
 				// Default filled fields below
@@ -131,20 +132,20 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 	}
 }
 
-type mockMetadataGetter basemodels.Metadata
+type mockMetadataGetter asfmodels.Metadata
 
 func (m *mockMetadataGetter) GetMetadata(
 	_ context.Context,
-	_ basemodels.Metadata,
-) (*basemodels.Metadata, error) {
-	return (*basemodels.Metadata)(m), nil
+	_ asfmodels.Metadata,
+) (*asfmodels.Metadata, error) {
+	return (*asfmodels.Metadata)(m), nil
 }
 
 func (m *mockMetadataGetter) ListMetadata(
 	ctx context.Context,
-	metadataSlice []*basemodels.Metadata,
-) ([]*basemodels.Metadata, error) {
-	return []*basemodels.Metadata{(*basemodels.Metadata)(m)}, nil
+	metadataSlice []*asfmodels.Metadata,
+) ([]*asfmodels.Metadata, error) {
+	return []*asfmodels.Metadata{(*asfmodels.Metadata)(m)}, nil
 }
 
 type serviceSpy struct {

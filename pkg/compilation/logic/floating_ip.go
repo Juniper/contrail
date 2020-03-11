@@ -7,10 +7,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -36,7 +37,7 @@ func LoadFloatingIPIntent(loader intent.Loader, query intent.Query) *FloatingIPI
 }
 
 // GetObject returns embedded resource object.
-func (i *FloatingIPIntent) GetObject() basemodels.Object {
+func (i *FloatingIPIntent) GetObject() asfmodels.Object {
 	return i.FloatingIP
 }
 
