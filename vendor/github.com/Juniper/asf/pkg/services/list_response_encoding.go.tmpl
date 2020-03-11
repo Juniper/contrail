@@ -5,9 +5,9 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/pkg/errors"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	models "{{ modelsImportPath }}"
 )
 
@@ -83,7 +83,7 @@ func (r List{{ name }}Response) Detailed() *List{{ name }}DetailedResponse {
 func (r List{{ name }}Response) ApplyFieldMask(fm types.FieldMask) map[string][]map[string]interface {} {
 	objList := make([]map[string]interface{}, 0, len(r.Get{{ name }}s()))
 	for _, val := range r.Get{{ name }}s() {
-		obj := basemodels.ApplyFieldMask(val.ToMap(), fm)
+		obj := asfmodels.ApplyFieldMask(val.ToMap(), fm)
 		objList = append(objList, obj)
 	}
 	return map[string][]map[string]interface{}{

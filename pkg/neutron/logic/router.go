@@ -8,9 +8,10 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -206,13 +207,13 @@ func (r *Router) AddInterface(
 	}
 
 	switch {
-	case basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldPortID)):
+	case asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldPortID)):
 		portID = r.PortID
 		if subnetID, subnetTenantID, err = r.addInterfaceWithPort(ctx, rp, id); err != nil {
 			return nil, err
 		}
 
-	case basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldSubnetID)):
+	case asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldSubnetID)):
 		subnetID = r.SubnetID
 		if portID, subnetTenantID, err = r.addInterfaceWithSubnet(ctx, rp, id); err != nil {
 			return nil, err
@@ -467,12 +468,12 @@ func (r *Router) DeleteInterface(
 	}
 
 	switch {
-	case basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldPortID)):
+	case asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldPortID)):
 		if portID, subnetID, err = r.deleteInterfaceWithPort(ctx, rp, id); err != nil {
 			return nil, err
 		}
 
-	case basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldSubnetID)):
+	case asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(RouterFieldSubnetID)):
 		if portID, subnetID, err = r.deleteInterfaceWithSubnet(ctx, rp, id, lr); err != nil {
 			return nil, err
 		}

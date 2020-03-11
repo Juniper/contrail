@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/Juniper/asf/pkg/fileutil"
+	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/contrail/pkg/cassandra"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/etcd"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

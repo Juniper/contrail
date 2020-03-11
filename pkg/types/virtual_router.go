@@ -7,10 +7,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 // CreateVirtualRouter virtual-router create specific logic.
@@ -74,7 +75,7 @@ func (sv *ContrailTypeLogicService) vrouterCheckAllocationPoolsDelete(
 	fm *protobuf.FieldMask,
 	dbVr *models.VirtualRouter,
 ) error {
-	if !basemodels.FieldMaskContains(fm, models.VirtualRouterFieldNetworkIpamRefs) {
+	if !asfmodels.FieldMaskContains(fm, models.VirtualRouterFieldNetworkIpamRefs) {
 		return nil
 	}
 

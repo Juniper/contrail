@@ -10,10 +10,11 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
 const (
@@ -381,9 +382,9 @@ func (n *Network) toVncForCreate(
 func (n *Network) toVncForUpdate(
 	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, fm *types.FieldMask,
 ) (*models.VirtualNetwork, error) {
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouterExternal)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouterExternal)) {
 		vncNet.RouterExternal = n.RouterExternal
-		basemodels.FieldMaskAppend(fm, models.VirtualNetworkFieldRouterExternal)
+		asfmodels.FieldMaskAppend(fm, models.VirtualNetworkFieldRouterExternal)
 	}
 
 	if n.RouterExternal {
@@ -391,7 +392,7 @@ func (n *Network) toVncForUpdate(
 	} else {
 		vncNet.Perms2.GlobalAccess = permsNone
 	}
-	basemodels.FieldMaskAppend(fm, models.VirtualNetworkFieldPerms2, models.PermType2FieldGlobalAccess)
+	asfmodels.FieldMaskAppend(fm, models.VirtualNetworkFieldPerms2, models.PermType2FieldGlobalAccess)
 
 	if err := n.updateVnc(ctx, rp, vncNet, fm); err != nil {
 		return nil, err
@@ -403,14 +404,14 @@ func (n *Network) toVncForUpdate(
 func (n *Network) updateVnc(
 	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, vncFm *types.FieldMask,
 ) error {
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(nameKey)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(nameKey)) {
 		vncNet.DisplayName = n.Name
-		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldDisplayName)
+		asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldDisplayName)
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(sharedKey)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(sharedKey)) {
 		vncNet.IsShared = n.Shared
-		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIsShared)
+		asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIsShared)
 	}
 
 	if len(n.ProviderPhysicalNetwork) > 0 || n.ProviderSegmentationID != 0 {
@@ -418,26 +419,26 @@ func (n *Network) updateVnc(
 			PhysicalNetwork: n.ProviderPhysicalNetwork,
 			SegmentationID:  n.ProviderSegmentationID,
 		}
-		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldProviderProperties)
+		asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldProviderProperties)
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldAdminStateUp)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldAdminStateUp)) {
 		vncNet.IDPerms.Enable = n.AdminStateUp
-		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIDPerms, models.IdPermsTypeFieldEnable)
+		asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIDPerms, models.IdPermsTypeFieldEnable)
 	}
 
 	if err := n.setVncRefs(ctx, rp, vncNet, vncFm); err != nil {
 		return errors.Wrapf(err, "failed to set refs for virtual network(%v)", vncNet.GetUUID())
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPortSecurityEnabled)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPortSecurityEnabled)) {
 		vncNet.PortSecurityEnabled = n.PortSecurityEnabled
-		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldPortSecurityEnabled)
+		asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldPortSecurityEnabled)
 	}
 
 	if len(n.Description) > 0 {
 		vncNet.IDPerms.Description = n.Description
-		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIDPerms, models.IdPermsTypeFieldDescription)
+		asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIDPerms, models.IdPermsTypeFieldDescription)
 	}
 
 	return nil
@@ -449,10 +450,10 @@ func (n *Network) setVncRefs(
 	vncNet *models.VirtualNetwork,
 	vncFm *types.FieldMask,
 ) error {
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPolicys)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPolicys)) {
 		n.createNetworkPolicyRef(vncNet, vncFm)
 	}
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouteTable)) &&
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouteTable)) &&
 		len(n.RouteTable) > 0 {
 		if err := n.createRouteTableRef(ctx, rp, vncNet, vncFm); err != nil {
 			return err
@@ -543,7 +544,7 @@ func (n *Network) createNetworkPolicyRef(
 			},
 		})
 	}
-	basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldNetworkPolicyRefs)
+	asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldNetworkPolicyRefs)
 }
 
 func (n *Network) createRouteTableRef(
@@ -569,7 +570,7 @@ func (n *Network) createRouteTableRef(
 		UUID: rtUUID.GetUUID(),
 		To:   n.RouteTable,
 	})
-	basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldRouteTableRefs)
+	asfmodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldRouteTableRefs)
 
 	return nil
 }
@@ -581,7 +582,7 @@ func (n *Network) collectVirtualNetworks(
 		return collectWithoutPrune(ctx, rp, filters[idKey])
 	}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildContextPath(isAdminFieldKey)) && !rp.RequestContext.IsAdmin {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildContextPath(isAdminFieldKey)) && !rp.RequestContext.IsAdmin {
 		return collectNonAdminNetworks(ctx, rp, filters)
 	}
 

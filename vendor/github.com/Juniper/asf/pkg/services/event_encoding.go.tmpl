@@ -9,9 +9,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/models/basemodels"
 	"github.com/sirupsen/logrus"
 
+	asfmodels "github.com/Juniper/asf/pkg/models"
 	models "{{ modelsImportPath }}"
 )
 
@@ -35,14 +35,14 @@ type EventOption struct {
 
 // ResourceEvent is an event that relates to a resource.
 type ResourceEvent interface {
-	GetResource() basemodels.Object
+	GetResource() asfmodels.Object
 	Operation() string
 }
 
 // ReferenceEvent is an event that relates to a reference.
 type ReferenceEvent interface {
 	GetID() string
-	GetReference() basemodels.Reference
+	GetReference() asfmodels.Reference
 	Operation() string
 }
 
@@ -195,7 +195,7 @@ func (e *EventList) Process(ctx context.Context, service Service, doer InTransac
 }
 
 // GetResource returns event on resource.
-func (e *Event) GetResource() basemodels.Object {
+func (e *Event) GetResource() asfmodels.Object {
 	if e == nil {
 		return nil
 	}
@@ -209,7 +209,7 @@ func (e *Event) GetResource() basemodels.Object {
 	}
 }
 
-func (e *Event) getReferences() basemodels.References {
+func (e *Event) getReferences() asfmodels.References {
 	res := e.GetResource()
 	if res == nil {
 		return nil
@@ -344,13 +344,13 @@ func (e *Event) ExtractRefEvents() (EventList, error) {
 	}
 }
 
-func extractRefEvents(r basemodels.Object, o RefOperation) (EventList, error) {
+func extractRefEvents(r asfmodels.Object, o RefOperation) (EventList, error) {
 	el, err := makeRefEventList(r, o)
 	r.RemoveReferences()
 	return el, err
 }
 
-func makeRefEventList(r basemodels.Object, operation RefOperation) (EventList, error) {
+func makeRefEventList(r asfmodels.Object, operation RefOperation) (EventList, error) {
 	el := EventList{}
 	for _, ref := range r.GetReferences() {
 		var attrMap map[string]interface{}
@@ -358,7 +358,7 @@ func makeRefEventList(r basemodels.Object, operation RefOperation) (EventList, e
 			attrMap = attr.ToMap()
 		}
 		e, err := NewRefUpdateEvent(RefUpdateOption{
-			ReferenceType: basemodels.ReferenceKind(r.Kind(), ref.GetToKind()),
+			ReferenceType: asfmodels.ReferenceKind(r.Kind(), ref.GetToKind()),
 			FromUUID:      r.GetUUID(),
 			ToUUID:        ref.GetUUID(),
 			Operation:     operation,
@@ -487,7 +487,7 @@ func (e *Event) ToMap() map[string]interface{} {
 	}
 	return map[string]interface{}{
 		"operation": e.Operation(),
-		"kind":      basemodels.KindToSchemaID(e.Kind()),
+		"kind":      asfmodels.KindToSchemaID(e.Kind()),
 		"data":      e.data(),
 	}
 }
@@ -522,7 +522,7 @@ func (e *Event) data() interface{} {
 }
 
 func sanitizeKind(kind string) string {
-	return basemodels.SchemaIDToKind(kind)
+	return asfmodels.SchemaIDToKind(kind)
 }
 
 func sanitizeOperation(operation string) string {
@@ -541,7 +541,7 @@ type createEventRequest interface {
 // CreateRequest interface.
 type CreateRequest interface {
 	proto.Message
-	GetResource() basemodels.Object
+	GetResource() asfmodels.Object
 	GetFieldMask() types.FieldMask
 	SetFieldMask(types.FieldMask)
 	isCreateRequest()
@@ -555,7 +555,7 @@ type updateEventRequest interface {
 // UpdateRequest interface.
 type UpdateRequest interface {
 	proto.Message
-	GetResource() basemodels.Object
+	GetResource() asfmodels.Object
 	GetFieldMask() types.FieldMask
 	SetFieldMask(types.FieldMask)
 	isUpdateRequest()
@@ -585,7 +585,7 @@ type CreateRefRequest interface {
 	proto.Message
 	GetID() string
 	SetID(string)
-	GetReference() basemodels.Reference
+	GetReference() asfmodels.Reference
 	isCreateRefRequest()
 }
 
@@ -599,13 +599,13 @@ type DeleteRefRequest interface {
 	proto.Message
 	GetID() string
 	SetID(string)
-	GetReference() basemodels.Reference
+	GetReference() asfmodels.Reference
 	isDeleteRefRequest()
 }
 
 func (o *EventOption) getFieldMask() types.FieldMask {
 	if o.FieldMask == nil {
-		return basemodels.MapToFieldMask(o.Data)
+		return asfmodels.MapToFieldMask(o.Data)
 	}
 	return *o.FieldMask
 }
@@ -653,7 +653,7 @@ func (e *Event) ApplyMap(m map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	fm := basemodels.MapToFieldMask(data)
+	fm := asfmodels.MapToFieldMask(data)
 	event, err := NewEvent(EventOption{
 		UUID:      uuid,
 		Operation: operation,
@@ -683,7 +683,7 @@ type eventNode struct {
 }
 
 //NewEventGraph creates EventGraph from list of Events.
-func NewEventGraph(events []*Event, referencesMap map[*Event]basemodels.References) *EventGraph {
+func NewEventGraph(events []*Event, referencesMap map[*Event]asfmodels.References) *EventGraph {
 	g := &EventGraph{}
 	g.initNodes(events)
 	g.fillGraphEdges(referencesMap)
@@ -703,13 +703,13 @@ func (g *EventGraph) initNodes(events []*Event) {
 		}
 		if res := e.GetResource(); res != nil {
 			if len(res.GetFQName()) != 0 {
-				g.nodeByFQName[basemodels.FQNameToString(res.GetFQName())] = node
+				g.nodeByFQName[asfmodels.FQNameToString(res.GetFQName())] = node
 			}
 		}
 	}
 }
 
-func (g *EventGraph) fillGraphEdges(eventToRef map[*Event]basemodels.References) {
+func (g *EventGraph) fillGraphEdges(eventToRef map[*Event]asfmodels.References) {
 	for _, node := range g.nodes {
 		refs := eventToRef[node.event]
 		for _, ref := range refs {
@@ -720,16 +720,16 @@ func (g *EventGraph) fillGraphEdges(eventToRef map[*Event]basemodels.References)
 	}
 }
 
-func (g *EventGraph) getNodeByReference(ref basemodels.Reference) *eventNode {
+func (g *EventGraph) getNodeByReference(ref asfmodels.Reference) *eventNode {
 	node := g.nodeByUUID[ref.GetUUID()]
 	if node == nil {
-		node = g.nodeByFQName[basemodels.FQNameToString(ref.GetTo())]
+		node = g.nodeByFQName[asfmodels.FQNameToString(ref.GetTo())]
 	}
 	return node
 }
 
 //IsSortRequired checks if order of creates or deletes is correct.
-func (g *EventGraph) IsSortRequired(e *EventList, refMap map[*Event]basemodels.References) bool {
+func (g *EventGraph) IsSortRequired(e *EventList, refMap map[*Event]asfmodels.References) bool {
 	operation := e.OperationType()
 	parsedEvents := map[*Event]bool{}
 	for _, event := range e.Events {
@@ -821,13 +821,13 @@ func isSubgraphCyclic(node *eventNode, visited, parsingStack map[*eventNode]bool
 	return false
 }
 
-func extractParentAsRef(o basemodels.Object) basemodels.Reference {
+func extractParentAsRef(o asfmodels.Object) asfmodels.Reference {
 	parentType := o.GetParentType()
 	if parentUUID := o.GetParentUUID(); parentUUID != "" {
-		return basemodels.NewUUIDReference(parentUUID, parentType)
+		return asfmodels.NewUUIDReference(parentUUID, parentType)
 	}
-	if parentFQName := basemodels.ParentFQName(o.GetFQName()); len(parentFQName) != 0 {
-		return basemodels.NewFQNameReference(parentFQName, parentType)
+	if parentFQName := asfmodels.ParentFQName(o.GetFQName()); len(parentFQName) != 0 {
+		return asfmodels.NewFQNameReference(parentFQName, parentType)
 
 	}
 	return nil
@@ -842,7 +842,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetRequest() CreateR
 }
 
 // GetResource underlying request.
-func (r *Create{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
+func (r *Create{{ schema.JSONSchema.GoName }}Request) GetResource() asfmodels.Object {
 	return r.Get{{ schema.JSONSchema.GoName }}()
 }
 
@@ -865,7 +865,7 @@ func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetRequest() UpdateR
 }
 
 // GetResource underlying request.
-func (r *Update{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
+func (r *Update{{ schema.JSONSchema.GoName }}Request) GetResource() asfmodels.Object {
 	return r.Get{{ schema.JSONSchema.GoName }}()
 }
 
@@ -922,7 +922,7 @@ func (r *Create{{ refType }}Request) SetID(id string) {
 }
 
 // GetReference returns reference.
-func (r *Create{{ refType }}Request) GetReference() basemodels.Reference {
+func (r *Create{{ refType }}Request) GetReference() asfmodels.Reference {
 	return r.Get{{ refType }}()
 }
 
@@ -945,7 +945,7 @@ func (r *Delete{{ refType }}Request) SetID(id string) {
 }
 
 // GetReference returns reference.
-func (r *Delete{{ refType }}Request) GetReference() basemodels.Reference {
+func (r *Delete{{ refType }}Request) GetReference() asfmodels.Reference {
 	return r.Get{{ refType }}()
 }
 
