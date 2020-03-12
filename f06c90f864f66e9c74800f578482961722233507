@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "45725411_c87018cc",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b852b18a_5ab108a5",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1f230722_2728c3e7",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 6
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "0467e133_7c2bbac6",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1f230722_2728c3e7",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6b2c0801_8f06e423",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 6
@@ -50,6 +86,24 @@
       "revId": "f06c90f864f66e9c74800f578482961722233507",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b3080323_476198c7",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6b2c0801_8f06e423",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -117,6 +171,24 @@
     },
     {
       "key": {
+        "uuid": "f12e53df_1508794d",
+        "filename": "pkg/agent/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "I chose the second option, now using a private struct to pass the context. This part was quite messy, but after using the struct it seems much better, thanks.",
+      "parentUuid": "30966528_6ef5eafa",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cfac3c4f_52b0811b",
         "filename": "pkg/agent/cloud.go",
         "patchSetId": 6
@@ -134,6 +206,24 @@
     },
     {
       "key": {
+        "uuid": "b338c517_922445a9",
+        "filename": "pkg/agent/cloud.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cfac3c4f_52b0811b",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0a3e19c5_845f081c",
         "filename": "pkg/agent/cluster.go",
         "patchSetId": 6
@@ -148,6 +238,24 @@
       "revId": "f06c90f864f66e9c74800f578482961722233507",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2ab7bcb4_9c23be26",
+        "filename": "pkg/agent/cluster.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0a3e19c5_845f081c",
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -174,6 +282,30 @@
     },
     {
       "key": {
+        "uuid": "4f59f005_6e5fc457",
+        "filename": "pkg/agent/common_handler.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3cef86a3_528e37d8",
+      "range": {
+        "startLine": 12,
+        "startChar": 2,
+        "endLine": 15,
+        "endChar": 3
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f1c53869_0046a8fd",
         "filename": "pkg/agent/common_handler.go",
         "patchSetId": 6
@@ -194,6 +326,30 @@
       "revId": "f06c90f864f66e9c74800f578482961722233507",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "496de09d_a92ff80a",
+        "filename": "pkg/agent/common_handler.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f1c53869_0046a8fd",
+      "range": {
+        "startLine": 17,
+        "startChar": 2,
+        "endLine": 20,
+        "endChar": 3
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -220,6 +376,30 @@
     },
     {
       "key": {
+        "uuid": "73b891a0_99e01913",
+        "filename": "pkg/agent/common_handler.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Thanks for the look, this file will not be used in next patch so it is deleted.",
+      "parentUuid": "86c10663_4cd46d41",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 1
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dfd70fa1_00dc0ac7",
         "filename": "pkg/cloud/manager.go",
         "patchSetId": 6
@@ -240,6 +420,30 @@
       "revId": "f06c90f864f66e9c74800f578482961722233507",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8ed4e5b_8c1d3474",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dfd70fa1_00dc0ac7",
+      "range": {
+        "startLine": 97,
+        "startChar": 1,
+        "endLine": 110,
+        "endChar": 77
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -266,6 +470,30 @@
     },
     {
       "key": {
+        "uuid": "50bd2aab_3ccf36d1",
+        "filename": "pkg/cloud/manager.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c777062f_1f139bbd",
+      "range": {
+        "startLine": 114,
+        "startChar": 5,
+        "endLine": 114,
+        "endChar": 28
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "12e934d9_6808fa7a",
         "filename": "pkg/cmd/contrail/run.go",
         "patchSetId": 6
@@ -286,6 +514,30 @@
       "revId": "f06c90f864f66e9c74800f578482961722233507",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "160bb0b7_a291eef2",
+        "filename": "pkg/cmd/contrail/run.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 425,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-12T22:50:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "12e934d9_6808fa7a",
+      "range": {
+        "startLine": 418,
+        "startChar": 0,
+        "endLine": 425,
+        "endChar": 19
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
