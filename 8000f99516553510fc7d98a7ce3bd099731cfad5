@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f56778a3_5107d9e3",
+        "filename": "pkg/sync/replication/change.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-03-12T08:44:13Z",
+      "side": 1,
+      "message": "Exported type should have a comment. And similarly in the rest of the file.",
+      "range": {
+        "startLine": 5,
+        "startChar": 5,
+        "endLine": 5,
+        "endChar": 20
+      },
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
