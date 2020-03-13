@@ -16,6 +16,24 @@
       "revId": "867e5eaaf7595f3ab5b16c2085bae12fd3c10be4",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "01c2abf8_3ddf83dd",
+        "filename": "pkg/sync/replication/psqlutil.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T14:04:46Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "b848f8df_e990b124",
+      "revId": "867e5eaaf7595f3ab5b16c2085bae12fd3c10be4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

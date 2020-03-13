@@ -39,6 +39,30 @@
       "revId": "2fd49ec2f0f93df4c99ef7ab820790e7463c8750",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ffb683a_06d51817",
+        "filename": "pkg/sync/replication/conn.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T14:04:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e5c504fa_95751c6d",
+      "range": {
+        "startLine": 145,
+        "startChar": 1,
+        "endLine": 145,
+        "endChar": 4
+      },
+      "revId": "2fd49ec2f0f93df4c99ef7ab820790e7463c8750",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
