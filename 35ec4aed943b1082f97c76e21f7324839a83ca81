@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1aa936fc_b14cdb3f",
+        "filename": "pkg/sync/integration_test.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 562,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "Does this mean that this CR changes the behavior?",
+      "range": {
+        "startLine": 562,
+        "startChar": 35,
+        "endLine": 562,
+        "endChar": 81
+      },
+      "revId": "35ec4aed943b1082f97c76e21f7324839a83ca81",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

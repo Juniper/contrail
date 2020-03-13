@@ -22,6 +22,166 @@
       "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2cd6e390_a84e7555",
+        "filename": "pkg/sync/replication/pgoutput.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "Add a doc comment.",
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "75635794_fafbee59",
+        "filename": "pkg/sync/replication/pgoutput_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "these are duplicates of the above entry.",
+      "range": {
+        "startLine": 56,
+        "startChar": 4,
+        "endLine": 66,
+        "endChar": 2
+      },
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f20c8343_45f0f6ec",
+        "filename": "pkg/sync/replication/pgoutput_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 74,
+        "startChar": 4,
+        "endLine": 90,
+        "endChar": 2
+      },
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2bfb2743_d4156a7c",
+        "filename": "pkg/sync/replication/watcher.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "`the default`",
+      "range": {
+        "startLine": 109,
+        "startChar": 20,
+        "endLine": 109,
+        "endChar": 27
+      },
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3d3029cd_2ce4f82c",
+        "filename": "pkg/sync/replication/watcher.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "Replace this with a log message or remove this.",
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52fdc9a3_3c44be6d",
+        "filename": "pkg/sync/replication/watcher_test.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "Add a test where some changes are actually produced.",
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b054ea56_2f30d482",
+        "filename": "pkg/sync/service.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "`coming`",
+      "range": {
+        "startLine": 75,
+        "startChar": 82,
+        "endLine": 75,
+        "endChar": 89
+      },
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a84d14de_34410e62",
+        "filename": "pkg/sync/service.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "nit: Use a list of options instead of making a different call to NewPostgresWatcher?",
+      "revId": "8000f99516553510fc7d98a7ce3bd099731cfad5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }

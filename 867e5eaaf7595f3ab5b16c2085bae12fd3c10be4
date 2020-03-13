@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b848f8df_e990b124",
+        "filename": "pkg/sync/replication/psqlutil.go",
+        "patchSetId": 14
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 0,
+      "message": "Update the comment to match the name.",
+      "revId": "867e5eaaf7595f3ab5b16c2085bae12fd3c10be4",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

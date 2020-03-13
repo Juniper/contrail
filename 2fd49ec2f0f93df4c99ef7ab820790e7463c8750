@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "42810e34_b0dd6d74",
+        "filename": "pkg/sync/replication/conn.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "This exported function returns an unexported type. Also, there\u0027s no doc comment.",
+      "revId": "2fd49ec2f0f93df4c99ef7ab820790e7463c8750",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e5c504fa_95751c6d",
+        "filename": "pkg/sync/replication/conn.go",
+        "patchSetId": 12
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-13T13:02:56Z",
+      "side": 1,
+      "message": "Check this error.",
+      "range": {
+        "startLine": 145,
+        "startChar": 1,
+        "endLine": 145,
+        "endChar": 4
+      },
+      "revId": "2fd49ec2f0f93df4c99ef7ab820790e7463c8750",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
