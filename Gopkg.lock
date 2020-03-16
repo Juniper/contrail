@@ -287,6 +287,7 @@
     "api/types/volume",
     "client",
     "errdefs",
+    "pkg/stdcopy",
   ]
   pruneopts = ""
   revision = "ac7306503d237d548e376a89ab0b899ea1a245b0"
@@ -1386,6 +1387,7 @@
     "github.com/docker/docker/api/types/mount",
     "github.com/docker/docker/api/types/network",
     "github.com/docker/docker/client",
+    "github.com/docker/docker/pkg/stdcopy",
     "github.com/flosch/pongo2",
     "github.com/go-openapi/spec",
     "github.com/gocql/gocql",
