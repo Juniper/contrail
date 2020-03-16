@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "17e81b53_2b4325d7",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-16T14:02:30Z",
+      "side": 1,
+      "message": "Ditto L108",
+      "revId": "aa3dd4a92f3a1d04347e649b43ec7a9c96c16765",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b285c9fc_21d0770a",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-16T14:02:30Z",
+      "side": 1,
+      "message": "The signature of this function is same as deploy.NewDeploy (it still uses foreign types), thus it doesn\u0027t provide much abstraction. It just adds some err context which is not that crucial.\n\nHow about removing this funtion and using deploy.NewDeploy in L51.",
+      "revId": "aa3dd4a92f3a1d04347e649b43ec7a9c96c16765",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2aaf2aba_b80d702a",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-16T14:02:30Z",
+      "side": 1,
+      "message": "You can return directly:\n\n return \u0026cloud.Config{",
+      "revId": "aa3dd4a92f3a1d04347e649b43ec7a9c96c16765",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fd961ad4_8f39a43e",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 10
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-16T14:02:30Z",
+      "side": 1,
+      "message": "Ditto L98",
+      "revId": "aa3dd4a92f3a1d04347e649b43ec7a9c96c16765",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
