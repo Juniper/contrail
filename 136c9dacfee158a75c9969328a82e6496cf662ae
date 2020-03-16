@@ -22,6 +22,30 @@
       "revId": "136c9dacfee158a75c9969328a82e6496cf662ae",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0de75212_bfa5a551",
+        "filename": "vendor/github.com/Juniper/asf/pkg/models/codec_test.go",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-03-16T13:02:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6cacd76b_9b288d54",
+      "range": {
+        "startLine": 86,
+        "startChar": 0,
+        "endLine": 93,
+        "endChar": 1
+      },
+      "revId": "136c9dacfee158a75c9969328a82e6496cf662ae",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
