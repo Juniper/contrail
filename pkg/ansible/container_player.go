@@ -2,6 +2,7 @@ package ansible
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -21,6 +22,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -193,13 +195,23 @@ func (p *ContainerPlayer) execCmd(
 	if err != nil {
 		return errors.Wrap(err, "creating container exec failed")
 	}
+
 	hijack, err := p.client.ContainerExecAttach(ctx, createResp.ID, types.ExecStartCheck{})
 	if err != nil {
 		return errors.Wrap(err, "attaching to container exec failed")
 	}
-
 	defer hijack.Close()
-	scanner := bufio.NewScanner(hijack.Reader)
+
+	// TODO(dji): use a better method to deal with scanner not supporting non-UTF8 control characters
+	// For some reason, bufio.Scanner doesn't deal with control character in ansible output
+	// Used docker package's stdcopy.Stdcopy which deals with control characters
+	buffer := new(bytes.Buffer)
+	_, err = stdcopy.StdCopy(buffer, buffer, hijack.Reader)
+	if err != nil {
+		return errors.Wrap(err, "copy ansible ouput from container to local buffer failed")
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(buffer.String()))
 	for scanner.Scan() {
 		p.log.Debug(scanner.Text())
 	}
