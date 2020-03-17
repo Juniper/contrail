@@ -154,6 +154,30 @@
     },
     {
       "key": {
+        "uuid": "0a4c739b_5fcf5df2",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 6
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-17T10:11:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "23ea326c_53f506b7",
+      "range": {
+        "startLine": 144,
+        "startChar": 1,
+        "endLine": 151,
+        "endChar": 2
+      },
+      "revId": "f06c90f864f66e9c74800f578482961722233507",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "30966528_6ef5eafa",
         "filename": "pkg/agent/cloud.go",
         "patchSetId": 6
