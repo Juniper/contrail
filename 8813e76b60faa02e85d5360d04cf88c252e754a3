@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "e2fd75b6_74626907",
+        "filename": "pkg/services/chown.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-17T15:13:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "32ec5a63_802c0726",
+      "range": {
+        "startLine": 10,
+        "startChar": 1,
+        "endLine": 10,
+        "endChar": 48
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "68efe55e_038dfa5f",
         "filename": "pkg/services/plugin.go",
         "patchSetId": 5
@@ -93,6 +117,30 @@
       "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e311dbce_8235c0da",
+        "filename": "pkg/services/plugin.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-17T15:13:09Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7780e9ab_e68b1db6",
+      "range": {
+        "startLine": 9,
+        "startChar": 1,
+        "endLine": 11,
+        "endChar": 35
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -143,6 +191,30 @@
     },
     {
       "key": {
+        "uuid": "34fcf45d_ae87f2e3",
+        "filename": "pkg/services/prop_collection_update.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-17T15:13:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "eb707424_5bd57335",
+      "range": {
+        "startLine": 8,
+        "startChar": 1,
+        "endLine": 8,
+        "endChar": 18
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f6213923_5f19e3de",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
         "patchSetId": 5
@@ -187,6 +259,30 @@
       "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04240a41_66553de9",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 648,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-17T15:13:09Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a6028079_43a37463",
+      "range": {
+        "startLine": 631,
+        "startChar": 0,
+        "endLine": 648,
+        "endChar": 1
+      },
+      "revId": "8813e76b60faa02e85d5360d04cf88c252e754a3",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }

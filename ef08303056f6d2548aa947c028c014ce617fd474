@@ -46,6 +46,30 @@
       "revId": "ef08303056f6d2548aa947c028c014ce617fd474",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c121efbe_1a2d4b3c",
+        "filename": "pkg/services/chown.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2020-03-17T15:13:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4aa797ff_d0e486c8",
+      "range": {
+        "startLine": 4,
+        "startChar": 1,
+        "endLine": 14,
+        "endChar": 33
+      },
+      "revId": "ef08303056f6d2548aa947c028c014ce617fd474",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
