@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "075ac5a5_781b7162",
+        "filename": "pkg/services/plugin.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-18T11:09:35Z",
+      "side": 1,
+      "message": "I split these into 3 files because it\u0027s easier for me to navigate the code this way. prop_collection_update.go is large enough to be in a separate file IMO.",
+      "parentUuid": "4ab3e0f7_f7137b15",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "48460c19_1d54e37c",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
         "patchSetId": 8
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "f2a8abdf_61abdfa4",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 680,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-18T11:09:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "48460c19_1d54e37c",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d7f8f14a_6baa7693",
         "filename": "vendor/github.com/mailru/easyjson/parser/parser_windows.go",
         "patchSetId": 8
@@ -47,6 +83,24 @@
       "writtenOn": "2020-03-18T08:50:42Z",
       "side": 1,
       "message": "What happened to this file? It seems unchanged.",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bce59894_7e5a65af",
+        "filename": "vendor/github.com/mailru/easyjson/parser/parser_windows.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-18T11:09:35Z",
+      "side": 1,
+      "message": "Removing vendor/ and running \"dep ensure\" did this. Should I revert this change?",
+      "parentUuid": "d7f8f14a_6baa7693",
       "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
