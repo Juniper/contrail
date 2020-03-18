@@ -189,7 +189,7 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		"glance":    "http://127.0.0.1:9292",
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
-		"appformix": "http://127.0.0.1:9001",
+		"insights":  "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_instances.yml"
 	switch computeType {
@@ -449,7 +449,7 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 		"glance":    "http://127.0.0.1:9293",
 		"compute":   "http://127.0.0.1:8775",
 		"keystone":  "http://127.0.0.1:5000",
-		"appformix": "http://127.0.0.1:9001",
+		"insights":  "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_with_appformix.yml"
 	switch computeType {
@@ -591,7 +591,7 @@ func upgradeAppformixPlaybookExecutions() []ansiblemock.ContainerExecution {
 
 func createDummyAppformixFiles(t *testing.T) func() {
 	// create appformix config.yml file
-	configFile := workRoot + "/" + "appformix-ansible-deployer/appformix/config.yml"
+	configFile := workRoot + "/" + "appformix-ansible-deployer/config.yml"
 	configData := []byte(`{"appformix_version": "3.0.0"}`)
 	err := fileutil.WriteToFile(configFile, configData, cluster.DefaultFilePermRWOnly)
 	assert.NoErrorf(t, err, "Unable to write file: %s", configFile)
@@ -716,7 +716,7 @@ func TestAllInOneVfabricManager(t *testing.T) {
 		"glance":    "http://127.0.0.1:9292",
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
-		"appformix": "http://127.0.0.1:9001",
+		"insights":  "http://127.0.0.1:9001",
 	}
 
 	runTest(

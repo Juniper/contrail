@@ -171,9 +171,9 @@ func (a *ContrailAnsibleDeployer) getAnsibleDeployerRepoInContainer() string {
 
 func (a *ContrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
 	if a.cluster.config.Test {
-		return filepath.Join(a.cluster.config.WorkRoot, defaultAppformixAnsibleRepo, defaultAppformixDir)
+		return filepath.Join(a.cluster.config.WorkRoot, defaultAppformixAnsibleRepo)
 	}
-	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultAppformixDir)
+	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
 }
 
 func (a *ContrailAnsibleDeployer) getXflowDeployerDir() (xflowDir string) {
@@ -470,7 +470,7 @@ func (a *ContrailAnsibleDeployer) playContrailDatapathEncryption() error {
 }
 
 func (a *ContrailAnsibleDeployer) appformixVenvDir() string {
-	return filepath.Join(a.getAppformixAnsibleDeployerRepoDir(), "venv")
+	return filepath.Join(a.getAppformixAnsibleDeployerRepoDir(), defaultAppformixDir, "venv")
 }
 
 func (a *ContrailAnsibleDeployer) xflowVenvDir() string {
