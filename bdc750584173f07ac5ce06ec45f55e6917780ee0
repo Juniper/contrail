@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "04f3c375_7cc1268d",
+        "filename": "pkg/services/plugin.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-18T12:11:29Z",
+      "side": 1,
+      "message": "For me it\u0027s harder to navigate because I don\u0027t know what the struct is really doing while it\u0027s methods are spread across multiple files. It turned out to be problematic when we where \n\nI guess the problem then is that ContrailEndpointPlugin has too many features, but I remember we agreed to not split it into sub plugins. I won\u0027t be stubborn, however I just wanted to share my thoughts that this (splitting one structure into multiple files) is a code smell for me.\n\nMaybe add a TODO to consider splitting the plugins in the future?",
+      "parentUuid": "075ac5a5_781b7162",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "48460c19_1d54e37c",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
         "patchSetId": 8
@@ -101,6 +119,24 @@
       "side": 1,
       "message": "Removing vendor/ and running \"dep ensure\" did this. Should I revert this change?",
       "parentUuid": "d7f8f14a_6baa7693",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6df72c6d_053dd775",
+        "filename": "vendor/github.com/mailru/easyjson/parser/parser_windows.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-18T12:11:29Z",
+      "side": 1,
+      "message": "I think it should be untouched, yes.",
+      "parentUuid": "bce59894_7e5a65af",
       "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
