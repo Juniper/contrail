@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4ab3e0f7_f7137b15",
+        "filename": "pkg/services/plugin.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-18T08:50:42Z",
+      "side": 1,
+      "message": "What do you think about merging this file with set_tag.go, prop_collection....go and chown.go? We had to split ContrailService into files (because it would have thousands lines of code), but IMO we don\u0027t have to do this in case of ContrailEndpointPlugin.",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "48460c19_1d54e37c",
+        "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
+        "patchSetId": 8
+      },
+      "lineNbr": 680,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-18T08:50:42Z",
+      "side": 1,
+      "message": "Pls fix comment to match the function name.",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d7f8f14a_6baa7693",
+        "filename": "vendor/github.com/mailru/easyjson/parser/parser_windows.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2020-03-18T08:50:42Z",
+      "side": 1,
+      "message": "What happened to this file? It seems unchanged.",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
