@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "58a89937_938e1369",
+        "filename": "pkg/services/plugin.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-18T14:09:57Z",
+      "side": 1,
+      "message": "I\u0027ve split the endpoints into separate plugins.",
+      "parentUuid": "04f3c375_7cc1268d",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "48460c19_1d54e37c",
         "filename": "vendor/github.com/Juniper/asf/pkg/services/service_common.go.tmpl",
         "patchSetId": 8
@@ -137,6 +155,24 @@
       "side": 1,
       "message": "I think it should be untouched, yes.",
       "parentUuid": "bce59894_7e5a65af",
+      "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8446cf62_c2c47741",
+        "filename": "vendor/github.com/mailru/easyjson/parser/parser_windows.go",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-18T14:09:57Z",
+      "side": 1,
+      "message": "I\u0027ve undone the change.",
+      "parentUuid": "6df72c6d_053dd775",
       "revId": "bdc750584173f07ac5ce06ec45f55e6917780ee0",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
