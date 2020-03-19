@@ -162,12 +162,12 @@ func TestRoutesAreRegistered(t *testing.T) {
 		routes.add(r)
 	}
 
-	for _, plugin := range []apiserver.APIPlugin{
+	for _, plugin := range append([]apiserver.APIPlugin{
 		&cache.DB{},
 		&keystone.Keystone{},
 		services.UploadCloudKeysPlugin{},
 		&services.ContrailService{},
-	} {
+	}, services.ContrailPlugins(nil, nil, nil, nil)...) {
 		plugin.RegisterHTTPAPI(&routes)
 	}
 
