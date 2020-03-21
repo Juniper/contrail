@@ -35,3 +35,9 @@ test_output/
 
 # Files patched during the build
 .patched
+
+# bazel temp files
+bazel-bin
+bazel-out
+bazel-testlogs
+bazel-*
