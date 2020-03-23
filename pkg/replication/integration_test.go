@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/asf/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"

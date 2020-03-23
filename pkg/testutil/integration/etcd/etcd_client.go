@@ -9,7 +9,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/etcd"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/asf/pkg/testutil"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/asf/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

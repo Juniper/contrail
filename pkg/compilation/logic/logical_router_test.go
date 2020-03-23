@@ -4,16 +4,16 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-
+	"github.com/Juniper/asf/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
-	"github.com/Juniper/contrail/pkg/testutil"
 	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
 

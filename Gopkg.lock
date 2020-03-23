@@ -34,6 +34,7 @@
     "pkg/schema",
     "pkg/services/baseservices",
     "pkg/sync",
+    "pkg/testutil",
   ]
   pruneopts = ""
   revision = "398c30bc4817719f1af5d74ec4ef174b9ed4cee3"
@@ -1373,6 +1374,7 @@
     "github.com/Juniper/asf/pkg/schema",
     "github.com/Juniper/asf/pkg/services/baseservices",
     "github.com/Juniper/asf/pkg/sync",
+    "github.com/Juniper/asf/pkg/testutil",
     "github.com/apparentlymart/go-cidr/cidr",
     "github.com/coreos/etcd/clientv3",
     "github.com/docker/docker/api/types",
