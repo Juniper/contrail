@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "51a47928_0b5f7638",
+        "filename": "pkg/models/codec_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-03-24T08:55:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2c86353f_4cb03a70",
+      "revId": "f638f4fca46179302513bd68dc5393100aa1b7c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9477aff5_6d3bfb6d",
         "filename": "vendor/github.com/Juniper/asf/Makefile",
         "patchSetId": 13
@@ -33,6 +51,24 @@
       "revId": "f638f4fca46179302513bd68dc5393100aa1b7c5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0a4dbb75_f1ccf77c",
+        "filename": "vendor/github.com/Juniper/asf/Makefile",
+        "patchSetId": 13
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 878
+      },
+      "writtenOn": "2020-03-24T08:55:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9477aff5_6d3bfb6d",
+      "revId": "f638f4fca46179302513bd68dc5393100aa1b7c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
