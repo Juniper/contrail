@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0e37e113_4d9720d2",
+        "filename": "schemas/contrail/core/types.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 1030,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2020-03-24T18:11:13Z",
+      "side": 1,
+      "message": "Do we need the node_type during the node import?  Are we using this to change import behavior. Can you explain it more here.\n\nUser will select compute type later when assigning compute role to a node. contrail_vrouter_node.yml#L40",
+      "revId": "9d6a5f34a9042d0cca2cbd744c167a01faaa371b",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
