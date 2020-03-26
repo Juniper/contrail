@@ -188,3 +188,14 @@ func httpStatusFromCode(code codes.Code) int {
 	}
 	return http.StatusInternalServerError
 }
+
+//StatusFromError returns HTTP status based on echo.HTTPError.
+func StatusFromError(err error) int {
+	if err == nil {
+		return http.StatusOK
+	}
+	if e, ok := err.(*echo.HTTPError); ok {
+		return e.Code
+	}
+	return http.StatusInternalServerError
+}
