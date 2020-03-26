@@ -16,6 +16,24 @@
       "revId": "f57a181a73d624a5b6486ff54a67a90b299cb637",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1a22ae21_f6a0ca13",
+        "filename": "Gopkg.toml",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-26T13:09:57Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "655ad9d0_e72fc901",
+      "revId": "f57a181a73d624a5b6486ff54a67a90b299cb637",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
