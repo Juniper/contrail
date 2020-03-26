@@ -108,7 +108,8 @@ workflow:
       display_name: namespace=tag_minimal_correct
       fq_name:
       - namespace=tag_minimal_correct
-      tag_id: "0x00ff0002"
+      tag_id:
+        $contains: "0x00ff000"
       tag_type_name: namespace
       tag_value: tag_minimal_correct
 
@@ -126,7 +127,8 @@ workflow:
       uuid: tag_full_correct_uuid
       fq_name:
       - namespace=tag_full_correct
-      tag_id: "0x00ff0003"
+      tag_id:
+        $contains: "0x00ff000"
       tag_value: tag_full_correct
       tag_type_name: namespace
       perms2:
