@@ -123,39 +123,3 @@ func TestSetContextHeaders(t *testing.T) {
 		})
 	}
 }
-
-func TestCloneHeader(t *testing.T) {
-	tests := []struct {
-		name string
-		h    http.Header
-		want http.Header
-	}{{
-		name: "nils",
-	}, {
-		name: "empty", h: http.Header{}, want: http.Header{},
-	}, {
-		name: "one value",
-		h:    http.Header{contentTypeHeader: []string{"A"}},
-		want: http.Header{contentTypeHeader: []string{"A"}},
-	}, {
-		name: "more headers",
-		h: http.Header{
-			"Foo-Header":      []string{"X"},
-			contentTypeHeader: []string{"A", "B"},
-		},
-		want: http.Header{
-			"Foo-Header":      []string{"X"},
-			contentTypeHeader: []string{"A", "B"},
-		},
-	}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := cloneHeader(tt.h); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Clone() = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(tt.h, tt.want) {
-				t.Errorf("Clone() mutated original Headers, got %v, want %v", tt.h, tt.want)
-			}
-		})
-	}
-}

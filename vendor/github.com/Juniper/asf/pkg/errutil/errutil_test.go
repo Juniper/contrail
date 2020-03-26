@@ -41,3 +41,27 @@ func TestToHTTPError(t *testing.T) {
 		})
 	}
 }
+
+func TestStatusFromError(t *testing.T) {
+	tests := []struct {
+		name         string
+		err          error
+		expectedCode int
+	}{{
+		name:         "no error",
+		expectedCode: http.StatusOK,
+	}, {
+		name:         "not found error",
+		err:          echo.NewHTTPError(http.StatusNotFound, "not found"),
+		expectedCode: http.StatusNotFound,
+	}, {
+		name:         "custom error",
+		err:          errors.New("new custom error"),
+		expectedCode: http.StatusInternalServerError,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expectedCode, StatusFromError(tt.err))
+		})
+	}
+}
