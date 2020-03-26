@@ -11,10 +11,23 @@ import (
 func MustJSON(data interface{}) string {
 	b, err := json.Marshal(data)
 	if err != nil {
-		logrus.WithError(err).Debug("failed to marshal")
+		logrus.WithField("data", data).WithError(err).Debug("failed to marshal")
 		return ""
 	}
 	return string(b)
+}
+
+// MustReadJSON decodes reader to map and logs in case of error.
+func MustReadJSON(data []byte) interface{} {
+	var value interface{}
+	if len(data) == 0 {
+		return value
+	}
+	if err := json.Unmarshal(data, &value); err != nil {
+		logrus.WithField("value", value).WithError(err).Debug("failed to decode")
+		return nil
+	}
+	return value
 }
 
 // access method iterates the dataSource map and returns the sub map for the given path.

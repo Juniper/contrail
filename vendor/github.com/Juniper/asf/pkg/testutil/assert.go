@@ -36,6 +36,12 @@ var assertFunctions = map[string]assertFunction{
 	"any": func(path string, args, actual interface{}) error {
 		return nil
 	},
+	"notnull": func(path string, args, actual interface{}) error {
+		if actual == nil {
+			return errors.Errorf("expected any but got %s on path %s", actual, path)
+		}
+		return nil
+	},
 	"null": func(path string, _, actual interface{}) error {
 		if actual != nil {
 			return errors.Errorf("expected null but got %s on path %s", actual, path)
@@ -158,7 +164,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 		}
 	case map[string]interface{}:
 		actualMap, ok := actual.(map[string]interface{})
-		if !ok {
+		if actual != nil && !ok {
 			return errorWithFields(t, actual, path)
 		}
 		for key, value := range t {

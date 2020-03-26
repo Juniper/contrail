@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"net"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Juniper/asf/pkg/keystone"
@@ -24,6 +26,9 @@ import (
 type Server struct {
 	Echo *echo.Echo
 	log  *logrus.Entry
+
+	ready     chan struct{}
+	readyOnce sync.Once
 }
 
 // APIPlugin registers HTTP endpoints and GRPC services in Server.
@@ -118,7 +123,8 @@ type GRPCRouter interface {
 // instead of an argument to NewServer().
 func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	s := &Server{
-		Echo: echo.New(),
+		Echo:  echo.New(),
+		ready: make(chan struct{}),
 	}
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
@@ -376,6 +382,14 @@ func echoMiddlewareFunc(m MiddlewareFunc) echo.MiddlewareFunc {
 
 // Run starts serving the APIs to clients.
 func (s *Server) Run() error {
+	defer func() { s.signalReady() }()
+	go func() {
+		for !s.isReady() {
+			time.Sleep(10 * time.Millisecond)
+		}
+		s.signalReady()
+	}()
+
 	if viper.GetBool("server.tls.enabled") {
 		return s.Echo.StartTLS(
 			viper.GetString("server.address"),
@@ -385,4 +399,49 @@ func (s *Server) Run() error {
 	}
 
 	return s.Echo.Start(viper.GetString("server.address"))
+}
+
+func (s *Server) isReady() bool {
+	if s.Echo == nil {
+		return false
+	}
+	if s.isListenerReady(s.Echo.Listener) {
+		return true
+	}
+	if s.isListenerReady(s.Echo.TLSListener) {
+		return true
+	}
+	return false
+}
+
+func (s *Server) isListenerReady(l net.Listener) bool {
+	defer func() {
+		if r := recover(); r != nil {
+			s.log.Debug("Echo listener is not ready yet")
+		}
+	}()
+	l.Addr()
+	return true
+}
+
+// URL returns the URL of the server.
+func (s *Server) URL() string {
+	if s.Echo.TLSListener != nil {
+		return "https://" + s.Echo.TLSListener.Addr().String()
+	}
+	return "http://" + s.Echo.Listener.Addr().String()
+}
+func (s *Server) signalReady() {
+	s.readyOnce.Do(func() { close(s.ready) })
+}
+
+// ReadyChan returns a channel that blocks until the server is ready for handling connections.
+func (s *Server) ReadyChan() <-chan struct{} {
+	return s.ready
+}
+
+// Close closes the server.
+func (s *Server) Close() error {
+	s.ready = make(chan struct{})
+	return s.Echo.Close()
 }

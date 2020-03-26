@@ -72,3 +72,23 @@ func TestSetValueByPathDeepDeep(t *testing.T) {
 	assert.Equal(t, 4, current["one"].(map[string]interface{})["two"].(map[string]interface {
 	})["three"].(map[string]interface{})["four"])
 }
+
+func TestMustReadJSON(t *testing.T) {
+	tests := []struct {
+		name string
+		r    []byte
+		want interface{}
+	}{{
+		name: "nil",
+	}, {
+		name: "obj with array",
+		r:    []byte(`{"foo": ["bar"]}`),
+		want: map[string]interface{}{"foo": []interface{}{"bar"}},
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := MustReadJSON(tt.r)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
