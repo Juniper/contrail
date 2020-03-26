@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "655ad9d0_e72fc901",
+        "filename": "Gopkg.toml",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-26T09:56:03Z",
+      "side": 1,
+      "message": "This is no longer up to date.",
+      "revId": "f57a181a73d624a5b6486ff54a67a90b299cb637",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
