@@ -1,0 +1,325 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d0e69044_849e3619",
+        "filename": "pkg/services/event_graph_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Merge these import groups.",
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b6a2d285_b0dc9676",
+        "filename": "pkg/services/services_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 61
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "48346c64_71727891",
+        "filename": "pkg/services/set_tag_request.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Remove the redundant rename.",
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fc5a7ac8_8b2f0bb3",
+        "filename": "pkg/services/set_tag_request.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Merge these import groups.",
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ede6946c_35f5ebbc",
+        "filename": "pkg/types/alarm.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Merge these import groups.",
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "17b2819f_7ab79b56",
+        "filename": "pkg/types/domain_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 61
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "508835e7_24e89a3d",
+        "filename": "pkg/types/firewall_policy_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 55
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "50657685_de6605fb",
+        "filename": "pkg/types/firewall_rule_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 55
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8296cb83_d5855abd",
+        "filename": "pkg/types/logical_router_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 1
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "223d0dc2_a248aa3e",
+        "filename": "pkg/types/network_ipam_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 61
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "328404ae_927da27e",
+        "filename": "pkg/types/security_group.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 46
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0c1a74f5_4919481d",
+        "filename": "pkg/types/service_template_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 55
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "13b9d10b_6e777d84",
+        "filename": "pkg/types/virtual_network.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 46
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c6c3fed7_076c55d6",
+        "filename": "pkg/types/virtual_network_test.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 55
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "47868389_654b0fa5",
+        "filename": "pkg/types/virtual_router.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 1,
+      "message": "Organize the imports.",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 46
+      },
+      "revId": "56878231fbddcf278ef4094ed95f2579eb2f08ad",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c6f6cea5_5161eb00",
+        "filename": "pkg/types/firewall_rule.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 0,
+      "message": "Merge these import groups.",
+      "revId": "fc0b619ba96e6c32659d6688452c10bee964baaa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c61c7413_c0994266",
+        "filename": "pkg/types/global_system_config.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 0,
+      "message": "Merge these import groups.",
+      "revId": "fc0b619ba96e6c32659d6688452c10bee964baaa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "301576c2_5483a19a",
+        "filename": "pkg/types/virtual_machine_interface.go",
+        "patchSetId": 17
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2020-03-26T16:11:22Z",
+      "side": 0,
+      "message": "Merge these import groups.",
+      "revId": "fc0b619ba96e6c32659d6688452c10bee964baaa",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
