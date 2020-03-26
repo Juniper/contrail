@@ -238,6 +238,7 @@ func TestMultiClusterAuth(t *testing.T) {
 	// Create clusterA, clusterB and their config endpoint
 	for clusterName, cluster := range clusters {
 		configService := mockConfigServer(clusterName, cluster.id)
+		defer configService.Close()
 		pContext := pongo2.Context{
 			"cluster_name":  clusterName,
 			"endpoint_name": clusterName + "_config",

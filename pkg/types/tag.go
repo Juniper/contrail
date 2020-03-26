@@ -100,14 +100,14 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 				return err
 			}
 
-			// Don't de-allocate ID and remove pre-defined tag types
+			if err = sv.deallocateTagID(ctx, tag.GetTagID()); err != nil {
+				return err
+			}
+
+			// Don't remove pre-defined tag types
 			if _, ok := models.TagTypeIDs[tag.GetTagTypeName()]; ok {
 				response = &services.DeleteTagResponse{ID: id}
 				return nil
-			}
-
-			if err = sv.deallocateTagID(ctx, tag.GetTagID()); err != nil {
-				return err
 			}
 
 			// Try to delete referenced tag-type if no references left.
