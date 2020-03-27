@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "21e54990_b903a3bc",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-27T23:07:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2a1f4423_89ff7181",
+      "range": {
+        "startLine": 13,
+        "startChar": 1,
+        "endLine": 13,
+        "endChar": 6
+      },
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ee87925a_2e9cb108",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 28
@@ -39,6 +63,24 @@
       "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2c63418f_912b7ce2",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-27T23:07:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ee87925a_2e9cb108",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "0f5c876a_d2095e6f",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-27T23:07:20Z",
+      "side": 1,
+      "message": "The info is actually used for creating new deploy.Deploy or cloud.Cloud, since you mentioned, I will use \"Config holds settings for creating cluster manager or cloud manager\".",
+      "parentUuid": "c8f081b4_6451fb71",
+      "range": {
+        "startLine": 32,
+        "startChar": 16,
+        "endLine": 32,
+        "endChar": 20
+      },
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "01522ea5_073ea3e3",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 28
@@ -79,6 +145,24 @@
       "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0cb04872_fb4c5ff3",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-27T23:07:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "01522ea5_073ea3e3",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -105,6 +189,30 @@
     },
     {
       "key": {
+        "uuid": "a3ff2a6c_2892a3b3",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-27T23:07:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "916f891d_39f6568f",
+      "range": {
+        "startLine": 75,
+        "startChar": 1,
+        "endLine": 75,
+        "endChar": 19
+      },
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d5de872a_e8c216b4",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 28
@@ -119,6 +227,24 @@
       "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4b4a2256_08ab04d0",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-27T23:07:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d5de872a_e8c216b4",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
