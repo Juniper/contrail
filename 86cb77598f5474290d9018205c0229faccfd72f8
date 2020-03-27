@@ -1,0 +1,141 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2a1f4423_89ff7181",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "I think there is no need to introduce import alias here.",
+      "range": {
+        "startLine": 13,
+        "startChar": 1,
+        "endLine": 13,
+        "endChar": 6
+      },
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ee87925a_2e9cb108",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "Nit: I think it is better to put type definition below its usage, i.e. task below Config.",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c8f081b4_6451fb71",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "\"Agent information\" / \"Agent configuration\"",
+      "range": {
+        "startLine": 32,
+        "startChar": 16,
+        "endLine": 32,
+        "endChar": 20
+      },
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "01522ea5_073ea3e3",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "I know that some of required comments seem redundant but we should probably keep \"Agent represents Agent service.\"",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "916f891d_39f6568f",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "IMO \"stopProducer\" would be more precise",
+      "range": {
+        "startLine": 75,
+        "startChar": 1,
+        "endLine": 75,
+        "endChar": 19
+      },
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d5de872a_e8c216b4",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "Could you explain me why file logger is used? I think we should log to stdout just like other services.",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b707cd4_0641f871",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 28
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-03-27T19:47:08Z",
+      "side": 1,
+      "message": "Please uncomment logging and consider using debug level",
+      "revId": "86cb77598f5474290d9018205c0229faccfd72f8",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
