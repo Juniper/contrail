@@ -16,13 +16,10 @@ import (
 	"github.com/Juniper/contrail/pkg/apiserver"
 	"github.com/Juniper/contrail/pkg/cache"
 	"github.com/Juniper/contrail/pkg/cassandra"
-	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/deploy"
-	"github.com/Juniper/contrail/pkg/endpoint"
 	"github.com/Juniper/contrail/pkg/etcd"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
@@ -76,23 +73,6 @@ func Run() error {
 			wg.Wait()
 		},
 	})
-	contrailCmd.AddCommand(&cobra.Command{
-		Use:   "cloud",
-		Short: "sub command cloud is used to manage public cloud infra",
-		Long: `Cloud is a sub command used to manage
-            public cloud infra. Currently
-            supported infra are Azure`,
-		Run: func(cmd *cobra.Command, args []string) {
-			manageCloud(configFile)
-		},
-	})
-	contrailCmd.AddCommand(&cobra.Command{
-		Use:   "deploy",
-		Short: "Start managing contrail cluster",
-		Run: func(cmd *cobra.Command, args []string) {
-			manageCluster(configFile)
-		},
-	})
 
 	return contrailCmd.Execute()
 }
@@ -109,27 +89,6 @@ func initConfig(configFile string) {
 	}
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-}
-
-func manageCloud(configFile string) {
-	manager, err := cloud.NewCloudManager(configFile)
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-	if err = manager.Manage(); err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-}
-
-func manageCluster(configFile string) {
-	manager, err := deploy.NewDeployManager(configFile)
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-
-	if err = manager.Manage(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 }
@@ -251,12 +210,6 @@ func startServer() {
 	staticProxyPlugin, err := proxy.NewStaticByViper()
 	logutil.FatalWithStackTraceIfError(err)
 
-	es := endpoint.NewStore()
-	dynamicProxy := proxy.NewDynamicFromViper(es, dbService) // TODO(dfurman): it could use head of service chain
-	// TODO(dfurman): move to proxy constructor and use context for cancellation
-	dynamicProxy.StartEndpointsSync()
-	defer dynamicProxy.StopEndpointsSync()
-
 	plugins := []asfapiserver.APIPlugin{
 		serviceChain,
 		staticProxyPlugin,
@@ -295,10 +248,6 @@ func startServer() {
 
 	server, err := asfapiserver.NewServer(plugins, NoAuthPaths())
 	logutil.FatalWithStackTraceIfError(err)
-
-	r, err := startVNCReplicator(es)
-	logutil.FatalWithStackTraceIfError(err)
-	defer r.Stop()
 
 	err = server.Run()
 	logutil.FatalWithStackTraceIfError(err)
@@ -368,18 +317,6 @@ func NoAuthPaths() []string {
 			models.ContrailClusterFieldName,
 		}, ""),
 	}
-}
-
-func startVNCReplicator(es *endpoint.Store) (vncReplicator *replication.Replicator, err error) {
-	vncReplicator, err = replication.New(es)
-	if err != nil {
-		return nil, err
-	}
-	err = vncReplicator.Start()
-	if err != nil {
-		return nil, err
-	}
-	return vncReplicator, nil
 }
 
 const (
