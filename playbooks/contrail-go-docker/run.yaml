@@ -41,7 +41,7 @@
         - name: Generate docker images (depends on the nightly job to have already pushed contrail-base:branch-latest image)
           # After branching, make sure to push a contrail-base:1234.latest image (a nightly build does it), otherwise this step will fail.
           # Workaround is to manually change this step to use BASE_IMAGE_TAG='master.latest'
-          command: make BASE_IMAGE_REGISTRY='{{ docker_registry.fqdn }}:5010' BASE_IMAGE_TAG='{{ docker_branch }}{{ distro }}.latest' SOURCEDIR='{{ sourcedir }}' ANSIBLE_DEPLOYER_BRANCH='{{ zuul.branch }}' CONTRAIL_API_CLIENT_BRANCH='{{ zuul.branch }}' docker
+          command: make BASE_IMAGE_REGISTRY='{{ docker_registry.fqdn }}:5010' BASE_IMAGE_TAG='{{ docker_branch }}{{ distro }}.latest' SOURCEDIR='{{ sourcedir }}' docker
 
     - name: Fix files ownerships
       file:

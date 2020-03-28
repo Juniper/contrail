@@ -1,4 +1,3 @@
-ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH := public/doc/index.html
 CONTRAIL_OPENAPI_PATH := public/openapi.json
@@ -11,10 +10,6 @@ SOURCEDIR ?= $(GOPATH)
 
 DB_FILES := gen_init_psql.sql init_psql.sql init_data.yaml
 SRC_DIRS := cmd pkg vendor
-
-ANSIBLE_DEPLOYER_REPO_DIR ?= ""
-ANSIBLE_DEPLOYER_BRANCH ?= master
-ANSIBLE_DEPLOYER_REVISION ?= HEAD
 
 BASE_IMAGE_REGISTRY ?= opencontrailnightly
 BASE_IMAGE_REPOSITORY ?= contrail-base
@@ -172,14 +167,6 @@ docker_prepare: ## Prepare common data to generate Docker files (use target `doc
 	$(foreach db_file, $(DB_FILES), cp tools/$(db_file) $(BUILD_DIR)/docker/contrail_go/etc;)
 	cp -r public $(BUILD_DIR)/docker/contrail_go/public
 	$(foreach src, $(SRC_DIRS), cp -a ../contrail/$(src) $(BUILD_DIR)/docker/contrail_go/src/contrail;)
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/deploy/cluster/templates/* $(BUILD_DIR)/docker/contrail_go/templates/
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
-ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
-		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git $(BUILD_DIR)/docker/contrail_go/contrail-ansible-deployer
-		cd $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
-else
-		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
-endif
 
 docker_build: ## Build Docker image with Contrail binary
 	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)
