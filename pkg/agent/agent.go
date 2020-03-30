@@ -44,8 +44,6 @@ type Config struct {
 	Backend string `yaml:"backend"`
 	// Watcher specifies resource event watching strategy to be used (values: "polling").
 	Watcher string `yaml:"watcher"`
-	// List of tasks for Agent to perform on events that involve specified resources.
-	Tasks []*task `yaml:"tasks"`
 	// InSecure https connection to endpoint
 	InSecure bool `yaml:"insecure"`
 	// Enabled
@@ -54,17 +52,6 @@ type Config struct {
 	ServiceUserID string `yaml:"service_user_id"`
 	// Service user password for keystone
 	ServiceUserPassword string `yaml:"service_user_password"`
-}
-
-type task struct {
-	SchemaIDs     []string                 `yaml:"schema_ids"`
-	Commands      []string                 `yaml:"commands"`
-	Common        []map[string]interface{} `yaml:"common"`
-	OnCreate      []map[string]interface{} `yaml:"on_create"`
-	OnUpdate      []map[string]interface{} `yaml:"on_update"`
-	OnDelete      []map[string]interface{} `yaml:"on_delete"`
-	OutputPath    string                   `yaml:"output_path"`
-	WorkDirectory string                   `yaml:"work_directory"`
 }
 
 // Agent represents Agent service
