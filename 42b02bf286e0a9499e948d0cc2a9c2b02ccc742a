@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "f631917a_22e53d0f",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "98ab6657_37260650",
+      "range": {
+        "startLine": 113,
+        "startChar": 9,
+        "endLine": 113,
+        "endChar": 20
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "94ba1657_c85e39aa",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 32
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "271799f6_edf0620e",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "94ba1657_c85e39aa",
+      "range": {
+        "startLine": 129,
+        "startChar": 91,
+        "endLine": 129,
+        "endChar": 108
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b370723c_a0b341b5",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 32
@@ -62,6 +110,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98de13b5_35255661",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b370723c_a0b341b5",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -88,6 +154,30 @@
     },
     {
       "key": {
+        "uuid": "1f3c9392_2ce72179",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5dd578e3_a893aef8",
+      "range": {
+        "startLine": 145,
+        "startChar": 11,
+        "endLine": 145,
+        "endChar": 60
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4d1e0920_750ec033",
         "filename": "pkg/agent/agent.go",
         "patchSetId": 32
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "787482f7_5d977a18",
+        "filename": "pkg/agent/agent.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4d1e0920_750ec033",
+      "range": {
+        "startLine": 148,
+        "startChar": 8,
+        "endLine": 148,
+        "endChar": 19
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "504e83fe_2dcc75d0",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -125,6 +239,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f8e3f0a_480cb4fc",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "504e83fe_2dcc75d0",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -151,6 +283,30 @@
     },
     {
       "key": {
+        "uuid": "357431bf_01f3e9b5",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Nice explanation, thanks.",
+      "parentUuid": "c3e94993_4859543a",
+      "range": {
+        "startLine": 31,
+        "startChar": 27,
+        "endLine": 31,
+        "endChar": 60
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6e6c78ac_03e15459",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -165,6 +321,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5e0aba2_afbd8b4d",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Yes, we need it, to fulfill the switch cases in deploy and cloud modules.",
+      "parentUuid": "6e6c78ac_03e15459",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -191,6 +365,30 @@
     },
     {
       "key": {
+        "uuid": "fdf4cb88_5141194a",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "355db6d1_2ac14a73",
+      "range": {
+        "startLine": 44,
+        "startChar": 1,
+        "endLine": 44,
+        "endChar": 5
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e8c61976_6a99e889",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -205,6 +403,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a1495399_f196962f",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e8c61976_6a99e889",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -231,6 +447,30 @@
     },
     {
       "key": {
+        "uuid": "bdd12973_40767d90",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6a47f509_7a550f58",
+      "range": {
+        "startLine": 47,
+        "startChar": 28,
+        "endLine": 47,
+        "endChar": 46
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "78501653_2f99c420",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -245,6 +485,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ce74a92a_4a30eb2c",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "78501653_2f99c420",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -265,6 +523,24 @@
     },
     {
       "key": {
+        "uuid": "09a5ea6e_417e574e",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0a5e5a63_bc6efebb",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "284f60ae_afeff3e8",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -279,6 +555,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6de39c1b_540ab02a",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "284f60ae_afeff3e8",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -305,6 +599,30 @@
     },
     {
       "key": {
+        "uuid": "30c26411_46d96fda",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e9f0f006_3c1b2499",
+      "range": {
+        "startLine": 72,
+        "startChar": 28,
+        "endLine": 72,
+        "endChar": 46
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "76750ec4_9762d6ed",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -322,6 +640,24 @@
     },
     {
       "key": {
+        "uuid": "eb2bd2e6_8d774df0",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "76750ec4_9762d6ed",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "564c6620_45563250",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -336,6 +672,24 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef8d9c53_14111069",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "564c6620_45563250",
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -362,6 +716,30 @@
     },
     {
       "key": {
+        "uuid": "a46d2fc5_6a7a149e",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e02a10d7_f8345f81",
+      "range": {
+        "startLine": 96,
+        "startChar": 23,
+        "endLine": 96,
+        "endChar": 62
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "910a59d9_a281dec8",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -382,6 +760,30 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b8b4d098_e97b0716",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "910a59d9_a281dec8",
+      "range": {
+        "startLine": 100,
+        "startChar": 24,
+        "endLine": 100,
+        "endChar": 29
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -408,6 +810,30 @@
     },
     {
       "key": {
+        "uuid": "9d3bac7c_71d9a2d1",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1116bde_fd8bbf3e",
+      "range": {
+        "startLine": 101,
+        "startChar": 24,
+        "endLine": 101,
+        "endChar": 53
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a17e0776_316fce37",
         "filename": "pkg/agent/handler.go",
         "patchSetId": 32
@@ -428,6 +854,30 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c55c9c80_8b66721e",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a17e0776_316fce37",
+      "range": {
+        "startLine": 102,
+        "startChar": 24,
+        "endLine": 102,
+        "endChar": 55
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -454,6 +904,30 @@
     },
     {
       "key": {
+        "uuid": "705847be_da3efa87",
+        "filename": "pkg/agent/handler.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "464fbc13_2a77c3be",
+      "range": {
+        "startLine": 122,
+        "startChar": 17,
+        "endLine": 122,
+        "endChar": 45
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6b60d2bf_380b7ac5",
         "filename": "pkg/agent/handler_test.go",
         "patchSetId": 32
@@ -474,6 +948,30 @@
       "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7438300_d3de03b9",
+        "filename": "pkg/agent/handler_test.go",
+        "patchSetId": 32
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 850
+      },
+      "writtenOn": "2020-03-30T18:15:10Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6b60d2bf_380b7ac5",
+      "range": {
+        "startLine": 54,
+        "startChar": 25,
+        "endLine": 54,
+        "endChar": 74
+      },
+      "revId": "42b02bf286e0a9499e948d0cc2a9c2b02ccc742a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
