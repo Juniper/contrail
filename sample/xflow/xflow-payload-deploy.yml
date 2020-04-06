@@ -51,7 +51,6 @@ resources:
       owner: admin
     appformix_version: 2.19.3
     appformix_image_dir: /opt/software/appformix/
-    appformix_license: /opt/software/appformix/AppFormixLicense.sig
     appformix_username: appformix
     appformix_password: Appformix12
     appformix_kvm_instance_discovery: true

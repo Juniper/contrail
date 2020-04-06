@@ -54,4 +54,3 @@ kolla_config:
       service_token_roles_required = True
       service_token_roles = admin
 appformix_configuration:
-    appformix_license:  /opt/software/configs/contrail.sig

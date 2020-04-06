@@ -92,7 +92,6 @@ resources:
       owner: admin
     appformix_vip: 10.10.10.10
     appformix_version: 2.18.1
-    appformix_license: /opt/software/appformix/appformix-internal-openstack-2.18.sig
     appformix_docker_registry: registry.juniper.net/appformix/
     appformix_kvm_instance_discovery: true
     appformix_network_device_monitoring_enabled: true

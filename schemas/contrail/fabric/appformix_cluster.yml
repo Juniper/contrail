@@ -39,18 +39,6 @@ schema:
       presence: "optional"
       description: "Custom Appformix Configurations. Specified as list of Key:Value pairs."
       $ref: "types.json#/definitions/KeyValuePairs"
-    appformix_license:
-      description: License of appformix image to be used
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Appformix License
-      type: string
-      view:
-      - create
-      - detail
     appformix_version:
       description: Version of appformix image to be used
       nullable: false

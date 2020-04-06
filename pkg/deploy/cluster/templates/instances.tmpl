@@ -168,7 +168,6 @@ appformix_configuration:
     {% if appformixCluster.AppformixVip %}
     appformix_vip: {{ appformixCluster.AppformixVip }}
     {%endif%}
-    appformix_license:  {{ appformixCluster.AppformixLicense }}
     {% for key_value in appformixCluster.AppformixConfiguration.KeyValuePair %}
     {{ key_value.Key }}: {{ key_value.Value }}
     {%endfor%}
