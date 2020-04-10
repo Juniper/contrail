@@ -5,5 +5,5 @@
   become: yes
   become_user: root
   register: build_step_result
-  until: build_step_result|succeeded
+  until: build_step_result is succeeded
   retries: "{{ item.retries|default(1) }}"

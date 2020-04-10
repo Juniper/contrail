@@ -27,6 +27,12 @@
       loop_control:
         label: "{{ item.name }}"
       with_items:
+        # TODO(ijohnson): remove below task once asf is made public
+        - name: (Git) force to use SSH URL instead of HTTPS for github.com
+          command: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+        # TODO(ijohnson): remove below task once asf is made public
+        - name: Move .ssh dir change ownership
+          command: mkdir -p /root/.ssh; cp {{ workdir }}/.ssh/* /root/.ssh/; chown -R root:root /root/.ssh         
         - name: Install development dependencies
           command: make deps
           retries: 3
