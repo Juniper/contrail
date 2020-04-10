@@ -17,10 +17,6 @@ ADD ./etc/init_psql.sql /usr/share/contrail/init_psql.sql
 ADD ./etc/init_data.yaml /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
-COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
-
-# creating link as needed by multi-cloud
-RUN ln -s /usr/share/contrail/contrail-ansible-deployer /tmp/
 
 RUN yum install -y \
     postgresql \
