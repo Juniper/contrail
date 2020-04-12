@@ -29,7 +29,7 @@ import (
 )
 
 var url = flag.String("url",
-	"http://www.unicode.org/Public/"+unicode.Version+"/ucd/auxiliary/",
+	"http://www.unicode.org/Public/12.0.0/ucd/auxiliary/",
 	"URL of Unicode database directory")
 var verbose = flag.Bool("verbose",
 	false,
