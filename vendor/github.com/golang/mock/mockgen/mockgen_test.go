@@ -2,7 +2,12 @@ package main
 
 import (
 	"fmt"
+	"reflect"
+	"regexp"
+	"strings"
 	"testing"
+
+	"github.com/golang/mock/mockgen/model"
 )
 
 func TestMakeArgString(t *testing.T) {
@@ -177,5 +182,185 @@ func TestIdentifierAllocator_allocateIdentifier(t *testing.T) {
 	expected = []string{"taken", "taken_2", "taken_3", "taken_4", "id"}
 	if !allocatorContainsIdentifiers(a, expected) {
 		t.Fatalf("allocator doesn't contain the expected items - allocator: %#v, expected items: %#v", a, expected)
+	}
+}
+
+func TestGenerateMockInterface_Helper(t *testing.T) {
+	for _, test := range []struct {
+		Name       string
+		Identifier string
+		HelperLine string
+		Methods    []*model.Method
+	}{
+		{Name: "mock", Identifier: "MockSomename", HelperLine: "m.ctrl.T.Helper()"},
+		{Name: "recorder", Identifier: "MockSomenameMockRecorder", HelperLine: "mr.mock.ctrl.T.Helper()"},
+		{
+			Name:       "mock identifier conflict",
+			Identifier: "MockSomename",
+			HelperLine: "m_2.ctrl.T.Helper()",
+			Methods: []*model.Method{
+				{
+					Name: "MethodA",
+					In: []*model.Parameter{
+						{
+							Name: "m",
+							Type: &model.NamedType{Type: "int"},
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:       "recorder identifier conflict",
+			Identifier: "MockSomenameMockRecorder",
+			HelperLine: "mr_2.mock.ctrl.T.Helper()",
+			Methods: []*model.Method{
+				{
+					Name: "MethodA",
+					In: []*model.Parameter{
+						{
+							Name: "mr",
+							Type: &model.NamedType{Type: "int"},
+						},
+					},
+				},
+			},
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			g := generator{}
+
+			if len(test.Methods) == 0 {
+				test.Methods = []*model.Method{
+					{Name: "MethodA"},
+					{Name: "MethodB"},
+				}
+			}
+
+			if err := g.GenerateMockInterface(&model.Interface{
+				Name:    "Somename",
+				Methods: test.Methods,
+			}, "somepackage"); err != nil {
+				t.Fatal(err)
+			}
+
+			lines := strings.Split(g.buf.String(), "\n")
+
+			// T.Helper() should be the first line
+			for _, method := range test.Methods {
+				if strings.TrimSpace(lines[findMethod(t, test.Identifier, method.Name, lines)+1]) != test.HelperLine {
+					t.Fatalf("method %s.%s did not declare itself a Helper method", test.Identifier, method.Name)
+				}
+			}
+		})
+	}
+}
+
+func findMethod(t *testing.T, identifier, methodName string, lines []string) int {
+	t.Helper()
+	r := regexp.MustCompile(fmt.Sprintf(`func\s+\(.+%s\)\s*%s`, identifier, methodName))
+	for i, line := range lines {
+		if r.MatchString(line) {
+			return i
+		}
+	}
+
+	t.Fatalf("unable to find 'func (m %s) %s'", identifier, methodName)
+	panic("unreachable")
+}
+
+func TestGetArgNames(t *testing.T) {
+	for _, testCase := range []struct {
+		name     string
+		method   *model.Method
+		expected []string
+	}{
+		{
+			name: "NamedArg",
+			method: &model.Method{
+				In: []*model.Parameter{
+					{
+						Name: "firstArg",
+						Type: &model.NamedType{Type: "int"},
+					},
+					{
+						Name: "secondArg",
+						Type: &model.NamedType{Type: "string"},
+					},
+				},
+			},
+			expected: []string{"firstArg", "secondArg"},
+		},
+		{
+			name: "NotNamedArg",
+			method: &model.Method{
+				In: []*model.Parameter{
+					{
+						Name: "",
+						Type: &model.NamedType{Type: "int"},
+					},
+					{
+						Name: "",
+						Type: &model.NamedType{Type: "string"},
+					},
+				},
+			},
+			expected: []string{"arg0", "arg1"},
+		},
+		{
+			name: "MixedNameArg",
+			method: &model.Method{
+				In: []*model.Parameter{
+					{
+						Name: "firstArg",
+						Type: &model.NamedType{Type: "int"},
+					},
+					{
+						Name: "_",
+						Type: &model.NamedType{Type: "string"},
+					},
+				},
+			},
+			expected: []string{"firstArg", "arg1"},
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			g := generator{}
+
+			result := g.getArgNames(testCase.method)
+			if !reflect.DeepEqual(result, testCase.expected) {
+				t.Fatalf("expected %s, got %s", result, testCase.expected)
+			}
+		})
+	}
+}
+
+func Test_createPackageMap(t *testing.T) {
+	tests := []struct {
+		name            string
+		importPath      string
+		wantPackageName string
+		wantOK          bool
+	}{
+		{"golang package", "context", "context", true},
+		{"third party", "golang.org/x/tools/present", "present", true},
+		{"modules", "rsc.io/quote/v3", "quote", true},
+		{"fail", "this/should/not/work", "", false},
+	}
+	var importPaths []string
+	for _, t := range tests {
+		importPaths = append(importPaths, t.importPath)
+	}
+	packages := createPackageMap(importPaths)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotPackageName, gotOk := packages[tt.importPath]
+			if gotPackageName != tt.wantPackageName {
+				t.Errorf("createPackageMap() gotPackageName = %v, wantPackageName = %v", gotPackageName, tt.wantPackageName)
+			}
+			if gotOk != tt.wantOK {
+				t.Errorf("createPackageMap() gotOk = %v, wantOK = %v", gotOk, tt.wantOK)
+			}
+		})
 	}
 }

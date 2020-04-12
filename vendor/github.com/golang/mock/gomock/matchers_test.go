@@ -12,41 +12,52 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate mockgen -destination internal/mock_gomock/mock_matcher.go github.com/golang/mock/gomock Matcher
+
 package gomock_test
 
 import (
+	"context"
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	mock_matcher "github.com/golang/mock/gomock/mock_matcher"
+	"github.com/golang/mock/gomock/internal/mock_gomock"
 )
 
 func TestMatchers(t *testing.T) {
 	type e interface{}
-	type testCase struct {
+	tests := []struct {
+		name    string
 		matcher gomock.Matcher
 		yes, no []e
-	}
-	tests := []testCase{
-		testCase{gomock.Any(), []e{3, nil, "foo"}, nil},
-		testCase{gomock.Eq(4), []e{4}, []e{3, "blah", nil, int64(4)}},
-		testCase{gomock.Nil(),
+	}{
+		{"test Any", gomock.Any(), []e{3, nil, "foo"}, nil},
+		{"test All", gomock.Eq(4), []e{4}, []e{3, "blah", nil, int64(4)}},
+		{"test Nil", gomock.Nil(),
 			[]e{nil, (error)(nil), (chan bool)(nil), (*int)(nil)},
 			[]e{"", 0, make(chan bool), errors.New("err"), new(int)}},
-		testCase{gomock.Not(gomock.Eq(4)), []e{3, "blah", nil, int64(4)}, []e{4}},
+		{"test Not", gomock.Not(gomock.Eq(4)), []e{3, "blah", nil, int64(4)}, []e{4}},
+		{"test All", gomock.All(gomock.Any(), gomock.Eq(4)), []e{4}, []e{3, "blah", nil, int64(4)}},
+		{"test Len", gomock.Len(2),
+			[]e{[]int{1, 2}, "ab", map[string]int{"a": 0, "b": 1}, [2]string{"a", "b"}},
+			[]e{[]int{1}, "a", 42, 42.0, false, [1]string{"a"}},
+		},
 	}
-	for i, test := range tests {
-		for _, x := range test.yes {
-			if !test.matcher.Matches(x) {
-				t.Errorf(`test %d: "%v %s" should be true.`, i, x, test.matcher)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, x := range tt.yes {
+				if !tt.matcher.Matches(x) {
+					t.Errorf(`"%v %s": got false, want true.`, x, tt.matcher)
+				}
 			}
-		}
-		for _, x := range test.no {
-			if test.matcher.Matches(x) {
-				t.Errorf(`test %d: "%v %s" should be false.`, i, x, test.matcher)
+			for _, x := range tt.no {
+				if tt.matcher.Matches(x) {
+					t.Errorf(`"%v %s": got true, want false.`, x, tt.matcher)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -55,7 +66,7 @@ func TestNotMatcher(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockMatcher := mock_matcher.NewMockMatcher(ctrl)
+	mockMatcher := mock_gomock.NewMockMatcher(ctrl)
 	notMatcher := gomock.Not(mockMatcher)
 
 	mockMatcher.EXPECT().Matches(4).Return(true)
@@ -66,5 +77,62 @@ func TestNotMatcher(t *testing.T) {
 	mockMatcher.EXPECT().Matches(5).Return(false)
 	if match := notMatcher.Matches(5); !match {
 		t.Errorf("notMatcher should match 5")
+	}
+}
+
+type Dog struct {
+	Breed, Name string
+}
+
+// A thorough test of assignableToTypeOfMatcher
+func TestAssignableToTypeOfMatcher(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	aStr := "def"
+	anotherStr := "ghi"
+
+	if match := gomock.AssignableToTypeOf("abc").Matches(4); match {
+		t.Errorf(`AssignableToTypeOf("abc") should not match 4`)
+	}
+	if match := gomock.AssignableToTypeOf("abc").Matches(&aStr); match {
+		t.Errorf(`AssignableToTypeOf("abc") should not match &aStr (*string)`)
+	}
+	if match := gomock.AssignableToTypeOf("abc").Matches("def"); !match {
+		t.Errorf(`AssignableToTypeOf("abc") should match "def"`)
+	}
+	if match := gomock.AssignableToTypeOf(&aStr).Matches("abc"); match {
+		t.Errorf(`AssignableToTypeOf(&aStr) should not match "abc"`)
+	}
+	if match := gomock.AssignableToTypeOf(&aStr).Matches(&anotherStr); !match {
+		t.Errorf(`AssignableToTypeOf(&aStr) should match &anotherStr`)
+	}
+	if match := gomock.AssignableToTypeOf(0).Matches(4); !match {
+		t.Errorf(`AssignableToTypeOf(0) should match 4`)
+	}
+	if match := gomock.AssignableToTypeOf(0).Matches("def"); match {
+		t.Errorf(`AssignableToTypeOf(0) should not match "def"`)
+	}
+	if match := gomock.AssignableToTypeOf(Dog{}).Matches(&Dog{}); match {
+		t.Errorf(`AssignableToTypeOf(Dog{}) should not match &Dog{}`)
+	}
+	if match := gomock.AssignableToTypeOf(Dog{}).Matches(Dog{Breed: "pug", Name: "Fido"}); !match {
+		t.Errorf(`AssignableToTypeOf(Dog{}) should match Dog{Breed: "pug", Name: "Fido"}`)
+	}
+	if match := gomock.AssignableToTypeOf(&Dog{}).Matches(Dog{}); match {
+		t.Errorf(`AssignableToTypeOf(&Dog{}) should not match Dog{}`)
+	}
+	if match := gomock.AssignableToTypeOf(&Dog{}).Matches(&Dog{Breed: "pug", Name: "Fido"}); !match {
+		t.Errorf(`AssignableToTypeOf(&Dog{}) should match &Dog{Breed: "pug", Name: "Fido"}`)
+	}
+
+	ctxInterface := reflect.TypeOf((*context.Context)(nil)).Elem()
+	if match := gomock.AssignableToTypeOf(ctxInterface).Matches(context.Background()); !match {
+		t.Errorf(`AssignableToTypeOf(context.Context) should not match context.Background()`)
+	}
+
+	ctxWithValue := context.WithValue(context.Background(), "key", "val")
+	if match := gomock.AssignableToTypeOf(ctxInterface).Matches(ctxWithValue); !match {
+		t.Errorf(`AssignableToTypeOf(context.Context) should not match ctxWithValue`)
 	}
 }
