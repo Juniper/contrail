@@ -29,7 +29,6 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.13.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.1
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

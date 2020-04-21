@@ -3,7 +3,6 @@ package proxy
 import (
 	"bufio"
 	"bytes"
-	"crypto/tls"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -14,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	asfhttputil "github.com/Juniper/asf/pkg/httputil"
 )
 
 // TODO(dfurman): move rest of dynamicProxyMiddleware here
@@ -40,7 +39,7 @@ func HandleRequest(ctx echo.Context, rawTargetURLs []string, log *logrus.Entry) 
 		}
 
 		rp := httputil.NewSingleHostReverseProxy(targetURL)
-		rp.Transport = newTransport()
+		rp.Transport = asfhttputil.DefaultTransport(skipServerCertificateVerification)
 		// TODO(dfurman): mblotniak's suggestion below
 		// Use ReverseProxy's ModifyResponse() and ErrorHandler() instead of responseBuffer.
 		// The ModifyResponse function should return error if response status is 502 or 503.
@@ -68,12 +67,6 @@ func HandleRequest(ctx echo.Context, rawTargetURLs []string, log *logrus.Entry) 
 	}
 
 	return nil
-}
-
-func newTransport() *http.Transport {
-	t := cleanhttp.DefaultPooledTransport()
-	t.TLSClientConfig = &tls.Config{InsecureSkipVerify: skipServerCertificateVerification}
-	return t
 }
 
 func setBody(r *http.Request, body []byte) {
