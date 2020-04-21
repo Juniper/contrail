@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,8 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
 const (
@@ -68,7 +65,7 @@ type HTTP struct {
 
 // NewHTTP makes API Server HTTP client.
 func NewHTTP(c *HTTPConfig) *HTTP {
-	hc := &http.Client{Transport: transport(c.Endpoint, c.Insecure)}
+	hc := &http.Client{Transport: httputil.DefaultTransport(c.Insecure)}
 	return &HTTP{
 		httpClient: hc,
 		Keystone: &keystone.Client{
@@ -82,29 +79,6 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 // NewHTTPFromConfig makes API Server HTTP client with viper config
 func NewHTTPFromConfig() *HTTP {
 	return NewHTTP(LoadHTTPConfig())
-}
-
-func transport(endpoint string, insecure bool) *http.Transport {
-	t := cleanhttp.DefaultPooledTransport()
-
-	p, err := urlScheme(endpoint)
-	if err != nil {
-		logrus.WithField("endpoint", endpoint).Error("Invalid API Server endpoint - ignoring")
-	}
-	if p == "https" {
-		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-	}
-
-	return t
-}
-
-func urlScheme(endpoint string) (string, error) {
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return "", err
-	}
-
-	return u.Scheme, nil
 }
 
 // Login refreshes authentication token.
