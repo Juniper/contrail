@@ -1,6 +1,6 @@
 #!/bin/bash
 
-patroni_version="1.5.1"
+patroni_version="1.6.5"
 
 [[ "$(docker images -q patroni)" == "" ]] || { echo "Patroni image already exists. Skipping building docker image." ; exit 0; }
 
