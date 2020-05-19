@@ -6,7 +6,26 @@
   when:
     - ansible_distribution == 'RedHat'
 
-- name: "Install docker"
+- name: "Remove docker distribution"
+  yum:
+      name:
+        - docker
+        - docker-common
+      state: absent
+  become: yes
+  become_user: root
+  when:
+    - ansible_distribution == 'RedHat'
+
+- name: "Install docker from community"
+  yum:
+      name: docker-ce
+  become: yes
+  become_user: root
+  when:
+    - ansible_distribution == 'RedHat'
+
+- name: "Install docker client"
   pip:
     name: docker
   become: yes
