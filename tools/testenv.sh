@@ -3,21 +3,19 @@
 set -o errexit
 
 ToolsDir=$(dirname "$0")
-RunDockers="etcd patroni"
+RunDockers="etcd postgres"
 Network='contrail'
 Project='contrail'
-PatroniEtcd=0
 
 usage()
 {
-	echo "Usage: $(basename "$0") [-h] [-n NetName] [--patroni-etcd] [dockers]"
+	echo "Usage: $(basename "$0") [-h] [-n NetName] [dockers]"
 	echo "Available dockers: $RunDockers"
 }
 
 while :; do
 	case "$1" in
 		'-n') Network="$2"; shift 2;;
-		'--patroni-etcd') PatroniEtcd=1; shift 1;;
 		'-h') usage; exit 0;;
 		*) break;;
 	esac
@@ -33,7 +31,7 @@ run() {
 }
 
 remove_containers() {
-    NETWORKNAME="$Project" docker-compose -f "$ToolsDir/patroni/docker-compose.yml" -p "$Project" down -v || true
+    docker rm -f contrail_psql || true
     docker rm -f contrail_etcd || true
     docker volume rm -f contrail_etcd || true
     docker network remove "$Project" || true
@@ -49,16 +47,17 @@ run_containers() {
     done
 }
 
-run_docker_patroni() {
-    if [[ "$PatroniEtcd" = 1 ]]; then
-        NETWORKNAME="$Project" docker-compose -f "$ToolsDir/patroni/docker-compose.yml" -p "$Project" up -d etcd
-        ETCDIP=$(docker inspect contrail_patroni_etcd --format='{{ range .NetworkSettings.Networks }}{{.IPAddress}}{{end}}')
-    else
-        ETCDIP=$(docker inspect contrail_etcd --format='{{ range .NetworkSettings.Networks }}{{.IPAddress}}{{end}}')
-    fi
-
-    ETCDIP="$ETCDIP" NETWORKNAME="$Project" docker-compose -f "$ToolsDir/patroni/docker-compose.yml" -p "$Project" up \
-        --scale dbnode=2 -d haproxy dbnode
+run_docker_postgres() {
+    docker run -d --name contrail_psql \
+            --net "$Network" \
+            -p 5432:5432 \
+            -e POSTGRES_PASSWORD=contrail123 \
+            -e POSTGRES_USER=root \
+            -e POSTGRES_DB=contrail_test \
+            -v "$(pwd)/tools/gen_init_psql.sql:/tools/gen_init_psql.sql" \
+            -v "$(pwd)/tools/init_psql.sql:/tools/init_psql.sql" \
+            postgres:10 \
+            postgres -c wal_level=logical
 }
 
 run_docker_etcd() {
@@ -74,7 +73,7 @@ run_docker_etcd() {
 await_psql() {
     echo "Awaiting PostgreSQL"
 
-    until docker exec contrail_haproxy patronictl list | grep 'Leader.*running'
+    until docker exec contrail_psql psql -Uroot -d postgres
     do
         printf "."
         sleep 1
