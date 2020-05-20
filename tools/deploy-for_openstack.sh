@@ -30,10 +30,7 @@ make build
 make install
 make docker
 
-# Ensure patroni installed
-./tools/patroni/pull_patroni.sh
-
-./tools/testenv.sh etcd patroni
+./tools/testenv.sh etcd
 
 # Stop services using docker-compose
 compose_down config control vrouter
