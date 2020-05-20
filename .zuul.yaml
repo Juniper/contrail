@@ -31,7 +31,7 @@
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
-        - image: circleci/golang:1.13
+        - image: circleci/golang:1.13.0
           environment:
             GOFLAGS: "-mod=vendor" # remove this after removing vendoring or after upgrading to go version >= 1.14
         - image: circleci/postgres:10.3-alpine
@@ -64,7 +64,7 @@
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
-        - image: circleci/golang:1.13
+        - image: circleci/golang:1.13.0
           environment:
             GOFLAGS: "-mod=vendor" # remove this after removing vendoring or after upgrading to go version >= 1.14
         - image: circleci/postgres:10.3-alpine

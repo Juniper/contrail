@@ -30,10 +30,7 @@ make build
 make install
 make docker
 
-# Ensure patroni installed
-./tools/patroni/pull_patroni.sh
-
-./tools/testenv.sh --patroni-etcd patroni
+./tools/testenv.sh
 
 # Stop services using docker-compose
 compose_down kubemanager config control vrouter
