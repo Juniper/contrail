@@ -1,21 +1,27 @@
 #!/usr/bin/env bash
 
-TOOLSDIR=$(dirname $0)
-SUCCESS_MSG="ERROR, SQLSTATE: no results to fetch"
-PROJECT='contrail'
+reset_psql() {
+    drop_psql
+    create_psql
+    initialize_psql
+}
 
-echo "Resetting psql database"
+drop_psql(){
+    echo "Dropping database contrail_test"
+    docker exec contrail_psql bash -c \
+        "PGPASSWORD=contrail123 psql -Uroot -d postgres -c \"drop database if exists contrail_test;\""
+}
 
-echo "Dropping old database"
-res=$(NETWORKNAME=$PROJECT docker-compose -f $TOOLSDIR/patroni/docker-compose.yml -p $PROJECT exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d postgres -c \"drop database if exists contrail_test;\" testcluster")
-[[ "${res:20}" = "$SUCCESS_MSG" ]] ||  echo "Error while dropping database ${res:20}"
+create_psql(){
+    echo "Creating new database"
+    docker exec contrail_psql bash -c \
+        "PGPASSWORD=contrail123 psql -Uroot -d postgres -c \"create database contrail_test;\""
+}
 
-echo "Creating new database"
-res=$(NETWORKNAME=$PROJECT docker-compose -f $TOOLSDIR/patroni/docker-compose.yml -p $PROJECT exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d postgres -c \"create database contrail_test;\" testcluster")
-[[ "${res:20}" = "$SUCCESS_MSG" ]] || echo "Error while creating database ${res:20}"
+initialize_psql(){
+    echo "Initializing database with gen_init_psql.sql"
+    docker exec contrail_psql bash -c \
+        "PGPASSWORD=contrail123 psql -Uroot -d contrail_test -q --file /tools/gen_init_psql.sql"
+}
 
-echo "Initializing database"
-res=$(NETWORKNAME=$PROJECT docker-compose -f $TOOLSDIR/patroni/docker-compose.yml -p $PROJECT exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d contrail_test --file /tools/gen_init_psql.sql testcluster")
-[[ "${res:20}" = "$SUCCESS_MSG" ]] || echo "Error while initializing database ${res:20}"
-
-echo "Database initialized"
+reset_psql
