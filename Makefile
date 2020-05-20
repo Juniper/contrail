@@ -108,7 +108,6 @@ install_contrailutil: ## Install Contrailutil binary
 	go install ./cmd/contrailutil
 
 testenv: ## Setup Docker based test environment
-	./tools/patroni/build_patroni.sh
 	./tools/testenv.sh
 
 reset_db: zero_db init_db ## Reset database with the latest schema and load initial data

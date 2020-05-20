@@ -10,6 +10,8 @@ run:
   - .*/go[0-9\.]*/src/os/.*
   - .*/go[0-9\.]*/src/runtime/.*
   - .*/go[0-9\.]*/src/syscall/.*
+  - .*/usr/local/go[0-9\.]*/src/.*
+  - (.*/)?vendor/.*
 
 issues:
   exclude:
