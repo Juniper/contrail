@@ -112,8 +112,7 @@ install:
 	go install ./cmd/contrailcli
 	go install ./cmd/contrailutil
 
-testenv: ## Setup docker based test environment
-	./tools/patroni/build_patroni.sh
+testenv: ## Setup Docker based test environment
 	./tools/testenv.sh
 
 reset_db: zero_db init_db ## Reset database with latest schema and load initial data
