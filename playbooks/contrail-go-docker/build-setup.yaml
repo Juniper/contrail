@@ -1,10 +1,18 @@
 - name: "Install python2 requests"
   yum:
-    name:  python2-requests
+    name: python2-requests
   become: yes
   become_user: root
   when:
     - ansible_distribution == 'RedHat'
+
+# Fixes certificates lookup with CURL
+- name: "Symlink ca-bundle.crt to ca-certificates.crt"
+  command: ln -s /etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
+  become: yes
+  become_user: root
+  when:
+  - ansible_distribution == 'RedHat'
 
 - name: "Install docker"
   pip:
@@ -46,7 +54,7 @@
   become: yes
   become_user: root
 
-  # TODO(ijohnson): remove below task once asf is made public 
+  # TODO(ijohnson): remove below task once asf is made public
 - name: Copy .ssh to source dir
   command: cp -r {{ ansible_env.HOME }}/.ssh {{ sourcedir }}/src/github.com/Juniper/contrail/
   become: yes
