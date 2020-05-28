@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c04eec0e_938773ed",
+        "filename": "Makefile",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-05-28T08:48:23Z",
+      "side": 1,
+      "message": "IMO it should be invoked as a part of \"check\" target using \"$(MAKE) check_py\" - it would be simpler. Also it would be invoked by \"make all\" target, which is important for devs",
+      "revId": "d34db463f23b6f78567e8f6497d6fcf371594374",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f851606f_f3cc246a",
+        "filename": "docker/contrail_go/gen-pipreqs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-05-28T08:48:23Z",
+      "side": 1,
+      "message": "I think this is a tool for devs and should be placed in tools/ directory.",
+      "revId": "d34db463f23b6f78567e8f6497d6fcf371594374",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "262ce7f0_55a518e2",
+        "filename": "playbooks/contrail-go-docker/build-setup.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2020-05-28T08:48:23Z",
+      "side": 1,
+      "message": "I think it should be just a part of `make check` that is run later - it would be simpler. Please remove that",
+      "revId": "d34db463f23b6f78567e8f6497d6fcf371594374",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
