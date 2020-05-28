@@ -12,9 +12,9 @@
   become: yes
   become_user: root
 
-- name: "Install docker-compose"
+- name: "Install docker-compose, pip-tools and requirements-parser"
   pip:
-    name: docker-compose==1.24.1
+    name: docker-compose==1.24.1 pip-tools==5.1.2 requirements-parser==0.2.0
   become: yes
   become_user: root
 
@@ -26,6 +26,11 @@
 
 - name: Pretend we're using github
   command: mv {{ sourcedir }}/src/review.opencontrail.org {{ sourcedir }}/src/github.com
+
+- name: Generate requirements.txt and ensure it is committed
+  command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail make check_reqs"
+  become: yes
+  become_user: root
 
 - name: "Start runner docker container in background"
   docker_container:
