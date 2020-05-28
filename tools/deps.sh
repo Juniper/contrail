@@ -25,3 +25,6 @@ else
 	echo "Your platform ($(uname -a)) is not supported."
     echo "Please manually install protoc"
 fi
+
+# Install requirements of tools/gen-pipreqs.py
+pip install pip-tools==5.1.2 requirements-parser==0.2.0
