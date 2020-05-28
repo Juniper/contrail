@@ -15,12 +15,20 @@ GOPATH ?= `go env GOPATH`
 SOURCEDIR ?= $(GOPATH)
 DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
 
+REQUIREMENTS_TXT = docker/contrail_go/requirements.txt
+REQUIREMENTS_IN = docker/contrail_go/requirements.in
+
 # This is needed by generate* targets that works only sequentially
 ifneq ($(filter generate,$(MAKECMDGOALS)),)
 .NOTPARALLEL:
 endif
 
 all: check lint test build
+
+check_reqs: ## Generate requirements.txt and ensure it is committed
+	python docker/contrail_go/gen-pipreqs.py \
+		--inreq $(REQUIREMENTS_IN) \
+		--outreq $(REQUIREMENTS_TXT)
 
 deps: ## Install development dependencies
 	./tools/deps.sh
