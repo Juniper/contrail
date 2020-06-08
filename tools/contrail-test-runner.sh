@@ -20,7 +20,7 @@ Usage()
 	echo -e "Usage: $(basename "$0") [-h] [-D] [-t <test_spec> ...]\n"
 	echo 'This script is intended to be used on a node with contrail is installed '
 	echo 'with contrail-ansible-deployer and later tools/deploy-for_k8s.sh is used'
-	echo 'This script will run sanity tests defined in https://github.com/Juniper/contrail-test'
+	echo 'This script will run sanity tests defined in https://github.com/tungstenfabric/tf-test'
 	echo
 	echo -e "\t-D => Don't check contrail-go dockers before tests"
 	echo -e "\t-t => Test cases/tags to be run by contrail-test, specified as contrail-test flags (eg. \`-t -c test_many_pods -T k8s_sanity\`"
@@ -98,7 +98,7 @@ prepare_test_env()
 {
 	cd
 	type -t wget > /dev/null || { sudo yum install -y wget; type -t wget > /dev/null; } || { echo "Command 'wget' not available - aborting"; exit 2; }
-	[ ! -e ./testrunner.sh ] && { wget https://github.com/Juniper/contrail-test/raw/master/testrunner.sh || echo "Could not download testrunner script from https://github.com/Juniper/contrail-test/raw/master/testrunner.sh"; }
+	[ ! -e ./testrunner.sh ] && { wget https://github.com/tungstenfabric/tf-test/raw/master/testrunner.sh || echo "Could not download testrunner script from https://github.com/tungstenfabric/tf-test/raw/master/testrunner.sh"; }
 	[ ! -e ./testrunner.sh ] && { echo "Missing 'testrunner' script - aborting!"; exit 2; }
 	sed -i '/^\s\+tput/ d' ./testrunner.sh
 	chmod +x ./testrunner.sh
