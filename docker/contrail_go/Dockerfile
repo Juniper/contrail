@@ -30,6 +30,9 @@ RUN yum install -y \
 
 RUN pip install -r /requirements.txt
 
+# Upgrade pip used by ansible-deployer
+RUN pip install --upgrade pip==19.1.1
+
 EXPOSE 9091
 WORKDIR /etc/contrail
 ENTRYPOINT ["/bin/contrailgo", "-c", "/etc/contrail/contrail.yml", "run"]
