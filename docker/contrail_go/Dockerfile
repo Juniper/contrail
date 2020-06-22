@@ -28,6 +28,9 @@ RUN yum install -y \
     python-requests python-pip && \
     yum clean all -y
 
+# Upgrade pip used by ansible-deployer
+RUN pip install --upgrade pip==19.1.1
+
 RUN pip install -r /requirements.txt
 
 EXPOSE 9091
