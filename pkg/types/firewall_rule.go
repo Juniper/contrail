@@ -8,11 +8,11 @@ import (
 	"github.com/gogo/protobuf/types"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // CreateFirewallRule performs types specific validation,
@@ -284,7 +284,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 	databaseFR *models.FirewallRule,
 	fm *types.FieldMask,
 ) error {
-	if !baseservices.IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
+	if !asfservices.IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
 		return errutil.ErrorBadRequestf(
 			"cannot directly define Tags reference from a Firewall Rule. " +
 				"Use 'tags' endpoints property in the Firewall Rule")
@@ -421,7 +421,7 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 	databaseFR *models.FirewallRule,
 	fm *types.FieldMask,
 ) error {
-	if !baseservices.IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
+	if !asfservices.IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
 		return errutil.ErrorBadRequestf(
 			"cannot directly define Address Group reference from a Firewall Rule. " +
 				"Use 'address_group' endpoints property in the Firewall Rule")

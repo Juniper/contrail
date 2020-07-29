@@ -24,7 +24,7 @@ func (e *PolicyEntriesType) CheckNetworkPolicyRules() error {
 		}
 
 		if rule.HasSecurityGroup() {
-			return errutil.ErrorBadRequest("Config Error: Policy Rule refering to Security Group is not allowed")
+			return errutil.ErrorBadRequest("Config Error: Policy Rule referring to Security Group is not allowed")
 		}
 	}
 

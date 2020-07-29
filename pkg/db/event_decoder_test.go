@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 func TestDecodeRowEvent(t *testing.T) {
@@ -43,7 +44,7 @@ func TestDecodeRowEvent(t *testing.T) {
 		{
 			name:         "update empty resource",
 			resourceName: "virtual_network",
-			operation:    services.OperationUpdate,
+			operation:    asfservices.OperationUpdate,
 			pk:           []string{"some-uuid"},
 			expected: &services.Event{
 				Request: &services.Event_UpdateVirtualNetworkRequest{
@@ -56,7 +57,7 @@ func TestDecodeRowEvent(t *testing.T) {
 		{
 			name:         "delete empty resource",
 			resourceName: "virtual_network",
-			operation:    services.OperationDelete,
+			operation:    asfservices.OperationDelete,
 			pk:           []string{"some-uuid"},
 			expected: &services.Event{
 				Request: &services.Event_DeleteVirtualNetworkRequest{
@@ -69,7 +70,7 @@ func TestDecodeRowEvent(t *testing.T) {
 		{
 			name:         "create vn",
 			resourceName: "virtual_network",
-			operation:    services.OperationCreate,
+			operation:    asfservices.OperationCreate,
 			pk:           []string{"some-uuid"},
 			properties: map[string]interface{}{
 				"uuid":                       "some-uuid",
@@ -99,7 +100,7 @@ func TestDecodeRowEvent(t *testing.T) {
 		{
 			name:         "update vn",
 			resourceName: "virtual_network",
-			operation:    services.OperationUpdate,
+			operation:    asfservices.OperationUpdate,
 			pk:           []string{"some-uuid"},
 			properties: map[string]interface{}{
 				"virtual_network_network_id": 1337,
@@ -127,7 +128,7 @@ func TestDecodeRowEvent(t *testing.T) {
 		{
 			name:         "create ref",
 			resourceName: "ref_virtual_network_network_ipam",
-			operation:    services.OperationCreate,
+			operation:    asfservices.OperationCreate,
 			pk:           []string{"vn-uuid", "ipam-uuid"},
 			properties: map[string]interface{}{
 				"route": []*models.RouteType{{Prefix: "10"}},
@@ -152,7 +153,7 @@ func TestDecodeRowEvent(t *testing.T) {
 		{
 			name:         "delete ref",
 			resourceName: "ref_virtual_network_network_ipam",
-			operation:    services.OperationDelete,
+			operation:    asfservices.OperationDelete,
 			pk:           []string{"vn-uuid", "ipam-uuid"},
 			properties:   map[string]interface{}{},
 			expected: &services.Event{
