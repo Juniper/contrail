@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
 	"github.com/Juniper/asf/pkg/schema"
-	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -184,20 +184,20 @@ func pluralPath(schemaID string) string {
 func queryParameters(lp *ListParameters) url.Values {
 	values := url.Values{}
 	for k, v := range map[string]string{
-		baseservices.FiltersKey:      lp.Filters,
-		baseservices.PageLimitKey:    strconv.FormatInt(lp.PageLimit, 10),
-		baseservices.PageMarkerKey:   lp.PageMarker,
-		baseservices.DetailKey:       strconv.FormatBool(lp.Detail),
-		baseservices.CountKey:        strconv.FormatBool(lp.Count),
-		baseservices.SharedKey:       strconv.FormatBool(lp.Shared),
-		baseservices.ExcludeHRefsKey: strconv.FormatBool(lp.ExcludeHRefs),
-		baseservices.ParentFQNameKey: lp.ParentFQName,
-		baseservices.ParentTypeKey:   lp.ParentType,
-		baseservices.ParentUUIDsKey:  lp.ParentUUIDs,
-		baseservices.BackrefUUIDsKey: lp.BackrefUUIDs,
+		services.FiltersKey:      lp.Filters,
+		services.PageLimitKey:    strconv.FormatInt(lp.PageLimit, 10),
+		services.PageMarkerKey:   lp.PageMarker,
+		services.DetailKey:       strconv.FormatBool(lp.Detail),
+		services.CountKey:        strconv.FormatBool(lp.Count),
+		services.SharedKey:       strconv.FormatBool(lp.Shared),
+		services.ExcludeHRefsKey: strconv.FormatBool(lp.ExcludeHRefs),
+		services.ParentFQNameKey: lp.ParentFQName,
+		services.ParentTypeKey:   lp.ParentType,
+		services.ParentUUIDsKey:  lp.ParentUUIDs,
+		services.BackrefUUIDsKey: lp.BackrefUUIDs,
 		// TODO(Daniel): handle RefUUIDs
-		baseservices.ObjectUUIDsKey: lp.ObjectUUIDs,
-		baseservices.FieldsKey:      lp.Fields,
+		services.ObjectUUIDsKey: lp.ObjectUUIDs,
+		services.FieldsKey:      lp.Fields,
 	} {
 		if !isZeroValue(v) {
 			values.Set(k, v)
