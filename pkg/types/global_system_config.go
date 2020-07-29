@@ -6,11 +6,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const defaultGSCName = "default-global-system-config"
@@ -88,7 +88,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &baseservices.ListSpec{
+	vnList, err := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &asfservices.ListSpec{
 		Fields: []string{models.VirtualNetworkFieldRouteTargetList}},
 	})
 	if err != nil {
@@ -136,7 +136,7 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 	}
 
 	bgpaasList, err := sv.ReadService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{
-		Spec: &baseservices.ListSpec{Count: true},
+		Spec: &asfservices.ListSpec{Count: true},
 	})
 
 	if err != nil {
