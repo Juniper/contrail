@@ -9,11 +9,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
+
+	asfdb "github.com/Juniper/asf/pkg/db"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
 
@@ -208,7 +209,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 	mockIntPoolAllocator.EXPECT().AllocateInt(
 		testutil.NotNil(),
 		routeTargetIntPoolID,
-		db.EmptyIntOwner,
+		asfdb.EmptyIntOwner,
 	).Return(int64(800002), nil)
 
 	_, err = service.CreateVirtualNetwork(context.Background(), &services.CreateVirtualNetworkRequest{
@@ -256,5 +257,5 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 }
 
 func expectAllocateInt(mock *typesmock.MockIntPoolAllocator, poolKey string) {
-	mock.EXPECT().AllocateInt(testutil.NotNil(), poolKey, db.EmptyIntOwner).Return(int64(800002), nil)
+	mock.EXPECT().AllocateInt(testutil.NotNil(), poolKey, asfdb.EmptyIntOwner).Return(int64(800002), nil)
 }

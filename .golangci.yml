@@ -13,6 +13,10 @@ run:
   - .*/usr/local/go[0-9\.]*/src/.*
   - (.*/)?vendor/.*
 
+  modules-download-mode: readonly
+
+  skip-dirs-use-default: true
+
 issues:
   exclude:
   - .* is always .* # unparam issue

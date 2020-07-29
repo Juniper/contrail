@@ -20,6 +20,48 @@ const (
 	upperCaseD              rune = 'D'
 )
 
+// AccessGetter allows getting APIAccessLists and resources' Perms2.
+type AccessGetter interface {
+	GetAPIAccessLists(ctx context.Context) []*APIAccessList
+	GetPermissions(ctx context.Context, typeName, uuid string) *PermType2
+}
+
+type Guard struct {
+	AccessGetter AccessGetter
+	AAAMode      string
+}
+
+func (g *Guard) CheckTypePermissions(ctx context.Context, typeName string, action Action) error {
+	return g.CheckObjectPermissions(ctx, typeName, "", action)
+}
+
+func (g *Guard) CheckObjectPermissions(ctx context.Context, typeName, uuid string, action Action) error {
+	allowed, err := CheckCommonPermissions(ctx, g.AAAMode, typeName, action)
+	if err != nil {
+		return err
+	}
+
+	if !allowed {
+		if err := g.checkAPIAccessLists(ctx, typeName, action); err != nil {
+			return err
+		}
+		if uuid != "" {
+			return g.checkPerms2(ctx, typeName, uuid, action)
+		}
+	}
+	return nil
+}
+
+func (g *Guard) checkAPIAccessLists(ctx context.Context, typeName string, action Action) error {
+	lists := g.AccessGetter.GetAPIAccessLists(auth.NoAuth(ctx))
+	return CheckPermissions(ctx, lists, g.AAAMode, typeName, action)
+}
+
+func (g *Guard) checkPerms2(ctx context.Context, typeName, uuid string, action Action) error {
+	perms2 := g.AccessGetter.GetPermissions(auth.NoAuth(ctx), typeName, uuid)
+	return CheckObjectPermissions(ctx, perms2, g.AAAMode, typeName, action)
+}
+
 // CheckCommonPermissions checks checks whether access is based on RBAC configuration or user roles..
 func CheckCommonPermissions(ctx context.Context, aaaMode string, kind string, op Action) (isAllowed bool, err error) {
 	if !isRBACEnabled(aaaMode) {

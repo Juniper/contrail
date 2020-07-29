@@ -24,10 +24,13 @@ const (
 // GenerateConfig holds configuration for template-base files generation.
 type GenerateConfig struct {
 	TemplateConfigs    []TemplateConfig
+	ClientImportPath   string
+	ConvertImportPath  string
 	DBImportPath       string
 	ETCDImportPath     string
 	ModelsImportPath   string
 	ServicesImportPath string
+	RBACImportPath     string
 	NoRegenerate       bool
 }
 
@@ -40,10 +43,14 @@ type TemplateConfig struct {
 	OutputPath   string `yaml:"-"`
 }
 
+func (t TemplateConfig) String() string {
+	return strings.Join([]string{t.Module, t.TemplatePath}, ":")
+}
+
 // LoadTemplateConfigs loads template configurations from given path.
 func LoadTemplateConfigs(path string) ([]TemplateConfig, error) {
 	var tcs []TemplateConfig
-	err := fileutil.LoadFile(path, &tcs)
+	err := fileutil.ExpandEnvLoadFile(path, &tcs)
 	return tcs, err
 }
 
@@ -58,6 +65,7 @@ func GenerateFiles(api *API, gc *GenerateConfig) error {
 	}
 
 	for _, tc := range gc.TemplateConfigs {
+		name := tc.String()
 		if err := tc.resolveTemplatePath(); err != nil {
 			return err
 		}
@@ -71,7 +79,7 @@ func GenerateFiles(api *API, gc *GenerateConfig) error {
 
 		err := generateFile(api, gc, &tc)
 		if err != nil {
-			return errors.Wrap(err, "generate file")
+			return errors.Wrapf(err, "generating file %s", name)
 		}
 	}
 	return nil
@@ -167,10 +175,13 @@ func generateFile(api *API, gc *GenerateConfig, tc *TemplateConfig) error {
 		data, err := tpl.Execute(pongo2.Context{
 			"schemas":            api.Schemas,
 			"types":              api.Types,
+			"clientImportPath":   gc.ClientImportPath,
+			"convertImportPath":  gc.ConvertImportPath,
 			"dbImportPath":       gc.DBImportPath,
 			"etcdImportPath":     gc.ETCDImportPath,
 			"modelsImportPath":   gc.ModelsImportPath,
 			"servicesImportPath": gc.ServicesImportPath,
+			"rbacImportPath":     gc.RBACImportPath,
 		})
 		if err != nil {
 			return errors.Wrapf(err, "execute template %q", tc.TemplatePath)
