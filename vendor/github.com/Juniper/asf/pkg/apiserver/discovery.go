@@ -66,7 +66,7 @@ func (h *HomepageHandler) get(link linkDetails) (*linkDetails, bool) {
 // Handle requests to return the links.
 func (h *HomepageHandler) Handle(c echo.Context) error {
 	r := c.Request()
-	addr := GetRequestSchema(r) + r.Host
+	addr := RequestSchema(r) + r.Host
 
 	var reply struct {
 		Addr  string  `json:"href"`
@@ -88,8 +88,8 @@ func (h *HomepageHandler) Handle(c echo.Context) error {
 	return c.JSON(http.StatusOK, reply)
 }
 
-// GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
-func GetRequestSchema(r *http.Request) string {
+// RequestSchema returns 'https://' for TLS based request or 'http://' otherwise
+func RequestSchema(r *http.Request) string {
 	if r.TLS != nil {
 		return "https://"
 	}

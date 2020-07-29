@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfdb "github.com/Juniper/asf/pkg/db"
 )
 
 // TODO: get_autonomous_system method
@@ -19,7 +20,7 @@ func createDefaultRouteTarget(
 	ctx context.Context,
 	evaluateContext *intent.EvaluateContext,
 ) (*models.RouteTarget, error) {
-	target, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID, db.EmptyIntOwner)
+	target, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID, asfdb.EmptyIntOwner)
 	if err != nil {
 		return nil, err
 	}

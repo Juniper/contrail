@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Juniper/asf/pkg/db/basedb"
+	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
@@ -28,7 +28,7 @@ type pgxReplicationConn interface {
 type DB interface {
 	DB() *sql.DB
 	DoInTransactionWithOpts(ctx context.Context, do func(context.Context) error, opts *sql.TxOptions) error
-	Dump(context.Context) (basedb.DatabaseData, error)
+	Dump(context.Context) (db.DatabaseData, error)
 }
 
 // PostgresConnection is a connection that uses replication connection to manage logical subscription.
@@ -39,8 +39,8 @@ type PostgresConnection struct {
 }
 
 // NewPostgresConnection returns a postgres Connection.
-func NewPostgresConnection(db DB) (*PostgresConnection, error) {
-	c := basedb.ConnectionConfigFromViper()
+func NewPostgresConnection(d DB) (*PostgresConnection, error) {
+	c := db.ConnectionConfigFromViper()
 	replConn, err := pgx.ReplicationConnect(
 		pgx.ConnConfig{Host: c.Host, Database: c.Name, User: c.User, Password: c.Password},
 	)
@@ -49,7 +49,7 @@ func NewPostgresConnection(db DB) (*PostgresConnection, error) {
 	}
 
 	return &PostgresConnection{
-		db:       db,
+		db:       d,
 		replConn: replConn,
 		log:      logutil.NewLogger("postgres-replication-connection"),
 	}, nil
@@ -126,7 +126,7 @@ func (c *PostgresConnection) DoInTransactionSnapshot(
 	return c.db.DoInTransactionWithOpts(
 		ctx,
 		func(ctx context.Context) error {
-			tx := basedb.GetTransaction(ctx)
+			tx := db.GetTransaction(ctx)
 			_, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 			if err != nil {
 				return errors.Wrap(err, "error setting transaction isolation")
@@ -145,7 +145,7 @@ func (c *PostgresConnection) DoInTransactionSnapshot(
 // DumpSnapshot performs snapshot in transaction.
 func (c *PostgresConnection) DumpSnapshot(
 	ctx context.Context, snapshotName string,
-) (dump basedb.DatabaseData, err error) {
+) (dump db.DatabaseData, err error) {
 	if err = c.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
 		dump, err = c.db.Dump(ctx)
 		if err != nil {

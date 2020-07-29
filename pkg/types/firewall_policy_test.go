@@ -10,10 +10,11 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	asfmodels "github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
@@ -260,7 +261,7 @@ func setupReadServiceMock(s *ContrailTypeLogicService, databaseFP *models.Firewa
 
 func getContext(isInternalRequest bool) context.Context {
 	if isInternalRequest {
-		return baseservices.WithInternalRequest(context.Background())
+		return asfservices.WithInternalRequest(context.Background())
 	}
 
 	return context.Background()
