@@ -2,16 +2,18 @@ run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
   deadline: 20m
+  skip-dirs-use-default: true
   skip-files:
-  # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
-  - .*/go[0-9\.]*/src/crypto/.*
-  - .*/go[0-9\.]*/src/internal/syscall/unix/.*
-  - .*/go[0-9\.]*/src/net/.*
-  - .*/go[0-9\.]*/src/os/.*
-  - .*/go[0-9\.]*/src/runtime/.*
-  - .*/go[0-9\.]*/src/syscall/.*
-  - .*/usr/local/go[0-9\.]*/src/.*
-  - (.*/)?vendor/.*
+    # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
+    - .*/go[0-9\.]*/src/crypto/.*
+    - .*/go[0-9\.]*/src/internal/syscall/unix/.*
+    - .*/go[0-9\.]*/src/net/.*
+    - .*/go[0-9\.]*/src/os/.*
+    - .*/go[0-9\.]*/src/runtime/.*
+    - .*/go[0-9\.]*/src/syscall/.*
+    - .*/usr/local/go[0-9\.]*/src/.*
+    - (.*/)?vendor/.*
+  modules-download-mode: vendor
 
 issues:
   exclude:
@@ -30,12 +32,27 @@ issues:
 linters:
   enable-all: true
   disable:
-  - dupl
-  - gosec
-  - megacheck
-  - prealloc
-  - staticcheck
-  - unparam
+  - bodyclose # TODO(dfurman) - fix code and enable linter
+  - dogsled # TODO(dfurman) - fix code and enable linter
+  - dupl # - dupl consumes too much RAM and CPU cycles
+  - funlen # TODO(dfurman) - fix code and enable linter
+  - gochecknoglobals # - gochecknoglobals is incompatible with current conventions
+  - gochecknoinits # - gochecknoinits is incompatible with current conventions
+  - gocognit # TODO(dfurman) - fix code (if needed) and enable linter
+  - gocritic # TODO(dfurman) - fix code and enable linter
+  - godox # TODO(dfurman) - fix code and enable linter
+  - golint # golint consumer too much CPU cycles, so it is run separately
+  - gomnd # TODO(dfurman) - fix code (if needed) and enable linter
+  - goprintffuncname # TODO(dfurman) - fix code (if needed) and enable linter
+  - gosec # - gosec outputs too many false-positives
+  - megacheck # - megacheck uses staticcheck which consumes too much RAM and CPU cycles
+  - prealloc # - prealloc issues are considered premature optimization
+  - rowserrcheck # TODO(dfurman) - fix code (if needed) and enable linter
+  - scopelint # TODO(dfurman) - fix code and enable linter
+  - stylecheck # TODO(dfurman) - fix code and enable linter
+  - whitespace # TODO(dfurman) - fix code and enable linter
+  - wsl # TODO(dfurman) - fix code (if needed) and enable linter
+
 
 linters-settings:
   errcheck:

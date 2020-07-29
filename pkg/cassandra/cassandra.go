@@ -9,14 +9,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gocql/gocql"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 
-	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/services"
+	asfservices "github.com/Juniper/asf/pkg/services"
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -397,7 +398,7 @@ func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*s
 func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, err error) { // nolint: interfacer
 	rsrc := event.GetResource()
 	switch event.Operation() {
-	case services.OperationCreate, services.OperationUpdate:
+	case asfservices.OperationCreate, asfservices.OperationUpdate:
 		rsrcJSON, err := json.Marshal(rsrc.ToMap())
 		if err != nil {
 			return nil, err
@@ -408,7 +409,7 @@ func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, 
 			rsrc.Kind(),
 			rsrcJSON,
 		)
-	case services.OperationDelete:
+	case asfservices.OperationDelete:
 		qry = session.Query(
 			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
 			rsrc.GetUUID(),
