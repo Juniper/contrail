@@ -253,7 +253,7 @@ func (r *Router) addInterfaceWithPort(
 		return "", "", err
 	}
 
-	if err = r.validatePort(ctx, rp, portRes); err != nil {
+	if err = r.validatePort(rp, portRes); err != nil {
 		return "", "", err
 	}
 
@@ -261,7 +261,7 @@ func (r *Router) addInterfaceWithPort(
 	if err != nil {
 		return "", "", err
 	}
-	if err := r.checkForDupRouterSubnet(ctx, rp, routerID, subnet.NetworkID, subnet.ID, subnet.Cidr); err != nil {
+	if err := r.checkForDupRouterSubnet(ctx, rp, routerID, subnet.ID, subnet.Cidr); err != nil {
 		return "", "", err
 	}
 
@@ -280,7 +280,7 @@ func (r *Router) getPortResponse(ctx context.Context, rp RequestParameters, port
 	return portRes, nil
 }
 
-func (r *Router) validatePort(ctx context.Context, rp RequestParameters, port *PortResponse) error {
+func (r *Router) validatePort(rp RequestParameters, port *PortResponse) error {
 	if !rp.RequestContext.IsAdmin && VncUUIDToNeutronID(rp.RequestContext.TenantID) != port.TenantID {
 		return newRouterError(routerInterfaceNotFound, "Router interface not found")
 	}
@@ -312,7 +312,7 @@ func (r *Router) getSubnetResponse(
 }
 
 func (r *Router) checkForDupRouterSubnet(
-	ctx context.Context, rp RequestParameters, routerID, networkID, subnetID, subnetCIDR string,
+	ctx context.Context, rp RequestParameters, routerID, subnetID, subnetCIDR string,
 ) error {
 	rportsRes, err := (&Port{}).ReadAll(ctx, rp, Filters{deviceIDKey: []string{routerID}}, Fields{})
 	if err != nil {
@@ -355,11 +355,11 @@ func (r *Router) addInterfaceWithSubnet(
 		return "", "", err
 	}
 
-	if err = r.validateSubnet(ctx, rp, subnet); err != nil {
+	if err = r.validateSubnet(rp, subnet); err != nil {
 		return "", "", err
 	}
 
-	if err = r.checkForDupRouterSubnet(ctx, rp, routerID, subnet.NetworkID, subnet.ID, subnet.Cidr); err != nil {
+	if err = r.checkForDupRouterSubnet(ctx, rp, routerID, subnet.ID, subnet.Cidr); err != nil {
 		return "", "", err
 	}
 
@@ -371,7 +371,7 @@ func (r *Router) addInterfaceWithSubnet(
 	return portID, subnet.TenantID, nil
 }
 
-func (r *Router) validateSubnet(ctx context.Context, rp RequestParameters, subnet *SubnetResponse) error {
+func (r *Router) validateSubnet(rp RequestParameters, subnet *SubnetResponse) error {
 	if !rp.RequestContext.IsAdmin && VncUUIDToNeutronID(rp.RequestContext.TenantID) != subnet.TenantID {
 		return newRouterError(routerInterfaceNotFoundForSubnet, "Router interface not found for subnet %s",
 			r.SubnetID,

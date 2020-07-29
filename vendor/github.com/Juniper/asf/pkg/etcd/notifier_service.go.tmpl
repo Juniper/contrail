@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/viper"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	models "{{ modelsImportPath }}"
 	services "{{ servicesImportPath }}"
 )
@@ -163,7 +164,7 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 	}
 
 	var data map[string]interface{}
-	if operation == services.OperationCreate || operation == services.OperationUpdate {
+	if operation == asfservices.OperationCreate || operation == asfservices.OperationUpdate {
 		err = json.Unmarshal(newValue, &data)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to decode %s", string(newValue))
@@ -196,11 +197,11 @@ func parseKey(key string) (kind string, uuid string, err error) {
 func parseOperation(etcdOperation int32) (string, error) {
 	switch etcdOperation {
 	case etcd.MessageCreate:
-		return services.OperationCreate, nil
+		return asfservices.OperationCreate, nil
 	case etcd.MessageModify:
-		return services.OperationUpdate, nil
+		return asfservices.OperationUpdate, nil
 	case etcd.MessageDelete:
-		return services.OperationDelete, nil
+		return asfservices.OperationDelete, nil
 	default:
 		return "", errors.Errorf("unsupported etcd operation: %v", etcdOperation)
 	}

@@ -1,7 +1,7 @@
 run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
-  deadline: 20m
+  deadline: 30m
   skip-files:
   # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
   - .*/go[0-9\.]*/src/crypto/.*
@@ -15,38 +15,42 @@ run:
 
 issues:
   exclude:
-  - .* is always .* # unparam issue
-  - ^should have a package comment, unless it's in another file for this package$ # golint issue
+  - .* always receives .* # unparam issue
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-
-# Intentionally disabled linters:
-# - dupl consumes too much RAM and CPU cycles
-# - gosec consumes too much RAM and CPU cycles
-# - megacheck uses staticcheck which consumes too much RAM and CPU cycles
-# - prealloc issues are considered premature optimization
-# - staticcheck consumes too much RAM and CPU cycles
 linters:
   enable-all: true
   disable:
-  - dupl
-  - gosec
-  - megacheck
-  - prealloc
-  - staticcheck
-  - unparam
-
+  - bodyclose # TODO(dfurman) - fix code and enable linter
+  - dogsled # TODO(dfurman) - fix code and enable linter
+  - dupl # - dupl consumes too much RAM and CPU cycles
+  - funlen # TODO(dfurman) - fix code and enable linter
+  - gochecknoglobals # - gochecknoglobals is incompatible with current conventions
+  - gochecknoinits # - gochecknoinits is incompatible with current conventions
+  - gocognit # TODO(dfurman) - fix code (if needed) and enable linter
+  - gocritic # TODO(dfurman) - fix code and enable linter
+  - godox # TODO(dfurman) - fix code and enable linter
+  - golint # golint consumer too much CPU cycles, so it is run separately
+  - gomnd # TODO(dfurman) - fix code (if needed) and enable linter
+  - goprintffuncname # TODO(dfurman) - fix code (if needed) and enable linter
+  - gosec # - gosec outputs too many false-positives
+  - megacheck # - megacheck uses staticcheck which consumes too much RAM and CPU cycles
+  - prealloc # - prealloc issues are considered premature optimization
+  - rowserrcheck # TODO(dfurman) - fix code (if needed) and enable linter
+  - scopelint # TODO(dfurman) - fix code and enable linter
+  - stylecheck # TODO(dfurman) - fix code and enable linter
+  - whitespace # TODO(dfurman) - fix code and enable linter
+  - wsl # TODO(dfurman) - fix code (if needed) and enable linter
 linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
   gocyclo:
     min-complexity: 10
-  golint:
-    min-confidence: 0
   govet:
     check-shadowing: true
+    enable-all: true
   maligned:
     suggest-new: true
   unused:
