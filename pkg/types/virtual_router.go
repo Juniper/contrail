@@ -3,15 +3,14 @@ package types
 import (
 	"context"
 
-	protobuf "github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
+	protobuf "github.com/gogo/protobuf/types"
 )
 
 // CreateVirtualRouter virtual-router create specific logic.
@@ -135,7 +134,7 @@ func (sv *ContrailTypeLogicService) validateVrouterAllocationPools(
 	}
 
 	networkIpamsRes, err := sv.ReadService.ListNetworkIpam(ctx, &services.ListNetworkIpamRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			ObjectUUIDs: vr.GetNetworkIpamRefUUIDs(),
 			Detail:      true,
 		},

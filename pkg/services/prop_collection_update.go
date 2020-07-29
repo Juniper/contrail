@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -23,8 +24,8 @@ const PropCollectionUpdatePath = "prop-collection-update"
 // PropCollectionUpdatePlugin provides prop-collection-update HTTP endpoint and GRPC service.
 type PropCollectionUpdatePlugin struct {
 	Service           Service
-	InTransactionDoer InTransactionDoer
-	IDToFQNameService IDToFQNameService
+	InTransactionDoer services.InTransactionDoer
+	MetadataGetter    services.MetadataGetter
 }
 
 // RegisterHTTPAPI registers the prop-collection-update endpoint.
@@ -49,7 +50,7 @@ func (p *PropCollectionUpdatePlugin) RESTPropCollectionUpdate(c echo.Context) er
 	}
 
 	if err := p.InTransactionDoer.DoInTransaction(c.Request().Context(), func(ctx context.Context) error {
-		obj, objType, err := GetObjectAndType(ctx, data.UUID, p.IDToFQNameService, p.Service)
+		obj, objType, err := GetObjectAndType(ctx, data.UUID, p.MetadataGetter, p.Service)
 		if err != nil {
 			return err
 		}
@@ -197,7 +198,7 @@ func (p *PropCollectionUpdatePlugin) PropCollectionUpdate(
 	ctx context.Context, request *PropCollectionUpdateRequest,
 ) (*types.Empty, error) {
 	err := p.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		obj, objType, err := GetObjectAndType(ctx, request.UUID, p.IDToFQNameService, p.Service)
+		obj, objType, err := GetObjectAndType(ctx, request.UUID, p.MetadataGetter, p.Service)
 		if err != nil {
 			return err
 		}
@@ -227,7 +228,7 @@ func (p *PropCollectionUpdatePlugin) updatePropCollection(
 		Data:      updateMap,
 		Kind:      objType,
 		UUID:      request.UUID,
-		Operation: OperationUpdate,
+		Operation: services.OperationUpdate,
 	})
 	if err != nil {
 		return err

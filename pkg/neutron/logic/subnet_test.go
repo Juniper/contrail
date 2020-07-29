@@ -7,11 +7,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
-	neutronmock "github.com/Juniper/contrail/pkg/neutron/mock"
 	"github.com/Juniper/contrail/pkg/services"
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func TestSubnetResponse_CIDRFromVnc(t *testing.T) {
@@ -260,8 +261,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 	}
 
 	type mockKVs struct {
-		Response *services.RetrieveValuesResponse
-		Error    error
+		Keys   []string
+		Values []string
+		Error  error
 	}
 
 	tests := []struct {
@@ -335,6 +337,10 @@ func TestSubnet_ReadAll(t *testing.T) {
 						fakeVirtualNetwork("blue", 1, false),
 					},
 				},
+			},
+			mockKVs: mockKVs{
+				Keys:   []string{"subnet_blue_1_uuid"},
+				Values: []string{},
 			},
 			expected: []*logic.SubnetResponse{
 				{
@@ -410,7 +416,14 @@ func TestSubnet_ReadAll(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rp := logic.RequestParameters{
 				ReadService: mockReadService(mockCtrl, tt.mockVN.VirtualNetworks, tt.mockVN.Error),
-				UserAgentKV: mockUserAgentService(mockCtrl, tt.mockKVs.Response, tt.mockKVs.Error),
+				UserAgentKV: &asfservices.UserAgentKVPlugin{
+					UserAgentKVService: mockUserAgentKVService(
+						mockCtrl,
+						tt.mockKVs.Keys,
+						tt.mockKVs.Values,
+						tt.mockKVs.Error,
+					),
+				},
 			}
 
 			subnet := &logic.Subnet{}
@@ -428,8 +441,9 @@ func TestSubnet_Read(t *testing.T) {
 	}
 
 	type mockKVs struct {
-		Response *services.RetrieveValuesResponse
-		Error    error
+		Keys   []string
+		Values []string
+		Error  error
 	}
 
 	tests := []struct {
@@ -447,6 +461,10 @@ func TestSubnet_Read(t *testing.T) {
 			mockVN: mockVN{
 				VirtualNetworks: &services.ListVirtualNetworkResponse{},
 			},
+			mockKVs: mockKVs{
+				Keys:   []string{""},
+				Values: []string{},
+			},
 			fails: true,
 		},
 		{
@@ -458,6 +476,10 @@ func TestSubnet_Read(t *testing.T) {
 						fakeVirtualNetwork("green", 1, false),
 					},
 				},
+			},
+			mockKVs: mockKVs{
+				Keys:   []string{"subnet_green_1_uuid"},
+				Values: []string{},
 			},
 			expected: &logic.SubnetResponse{
 				NetworkID:       "virtual_network_green",
@@ -480,6 +502,10 @@ func TestSubnet_Read(t *testing.T) {
 					},
 				},
 			},
+			mockKVs: mockKVs{
+				Keys:   []string{"does_not_exist"},
+				Values: []string{},
+			},
 			fails: true,
 		},
 	}
@@ -491,7 +517,14 @@ func TestSubnet_Read(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rp := logic.RequestParameters{
 				ReadService: mockReadService(mockCtrl, tt.mockVN.VirtualNetworks, tt.mockVN.Error),
-				UserAgentKV: mockUserAgentService(mockCtrl, tt.mockKVs.Response, tt.mockKVs.Error),
+				UserAgentKV: &asfservices.UserAgentKVPlugin{
+					UserAgentKVService: mockUserAgentKVService(
+						mockCtrl,
+						tt.mockKVs.Keys,
+						tt.mockKVs.Values,
+						tt.mockKVs.Error,
+					),
+				},
 			}
 
 			subnet := &logic.Subnet{}
@@ -516,13 +549,14 @@ func mockReadService(
 	return mock
 }
 
-func mockUserAgentService(
+func mockUserAgentKVService(
 	mockCtrl *gomock.Controller,
-	res *services.RetrieveValuesResponse,
+	keys []string,
+	values []string,
 	err error,
-) *neutronmock.MockuserAgentKVServer {
-	mock := neutronmock.NewMockuserAgentKVServer(mockCtrl)
-	mock.EXPECT().RetrieveValues(gomock.Any(), gomock.Any()).Return(res, err).AnyTimes()
+) asfservices.UserAgentKVService {
+	mock := servicesmock.NewMockUserAgentKVService(mockCtrl)
+	mock.EXPECT().RetrieveValues(gomock.Any(), keys).Return(values, err).AnyTimes()
 	return mock
 }
 

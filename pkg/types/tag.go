@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	asfdb "github.com/Juniper/asf/pkg/db"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -149,7 +149,7 @@ func (sv *ContrailTypeLogicService) allocateTagID(
 	ctx context.Context,
 	tagTypeID string,
 ) (string, error) {
-	allocInt, err := sv.IntPoolAllocator.AllocateInt(ctx, tagIDPoolKey, db.EmptyIntOwner)
+	allocInt, err := sv.IntPoolAllocator.AllocateInt(ctx, tagIDPoolKey, asfdb.EmptyIntOwner)
 	if err != nil {
 		return "", err
 	}
@@ -183,9 +183,9 @@ func (sv *ContrailTypeLogicService) findTagTypeByName(
 	}
 
 	tagTypeResponse, err := sv.ReadService.ListTagType(ctx, &services.ListTagTypeRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			Detail: true,
-			Filters: []*baseservices.Filter{
+			Filters: []*asfservices.Filter{
 				{
 					Key:    models.TagTypeFieldFQName,
 					Values: []string{string(tagTypeFqName)},

@@ -16,10 +16,13 @@ type generateFlags struct {
 	SchemasDir         string
 	AddonsDir          string
 	TemplateConfigPath string
+	ClientImportPath   string
+	ConvertImportPath  string
 	DBImportPath       string
 	ETCDImportPath     string
 	ModelsImportPath   string
 	ServicesImportPath string
+	RBACImportPath     string
 	SchemaOutputPath   string
 	OpenAPIOutputPath  string
 	NoRegenerate       bool
@@ -44,6 +47,14 @@ func init() {
 	// TODO(dfurman): provide a default so that specifying these paths is not required: use "go list -m" to determine
 	// client's package path and concatenate subpackage path, e.g. /pkg/db.
 	generateCmd.Flags().StringVarP(
+		&flags.ClientImportPath, "client-import-path", "", "",
+		"Generated client import path, e.g. github.com/client/repository/pkg/client",
+	)
+	generateCmd.Flags().StringVarP(
+		&flags.ConvertImportPath, "convert-import-path", "", "",
+		"Generated convert import path, e.g. github.com/client/repository/pkg/convert",
+	)
+	generateCmd.Flags().StringVarP(
 		&flags.DBImportPath, "db-import-path", "", "",
 		"Generated db import path, e.g. github.com/client/repository/pkg/db",
 	)
@@ -58,6 +69,10 @@ func init() {
 	generateCmd.Flags().StringVarP(
 		&flags.ServicesImportPath, "services-import-path", "", "",
 		"Generated services import path, e.g. github.com/client/repository/pkg/services",
+	)
+	generateCmd.Flags().StringVarP(
+		&flags.RBACImportPath, "rbac-import-path", "", "",
+		"Generated rbac import path, e.g. github.com/client/repository/pkg/rbac",
 	)
 	generateCmd.Flags().StringVarP(&flags.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
 	generateCmd.Flags().StringVarP(&flags.OpenAPIOutputPath, "openapi-output", "", "", "OpenAPI Output path")
@@ -107,7 +122,7 @@ func terminate(err error) {
 }
 
 func generateCode() error {
-	logrus.Info("Generating source code from schema")
+	logrus.WithField("flags", flags).Info("Generating source code from schema")
 	api, err := schema.MakeAPI(
 		strings.Split(flags.SchemasDir, ","),
 		strings.Split(flags.AddonsDir, ","),
@@ -124,10 +139,13 @@ func generateCode() error {
 
 	if err = schema.GenerateFiles(api, &schema.GenerateConfig{
 		TemplateConfigs:    tcs,
+		ClientImportPath:   flags.ClientImportPath,
+		ConvertImportPath:  flags.ConvertImportPath,
 		DBImportPath:       flags.DBImportPath,
 		ETCDImportPath:     flags.ETCDImportPath,
 		ModelsImportPath:   flags.ModelsImportPath,
 		ServicesImportPath: flags.ServicesImportPath,
+		RBACImportPath:     flags.RBACImportPath,
 		NoRegenerate:       flags.NoRegenerate,
 	}); err != nil {
 		return errors.Wrap(err, "generate files")
