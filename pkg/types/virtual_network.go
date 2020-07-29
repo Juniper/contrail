@@ -5,17 +5,16 @@ import (
 	"net"
 	"strings"
 
-	protobuf "github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+	"github.com/pkg/errors"
 
+	asfdb "github.com/Juniper/asf/pkg/db"
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	protobuf "github.com/gogo/protobuf/types"
 )
 
 //CreateVirtualNetwork do pre check and post setup for virtual network.
@@ -41,7 +40,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			virtualNetwork.VirtualNetworkNetworkID, err = sv.IntPoolAllocator.AllocateInt(
 				ctx,
 				VirtualNetworkIDPoolKey,
-				db.EmptyIntOwner,
+				asfdb.EmptyIntOwner,
 			)
 			if err != nil {
 				return err

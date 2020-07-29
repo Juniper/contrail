@@ -14,36 +14,40 @@
 package main
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/protoc-gen-go/plugin"
-	"github.com/pseudomuto/protoc-gen-doc"
-	"io/ioutil"
+	"github.com/pseudomuto/protokit"
+
 	"log"
 	"os"
+
+	gendoc "github.com/pseudomuto/protoc-gen-doc"
+	_ "github.com/pseudomuto/protoc-gen-doc/extensions/google_api_http" // imported for side effects
+	_ "github.com/pseudomuto/protoc-gen-doc/extensions/lyft_validate"   // imported for side effects
+	_ "github.com/pseudomuto/protoc-gen-doc/extensions/validator_field" // imported for side effects
 )
 
 func main() {
-	input, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatalf("Could not read contents from stdin")
+	if flags := ParseFlags(os.Stdout, os.Args); HandleFlags(flags) {
+		os.Exit(flags.Code())
 	}
 
-	req := new(plugin_go.CodeGeneratorRequest)
-	if err = proto.Unmarshal(input, req); err != nil {
+	if err := protokit.RunPlugin(new(gendoc.Plugin)); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// HandleFlags checks if there's a match and returns true if it was "handled"
+func HandleFlags(f *Flags) bool {
+	if !f.HasMatch() {
+		return false
 	}
 
-	resp, err := gendoc.RunPlugin(req)
-	if err != nil {
-		log.Fatal(err)
+	if f.ShowHelp() {
+		f.PrintHelp()
 	}
 
-	data, err := proto.Marshal(resp)
-	if err != nil {
-		log.Fatal(err)
+	if f.ShowVersion() {
+		f.PrintVersion()
 	}
 
-	if _, err := os.Stdout.Write(data); err != nil {
-		log.Fatal(err)
-	}
+	return true
 }

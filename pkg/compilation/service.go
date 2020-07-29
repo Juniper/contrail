@@ -28,6 +28,7 @@ import (
 
 	asfclient "github.com/Juniper/asf/pkg/client"
 	asfetcd "github.com/Juniper/asf/pkg/etcd"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const serviceName = "intent-compiler"
@@ -36,7 +37,7 @@ const serviceName = "intent-compiler"
 func SetupService(
 	WriteService services.WriteService,
 	ReadService services.ReadService,
-	allocator services.IntPoolAllocator,
+	allocator asfservices.IntPoolAllocator,
 ) (services.Service, error) {
 	reactions, err := dependencies.ParseReactions(
 		[]byte(logic.ReactionsYAML),

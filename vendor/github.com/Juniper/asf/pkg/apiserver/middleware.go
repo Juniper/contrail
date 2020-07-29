@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -49,7 +48,7 @@ func recorderMiddleware(log *logrus.Entry) echo.MiddlewareFunc {
 			log.WithError(err).Error("Malformed JSON response")
 		}
 		task := &recorderTask{
-			Request: &client.Request{
+			Request: &request{
 				Method:   c.Request().Method,
 				Path:     c.Request().URL.Path,
 				Expected: []int{c.Response().Status},
@@ -67,7 +66,15 @@ func recorderMiddleware(log *logrus.Entry) echo.MiddlewareFunc {
 	})
 }
 
+type request struct {
+	Method   string      `yaml:"method"`
+	Path     string      `yaml:"path,omitempty"`
+	Expected []int       `yaml:"expected,omitempty"`
+	Data     interface{} `yaml:"data,omitempty"`
+	Output   interface{} `yaml:"output,omitempty"`
+}
+
 type recorderTask struct {
-	Request *client.Request `yaml:"request,omitempty"`
-	Expect  interface{}     `yaml:"expect,omitempty"`
+	Request *request    `yaml:"request,omitempty"`
+	Expect  interface{} `yaml:"expect,omitempty"`
 }
