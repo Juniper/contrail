@@ -10,11 +10,11 @@ import (
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 const (
@@ -124,7 +124,7 @@ func (n *Network) Delete(
 	}
 
 	fippRes, err := rp.ReadService.ListFloatingIPPool(ctx, &services.ListFloatingIPPoolRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			ParentUUIDs: []string{id},
 			Detail:      true,
 		},
@@ -261,7 +261,7 @@ func (n *Network) getCountByTenantIDs(
 	}
 
 	vnCount, err := rp.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			Count:       true,
 			ParentUUIDs: pUUIDs,
 		},
@@ -317,7 +317,6 @@ func (n *Network) validateRouterExternalChange(
 	rp RequestParameters,
 	newVN *models.VirtualNetwork,
 	oldRouterExternal bool,
-	fm *types.FieldMask,
 ) error {
 	if newVN.GetRouterExternal() == oldRouterExternal {
 		return nil
@@ -343,7 +342,7 @@ func (n *Network) validateRouterExternalChange(
 
 type listReq struct {
 	ParentID string
-	Filters  []*baseservices.Filter
+	Filters  []*asfservices.Filter
 	Detail   bool
 	Count    bool
 	ObjUUIDs []string
@@ -472,7 +471,7 @@ func (n *Network) deleteAssociatedFloatingIPsAndPools(
 
 	for _, fip := range fips {
 		if len(fip.GetVirtualMachineInterfaceRefs()) > 0 {
-			return errors.Errorf("floating IP(uuid: %v) is assosiated with a port", fip.GetUUID())
+			return errors.Errorf("floating IP(uuid: %v) is associated with a port", fip.GetUUID())
 		}
 		_, err = rp.WriteService.DeleteFloatingIP(ctx, &services.DeleteFloatingIPRequest{
 			ID: fip.GetUUID(),
@@ -496,7 +495,7 @@ func (n *Network) listAssociatedFloatingIPs(
 	}
 
 	response, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			ObjectUUIDs: uuids,
 			Fields: []string{
 				models.FloatingIPFieldUUID,
@@ -551,7 +550,7 @@ func (n *Network) createRouteTableRef(
 	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, vncFm *types.FieldMask,
 ) error {
 
-	rtUUID, err := rp.FQNameToIDService.FQNameToID(ctx, &services.FQNameToIDRequest{
+	rtUUID, err := rp.FQNameService.FQNameToID(ctx, &asfservices.FQNameToIDRequest{
 		FQName: n.RouteTable,
 		Type:   models.KindRouteTable,
 	})
@@ -664,9 +663,9 @@ func collectNetworkForTenant(
 
 func addDBFilter(req *listReq, key string, values []string, clearFirst bool) {
 	if clearFirst {
-		req.Filters = []*baseservices.Filter{}
+		req.Filters = []*asfservices.Filter{}
 	}
-	filter := baseservices.Filter{Key: key, Values: values}
+	filter := asfservices.Filter{Key: key, Values: values}
 	req.Filters = append(req.Filters, &filter)
 }
 
@@ -839,7 +838,7 @@ func convertVNsToNeutronResponse(
 	return nns
 }
 
-func prepareVirtualNetworkListSpec(req *listReq) *baseservices.ListSpec {
+func prepareVirtualNetworkListSpec(req *listReq) *asfservices.ListSpec {
 	var pUUIDs []string
 	if req.ParentID != "" {
 		pUUIDs = []string{
@@ -847,7 +846,7 @@ func prepareVirtualNetworkListSpec(req *listReq) *baseservices.ListSpec {
 		}
 	}
 
-	return &baseservices.ListSpec{
+	return &asfservices.ListSpec{
 		Filters:     req.Filters,
 		Detail:      true,
 		Count:       req.Count,
