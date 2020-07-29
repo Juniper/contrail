@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 
 	asfetcd "github.com/Juniper/asf/pkg/etcd"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	db "{{ dbImportPath }}"
 	services "{{ servicesImportPath }}"
 )
@@ -15,7 +16,7 @@ import (
 // NewEventProducer creates event producer that feeds EventProcessor with changes comming
 // from PostgresWatcher.
 func NewEventProducer(
-	id string, processor services.EventProcessor, txn services.InTransactionDoer,
+	id string, processor services.EventProcessor, txn asfservices.InTransactionDoer,
 ) (*sync.PostgresWatcher, error) {
 	setViperDefaults()
 
@@ -32,9 +33,9 @@ func NewEventProducer(
 	}
 
 	if !viper.GetBool("sync.dump") {
-		return sync.NewPostgresWatcher(handler, dbService, sync.Slot(id), sync.NoDump())
+		return sync.NewPostgresWatcher(handler, &dbService.DB, sync.Slot(id), sync.NoDump())
 	}
-	return sync.NewPostgresWatcher(handler, dbService, sync.Slot(id))
+	return sync.NewPostgresWatcher(handler, &dbService.DB, sync.Slot(id))
 }
 
 func setViperDefaults() {
@@ -79,12 +80,12 @@ func (e *eventChangeHandler) Handle(ctx context.Context, changes []sync.Change) 
 func changeOperationToServices(op sync.ChangeOperation) string {
 	switch op {
 	case sync.CreateOperation:
-		return services.OperationCreate
+		return asfservices.OperationCreate
 	case sync.UpdateOperation:
-		return services.OperationUpdate
+		return asfservices.OperationUpdate
 	case sync.DeleteOperation:
-		return services.OperationDelete
+		return asfservices.OperationDelete
 	default:
-		return services.OperationCreate
+		return asfservices.OperationCreate
 	}
 }

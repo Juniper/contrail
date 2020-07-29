@@ -14,6 +14,7 @@ import (
 	"golang.org/x/net/websocket"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	models "{{ modelsImportPath }}"
 	services "{{ servicesImportPath }}"
 )
@@ -220,7 +221,7 @@ func (db *DB) update(event *services.Event) {
 		event: event,
 	}
 
-	if event.Operation() == services.OperationDelete {
+	if event.Operation() == asfservices.OperationDelete {
 		db.deleted = append(db.deleted, n)
 	}
 
@@ -318,10 +319,10 @@ func (db *DB) removeDependencies(resource asfmodels.Object) {
 }
 
 func (db *DB) updateDependentNodes(
-		event services.ResourceEvent,
+		event asfservices.ResourceEvent,
 		backRefs, children []asfmodels.Object,
 ) {
-	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
+	if event.Operation() == asfservices.OperationCreate || event.Operation() == asfservices.OperationUpdate {
 		db.addDependencies(event.GetResource(), backRefs, children)
 	}
 }
@@ -414,12 +415,12 @@ func (db *DB) handleNode(n *node) {
 	e := n.event
 
 	switch e.Operation() {
-	case services.OperationCreate, services.OperationUpdate:
+	case asfservices.OperationCreate, asfservices.OperationUpdate:
 		if db.resources[e.Kind()] == nil {
 			db.resources[e.Kind()] = map[string]*node{}
 		}
 		db.resources[e.Kind()][e.GetUUID()] = n
-	case services.OperationDelete:
+	case asfservices.OperationDelete:
 		delete(db.resources[e.Kind()], e.GetUUID())
 	}
 }

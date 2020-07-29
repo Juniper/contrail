@@ -9,59 +9,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/Juniper/asf/pkg/fileutil"
 	"github.com/Juniper/asf/pkg/format"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/sirupsen/logrus"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
 	models "{{ modelsImportPath }}"
 )
-
-// Possible operations of events.
-const (
-	OperationCreate = "CREATE"
-	OperationUpdate = "UPDATE"
-	OperationDelete = "DELETE"
-	OperationMixed  = "MIXED"
-	EmptyEventList  = "EMPTY"
-)
-
-// EventOption contains options for Event.
-type EventOption struct {
-	UUID      string
-	Operation string
-	Kind      string
-	Data      map[string]interface{}
-	FieldMask *types.FieldMask
-}
-
-// ResourceEvent is an event that relates to a resource.
-type ResourceEvent interface {
-	GetResource() asfmodels.Object
-	Operation() string
-}
-
-// ReferenceEvent is an event that relates to a reference.
-type ReferenceEvent interface {
-	GetID() string
-	GetReference() asfmodels.Reference
-	Operation() string
-}
-
-// NewRefUpdateFromEvent creates RefUpdate from ReferenceEvent.
-func NewRefUpdateFromEvent(e ReferenceEvent) RefUpdate {
-	ref := e.GetReference()
-	u := RefUpdate{
-		Operation: ParseRefOperation(e.Operation()),
-		Type:      ref.GetFromKind(),
-		UUID:      e.GetID(),
-		RefType:   ref.GetToKind(),
-		RefUUID:   ref.GetUUID(),
-	}
-
-	if attr := ref.GetAttribute(); attr != nil {
-		u.Attr = attr.ToMap()
-	}
-	return u
-}
 
 // CanProcessService is interface for process service.
 type CanProcessService interface {
@@ -115,21 +68,21 @@ func (e *EventList) Sort() (err error) {
 //OperationType checks if all operations have the same type.
 func (e *EventList) OperationType() string {
 	if len(e.Events) == 0 {
-		return EmptyEventList
+		return services.EmptyEventList
 	}
 
 	operation := e.Events[0].Operation()
 	for _, ev := range e.Events {
 		if operation != ev.Operation() {
-			return OperationMixed
+			return services.OperationMixed
 		}
 	}
 	return operation
 }
 
 //reorder request using Tarjan's algorithm
-func visitResource(uuid string, sorted []*Event,
-		eventMap map[string]*Event, stateGraph map[string]state,
+func visitResource(
+	uuid string, sorted []*Event, eventMap map[string]*Event, stateGraph map[string]state,
 ) (sortedList []*Event, err error) {
 	if stateGraph[uuid] == temporaryVisited {
 		return nil, errors.New("dependency loop found in sync request")
@@ -174,7 +127,7 @@ func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
 }
 
 // Process process list of events.
-func (e *EventList) Process(ctx context.Context, service Service, doer InTransactionDoer) (*EventList, error) {
+func (e *EventList) Process(ctx context.Context, service Service, doer services.InTransactionDoer) (*EventList, error) {
 	var responses []*Event
 	err := doer.DoInTransaction(ctx, func(ctx context.Context) error {
 		for i, event := range e.Events {
@@ -217,10 +170,15 @@ func (e *Event) getReferences() asfmodels.References {
 
 	refs := res.GetReferences()
 
-	if parentRef := extractParentAsRef(res); parentRef != nil {
+	if parentRef := asfmodels.ExtractParent(res); parentRef != nil {
 		refs = append(refs, parentRef)
 	}
 	return refs
+}
+
+// Request interface.
+type Request interface {
+	proto.Message
 }
 
 // Unwrap returns request wrapped by isEvent_Request interface.
@@ -239,11 +197,6 @@ func (e *Event) Unwrap() Request {
 	default:
 		return nil
 	}
-}
-
-// Request interface.
-type Request interface {
-	proto.Message
 }
 
 // GetUUID returns uuid of resource being modified by this event.
@@ -267,19 +220,19 @@ func (e *Event) GetUUID() string {
 	}
 }
 
-// Operation returns operation type.
+// services.Operation returns operation type.
 func (e *Event) Operation() string {
 	switch e.Unwrap().(type) {
 	case CreateRequest:
-		return OperationCreate
+		return services.OperationCreate
 	case UpdateRequest:
-		return OperationUpdate
+		return services.OperationUpdate
 	case DeleteRequest:
-		return OperationDelete
+		return services.OperationDelete
 	case CreateRefRequest:
-		return string(RefOperationAdd)
+		return string(services.RefOperationAdd)
 	case DeleteRefRequest:
-		return string(RefOperationDelete)
+		return string(services.RefOperationDelete)
 	default:
 		logrus.Debugf("cannot get event's operation: %v", e)
 		return ""
@@ -299,40 +252,11 @@ func (e *Event) SetFieldMask(fm types.FieldMask) {
 	s.SetFieldMask(fm)
 }
 
-// RefOperation is enum type for ref-update operation.
-type RefOperation string
-
-// RefOperation values.
-const (
-	RefOperationAdd    RefOperation = "ADD"
-	RefOperationDelete RefOperation = "DELETE"
-)
-
-// ParseRefOperation parses RefOperation from string value.
-func ParseRefOperation(s string) (op RefOperation) {
-	switch s {
-	case OperationCreate, string(RefOperationAdd):
-		return RefOperationAdd
-	case OperationDelete:
-		return RefOperationDelete
-	default:
-		return RefOperation(s)
-	}
-}
-
-// RefUpdateOption contains parameters for NewRefUpdateEvent.
-type RefUpdateOption struct {
-	ReferenceType    string
-	FromUUID, ToUUID string
-	Operation        RefOperation
-	Attr             map[string]interface{}
-}
-
 // ExtractRefEvents extracts references and puts them into a newly created EventList.
 func (e *Event) ExtractRefEvents() (EventList, error) {
 	switch r := e.Unwrap().(type) {
 	case CreateRequest:
-		return extractRefEvents(r.GetResource(), RefOperationAdd)
+		return extractRefEvents(r.GetResource(), services.RefOperationAdd)
 	case UpdateRequest:
 		return EventList{}, nil
 	case DeleteRequest:
@@ -344,13 +268,13 @@ func (e *Event) ExtractRefEvents() (EventList, error) {
 	}
 }
 
-func extractRefEvents(r asfmodels.Object, o RefOperation) (EventList, error) {
+func extractRefEvents(r asfmodels.Object, o services.RefOperation) (EventList, error) {
 	el, err := makeRefEventList(r, o)
 	r.RemoveReferences()
 	return el, err
 }
 
-func makeRefEventList(r asfmodels.Object, operation RefOperation) (EventList, error) {
+func makeRefEventList(r asfmodels.Object, operation services.RefOperation) (EventList, error) {
 	el := EventList{}
 	for _, ref := range r.GetReferences() {
 		var attrMap map[string]interface{}
@@ -382,16 +306,25 @@ func (e *Event) MarshalYAML() (interface{}, error) {
 	return e.ToMap(), nil
 }
 
+// EventOption contains options for Event.
+type EventOption struct {
+	UUID      string
+	Operation string
+	Kind      string
+	Data      map[string]interface{}
+	FieldMask *types.FieldMask
+}
+
 // NewEvent makes event from interface.
 func NewEvent(option EventOption) (*Event, error) {
 	option.Kind = sanitizeKind(option.Kind)
 
 	switch o := sanitizeOperation(option.Operation); o {
-	case OperationCreate:
+	case services.OperationCreate:
 		return newCreateEvent(option)
-	case OperationUpdate:
+	case services.OperationUpdate:
 		return newUpdateEvent(option)
-	case OperationDelete:
+	case services.OperationDelete:
 		return newDeleteEvent(option)
 	default:
 		return nil, errors.Errorf("operation %s not supported", o)
@@ -438,12 +371,20 @@ func newDeleteEvent(option EventOption) (*Event, error) {
 	}, nil
 }
 
+// RefUpdateOption contains parameters for NewRefUpdateEvent.
+type RefUpdateOption struct {
+	ReferenceType    string
+	FromUUID, ToUUID string
+	Operation        services.RefOperation
+	Attr             map[string]interface{}
+}
+
 // NewRefUpdateEvent makes ref update event from RefUpdateOption.
 func NewRefUpdateEvent(option RefUpdateOption) (*Event, error) {
 	switch option.Operation {
-	case RefOperationAdd:
+	case services.RefOperationAdd:
 		return newCreateRefEvent(option)
-	case RefOperationDelete:
+	case services.RefOperationDelete:
 		return newDeleteRefEvent(option)
 	default:
 		return nil, errors.Errorf("operation %s not supported", option.Operation)
@@ -527,7 +468,7 @@ func sanitizeKind(kind string) string {
 
 func sanitizeOperation(operation string) string {
 	if operation == "" {
-		return OperationCreate
+		return services.OperationCreate
 	}
 	return operation
 }
@@ -736,9 +677,9 @@ func (g *EventGraph) IsSortRequired(e *EventList, refMap map[*Event]asfmodels.Re
 		for _, ref := range refMap[event] {
 			if n := g.getNodeByReference(ref); n != nil {
 				switch {
-				case !parsedEvents[n.event] && operation == OperationCreate:
+				case !parsedEvents[n.event] && operation == services.OperationCreate:
 					return true
-				case parsedEvents[n.event] && operation == OperationDelete:
+				case parsedEvents[n.event] && operation == services.OperationDelete:
 					return true
 				}
 			}
@@ -759,7 +700,7 @@ func (g *EventGraph) SortEvents() *EventList {
 		}
 	}
 
-	if sorted.OperationType() == OperationDelete {
+	if sorted.OperationType() == services.OperationDelete {
 		sorted.Events = reverseEventsSlice(sorted.Events)
 	}
 
@@ -821,19 +762,6 @@ func isSubgraphCyclic(node *eventNode, visited, parsingStack map[*eventNode]bool
 	return false
 }
 
-func extractParentAsRef(o asfmodels.Object) asfmodels.Reference {
-	parentType := o.GetParentType()
-	if parentUUID := o.GetParentUUID(); parentUUID != "" {
-		return asfmodels.NewUUIDReference(parentUUID, parentType)
-	}
-	if parentFQName := asfmodels.ParentFQName(o.GetFQName()); len(parentFQName) != 0 {
-		return asfmodels.NewFQNameReference(parentFQName, parentType)
-
-	}
-	return nil
-}
-
-
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 // GetRequest underlying request.
@@ -854,9 +782,9 @@ func (r *Create{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.Fi
 // isCreateRequest determines create request.
 func (r *Create{{ schema.JSONSchema.GoName }}Request) isCreateRequest() {}
 
-// Operation returns operation that is performed by the request.
+// services.Operation returns operation that is performed by the request.
 func (r *Create{{ schema.JSONSchema.GoName }}Request) Operation() string {
-	return OperationCreate
+	return services.OperationCreate
 }
 
 // GetRequest underlying request.
@@ -877,9 +805,9 @@ func (r *Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.Fi
 // isUpdateRequest determines update request.
 func (r *Update{{ schema.JSONSchema.GoName }}Request) isUpdateRequest() {}
 
-// Operation returns operation that is performed by the request.
+// services.Operation returns operation that is performed by the request.
 func (r *Update{{ schema.JSONSchema.GoName }}Request) Operation() string {
-	return OperationUpdate
+	return services.OperationUpdate
 }
 
 // GetRequest underlying request.
@@ -900,9 +828,9 @@ func (r *Delete{{ schema.JSONSchema.GoName }}Request) Kind() string {
 // isDeleteRequest determines delete request.
 func (r *Delete{{ schema.JSONSchema.GoName }}Request) isDeleteRequest() {}
 
-// Operation returns operation that is performed by the request.
+// services.Operation returns operation that is performed by the request.
 func (r *Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
-	return OperationDelete
+	return services.OperationDelete
 }
 
 {% for _, reference in schema.References %}
@@ -926,9 +854,9 @@ func (r *Create{{ refType }}Request) GetReference() asfmodels.Reference {
 	return r.Get{{ refType }}()
 }
 
-// Operation returns operation that is performed by the request.
+// services.Operation returns operation that is performed by the request.
 func (r *Create{{ refType }}Request) Operation() string {
-	return OperationCreate
+	return services.OperationCreate
 }
 
 // GetRequest returns underlying request.
@@ -949,9 +877,9 @@ func (r *Delete{{ refType }}Request) GetReference() asfmodels.Reference {
 	return r.Get{{ refType }}()
 }
 
-// Operation returns operation that is performed by the request.
+// services.Operation returns operation that is performed by the request.
 func (r *Delete{{ refType }}Request) Operation() string {
-	return OperationDelete
+	return services.OperationDelete
 }
 
 {% endfor %}

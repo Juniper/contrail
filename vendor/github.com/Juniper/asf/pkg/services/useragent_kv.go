@@ -5,24 +5,48 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Juniper/asf/pkg/apiserver"
+	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
-
-	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/models"
 )
 
 // UserAgent key value store operations.
 const (
+	UserAgentKVPath = "useragent-kv"
+
 	UserAgentKVOperationStore    = "STORE"
 	UserAgentKVOperationRetrieve = "RETRIEVE"
 	UserAgentKVOperationDelete   = "DELETE"
 )
 
+// UserAgentKVService is a service which manages operations on key-value store
+type UserAgentKVService interface {
+	StoreKeyValue(ctx context.Context, key string, value string) error
+	RetrieveValues(ctx context.Context, keys []string) (vals []string, err error)
+	DeleteKey(ctx context.Context, key string) error
+	RetrieveKVPs(ctx context.Context) (kvps []*KeyValuePair, err error)
+}
+
+// UserAgentKVPlugin is a plugin that allows storing arbitrary key-value pairs in db.
+type UserAgentKVPlugin struct {
+	UserAgentKVService UserAgentKVService
+}
+
+// RegisterHTTPAPI registers HTTP endpoints.
+func (p *UserAgentKVPlugin) RegisterHTTPAPI(r apiserver.HTTPRouter) {
+	r.POST(UserAgentKVPath, p.RESTUserAgentKV)
+}
+
+// RegisterGRPCAPI registers GRPC endpoints.
+func (p *UserAgentKVPlugin) RegisterGRPCAPI(r apiserver.GRPCRouter) {
+	r.RegisterService(&_UserAgentKV_serviceDesc, p)
+}
+
 type userAgentKVRequest map[string]interface{}
 
 // RESTUserAgentKV is a REST handler for UserAgentKV requests.
-func (svc *ContrailService) RESTUserAgentKV(c echo.Context) error {
+func (p *UserAgentKVPlugin) RESTUserAgentKV(c echo.Context) error {
 	var data userAgentKVRequest
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
@@ -34,26 +58,26 @@ func (svc *ContrailService) RESTUserAgentKV(c echo.Context) error {
 
 	switch op := data["operation"]; op {
 	case UserAgentKVOperationStore:
-		return svc.storeKeyValue(c, data["key"].(string), data["value"].(string))
+		return p.storeKeyValue(c, data["key"].(string), data["value"].(string))
 	case UserAgentKVOperationRetrieve:
 		if key, ok := data["key"].(string); ok && key != "" {
-			return svc.retrieveValue(c, key)
+			return p.retrieveValue(c, key)
 		}
 
 		if keys, ok := data["key"].([]string); ok && len(keys) != 0 {
-			return svc.retrieveValues(c, keys)
+			return p.retrieveValues(c, keys)
 		}
 
-		return svc.retrieveKVPs(c)
+		return p.retrieveKVPs(c)
 	case UserAgentKVOperationDelete:
-		return svc.deleteKey(c, data["key"].(string))
+		return p.deleteKey(c, data["key"].(string))
 	}
 
 	return nil
 }
 
-func (svc *ContrailService) storeKeyValue(c echo.Context, key string, value string) error {
-	if _, err := svc.StoreKeyValue(c.Request().Context(), &StoreKeyValueRequest{
+func (p *UserAgentKVPlugin) storeKeyValue(c echo.Context, key string, value string) error {
+	if _, err := p.StoreKeyValue(c.Request().Context(), &KeyValuePair{
 		Key:   key,
 		Value: value,
 	}); err != nil {
@@ -62,8 +86,8 @@ func (svc *ContrailService) storeKeyValue(c echo.Context, key string, value stri
 	return c.NoContent(http.StatusOK)
 }
 
-func (svc *ContrailService) retrieveValue(c echo.Context, key string) error {
-	kv, err := svc.RetrieveValues(
+func (p *UserAgentKVPlugin) retrieveValue(c echo.Context, key string) error {
+	kv, err := p.RetrieveValues(
 		c.Request().Context(),
 		&RetrieveValuesRequest{Keys: []string{key}},
 	)
@@ -78,24 +102,24 @@ func (svc *ContrailService) retrieveValue(c echo.Context, key string) error {
 	return c.JSON(http.StatusOK, map[string]string{"value": kv.Values[0]})
 }
 
-func (svc *ContrailService) retrieveValues(c echo.Context, keys []string) error {
-	response, err := svc.RetrieveValues(c.Request().Context(), &RetrieveValuesRequest{Keys: keys})
+func (p *UserAgentKVPlugin) retrieveValues(c echo.Context, keys []string) error {
+	response, err := p.RetrieveValues(c.Request().Context(), &RetrieveValuesRequest{Keys: keys})
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
 }
 
-func (svc *ContrailService) retrieveKVPs(c echo.Context) error {
-	response, err := svc.RetrieveKVPs(c.Request().Context(), &types.Empty{})
+func (p *UserAgentKVPlugin) retrieveKVPs(c echo.Context) error {
+	response, err := p.RetrieveKVPs(c.Request().Context(), &types.Empty{})
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
 }
 
-func (svc *ContrailService) deleteKey(c echo.Context, key string) error {
-	if _, err := svc.DeleteKey(c.Request().Context(), &DeleteKeyRequest{Key: key}); err != nil {
+func (p *UserAgentKVPlugin) deleteKey(c echo.Context, key string) error {
+	if _, err := p.DeleteKey(c.Request().Context(), &DeleteKeyRequest{Key: key}); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
@@ -154,21 +178,17 @@ func (data userAgentKVRequest) validateStoreOrDeleteOperation() error {
 
 // StoreKeyValue stores a value under given key.
 // Updates the value if key is already present.
-func (svc *ContrailService) StoreKeyValue(
-	ctx context.Context,
-	request *StoreKeyValueRequest,
-) (*types.Empty, error) {
-	return &types.Empty{}, svc.UserAgentKVService.StoreKeyValue(ctx, request.Key, request.Value)
+func (p *UserAgentKVPlugin) StoreKeyValue(ctx context.Context, request *KeyValuePair) (*types.Empty, error) {
+	return &types.Empty{}, p.UserAgentKVService.StoreKeyValue(ctx, request.Key, request.Value)
 }
 
 // RetrieveValues retrieves values corresponding to the given list of keys.
 // The values are returned in an arbitrary order. Keys not present in the store are ignored.
-func (svc *ContrailService) RetrieveValues(
-	ctx context.Context,
-	request *RetrieveValuesRequest,
+func (p *UserAgentKVPlugin) RetrieveValues(
+	ctx context.Context, request *RetrieveValuesRequest,
 ) (res *RetrieveValuesResponse, err error) {
 	var values []string
-	values, err = svc.UserAgentKVService.RetrieveValues(ctx, request.Keys)
+	values, err = p.UserAgentKVService.RetrieveValues(ctx, request.Keys)
 	if err == nil {
 		res = &RetrieveValuesResponse{Values: values}
 	}
@@ -177,20 +197,18 @@ func (svc *ContrailService) RetrieveValues(
 
 // DeleteKey deletes the value under the given key.
 // Nothing happens if the key is not present.
-func (svc *ContrailService) DeleteKey(
-	ctx context.Context,
-	request *DeleteKeyRequest,
+func (p *UserAgentKVPlugin) DeleteKey(
+	ctx context.Context, request *DeleteKeyRequest,
 ) (*types.Empty, error) {
-	return &types.Empty{}, svc.UserAgentKVService.DeleteKey(ctx, request.Key)
+	return &types.Empty{}, p.UserAgentKVService.DeleteKey(ctx, request.Key)
 }
 
 // RetrieveKVPs returns the entire store as a list of (key, value) pairs.
-func (svc *ContrailService) RetrieveKVPs(
-	ctx context.Context,
-	request *types.Empty,
+func (p *UserAgentKVPlugin) RetrieveKVPs(
+	ctx context.Context, request *types.Empty,
 ) (res *RetrieveKVPsResponse, err error) {
-	var kvps []*models.KeyValuePair
-	kvps, err = svc.UserAgentKVService.RetrieveKVPs(ctx)
+	var kvps []*KeyValuePair
+	kvps, err = p.UserAgentKVService.RetrieveKVPs(ctx)
 	if err == nil {
 		res = &RetrieveKVPsResponse{KeyValuePairs: kvps}
 	}

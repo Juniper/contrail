@@ -8,11 +8,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 var sgNoRuleFQName = []string{defaultDomainName, defaultProjectName, noRuleSecurityGroup}
@@ -223,7 +223,7 @@ func listSecurityGroups(
 	ctx context.Context, rp RequestParameters, filter Filters,
 ) ([]*models.SecurityGroup, error) {
 	var parentUUIDs []string
-	for _, uuid := range getFilterProjectIDS(ctx, rp, filter) {
+	for _, uuid := range getFilterProjectIDS(rp, filter) {
 		vncUUID, err := neutronIDToVncUUID(uuid)
 		parentUUIDs = append(parentUUIDs, vncUUID)
 		if err != nil {
@@ -234,7 +234,7 @@ func listSecurityGroups(
 	sgResponse, err := rp.ReadService.ListSecurityGroup(
 		ctx,
 		&services.ListSecurityGroupRequest{
-			Spec: &baseservices.ListSpec{
+			Spec: &asfservices.ListSpec{
 				ObjectUUIDs: filter[idKey],
 				ParentUUIDs: parentUUIDs,
 				Detail:      true,
@@ -245,7 +245,7 @@ func listSecurityGroups(
 	return sgResponse.GetSecurityGroups(), err
 }
 
-func getFilterProjectIDS(ctx context.Context, rp RequestParameters, f Filters) []string {
+func getFilterProjectIDS(rp RequestParameters, f Filters) []string {
 	if !rp.RequestContext.IsAdmin {
 		return []string{rp.RequestContext.Tenant}
 	}
