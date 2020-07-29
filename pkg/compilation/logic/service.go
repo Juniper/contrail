@@ -3,11 +3,12 @@ package logic
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // Service implementing Intent Compiler's type-specific logic.
@@ -15,7 +16,7 @@ type Service struct {
 	services.BaseService
 	// WriteService is used to create/update/delete lower-level resources
 	WriteService        services.WriteService
-	IntPoolAllocator    services.IntPoolAllocator
+	IntPoolAllocator    asfservices.IntPoolAllocator
 	ReadService         services.ReadService
 	cache               *intent.Cache
 	dependencyProcessor *dependencies.DependencyProcessor
@@ -25,7 +26,7 @@ type Service struct {
 func NewService(
 	apiClient services.WriteService,
 	readService services.ReadService,
-	allocator services.IntPoolAllocator,
+	allocator asfservices.IntPoolAllocator,
 	cache *intent.Cache,
 	dependencyProcessor *dependencies.DependencyProcessor,
 ) *Service {

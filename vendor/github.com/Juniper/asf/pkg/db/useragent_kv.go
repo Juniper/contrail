@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/pkg/errors"
-
-	"github.com/Juniper/asf/pkg/db/basedb"
-	"github.com/Juniper/asf/pkg/models"
 )
 
 // StoreKeyValue stores a value under given key.
 // Updates the value if key is already present.
-func (db *Service) StoreKeyValue(ctx context.Context, key string, value string,
+func (db *DB) StoreKeyValue(ctx context.Context, key string, value string,
 ) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		return db.storeKV(ctx, key, value)
@@ -22,7 +20,7 @@ func (db *Service) StoreKeyValue(ctx context.Context, key string, value string,
 
 // RetrieveValues retrieves values corresponding to the given list of keys.
 // The values are returned in an arbitrary order. Keys not present in the store are ignored.
-func (db *Service) RetrieveValues(ctx context.Context, keys []string) (vals []string, err error) {
+func (db *DB) RetrieveValues(ctx context.Context, keys []string) (vals []string, err error) {
 	if err = db.DoInTransaction(ctx, func(ctx context.Context) error {
 		vals, err = db.retrieveValues(ctx, keys)
 		return err
@@ -34,14 +32,14 @@ func (db *Service) RetrieveValues(ctx context.Context, keys []string) (vals []st
 
 // DeleteKey deletes the value under the given key.
 // Nothing happens if the key is not present.
-func (db *Service) DeleteKey(ctx context.Context, key string) error {
+func (db *DB) DeleteKey(ctx context.Context, key string) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		return db.deleteKey(ctx, key)
 	})
 }
 
 // RetrieveKVPs returns the entire store as a list of (key, value) pairs.
-func (db *Service) RetrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error) {
+func (db *DB) RetrieveKVPs(ctx context.Context) (kvps []*services.KeyValuePair, err error) {
 	if err = db.DoInTransaction(ctx, func(ctx context.Context) error {
 		kvps, err = db.retrieveKVPs(ctx)
 		return err
@@ -51,7 +49,7 @@ func (db *Service) RetrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePai
 	return kvps, nil
 }
 
-func (db *Service) storeKV(ctx context.Context, key string, value string) error {
+func (db *DB) storeKV(ctx context.Context, key string, value string) error {
 	d := db.Dialect
 
 	// Try to update first. Insert if the key is not present.
@@ -62,18 +60,18 @@ func (db *Service) storeKV(ctx context.Context, key string, value string) error 
 		"insert into kv_store (%s) select %s where not exists (select 1 from kv_store where %s = %s)",
 		d.QuoteSep("key", "value"), d.Values(d.Placeholder(1), d.Placeholder(2)), d.Quote("key"), d.Placeholder(3))
 
-	tx := basedb.GetTransaction(ctx)
+	tx := GetTransaction(ctx)
 	if _, err := tx.ExecContext(ctx, queryUpdate, value, key); err != nil {
-		return errors.Wrap(basedb.FormatDBError(err), "failed to update KV")
+		return errors.Wrap(FormatDBError(err), "failed to update KV")
 	}
 	if _, err := tx.ExecContext(ctx, queryInsert, key, value, key); err != nil {
-		return errors.Wrap(basedb.FormatDBError(err), "failed to insert KV")
+		return errors.Wrap(FormatDBError(err), "failed to insert KV")
 	}
 
 	return nil
 }
 
-func (db *Service) retrieveValues(ctx context.Context, keys []string) (vals []string, err error) {
+func (db *DB) retrieveValues(ctx context.Context, keys []string) (vals []string, err error) {
 	d := db.Dialect
 
 	var or []string
@@ -88,10 +86,10 @@ func (db *Service) retrieveValues(ctx context.Context, keys []string) (vals []st
 		keyInterfaces = append(keyInterfaces, k)
 	}
 
-	tx := basedb.GetTransaction(ctx)
+	tx := GetTransaction(ctx)
 	rows, err := tx.QueryContext(ctx, query, keyInterfaces...)
 	if err != nil {
-		return nil, errors.Wrap(basedb.FormatDBError(err), "failed to get values")
+		return nil, errors.Wrap(FormatDBError(err), "failed to get values")
 	}
 
 	vals = []string{}
@@ -99,7 +97,7 @@ func (db *Service) retrieveValues(ctx context.Context, keys []string) (vals []st
 		var val string
 		err = rows.Scan(&val)
 		if err != nil {
-			return nil, errors.Wrap(basedb.FormatDBError(err), "failed to retrieve value")
+			return nil, errors.Wrap(FormatDBError(err), "failed to retrieve value")
 		}
 		vals = append(vals, val)
 	}
@@ -107,39 +105,39 @@ func (db *Service) retrieveValues(ctx context.Context, keys []string) (vals []st
 	return vals, nil
 }
 
-func (db *Service) deleteKey(ctx context.Context, key string) error {
+func (db *DB) deleteKey(ctx context.Context, key string) error {
 	d := db.Dialect
 	query := fmt.Sprintf(
 		"delete from kv_store where %s = %s",
 		d.Quote("key"), d.Placeholder(1))
 
-	tx := basedb.GetTransaction(ctx)
+	tx := GetTransaction(ctx)
 	_, err := tx.ExecContext(ctx, query, key)
 	if err != nil {
-		return errors.Wrap(basedb.FormatDBError(err), "failed to delete KV")
+		return errors.Wrap(FormatDBError(err), "failed to delete KV")
 	}
 
 	return nil
 }
 
-func (db *Service) retrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error) {
+func (db *DB) retrieveKVPs(ctx context.Context) (kvps []*services.KeyValuePair, err error) {
 	d := db.Dialect
 	query := fmt.Sprintf(
 		"select %s from kv_store",
 		d.QuoteSep("key", "value"))
 
-	tx := basedb.GetTransaction(ctx)
+	tx := GetTransaction(ctx)
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
-		return nil, errors.Wrap(basedb.FormatDBError(err), "failed to get store")
+		return nil, errors.Wrap(FormatDBError(err), "failed to get store")
 	}
 
-	kvps = []*models.KeyValuePair{}
+	kvps = []*services.KeyValuePair{}
 	for rows.Next() {
-		var kvp models.KeyValuePair
+		var kvp services.KeyValuePair
 		err = rows.Scan(&kvp.Key, &kvp.Value)
 		if err != nil {
-			return nil, errors.Wrap(basedb.FormatDBError(err), "failed to retrieve key value pair")
+			return nil, errors.Wrap(FormatDBError(err), "failed to retrieve key value pair")
 		}
 		kvps = append(kvps, &kvp)
 	}

@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/Juniper/asf/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/models"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func TestNewEvent(t *testing.T) {
@@ -48,7 +49,7 @@ func TestNewEvent(t *testing.T) {
 			name: "create event with Create operation",
 			args: args{
 				option: EventOption{
-					Operation: OperationCreate,
+					Operation: services.OperationCreate,
 					Kind:      models.KindProject,
 					Data: map[string]interface{}{
 						"name": "hoge",
@@ -69,7 +70,7 @@ func TestNewEvent(t *testing.T) {
 			name: "create event with Update operation",
 			args: args{
 				option: EventOption{
-					Operation: OperationUpdate,
+					Operation: services.OperationUpdate,
 					Kind:      models.KindProject,
 					UUID:      "hoge",
 					FieldMask: &types.FieldMask{
@@ -98,7 +99,7 @@ func TestNewEvent(t *testing.T) {
 			name: "create event with Delete operation",
 			args: args{
 				option: EventOption{
-					Operation: OperationDelete,
+					Operation: services.OperationDelete,
 					Kind:      models.KindProject,
 					UUID:      "hoge",
 				},
@@ -145,7 +146,7 @@ func TestEvent_ToMap(t *testing.T) {
 			},
 			want: map[string]interface{}{
 				"kind":      models.KindProject,
-				"operation": OperationCreate,
+				"operation": services.OperationCreate,
 				"data": &Project{
 					UUID: "hoge",
 				},
@@ -162,7 +163,7 @@ func TestEvent_ToMap(t *testing.T) {
 			},
 			want: map[string]interface{}{
 				"kind":      models.KindProject,
-				"operation": OperationUpdate,
+				"operation": services.OperationUpdate,
 				"data": &Project{
 					UUID: "hoge",
 				},
@@ -177,7 +178,7 @@ func TestEvent_ToMap(t *testing.T) {
 			},
 			want: map[string]interface{}{
 				"kind":      models.KindProject,
-				"operation": OperationDelete,
+				"operation": services.OperationDelete,
 				"data": map[string]interface{}{
 					"uuid": "hoge",
 				},
@@ -385,7 +386,7 @@ func TestEvent_ApplyMap(t *testing.T) {
 				"data": map[string]interface{}{
 					"uuid": "hoge",
 				},
-				"operation": OperationCreate,
+				"operation": services.OperationCreate,
 			},
 			expected: Event{
 				Request: &Event_CreateProjectRequest{
@@ -402,7 +403,7 @@ func TestEvent_ApplyMap(t *testing.T) {
 				"data": map[string]interface{}{
 					"uuid": "hoge",
 				},
-				"operation": OperationUpdate,
+				"operation": services.OperationUpdate,
 			},
 			expected: Event{
 				Request: &Event_UpdateProjectRequest{
@@ -419,7 +420,7 @@ func TestEvent_ApplyMap(t *testing.T) {
 				"data": map[string]interface{}{
 					"uuid": "hoge",
 				},
-				"operation": OperationDelete,
+				"operation": services.OperationDelete,
 			},
 			expected: Event{
 				Request: &Event_DeleteProjectRequest{

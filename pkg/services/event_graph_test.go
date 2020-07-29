@@ -3,9 +3,9 @@ package services
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/stretchr/testify/assert"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
 )
@@ -146,19 +146,19 @@ func TestSort(t *testing.T) {
 
 func TestOperationKind(t *testing.T) {
 	createEvent, err := NewEvent(EventOption{
-		Operation: OperationCreate,
+		Operation: services.OperationCreate,
 		Kind:      models.KindProject,
 	})
 	assert.NoError(t, err)
 
 	updateEvent, err := NewEvent(EventOption{
-		Operation: OperationUpdate,
+		Operation: services.OperationUpdate,
 		Kind:      models.KindProject,
 	})
 	assert.NoError(t, err)
 
 	deleteEvent, err := NewEvent(EventOption{
-		Operation: OperationDelete,
+		Operation: services.OperationDelete,
 		Kind:      models.KindProject,
 	})
 	assert.NoError(t, err)
@@ -170,7 +170,7 @@ func TestOperationKind(t *testing.T) {
 	}{
 		{
 			name:     "Multiple create events",
-			expected: OperationCreate,
+			expected: services.OperationCreate,
 			events: &EventList{
 				Events: []*Event{
 					createEvent,
@@ -181,7 +181,7 @@ func TestOperationKind(t *testing.T) {
 		},
 		{
 			name:     "Multiple update events",
-			expected: OperationUpdate,
+			expected: services.OperationUpdate,
 			events: &EventList{
 				Events: []*Event{
 					updateEvent,
@@ -192,7 +192,7 @@ func TestOperationKind(t *testing.T) {
 		},
 		{
 			name:     "Multiple delete events",
-			expected: OperationDelete,
+			expected: services.OperationDelete,
 			events: &EventList{
 				Events: []*Event{
 					deleteEvent,

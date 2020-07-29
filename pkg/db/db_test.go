@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/asf/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/proto"
@@ -12,12 +11,14 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	asfdb "github.com/Juniper/asf/pkg/db"
 )
 
 func TestFieldMaskPaths(t *testing.T) {
 	tests := []struct {
 		name               string
-		structure          *basedb.Structure
+		structure          *asfdb.Structure
 		path               string
 		expectedChildPaths []string
 		expectedLength     int

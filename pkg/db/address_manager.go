@@ -4,15 +4,16 @@ import (
 	"context"
 	"net"
 
-	"github.com/apparentlymart/go-cidr/cidr"
-	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+	"github.com/apparentlymart/go-cidr/cidr"
+	"github.com/pkg/errors"
+
+	asfdb "github.com/Juniper/asf/pkg/db"
+	uuid "github.com/satori/go.uuid"
 )
 
 // CreateIpamSubnet creates IPAM subnet
@@ -39,8 +40,8 @@ func (db *Service) CreateIpamSubnet(
 	// TODO: check and reserve dns nameservers
 	// TODO: check allocation units
 
-	_, err = db.deleteIPPools(ctx, &ipPool{
-		key: subnetUUID,
+	_, err = db.DeleteIPPools(ctx, &asfdb.IPPool{
+		Key: subnetUUID,
 	})
 	if err != nil {
 		return "", err
@@ -52,7 +53,7 @@ func (db *Service) CreateIpamSubnet(
 	}
 
 	for _, ipPool := range ipPools {
-		err = db.createIPPool(ctx, ipPool)
+		err = db.CreateIPPool(ctx, ipPool)
 		if err != nil {
 			return "", err
 		}
@@ -115,8 +116,8 @@ func (db *Service) CheckIfIpamSubnetExists(ctx context.Context, subnetUUID strin
 		return false, nil
 	}
 
-	res, err := db.getIPPools(ctx, &ipPool{
-		key: subnetUUID,
+	res, err := db.GetIPPools(ctx, &asfdb.IPPool{
+		Key: subnetUUID,
 	})
 
 	return len(res) != 0, err
@@ -128,8 +129,8 @@ func (db *Service) DeleteIpamSubnet(ctx context.Context, request *ipam.DeleteIpa
 		return errors.Errorf("empty subnet uuid in DeleteIpamSubnet")
 	}
 
-	deletedCount, err := db.deleteIPPools(ctx, &ipPool{
-		key: request.SubnetUUID,
+	deletedCount, err := db.DeleteIPPools(ctx, &asfdb.IPPool{
+		Key: request.SubnetUUID,
 	})
 
 	if err != nil {
@@ -192,7 +193,7 @@ func (db *Service) DeallocateIP(ctx context.Context, request *ipam.DeallocateIPR
 		if !hit {
 			continue
 		}
-		return db.deallocateIP(ctx, subnet.SubnetUUID, net.ParseIP(request.IPAddress))
+		return db.DB.DeallocateIP(ctx, subnet.SubnetUUID, net.ParseIP(request.IPAddress))
 	}
 
 	return errors.Errorf("could not deallocate address %s from any of available subnets in virtual network %v",
@@ -242,8 +243,8 @@ func (db *Service) IsIPAllocated(
 			continue
 		}
 		ip := net.ParseIP(request.IPAddress)
-		reqPool := ipPool{subnet.SubnetUUID, ip, cidr.Inc(ip)}
-		res, err := db.getIPPools(ctx, &reqPool)
+		reqPool := asfdb.IPPool{Key: subnet.SubnetUUID, Start: ip, End: cidr.Inc(ip)}
+		res, err := db.GetIPPools(ctx, &reqPool)
 		if err != nil {
 			return false, err
 		}
@@ -288,14 +289,14 @@ func (db *Service) allocateIPForSubnetUUID(
 	ctx context.Context, subnetUUID string, ipRequested string,
 ) (address string, err error) {
 	if ipRequested != "" {
-		err = db.setIP(ctx, subnetUUID, net.ParseIP(ipRequested))
+		err = db.SetIP(ctx, subnetUUID, net.ParseIP(ipRequested))
 		if err != nil {
 			return "", err
 		}
 		return ipRequested, nil
 	}
 
-	ip, err := db.allocateIP(ctx, subnetUUID)
+	ip, err := db.DB.AllocateIP(ctx, subnetUUID)
 	if err != nil {
 		return "", err
 	}
@@ -316,25 +317,25 @@ func (db *Service) allocateDefaultGatewayForSubnetUUID(
 	}
 
 	if len(subnet.GetAllocationPools()) == 0 {
-		return db.setIP(ctx, subnetUUID, ip)
+		return db.SetIP(ctx, subnetUUID, ip)
 	}
 
 	if contains, err := subnet.ContainsWithinAllocationPools(ip); err != nil {
 		return nil
 	} else if contains {
-		return db.setIP(ctx, subnetUUID, ip)
+		return db.SetIP(ctx, subnetUUID, ip)
 	}
 
 	return nil
 }
 
-func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ipPool, error) {
-	var ipPools []*ipPool
+func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*asfdb.IPPool, error) {
+	var ipPools []*asfdb.IPPool
 	for _, pool := range ipamSubnet.GetAllocationPools() {
-		ipPools = append(ipPools, &ipPool{
-			key:   subnetUUID,
-			start: net.ParseIP(pool.Start),
-			end:   net.ParseIP(pool.End),
+		ipPools = append(ipPools, &asfdb.IPPool{
+			Key:   subnetUUID,
+			Start: net.ParseIP(pool.Start),
+			End:   net.ParseIP(pool.End),
 		})
 	}
 
@@ -344,11 +345,11 @@ func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ip
 		if err != nil {
 			return nil, err
 		}
-		ipPool := &ipPool{
-			key: subnetUUID,
+		ipPool := &asfdb.IPPool{
+			Key: subnetUUID,
 		}
-		ipPool.start, ipPool.end = cidr.AddressRange(net)
-		ipPool.start = cidr.Inc(ipPool.start)
+		ipPool.Start, ipPool.End = cidr.AddressRange(net)
+		ipPool.Start = cidr.Inc(ipPool.Start)
 		ipPools = append(ipPools, ipPool)
 	}
 

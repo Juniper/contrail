@@ -3,12 +3,12 @@ package types
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 //CreatePhysicalInterface does pre-check for create physical_interface
@@ -210,9 +210,9 @@ func (sv *ContrailTypeLogicService) listPhysicalInterfacesByESI(
 	esi string,
 ) ([]*models.PhysicalInterface, error) {
 	response, err := sv.ReadService.ListPhysicalInterface(ctx, &services.ListPhysicalInterfaceRequest{
-		Spec: &baseservices.ListSpec{
+		Spec: &asfservices.ListSpec{
 			Detail: true,
-			Filters: []*baseservices.Filter{{
+			Filters: []*asfservices.Filter{{
 				Key:    models.PhysicalInterfaceFieldEthernetSegmentIdentifier,
 				Values: []string{esi},
 			}},
