@@ -10,18 +10,6 @@ parents:
 plural: nodes
 prefix: /
 references:
-  credential:
-    operations: "CRUD"
-    description: "Reference to SSH credential object."
-    presence: "optional"
-  cloud_security_group:
-    operations: "CRUD"
-    description: "Reference to security-group, when node belongs to public cloud"
-    presence: "optional"
-  cloud_private_subnet:
-    operations: "CRUD"
-    description: "Reference to private subnet of cloud, when node belongs to public cloud"
-    presence: "optional"
   node_profile:
     description: Reference to matching node-profile object for this node
     operations: CRUD
@@ -68,11 +56,6 @@ schema:
       operations: CRUD
       presence: optional
       type: string
-    type:
-      $ref: types.json#/definitions/NodeType
-      description: Type of machine resource (deprecated)
-      operations: CRUD
-      presence: optional
     node_type:
       $ref: types.json#/definitions/NodeType
       description: Type of machine resource

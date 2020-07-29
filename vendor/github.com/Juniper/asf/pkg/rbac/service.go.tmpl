@@ -1,0 +1,67 @@
+package rbac
+
+import (
+	"context"
+
+	"github.com/Juniper/asf/pkg/rbac"
+
+	models "{{ modelsImportPath }}"
+	services "{{ servicesImportPath }}"
+)
+
+// RBACService checks if client has permissions to perform API request.
+type RBACService struct {
+	services.BaseService
+	rbac.Guard
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request,
+) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
+	if err := r.CheckTypePermissions(ctx, models.Kind{{ schema.JSONSchema.GoName }}, rbac.ActionCreate); err != nil {
+		return nil, err
+	}
+	return r.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request,
+) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
+	model := request.{{ schema.JSONSchema.GoName }}
+
+	if err := r.CheckObjectPermissions(ctx, models.Kind{{ schema.JSONSchema.GoName }}, model.GetUUID(), rbac.ActionUpdate); err != nil {
+		return nil, err
+	}
+	return r.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request,
+) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	if err := r.CheckObjectPermissions(ctx, models.Kind{{ schema.JSONSchema.GoName }}, request.GetID(), rbac.ActionDelete); err != nil {
+		return nil, err
+	}
+	return r.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request,
+) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
+	if err := r.CheckObjectPermissions(ctx, models.Kind{{ schema.JSONSchema.GoName }}, request.GetID(), rbac.ActionRead); err != nil {
+		return nil, err
+	}
+	return r.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request,
+) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
+	if err := r.CheckTypePermissions(ctx, models.Kind{{ schema.JSONSchema.GoName }}, rbac.ActionRead); err != nil {
+		return nil, err
+	}
+	return r.BaseService.List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% endif %}{% endfor %}
+

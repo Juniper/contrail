@@ -93,6 +93,24 @@ func NewFQNameReference(fqname []string, kind string) Reference {
 	return &genericReference{to: fqname, kind: kind}
 }
 
+// NewReference creates new generic reference with both uuid and fq_name set.
+// Note that in most cases using NewUUIDReference or NewFQNameRerence is suffuicent (and thus preferred).
+func NewReference(uuid string, fqname []string, kind string) Reference {
+	return &genericReference{uuid: uuid, to: fqname, kind: kind}
+}
+
+// ExtractParent gets object's parent in ref format.
+func ExtractParent(o Object) Reference {
+	parentType := o.GetParentType()
+	if parentUUID := o.GetParentUUID(); parentUUID != "" {
+		return NewUUIDReference(parentUUID, parentType)
+	}
+	if parentFQName := ParentFQName(o.GetFQName()); len(parentFQName) != 0 {
+		return NewFQNameReference(parentFQName, parentType)
+	}
+	return nil
+}
+
 type genericReference struct {
 	uuid string
 	to   []string

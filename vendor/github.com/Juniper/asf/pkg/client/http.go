@@ -3,20 +3,19 @@ package client
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/Juniper/asf/pkg/httputil"
 	"github.com/Juniper/asf/pkg/keystone"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
 const (
@@ -68,7 +67,7 @@ type HTTP struct {
 
 // NewHTTP makes API Server HTTP client.
 func NewHTTP(c *HTTPConfig) *HTTP {
-	hc := &http.Client{Transport: transport(c.Endpoint, c.Insecure)}
+	hc := &http.Client{Transport: httputil.DefaultTransport(c.Insecure)}
 	return &HTTP{
 		httpClient: hc,
 		Keystone: &keystone.Client{
@@ -82,29 +81,6 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 // NewHTTPFromConfig makes API Server HTTP client with viper config
 func NewHTTPFromConfig() *HTTP {
 	return NewHTTP(LoadHTTPConfig())
-}
-
-func transport(endpoint string, insecure bool) *http.Transport {
-	t := cleanhttp.DefaultPooledTransport()
-
-	p, err := urlScheme(endpoint)
-	if err != nil {
-		logrus.WithField("endpoint", endpoint).Error("Invalid API Server endpoint - ignoring")
-	}
-	if p == "https" {
-		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-	}
-
-	return t
-}
-
-func urlScheme(endpoint string) (string, error) {
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return "", err
-	}
-
-	return u.Scheme, nil
 }
 
 // Login refreshes authentication token.
@@ -176,6 +152,113 @@ func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*ht
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	return h.Do(ctx, http.MethodDelete, path, nil, nil, output, []int{http.StatusOK, http.StatusNotFound})
+}
+
+// RefUpdate sends a create/update API request
+func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
+	return h.Do(ctx, http.MethodPost, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
+}
+
+// CreateIntPool sends a create int pool request to remote int-pools.
+func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodPost,
+		"/"+services.IntPoolsPath,
+		nil,
+		&services.CreateIntPoolRequest{
+			Pool:  pool,
+			Start: start,
+			End:   end,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error creating int pool in int-pools via HTTP")
+}
+
+// GetIntOwner sends a get int pool owner request to remote int-owner.
+func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (string, error) {
+	q := make(url.Values)
+	q.Set("pool", pool)
+	q.Set("value", strconv.FormatInt(value, 10))
+	var output struct {
+		Owner string `json:"owner"`
+	}
+
+	_, err := h.Do(ctx, http.MethodGet, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
+	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
+}
+
+// DeleteIntPool sends a delete int pool request to remote int-pools.
+func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodDelete,
+		"/"+services.IntPoolsPath,
+		nil,
+		&services.DeleteIntPoolRequest{
+			Pool: pool,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error deleting int pool in int-pools via HTTP")
+}
+
+// AllocateInt sends an allocate int request to remote int-pool.
+func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, error) {
+	var output struct {
+		Value int64 `json:"value"`
+	}
+	_, err := h.Do(
+		ctx,
+		http.MethodPost,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Owner: owner,
+		},
+		&output,
+		[]int{http.StatusOK},
+	)
+	return output.Value, errors.Wrap(err, "error allocating int in int-pool via HTTP")
+}
+
+// SetInt sends a set int request to remote int-pool.
+func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodPost,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Value: &value,
+			Owner: owner,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error setting int in int-pool via HTTP")
+}
+
+// DeallocateInt sends a deallocate int request to remote int-pool.
+func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) error {
+	_, err := h.Do(
+		ctx,
+		http.MethodDelete,
+		"/"+services.IntPoolPath,
+		nil,
+		&services.IntPoolAllocationBody{
+			Pool:  pool,
+			Value: &value,
+		},
+		&struct{}{},
+		[]int{http.StatusOK},
+	)
+	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
 }
 
 // Do issues an API request.

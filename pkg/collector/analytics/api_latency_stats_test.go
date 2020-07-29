@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/services"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 func TestVncAPILatencyStatsLog(t *testing.T) {
@@ -36,7 +36,7 @@ func TestVncAPILatencyStatsLog(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			messageBuilder := VncAPILatencyStatsLog(
-				services.WithRequestID(context.Background(), tt.requestID),
+				asfservices.WithRequestID(context.Background(), tt.requestID),
 				tt.operation, tt.application, tt.responseTime)
 			assert.NotNil(t, messageBuilder)
 			message := messageBuilder.Build()

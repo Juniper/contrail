@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
+	asfdb "github.com/Juniper/asf/pkg/db"
 	asfmodels "github.com/Juniper/asf/pkg/models"
 )
 
@@ -32,7 +32,7 @@ func (sv *ContrailTypeLogicService) CreateTagType(
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			id, err := sv.IntPoolAllocator.AllocateInt(ctx, tagTypeIDPoolKey, db.EmptyIntOwner)
+			id, err := sv.IntPoolAllocator.AllocateInt(ctx, tagTypeIDPoolKey, asfdb.EmptyIntOwner)
 			if err != nil {
 				return err
 			}
