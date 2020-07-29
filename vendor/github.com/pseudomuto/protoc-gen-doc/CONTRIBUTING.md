@@ -7,9 +7,10 @@ First off, glad you're here and want to contribute! :heart:
 In order to work on this project, you'll need to install a few things:
 
 1. A recent version of [Go](https://golang.org/doc/install)
-1. [Glide](https://github.com/Masterminds/glide#install) - go package manager
 1. [protoc](https://github.com/google/protobuf#protocol-compiler-installation) - The protobuf compiler
 1. [Docker](https://www.docker.com/) (only required to if you need/want to build the docker container via `make docker`)
+
+Once those are installed, running `make setup` should get you the rest of the way.
 
 When writing tests, be sure that the package in the test file is suffixed with `_test`. Eg. `protoc_gen_doc_test`. This
 ensures that you'll only be testing the public interface.
@@ -68,9 +69,7 @@ Look through the new (since the last release) PRs that are included in this rele
 * Run `make docker_test` to build the image and generate the examples. There should be no diff after this.
 * Update the version in `version.go`
 * Update CHANGELOG.md. Be sure to include links to PRs and highlight new features, bug fixes, and any breaking changes.
-* Make the commit `git add CHANGELOG.md version.go && git commit -am "Bump version to <NEW_VERSION>"`
-* Tag this SHA `git tag -a v<NEW_VERSION> -m "Version <NEW_VERSION>"`
-* Finally, push to GitHub `git push && git push --tags`
+* Run `make release`
 
 Now that the tag is on GitHub, we have a couple more things to do:
 

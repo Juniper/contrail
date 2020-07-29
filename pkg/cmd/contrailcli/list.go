@@ -5,7 +5,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/client"
 	"github.com/Juniper/asf/pkg/logutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/services"
 	"github.com/spf13/cobra"
 )
 
@@ -31,21 +31,21 @@ func init() {
 	// Block of list flags. Please keep synchronized with doc/rest_api.md
 	listCmd.Flags().StringVarP(
 		&filters,
-		baseservices.FiltersKey,
+		services.FiltersKey,
 		"f",
 		"",
 		"Comma-separated filter parameters (e.g. 'check==a,check==b,name==Bob'; default '')",
 	)
 	listCmd.Flags().Int64VarP(
 		&pageLimit,
-		baseservices.PageLimitKey,
+		services.PageLimitKey,
 		"l",
 		100,
 		"Limit number of returned resources (e.g. '50'; default '100')",
 	)
 	listCmd.Flags().StringVarP(
 		&pageMarker,
-		baseservices.PageMarkerKey,
+		services.PageMarkerKey,
 		"m",
 		"",
 		"Return only the resources with UUIDs lexically greater than the given value "+
@@ -53,34 +53,34 @@ func init() {
 	)
 	listCmd.Flags().BoolVarP(
 		&detail,
-		baseservices.DetailKey,
+		services.DetailKey,
 		"d",
 		false,
 		"Detailed response data if 'true' provided (default 'false')",
 	)
 	listCmd.Flags().BoolVar(
 		&count,
-		baseservices.CountKey,
+		services.CountKey,
 		false,
 		"Return response with only resource count if 'true' provided (default 'false')",
 	)
 	listCmd.Flags().BoolVarP(
 		&shared,
-		baseservices.SharedKey,
+		services.SharedKey,
 		"s",
 		false,
 		"Include shared object in response if 'true' provided (default 'false')",
 	)
 	listCmd.Flags().BoolVarP(
 		&excludeHRefs,
-		baseservices.ExcludeHRefsKey,
+		services.ExcludeHRefsKey,
 		"e",
 		false,
 		"Exclude hrefs from response if 'true' provided (default 'false') [implementation broken]",
 	)
 	listCmd.Flags().StringVarP(
 		&parentFQName,
-		baseservices.ParentFQNameKey,
+		services.ParentFQNameKey,
 		"n",
 		"",
 		"Parent's fully-qualified name as colon-separated list of names "+
@@ -88,14 +88,14 @@ func init() {
 	)
 	listCmd.Flags().StringVarP(
 		&parentType,
-		baseservices.ParentTypeKey,
+		services.ParentTypeKey,
 		"t",
 		"",
 		"Parent's type (e.g. 'project'; default '')",
 	)
 	listCmd.Flags().StringVarP(
 		&parentUUIDs,
-		baseservices.ParentUUIDsKey,
+		services.ParentUUIDsKey,
 		"u",
 		"",
 		"Comma-separated list of parents' UUIDs "+
@@ -103,7 +103,7 @@ func init() {
 	)
 	listCmd.Flags().StringVar(
 		&backrefUUIDs,
-		baseservices.BackrefUUIDsKey,
+		services.BackrefUUIDsKey,
 		"",
 		"Comma-separated list of back references' UUIDs "+
 			"(e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '')",
@@ -111,14 +111,14 @@ func init() {
 	// TODO(Daniel): handle RefUUIDs
 	listCmd.Flags().StringVar(
 		&objectUUIDs,
-		baseservices.ObjectUUIDsKey,
+		services.ObjectUUIDsKey,
 		"",
 		"Comma-separated list of objects' UUIDs "+
 			"(e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '')",
 	)
 	listCmd.Flags().StringVar(
 		&fields,
-		baseservices.FieldsKey,
+		services.FieldsKey,
 		"",
 		"Comma-separated list of object fields returned in response "+
 			"(e.g. 'name,uuid'; default '' does not limit the output)",
