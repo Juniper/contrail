@@ -3,15 +3,14 @@ package types
 import (
 	"context"
 
-	protobuf "github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
 
+	asfdb "github.com/Juniper/asf/pkg/db"
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	protobuf "github.com/gogo/protobuf/types"
 )
 
 // CreateSecurityGroup performs type specific validation and setup for creating security groups.
@@ -109,7 +108,7 @@ func (sv *ContrailTypeLogicService) DeleteSecurityGroup(
 }
 
 func (sv *ContrailTypeLogicService) allocateSecurityGroupID(ctx context.Context) (int64, error) {
-	id, err := sv.IntPoolAllocator.AllocateInt(ctx, SecurityGroupIDPoolKey, db.EmptyIntOwner)
+	id, err := sv.IntPoolAllocator.AllocateInt(ctx, SecurityGroupIDPoolKey, asfdb.EmptyIntOwner)
 	if err != nil {
 		return 0, err
 	}

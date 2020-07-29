@@ -5,11 +5,11 @@ import (
 	"strconv"
 
 	"github.com/Juniper/asf/pkg/errutil"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // CreateForwardingClass performs type specific validation.
@@ -70,8 +70,8 @@ func (sv *ContrailTypeLogicService) UpdateForwardingClass(
 
 func checkForwardingClassID(ctx context.Context, sv *ContrailTypeLogicService, fcID int64) error {
 	listForwardingClassResponse, err := sv.ReadService.ListForwardingClass(ctx, &services.ListForwardingClassRequest{
-		Spec: &baseservices.ListSpec{
-			Filters: []*baseservices.Filter{
+		Spec: &asfservices.ListSpec{
+			Filters: []*asfservices.Filter{
 				{
 					Key:    models.ForwardingClassFieldForwardingClassID,
 					Values: []string{strconv.FormatInt(fcID, 10)},

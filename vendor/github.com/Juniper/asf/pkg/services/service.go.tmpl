@@ -3,96 +3,60 @@ package services
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"net/http"
 
-	"github.com/pkg/errors"
-	"github.com/gogo/protobuf/types"
 	"github.com/Juniper/asf/pkg/auth"
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
-	"github.com/Juniper/asf/pkg/services/baseservices"
+	"github.com/Juniper/asf/pkg/services"
+	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	asfmodels "github.com/Juniper/asf/pkg/models"
-	models "{{ modelsImportPath }}"
 	uuid "github.com/satori/go.uuid"
+	models "{{ modelsImportPath }}"
 )
 
 // TODO(dfurman): move non-template code out of template
 // TODO(dfurman): write tests
 
-type withHref interface {
-	Kind() string
-	GetUUID() string
-	SetHref(string)
-}
 
-func applyHref(r asfmodels.Object, req *http.Request) error {
-	if err := applyHrefOnResource(r, req); err != nil {
-		return err
+// isVisibleObject verifies that the object is visible to a user without administrator rights
+func isVisibleObject(ctx context.Context, isUserVisible bool) error {
+	if ctx == nil {
+		logrus.Errorf("user unauthenticated: context is nil")
+		return nil
 	}
-	for _, ref := range r.GetReferences() {
-		if err := applyHrefOnReference(r, newRefToHrefAdapter(ref), req); err != nil {
-			return err
-		}
+	auth := auth.GetIdentity(ctx)
+	if auth == nil {
+		logrus.Errorf("user unauthenticated: non authorized context")
+		return nil
 	}
-	for _, backRef := range r.GetBackReferences() {
-		if err := applyHrefOnReference(r, backRef, req); err != nil {
-			return err
-		}
-	}
-	for _, child := range r.GetChildren() {
-		if err := applyHrefOnReference(r, child, req); err != nil {
-			return err
-		}
+	if !isUserVisible && !auth.IsAdmin() {
+		return errors.Errorf("this object is not visible by users: %s", auth.UserID())
 	}
 	return nil
 }
 
-func applyHrefOnResource(o withHref, req *http.Request) error {
-	objURL, err := url.Parse(GetRequestSchema(req) + req.Host + "/" + o.Kind() + "/")
+func getStoredIDPerms(
+	ctx context.Context, service *ContrailService, typeName, uuid string,
+) (*models.IdPermsType, error) {
+	base, err := getObject(ctx, service.DBService, typeName, uuid,
+		[]string{models.VirtualNetworkFieldIDPerms})
 	if err != nil {
-		return errors.Wrap(err, "failed to parse connection url")
+		return nil, err
 	}
-	uuidURL, err := url.Parse(o.GetUUID())
-	if err != nil {
-		return errors.Wrap(err, "failed to parse uuid")
+	type baseIDPermser interface {
+		GetIDPerms() *models.IdPermsType
 	}
-	o.SetHref(objURL.ResolveReference(uuidURL).String())
-	return nil
-}
-
-func applyHrefOnReference(from, to withHref, req *http.Request) error {
-	refURL, err := url.Parse(GetRequestSchema(req) + req.Host + "/" + to.Kind() + "/")
-	if err != nil {
-		return errors.Wrapf(err, "failed to resolve '%s-%s' reference url", from.Kind(), to.Kind())
+	m, ok := base.(baseIDPermser)
+	if !ok {
+		return nil, errutil.ErrorInternalf("method IDPerms() not found")
 	}
-	uuidURL, err := url.Parse(to.GetUUID())
-	if err != nil {
-		return errors.Wrapf(err, "failed to parse '%s-%s' reference url with uuid '%s'",
-			from.Kind(), to.Kind(), to.GetUUID())
-	}
-	to.SetHref(refURL.ResolveReference(uuidURL).String())
-	return nil
+	return m.GetIDPerms(), nil
 }
-
-type refToHrefAdapter struct {
-	asfmodels.Reference
-}
-
-func newRefToHrefAdapter(r asfmodels.Reference) *refToHrefAdapter {
-	return &refToHrefAdapter{
-		Reference: r,
-	}
-}
-
-func (r *refToHrefAdapter) Kind() string {
-	return r.GetToKind()
-}
-
-const xRequestIDHeader = "X-Request-Id"
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
@@ -106,13 +70,12 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 	if err := c.Bind(requestData); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
 	}
-	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
+	ctx := services.ContextFromRequest(c.Request())
 	response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
-	if err = applyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
+	if err := services.ApplyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
 		logrus.WithError(err).Error("Failed to apply href")
 	}
 	return c.JSON(http.StatusOK, response)
@@ -127,7 +90,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 		return nil, errutil.ErrorBadRequest("create body is empty")
 	}
 
-	ctx = WithRequestID(ctx, "")
+	ctx = services.WithGeneratedRequestID(ctx)
 	authCTX := auth.GetIdentity(ctx)
 	if authCTX == nil {
 		return nil, errutil.ErrorUnauthenticated
@@ -187,8 +150,8 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 		model.Perms2.Share = []*models.ShareType{}
 	}
 
-	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
-		if err := isVisibleObject(ctx, model.IDPerms); err != nil {
+	if isVerified := services.IsInternalRequest(ctx); !isVerified && model.IDPerms != nil {
+		if err := isVisibleObject(ctx, model.IDPerms.GetUserVisible()); err != nil {
 			return nil, errutil.ErrorBadRequestf("%v", err)
 		}
 	}
@@ -253,8 +216,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
 	}
 
-	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
+	ctx := services.ContextFromRequest(c.Request())
 	model, err := models.InterfaceTo{{ schema.JSONSchema.GoName }}E(request.{{ schema.JSONSchema.GoName }})
 	if err != nil {
 		return err
@@ -277,7 +239,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
-	if err = applyHref(model, c.Request()); err != nil {
+	if err = services.ApplyHref(model, c.Request()); err != nil {
 		logrus.WithError(err).Error("Failed to apply href")
 	}
 	return c.JSON(http.StatusOK, response)
@@ -292,14 +254,14 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 		return nil, errutil.ErrorBadRequest("update request body is empty")
 	}
 
-	ctx = WithRequestID(ctx, "")
+	ctx = services.WithGeneratedRequestID(ctx)
 	storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", model.UUID)
 	if err != nil {
 		return nil, err
 	}
 
-	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
-		if err := isVisibleObject(ctx, storedIDPerms); err != nil {
+	if isVerified := services.IsInternalRequest(ctx); !isVerified && storedIDPerms != nil {
+		if err := isVisibleObject(ctx, storedIDPerms.GetUserVisible()); err != nil {
 			return nil, errutil.ErrorNotFoundf("%v", err)
 		}
 	}
@@ -318,13 +280,10 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
 // RESTDelete{{ schema.JSONSchema.GoName }} handles a REST delete request.
 func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-	request := &Delete{{ schema.JSONSchema.GoName }}Request{
-		ID: c.Param("id"),
-	}
-	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
-	 _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
-	if err != nil {
+	if _, err := service.Delete{{ schema.JSONSchema.GoName }}(
+		services.ContextFromRequest(c.Request()),
+		&Delete{{ schema.JSONSchema.GoName }}Request{ID: c.Param("id")},
+	); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
@@ -334,14 +293,16 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(ctx, "")
-	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
+	ctx = services.WithGeneratedRequestID(ctx)
+	if isVerified := services.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if err != nil {
 			return nil, errutil.ErrorNotFoundf("%v", err)
 		}
-		if err = isVisibleObject(ctx, storedIDPerms); err != nil {
-			return nil, errutil.ErrorNotFoundf("%v", err)
+		if storedIDPerms != nil {
+			if err := isVisibleObject(ctx, storedIDPerms.GetUserVisible()); err != nil {
+				return nil, errutil.ErrorNotFoundf("%v", err)
+			}
 		}
 	}
 	return service.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -349,16 +310,14 @@ func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 
 // RESTGet{{ schema.JSONSchema.GoName }} handles a REST get request.
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
-	request := &Get{{ schema.JSONSchema.GoName }}Request{
-		ID: c.Param("id"),
-	}
-	req := c.Request()
-	ctx := WithRequestID(req.Context(), req.Header.Get(xRequestIDHeader))
-	response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
+	response, err := service.Get{{ schema.JSONSchema.GoName }}(
+		services.ContextFromRequest(c.Request()),
+		&Get{{ schema.JSONSchema.GoName }}Request{ID: c.Param("id")},
+	)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
-	if err = applyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
+	if err := services.ApplyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
 		logrus.WithError(err).Error("Failed to apply href")
 	}
 	return c.JSON(http.StatusOK, response)
@@ -368,8 +327,8 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-	ctx = WithRequestID(ctx, "")
-	if isVerified := baseservices.IsInternalRequest(ctx); !isVerified {
+	ctx = services.WithGeneratedRequestID(ctx)
+	if isVerified := services.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if errutil.IsNotFound(err) {
 			// Resources may be created on get by resource plugins (Neutron)
@@ -380,7 +339,7 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 			return nil, err
 		}
 
-		if err = isVisibleObject(ctx, storedIDPerms); err != nil {
+		if err = isVisibleObject(ctx, storedIDPerms.GetUserVisible()); err != nil {
 			return nil, errutil.ErrorNotFoundf("%v", err)
 		}
 	}
@@ -390,13 +349,10 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
-	ls := baseservices.GetListSpec(c)
+	ls := services.GetListSpec(c)
 
 	response, err := service.List{{ schema.JSONSchema.GoName }}(
-		WithRequestID(
-			c.Request().Context(),
-			c.Request().Header.Get(xRequestIDHeader),
-		),
+		services.ContextFromRequest(c.Request()),
 		&List{{ schema.JSONSchema.GoName }}Request{
 			Spec: ls,
 		},
@@ -407,7 +363,7 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 
 	if !ls.ExcludeHrefs {
 		for _, r := range response.{{ schema.JSONSchema.GoName }}s {
-			if err = applyHref(r, c.Request()); err != nil {
+			if err = services.ApplyHref(r, c.Request()); err != nil {
 				logrus.WithError(err).Error("Failed to apply href - ignoring")
 			}
 		}

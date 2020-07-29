@@ -39,6 +39,23 @@ func LoadFile(filePath string, data interface{}) error {
 	if err != nil {
 		return err
 	}
+	return unmarshal(filePath, bodyBuff, data)
+}
+
+//ExpandEnvLoadFile substitutes env variables and loads object
+// from file. suffix of filepath will be used as file type.
+// currently, json and yaml is supported
+func ExpandEnvLoadFile(filePath string, data interface{}) error {
+	bodyBuff, err := GetContent(filePath)
+	if err != nil {
+		return err
+	}
+	// expand environment variables
+	bodyBuff = []byte(os.ExpandEnv(string(bodyBuff)))
+	return unmarshal(filePath, bodyBuff, data)
+}
+
+func unmarshal(filePath string, bodyBuff []byte, data interface{}) error {
 	if strings.HasSuffix(filePath, ".json") {
 		return json.Unmarshal(bodyBuff, data)
 	} else if strings.HasSuffix(filePath, ".yaml") || strings.HasSuffix(filePath, ".yml") {

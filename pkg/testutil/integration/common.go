@@ -17,7 +17,6 @@ import (
 	"github.com/Juniper/asf/pkg/format"
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/models"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/sync"
@@ -31,6 +30,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	asfclient "github.com/Juniper/asf/pkg/client"
+	asfservices "github.com/Juniper/asf/pkg/services"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -395,7 +395,7 @@ func runTestScenario(
 	t *testing.T,
 	ts *TestScenario,
 	clients ClientsList,
-	m baseservices.MetadataGetter,
+	m asfservices.MetadataGetter,
 ) (tracked []trackedResource) {
 	for _, cleanTask := range ts.CleanTasks {
 		logrus.WithFields(logrus.Fields{
@@ -460,7 +460,7 @@ func performCleanup(
 	ctx context.Context,
 	cleanTask CleanTask,
 	client *client.HTTP,
-	m baseservices.MetadataGetter,
+	m asfservices.MetadataGetter,
 ) error {
 	switch {
 	case client == nil:
@@ -494,7 +494,7 @@ func cleanByFQNameAndKind(
 	fqName []string,
 	kind string,
 	client *client.HTTP,
-	m baseservices.MetadataGetter,
+	m asfservices.MetadataGetter,
 ) error {
 	metadata, err := m.GetMetadata(ctx, models.Metadata{
 		Type:   kind,
