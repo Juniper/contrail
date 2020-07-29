@@ -2,16 +2,18 @@ run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
   deadline: 20m
+  skip-dirs-use-default: true
   skip-files:
-  # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
-  - .*/go[0-9\.]*/src/crypto/.*
-  - .*/go[0-9\.]*/src/internal/syscall/unix/.*
-  - .*/go[0-9\.]*/src/net/.*
-  - .*/go[0-9\.]*/src/os/.*
-  - .*/go[0-9\.]*/src/runtime/.*
-  - .*/go[0-9\.]*/src/syscall/.*
-  - .*/usr/local/go[0-9\.]*/src/.*
-  - (.*/)?vendor/.*
+    # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
+    - .*/go[0-9\.]*/src/crypto/.*
+    - .*/go[0-9\.]*/src/internal/syscall/unix/.*
+    - .*/go[0-9\.]*/src/net/.*
+    - .*/go[0-9\.]*/src/os/.*
+    - .*/go[0-9\.]*/src/runtime/.*
+    - .*/go[0-9\.]*/src/syscall/.*
+    - .*/usr/local/go[0-9\.]*/src/.*
+    - (.*/)?vendor/.*
+  modules-download-mode: vendor
 
 issues:
   exclude:

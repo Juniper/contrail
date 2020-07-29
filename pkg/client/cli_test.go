@@ -344,13 +344,13 @@ func testSetBooleanField(cli *CLI) func(t *testing.T) {
 		)
 
 		assert.NoError(t, err)
-		assertEqual(t, resources(withExternalIPAM(t, vnBlue(t), true)), o)
+		assertEqual(t, resources(withExternalIPAM(t, vnBlue(t))), o)
 
 		o, err = cli.ListResources(vnSchemaID, &ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(t, resources(vnRed(t), withExternalIPAM(t, vnBlue(t), true)), o)
+		assertEqual(t, resources(vnRed(t), withExternalIPAM(t, vnBlue(t))), o)
 	}
 }
 
@@ -361,13 +361,13 @@ func testUpdateBooleanFieldsViaSync(cli *CLI) func(t *testing.T) {
 		o, err := cli.SyncResources(vnsWithExternalIPAMsPath)
 
 		assert.NoError(t, err)
-		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
+		assertEqual(t, resources(withExternalIPAM(t, vnRed(t)), withExternalIPAM(t, vnBlue(t))), o)
 
 		o, err = cli.ListResources(vnSchemaID, &ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
+		assertEqual(t, resources(withExternalIPAM(t, vnRed(t)), withExternalIPAM(t, vnBlue(t))), o)
 	}
 }
 
@@ -420,11 +420,11 @@ func deleteVMI(t *testing.T, cli *CLI) {
 	require.Equal(t, "", o)
 }
 
-func withExternalIPAM(t *testing.T, resource map[interface{}]interface{}, ei bool) map[interface{}]interface{} {
+func withExternalIPAM(t *testing.T, resource map[interface{}]interface{}) map[interface{}]interface{} {
 	data, ok := resource["data"].(map[interface{}]interface{})
 	require.True(t, ok)
 
-	data["external_ipam"] = ei
+	data["external_ipam"] = true
 	return resource
 }
 

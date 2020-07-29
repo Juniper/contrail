@@ -5,10 +5,11 @@ import (
 
 	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/rbac"
-	"github.com/Juniper/asf/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/sirupsen/logrus"
+
+	asfservices "github.com/Juniper/asf/pkg/services"
 )
 
 // ContrailAccessGetter allows getting APIAccessLists and resources' Perms2.
@@ -30,7 +31,7 @@ func (ag ContrailAccessGetter) GetAPIAccessLists(ctx context.Context) []*rbac.AP
 	result, err := ag.readService.ListAPIAccessList(
 		ctx,
 		&services.ListAPIAccessListRequest{
-			Spec: &baseservices.ListSpec{},
+			Spec: &asfservices.ListSpec{},
 		},
 	)
 	if err != nil {

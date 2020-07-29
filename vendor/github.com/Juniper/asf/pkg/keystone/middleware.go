@@ -2,11 +2,11 @@ package keystone
 
 import (
 	"context"
-	"crypto/tls"
 	"net/http"
 	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/httputil"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	asfauth "github.com/Juniper/asf/pkg/auth"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
 // AuthMiddleware provides HTTP and GRPC middleware to authenticate requests with Keystone.
@@ -103,15 +102,9 @@ func (p *AuthMiddleware) GRPCInterceptor(
 func newKeystoneAuth(authURL string, insecure bool) *keystone.Auth {
 	a := keystone.New(authURL)
 	a.Client = &http.Client{
-		Transport: httpTransport(insecure),
+		Transport: httputil.DefaultTransport(insecure),
 	}
 	return a
-}
-
-func httpTransport(insecure bool) *http.Transport {
-	t := cleanhttp.DefaultPooledTransport()
-	t.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-	return t
 }
 
 func authenticate(ctx context.Context, ka *keystone.Auth, tokenString string) (context.Context, error) {
