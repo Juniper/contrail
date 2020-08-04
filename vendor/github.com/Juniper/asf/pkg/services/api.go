@@ -29,7 +29,7 @@ const (
 
 //API Path definitions.
 const (
-	SyncPath = "sync"
+	SyncPath = "/sync"
 )
 
 // RequestSchema returns 'https://' for TLS based request or 'http://' otherwise

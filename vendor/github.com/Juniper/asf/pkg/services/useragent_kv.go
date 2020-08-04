@@ -13,7 +13,7 @@ import (
 
 // UserAgent key value store operations.
 const (
-	UserAgentKVPath = "useragent-kv"
+	UserAgentKVPath = "/useragent-kv"
 
 	UserAgentKVOperationStore    = "STORE"
 	UserAgentKVOperationRetrieve = "RETRIEVE"

@@ -62,7 +62,7 @@ func TestIDToFQNameGRPC(t *testing.T) {
 func TestChownGRPC(t *testing.T) {
 	firstProjectName := uuid.NewV4().String()
 	testGRPCServer(t, firstProjectName, func(firstProjectCTX context.Context, conn *grpc.ClientConn) {
-		c := client.NewGRPC(services.NewContrailServiceClient(conn))
+		c := client.NewGRPC(services.NewAPIServiceClient(conn))
 
 		project, cleanup := createProjectWithName(firstProjectCTX, t, c, firstProjectName)
 		defer cleanup(t)
@@ -175,7 +175,7 @@ func TestIPAMGRPC(t *testing.T) {
 
 func TestRefRelaxGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := client.NewGRPC(services.NewContrailServiceClient(conn))
+		c := client.NewGRPC(services.NewAPIServiceClient(conn))
 
 		project, cleanup := createProject(ctx, t, c)
 		defer cleanup(t)
@@ -243,7 +243,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 
 func TestPropCollectionUpdateGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		gc := client.NewGRPC(services.NewContrailServiceClient(conn))
+		gc := client.NewGRPC(services.NewAPIServiceClient(conn))
 		project, cleanup := createProject(ctx, t, gc)
 		defer cleanup(t)
 
@@ -329,7 +329,7 @@ func createProjectWithName(
 
 func TestGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
-		c := services.NewContrailServiceClient(conn)
+		c := services.NewAPIServiceClient(conn)
 		project := models.Project{
 			UUID:                 uuid.NewV4().String(),
 			FQName:               []string{"default-domain", "project", "my-project"},
@@ -353,7 +353,7 @@ func TestGRPC(t *testing.T) {
 	})
 }
 
-func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
+func testNamespaceRef(ctx context.Context, c services.APIServiceClient, projectUUID string) func(*testing.T) {
 	return func(t *testing.T) {
 		ns := models.Namespace{
 			UUID:       uuid.NewV4().String(),
@@ -385,7 +385,7 @@ func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, pro
 	}
 }
 
-func testProjectRead(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
+func testProjectRead(ctx context.Context, c services.APIServiceClient, projectUUID string) func(*testing.T) {
 	return func(t *testing.T) {
 		response, err := c.ListProject(ctx, &services.ListProjectRequest{
 			Spec: &asfservices.ListSpec{

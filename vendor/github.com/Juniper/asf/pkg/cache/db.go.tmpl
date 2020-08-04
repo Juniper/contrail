@@ -426,7 +426,7 @@ func (db *DB) handleNode(n *node) {
 }
 
 // WatchPath is the path of the watch HTTP endpoint.
-const WatchPath = "watch"
+const WatchPath = "/watch"
 
 // RegisterHTTPAPI registers the watch HTTP endpoint.
 func (cache *DB) RegisterHTTPAPI(r apiserver.HTTPRouter) {
@@ -441,7 +441,7 @@ func (cache *DB) watchHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 	authCtx := auth.GetIdentity(ctx)
 	if !authCtx.IsAdmin() {
-		return errutil.ErrorPermissionDenied
+		return errutil.ErrorForbidden()
 	}
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer closeConnection(ws, c.Logger())

@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -20,6 +21,11 @@ import (
 	"google.golang.org/grpc"
 
 	protocodec "github.com/gogo/protobuf/codec"
+)
+
+const (
+	contentEncodingHeader = "Content-Encoding"
+	gzipContentEncoding   = "gzip"
 )
 
 // Server is an HTTP and GRPC API server.
@@ -63,14 +69,31 @@ type RouteOption func(*RouteOptions)
 // RouteOptions specifies options for handling a route.
 type RouteOptions struct {
 	noAuth        bool
+	noGzip        bool
 	middleware    []MiddlewareFunc
 	homepageEntry linkDetails
+	request       interface{}
+	responses     map[int]interface{}
+	queryParams   []string
+}
+
+func (ro *RouteOptions) apply(opts []RouteOption) {
+	for _, o := range opts {
+		o(ro)
+	}
 }
 
 // WithNoAuth makes requests to the route skip authentication.
 func WithNoAuth() RouteOption {
 	return func(rp *RouteOptions) {
 		rp.noAuth = true
+	}
+}
+
+// WithNoGzip makes requests to the route skip compression.
+func WithNoGzip() RouteOption {
+	return func(rp *RouteOptions) {
+		rp.noGzip = true
 	}
 }
 
@@ -99,6 +122,40 @@ func WithHomepageName(name string) RouteOption {
 func WithHomepageType(t EndpointType) RouteOption {
 	return func(rp *RouteOptions) {
 		rp.homepageEntry.Rel = string(t)
+	}
+}
+
+// WithRequest passes request's structure to OpenAPI documentation generation.
+func WithRequest(request interface{}) RouteOption {
+	return func(rp *RouteOptions) {
+		rp.request = request
+	}
+}
+
+// WithResponse passes responses' structure to OpenAPI documentation generation.
+func WithResponse(status int, response interface{}) RouteOption {
+	return func(rp *RouteOptions) {
+		if rp.responses == nil {
+			rp.responses = map[int]interface{}{}
+		}
+		rp.responses[status] = response
+	}
+}
+
+// WithErrorResponse passes error response with given code to OpenAPI documentation generation.
+func WithErrorResponse(status int) RouteOption {
+	// This mimics the output that echo.HTTPError (interface{} is replaced with string).
+	// Please change when error format is changed.
+	type HTTPError struct {
+		Message string `json:"message"`
+	}
+	return WithResponse(status, HTTPError{})
+}
+
+// WithQuery adds query parameter information to OpenAPI documentation generation.
+func WithQuery(param string) RouteOption {
+	return func(rp *RouteOptions) {
+		rp.queryParams = append(rp.queryParams, param)
 	}
 }
 
@@ -134,10 +191,6 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 
 	s.setupLoggingMiddleware()
 
-	if viper.GetBool("server.enable_gzip") {
-		s.Echo.Use(middleware.Gzip())
-	}
-
 	s.Echo.Use(middleware.Recover())
 	s.Echo.Binder = &customBinder{}
 
@@ -149,12 +202,18 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	s.setupCORS()
 
 	r := &httpRouter{
-		echo:     s.Echo,
-		homepage: NewHomepageHandler(),
+		echo:        s.Echo,
+		homepage:    NewHomepageHandler(),
+		noGzipPaths: map[string]bool{},
 	}
 	for _, plugin := range plugins {
 		plugin.RegisterHTTPAPI(r)
 	}
+
+	if viper.GetBool("server.enable_gzip") {
+		s.Echo.Use(gzipMiddleware(r.noGzipPaths))
+	}
+
 	noAuthPaths = append(noAuthPaths, r.noAuthPaths...)
 
 	staticFiles := viper.GetStringMapString("server.static_files")
@@ -168,7 +227,7 @@ func NewServer(plugins []APIPlugin, noAuthPaths []string) (*Server, error) {
 	}
 	noAuthPaths = append(noAuthPaths, staticFilePaths...)
 
-	httpMiddleware, authGRPCOpts := s.authMiddleware(noAuthPaths)
+	httpMiddleware, authGRPCOpts := authMiddleware(noAuthPaths)
 	r.Use(httpMiddleware...)
 
 	if err := s.setupGRPC(authGRPCOpts, plugins); err != nil {
@@ -291,9 +350,8 @@ func (s *Server) setupGRPC(grpcOpts []grpc.ServerOption, plugins []APIPlugin) er
 	return nil
 }
 
-func (s *Server) authMiddleware(noAuthPaths []string) (httpMiddleware []MiddlewareFunc, grpcOpts []grpc.ServerOption) {
-	authURL := viper.GetString("keystone.authurl")
-	if authURL != "" {
+func authMiddleware(noAuthPaths []string) (httpMiddleware []MiddlewareFunc, grpcOpts []grpc.ServerOption) {
+	if authURL := viper.GetString("keystone.authurl"); authURL != "" {
 		insecure := viper.GetBool("keystone.insecure")
 
 		m := keystone.NewAuthMiddleware(authURL, insecure, noAuthPaths)
@@ -306,10 +364,19 @@ func (s *Server) authMiddleware(noAuthPaths []string) (httpMiddleware []Middlewa
 	return httpMiddleware, grpcOpts
 }
 
+func gzipMiddleware(noGzipPaths map[string]bool) echo.MiddlewareFunc {
+	return middleware.GzipWithConfig(middleware.GzipConfig{
+		Skipper: func(c echo.Context) bool {
+			return noGzipPaths[c.Path()]
+		},
+	})
+}
+
 type httpRouter struct {
 	echo        *echo.Echo
 	homepage    *HomepageHandler
 	noAuthPaths []string
+	noGzipPaths map[string]bool
 }
 
 // GET registers a GET handler.
@@ -334,29 +401,42 @@ func (r *httpRouter) DELETE(path string, h HandlerFunc, options ...RouteOption) 
 
 // Add registers a handler for a route.
 func (r *httpRouter) Add(method string, path string, h HandlerFunc, options ...RouteOption) {
+	path = sanitizePath(path)
 	ro := makeRouteOptions(options, method, path)
 	r.applyRouteOptions(ro, path)
 	r.echo.Add(method, path, echo.HandlerFunc(h), echoMiddleware(ro.middleware)...)
 }
 
+func sanitizePath(path string) string {
+	if !strings.HasPrefix(path, "/") {
+		return "/" + path
+	}
+	return path
+}
+
 // Group makes the middleware specified by options run for all requests with paths starting with prefix.
 func (r *httpRouter) Group(prefix string, options ...RouteOption) {
+	prefix = sanitizePath(prefix)
 	ro := makeRouteOptions(options, "", prefix)
+	if ro.noGzip {
+		r.noGzipPaths[path.Join(prefix, "*")] = true
+	}
 	r.applyRouteOptions(ro, prefix)
 	r.echo.Group(prefix, echoMiddleware(ro.middleware)...)
 }
 
 func makeRouteOptions(options []RouteOption, method, path string) (ro RouteOptions) {
 	ro.homepageEntry = defaultHomepageEntry(method, path)
-	for _, option := range options {
-		option(&ro)
-	}
+	ro.apply(options)
 	return ro
 }
 
 func (r *httpRouter) applyRouteOptions(ro RouteOptions, path string) {
 	if ro.noAuth {
 		r.noAuthPaths = append(r.noAuthPaths, path)
+	}
+	if ro.noGzip {
+		r.noGzipPaths[path] = true
 	}
 	r.homepage.Register(ro.homepageEntry)
 }

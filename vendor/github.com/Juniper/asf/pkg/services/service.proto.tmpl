@@ -20,7 +20,7 @@ option (gogoproto.sizer_all) = true;
 option (gogoproto.unmarshaler_all) = false;
 option (gogoproto.protosizer_all) = false;
 
-service ContrailService {
+service APIService {
 	{% for schema in schemas %}
 		{% if schema.Type != "abstract" and schema.ID %}
 			rpc Get{{ schema.JSONSchema.GoName }} (Get{{ schema.JSONSchema.GoName }}Request) returns (Get{{ schema.JSONSchema.GoName }}Response);

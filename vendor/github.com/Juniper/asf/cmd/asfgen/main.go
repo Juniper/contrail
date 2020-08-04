@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/Juniper/asf/pkg/cmd/contrailschema"
+	"github.com/Juniper/asf/pkg/cmd/asfgen"
 	"github.com/Juniper/asf/pkg/logutil"
 )
 
 func main() {
-	err := contrailschema.ContrailSchema.Execute()
+	err := asfgen.Execute()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

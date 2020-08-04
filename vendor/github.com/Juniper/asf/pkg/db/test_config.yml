@@ -1,8 +1,8 @@
 database:
   host: localhost
-  port: 5433
   user: root
-  password: contrail123
+  password: passwordOnlyForTesting
+  port: 5433
   name: asf_test
   max_open_conn: 100
   connection_retries: 10

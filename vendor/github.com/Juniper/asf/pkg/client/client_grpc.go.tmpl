@@ -12,11 +12,11 @@ var _ services.WriteService = &GRPC{}
 
 // GRPC is a GRPC API server client.
 type GRPC struct {
-	c services.ContrailServiceClient
+	c services.APIServiceClient
 }
 
 // NewGRPC returns a new GRPC.
-func NewGRPC(c services.ContrailServiceClient) *GRPC {
+func NewGRPC(c services.APIServiceClient) *GRPC {
 	return &GRPC{c: c}
 }
 

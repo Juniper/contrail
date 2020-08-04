@@ -50,7 +50,7 @@ func duplicatedUUIDs(t *testing.T) map[string][]string {
 				continue
 			}
 
-			resources, ok := task.Request.Data.(map[string]interface{})
+			resources, ok := task.Request.RequestBody.(map[string]interface{})
 			if !ok {
 				continue
 			}

@@ -23,6 +23,10 @@ func isContextCancellationError(err error) bool {
 	return false
 }
 
+type causer interface {
+	Cause() error
+}
+
 type causeError struct {
 	error
 }
@@ -63,4 +67,22 @@ func markTemporaryError(err error) error {
 
 func (e temporaryError) Temporary() bool {
 	return true
+}
+
+// isBadConnectionCausedError checks whether error is caused by bad connection
+// only for replication connection in sync module
+func isBadConnectionCausedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	switch t := err.(type) {
+	case causer:
+		return isBadConnectionCausedError(t.Cause())
+	default:
+		if t == io.EOF || t.Error() == "broken pipe" {
+			return true
+		}
+
+		return false
+	}
 }

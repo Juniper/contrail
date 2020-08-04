@@ -3,7 +3,7 @@ module github.com/Juniper/contrail
 go 1.13
 
 require (
-	github.com/Juniper/asf v0.0.0-20200424093617-24f6b1b9296e
+	github.com/Juniper/asf v0.0.0-20200728212033-9fdd3f5f6bdc
 	github.com/apparentlymart/go-cidr v1.0.1
 	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/flosch/pongo2 v0.0.0-20190707114632-bbf5a6c351f4

@@ -8,9 +8,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	shellwords "github.com/mattn/go-shellwords"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/yudai/gotty/backend/localcommand"
 	"github.com/yudai/gotty/server"
@@ -57,8 +59,7 @@ func NewFileLogger(loggerName string, filename string) *logrus.Entry {
 	// append if already exists.
 	w, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
-		logrus.Error(err)
-		logrus.Info("fall back to stdout writer")
+		logrus.WithError(errors.Wrap(err, "open log file")).Info("Falling back to logger with stdout writer")
 		return newLogger(loggerName, writer)
 	}
 	return newLogger(loggerName, w)
@@ -151,6 +152,10 @@ func FatalWithStackTraceIfError(err error) {
 // FatalWithStackTrace logs error with an extended format and calls os.Exit(1)
 // If given error is constructed with pkg/errors library, stack trace is printed.
 // See: https://godoc.org/github.com/pkg/errors#hdr-Formatted_printing_of_errors
+//
+// "log" logger is used, because it does not escape line breaks.
+// TODO(dfurman): update logrus and use logrus.TextFormatter with DisableQuote
+// See: https://github.com/sirupsen/logrus/pull/1134
 func FatalWithStackTrace(err error) {
-	logrus.Fatalf("%+v", err)
+	log.Fatalf("%+v", err)
 }

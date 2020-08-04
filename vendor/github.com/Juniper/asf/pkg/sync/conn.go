@@ -2,9 +2,9 @@ package sync
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/Juniper/asf/pkg/db"
@@ -24,35 +24,57 @@ type pgxReplicationConn interface {
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 }
 
-// DB is a DB access interface.
-type DB interface {
-	DB() *sql.DB
-	DoInTransactionWithOpts(ctx context.Context, do func(context.Context) error, opts *sql.TxOptions) error
-	Dump(context.Context) (db.DatabaseData, error)
+func newReplConn() (*pgx.ReplicationConn, error) {
+	c := db.ConnectionConfigFromViper()
+	databasePort, err := strconv.ParseUint(c.Port, 0, 16)
+	if err != nil {
+		return nil, errors.Wrap(err, "parse database prot")
+	}
+	replConn, err := pgx.ReplicationConnect(
+		pgx.ConnConfig{
+			Host:     c.Host,
+			Database: c.Name,
+			User:     c.User,
+			Password: c.Password,
+			Port:     uint16(databasePort),
+		},
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "create pgx replication connection")
+	}
+
+	return replConn, nil
 }
 
 // PostgresConnection is a connection that uses replication connection to manage logical subscription.
 type PostgresConnection struct {
 	replConn pgxReplicationConn
-	db       DB
 	log      *logrus.Entry
 }
 
 // NewPostgresConnection returns a postgres Connection.
-func NewPostgresConnection(d DB) (*PostgresConnection, error) {
-	c := db.ConnectionConfigFromViper()
-	replConn, err := pgx.ReplicationConnect(
-		pgx.ConnConfig{Host: c.Host, Database: c.Name, User: c.User, Password: c.Password},
-	)
+func NewPostgresConnection() (*PostgresConnection, error) {
+	replConn, err := newReplConn()
 	if err != nil {
-		return nil, err
+		errors.Wrap(err, "create replConn")
 	}
 
 	return &PostgresConnection{
-		db:       d,
 		replConn: replConn,
 		log:      logutil.NewLogger("postgres-replication-connection"),
 	}, nil
+}
+
+// Reconnect replace old replConn with a new one, this function is only desired to be used when old connection is dead
+func (c *PostgresConnection) Reconnect() error {
+	replConn, err := newReplConn()
+	if err != nil {
+		return errors.Wrap(err, "create replConn for reconnection")
+	}
+
+	c.replConn = replConn
+
+	return nil
 }
 
 // GetReplicationSlot gets replication slot for replication.
@@ -75,88 +97,6 @@ func (c *PostgresConnection) GetReplicationSlot(name string) (maxWal LSN, snapsh
 		return 0, "", fmt.Errorf("error parsing received LSN: %v", err)
 	}
 	return maxWal, snapshotName, err
-}
-
-// RenewPublication ensures that publication exists for all tables.
-func (c *PostgresConnection) RenewPublication(ctx context.Context, name string) error {
-	return c.db.DoInTransactionWithOpts(
-		ctx,
-		func(ctx context.Context) error {
-			_, err := c.db.DB().ExecContext(ctx, fmt.Sprintf("DROP PUBLICATION IF EXISTS %s", name))
-			if err != nil {
-				return errors.Wrap(err, "failed to drop publication")
-			}
-			_, err = c.db.DB().ExecContext(ctx, fmt.Sprintf("CREATE PUBLICATION %s FOR ALL TABLES", name))
-			if err != nil {
-				return errors.Wrap(err, "failed to create publication")
-			}
-			return err
-		},
-		nil,
-	)
-}
-
-// IsInRecovery checks is database server is in recovery mode.
-func (c *PostgresConnection) IsInRecovery(ctx context.Context) (isInRecovery bool, err error) {
-	return isInRecovery, c.db.DoInTransactionWithOpts(
-		ctx,
-		func(ctx context.Context) error {
-			r, err := c.db.DB().QueryContext(ctx, "SELECT pg_is_in_recovery()")
-			if err != nil {
-				return errors.Wrap(err, "failed to check recovery mode")
-			}
-			if !r.Next() {
-				return errors.New("pg_is_in_recovery() returned zero rows")
-			}
-			if err := r.Scan(&isInRecovery); err != nil {
-				return errors.Wrap(err, "error scanning recovery status")
-			}
-			return nil
-		},
-		&sql.TxOptions{ReadOnly: true},
-	)
-}
-
-// DoInTransactionSnapshot does snapshot in transaction.
-func (c *PostgresConnection) DoInTransactionSnapshot(
-	ctx context.Context,
-	snapshotName string,
-	do func(context.Context) error,
-) error {
-	return c.db.DoInTransactionWithOpts(
-		ctx,
-		func(ctx context.Context) error {
-			tx := db.GetTransaction(ctx)
-			_, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
-			if err != nil {
-				return errors.Wrap(err, "error setting transaction isolation")
-			}
-			_, err = tx.ExecContext(ctx, fmt.Sprintf("SET TRANSACTION SNAPSHOT '%s'", snapshotName))
-			if err != nil {
-				return errors.Wrap(err, "error setting transaction snapshot")
-			}
-
-			return do(ctx)
-		},
-		&sql.TxOptions{ReadOnly: true},
-	)
-}
-
-// DumpSnapshot performs snapshot in transaction.
-func (c *PostgresConnection) DumpSnapshot(
-	ctx context.Context, snapshotName string,
-) (dump db.DatabaseData, err error) {
-	if err = c.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
-		dump, err = c.db.Dump(ctx)
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return dump, nil
 }
 
 func pluginArgs(publication string) string {
@@ -197,9 +137,6 @@ func (c *PostgresConnection) SendStatus(received, saved LSN) error {
 // Close closes underlying connections.
 func (c *PostgresConnection) Close() error {
 	var errs []string
-	if dbErr := c.db.DB().Close(); dbErr != nil {
-		errs = append(errs, dbErr.Error())
-	}
 	if replConnErr := c.replConn.Close(); replConnErr != nil {
 		errs = append(errs, replConnErr.Error())
 	}

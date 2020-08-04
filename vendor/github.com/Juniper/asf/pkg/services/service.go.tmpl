@@ -41,7 +41,7 @@ func isVisibleObject(ctx context.Context, isUserVisible bool) error {
 }
 
 func getStoredIDPerms(
-	ctx context.Context, service *ContrailService, typeName, uuid string,
+	ctx context.Context, service *APIService, typeName, uuid string,
 ) (*models.IdPermsType, error) {
 	base, err := getObject(ctx, service.DBService, typeName, uuid,
 		[]string{models.VirtualNetworkFieldIDPerms})
@@ -65,7 +65,7 @@ type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 }
 
 // RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
-func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+func (service *APIService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
 	requestData := &Create{{ schema.JSONSchema.GoName }}Request{}
 	if err := c.Bind(requestData); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
@@ -82,7 +82,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 }
 
 // Create{{ schema.JSONSchema.GoName }} handles a create request.
-func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
+func (service *APIService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
 	model := request.{{ schema.JSONSchema.GoName }}
@@ -93,7 +93,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 	ctx = services.WithGeneratedRequestID(ctx)
 	authCTX := auth.GetIdentity(ctx)
 	if authCTX == nil {
-		return nil, errutil.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated()
 	}
 
 	if model.UUID == "" {
@@ -174,7 +174,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 	return service.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
-func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} (
+func (service *APIService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} (
 	ctx context.Context,
 	request *Create{{ schema.JSONSchema.GoName }}Request,
 ) error {
@@ -210,7 +210,7 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
 }
 
 // RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST update request.
-func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+func (service *APIService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
 	var request RESTUpdate{{ schema.JSONSchema.GoName }}Request
 	if err := c.Bind(&request); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
@@ -246,7 +246,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 }
 
 // Update{{ schema.JSONSchema.GoName }} handles an update request.
-func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
+func (service *APIService) Update{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
 	model := request.{{ schema.JSONSchema.GoName }}
@@ -279,7 +279,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 }
 
 // RESTDelete{{ schema.JSONSchema.GoName }} handles a REST delete request.
-func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+func (service *APIService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
 	if _, err := service.Delete{{ schema.JSONSchema.GoName }}(
 		services.ContextFromRequest(c.Request()),
 		&Delete{{ schema.JSONSchema.GoName }}Request{ID: c.Param("id")},
@@ -290,7 +290,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 }
 
 // Delete{{ schema.JSONSchema.GoName }} handles a delete request.
-func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
+func (service *APIService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
 	ctx = services.WithGeneratedRequestID(ctx)
@@ -309,7 +309,7 @@ func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 }
 
 // RESTGet{{ schema.JSONSchema.GoName }} handles a REST get request.
-func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+func (service *APIService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
 	response, err := service.Get{{ schema.JSONSchema.GoName }}(
 		services.ContextFromRequest(c.Request()),
 		&Get{{ schema.JSONSchema.GoName }}Request{ID: c.Param("id")},
@@ -324,7 +324,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 }
 
 // Get{{ schema.JSONSchema.GoName }} handles a get request.
-func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
+func (service *APIService) Get{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
 	ctx = services.WithGeneratedRequestID(ctx)
@@ -348,7 +348,7 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 }
 
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.
-func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+func (service *APIService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
 	ls := services.GetListSpec(c)
 
 	response, err := service.List{{ schema.JSONSchema.GoName }}(

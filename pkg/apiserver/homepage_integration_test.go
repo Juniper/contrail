@@ -149,7 +149,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	for _, plugin := range append([]apiserver.APIPlugin{
 		&cache.DB{},
 		&keystone.Keystone{},
-		&services.ContrailService{},
+		&services.APIService{},
 		&asfservices.FQNameTranslationPlugin{},
 		&asfservices.ObjPermsPlugin{},
 		&asfservices.IntPoolPlugin{},

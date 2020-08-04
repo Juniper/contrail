@@ -6,8 +6,8 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // MultiError implements errors with multiple causes.
@@ -30,105 +30,132 @@ func (m MultiError) Cause() error {
 	return m[0]
 }
 
-//ErrorNotFound for not found error.
-var ErrorNotFound = grpc.Errorf(codes.NotFound, "not found")
-
-//ErrorUnauthenticated for unauthenticated error.
-var ErrorUnauthenticated = grpc.Errorf(codes.Unauthenticated, "Unauthenticated")
-
-//ErrorPermissionDenied for permission denied error.
-var ErrorPermissionDenied = grpc.Errorf(codes.PermissionDenied, "Permission Denied")
-
-//ErrorInternal for Internal Server Error.
-var ErrorInternal = grpc.Errorf(codes.Internal, "Internal Server Error")
-
-//ErrorConflict is for resource conflict error.
-var ErrorConflict = grpc.Errorf(codes.AlreadyExists, "Resource conflict")
-
-//ErrorQuotaExceeded is for quota exceeded error.
-var ErrorQuotaExceeded = grpc.Errorf(codes.FailedPrecondition, "Quota exceeded")
+// WithErrors returns new MultiError with appended errors which are non-nil.
+func (m MultiError) WithErrors(errors ...error) (mErr MultiError) {
+	mErr = m
+	for _, err := range errors {
+		if err != nil {
+			mErr = append(mErr, err)
+		}
+	}
+	return mErr
+}
 
 // CauseCode returns wrapped grpc error code
 func CauseCode(err error) codes.Code {
-	return grpc.Code(errors.Cause(err))
+	return status.Code(errors.Cause(err))
 }
 
 // IsNotFound returns true if error is of NotFound type.
 func IsNotFound(err error) bool {
-	return grpc.Code(errors.Cause(err)) == codes.NotFound
+	return status.Code(errors.Cause(err)) == codes.NotFound
 }
 
 // IsConflict returns true if error is of Conflict type.
 func IsConflict(err error) bool {
-	return grpc.Code(errors.Cause(err)) == codes.AlreadyExists
+	return status.Code(errors.Cause(err)) == codes.AlreadyExists
 }
 
 // IsBadRequest returns true if error is of BadRequest type.
 func IsBadRequest(err error) bool {
-	return grpc.Code(errors.Cause(err)) == codes.InvalidArgument
+	return status.Code(errors.Cause(err)) == codes.InvalidArgument
 }
 
 // IsQuotaExceeded returns true if error is of QuotaExceeded type.
 func IsQuotaExceeded(err error) bool {
-	return grpc.Code(errors.Cause(err)) == codes.FailedPrecondition
+	return status.Code(errors.Cause(err)) == codes.FailedPrecondition
 }
 
-//ErrorForbiddenf makes forbidden error with format.
+// IsInternal returns true if error is of Internal type.
+func IsInternal(err error) bool {
+	return status.Code(errors.Cause(err)) == codes.Internal
+}
+
+// IsUnauthenticated returns true if error is of Unauthenticated type.
+func IsUnauthenticated(err error) bool {
+	return status.Code(errors.Cause(err)) == codes.Unauthenticated
+}
+
+// IsForbidden returns true if error is of Forbidden type.
+func IsForbidden(err error) bool {
+	return status.Code(errors.Cause(err)) == codes.PermissionDenied
+}
+
+// ErrorForbiddenf makes forbidden error with format.
 func ErrorForbiddenf(format string, a ...interface{}) error {
-	return grpc.Errorf(codes.PermissionDenied, format, a...)
+	return status.Errorf(codes.PermissionDenied, format, a...)
 }
 
-//ErrorForbidden makes forbidden error.
-func ErrorForbidden(message string) error {
-	if message == "" {
-		message = "forbidden error"
-	}
-	return ErrorForbiddenf(message)
+// ErrorForbidden makes forbidden error.
+func ErrorForbidden(msgs ...string) error {
+	return status.Error(codes.PermissionDenied, errorMessage(msgs, "permission denied"))
 }
 
-//ErrorBadRequestf makes bad request error with format.
+// ErrorBadRequestf makes bad request error with format.
 func ErrorBadRequestf(format string, a ...interface{}) error {
-	return grpc.Errorf(codes.InvalidArgument, format, a...)
+	return status.Errorf(codes.InvalidArgument, format, a...)
 }
 
-//ErrorBadRequest makes bad request error.
-func ErrorBadRequest(message string) error {
-	if message == "" {
-		message = "bad request error"
-	}
-	return ErrorBadRequestf(message)
+// ErrorBadRequest makes bad request error.
+func ErrorBadRequest(msgs ...string) error {
+	return status.Error(codes.InvalidArgument, errorMessage(msgs, "bad request"))
 }
 
-//ErrorNotFoundf makes not found error.
-func ErrorNotFoundf(message string, a ...interface{}) error {
-	if message == "" {
-		message = "not found"
-	}
-	return grpc.Errorf(codes.NotFound, message, a...)
+// ErrorNotFoundf makes not found error with format.
+func ErrorNotFoundf(format string, a ...interface{}) error {
+	return status.Errorf(codes.NotFound, format, a...)
 }
 
-// ErrorConflictf makes already exists error.
+// ErrorNotFound makes not found error.
+func ErrorNotFound(msgs ...string) error {
+	return status.Error(codes.NotFound, errorMessage(msgs, "not found"))
+}
+
+// ErrorConflictf makes already exists error with format.
 func ErrorConflictf(format string, a ...interface{}) error {
-	if format == "" {
-		return ErrorConflict
-	}
-	return grpc.Errorf(codes.AlreadyExists, format, a...)
+	return status.Errorf(codes.AlreadyExists, format, a...)
 }
 
-//ErrorInternalf makes unknown error.
+// ErrorConflict makes already exists error.
+func ErrorConflict(msgs ...string) error {
+	return status.Error(codes.AlreadyExists, errorMessage(msgs, "resource conflict"))
+}
+
+// ErrorInternalf makes unknown error with format.
 func ErrorInternalf(format string, a ...interface{}) error {
-	if format == "" {
-		return ErrorInternal
-	}
-	return grpc.Errorf(codes.Internal, format, a...)
+	return status.Errorf(codes.Internal, format, a...)
 }
 
-//ErrorQuotaExceededf makes quota exceed error.
+// ErrorInternal makes unknown error.
+func ErrorInternal(msgs ...string) error {
+	return status.Error(codes.Internal, errorMessage(msgs, "internal server error"))
+}
+
+// ErrorQuotaExceededf makes quota exceed error with format.
 func ErrorQuotaExceededf(format string, a ...interface{}) error {
-	if format == "" {
-		return ErrorQuotaExceeded
+	return status.Errorf(codes.FailedPrecondition, format, a...)
+}
+
+// ErrorQuotaExceeded makes quota exceed error.
+func ErrorQuotaExceeded(msgs ...string) error {
+	return status.Error(codes.FailedPrecondition, errorMessage(msgs, "quota exceeded"))
+}
+
+// ErrorUnauthenticatedf makes unauthenticated error with format.
+func ErrorUnauthenticatedf(format string, a ...interface{}) error {
+	return status.Errorf(codes.Unauthenticated, format, a...)
+}
+
+// ErrorUnauthenticated makes unauthenticated error.
+func ErrorUnauthenticated(msgs ...string) error {
+	return status.Error(codes.Unauthenticated, errorMessage(msgs, "unauthenticated"))
+}
+
+func errorMessage(msgs []string, fallback string) string {
+	if len(msgs) == 0 {
+		return fallback
 	}
-	return grpc.Errorf(codes.FailedPrecondition, format, a...)
+	return strings.Join(msgs, " ")
 }
 
 func getErrorMessage(err error) string {
@@ -142,7 +169,7 @@ func getErrorMessage(err error) string {
 func ToHTTPError(err error) error {
 	cause := errors.Cause(err)
 	return echo.NewHTTPError(
-		httpStatusFromCode(grpc.Code(cause)),
+		httpStatusFromCode(status.Code(cause)),
 		getErrorMessage(err),
 	)
 }

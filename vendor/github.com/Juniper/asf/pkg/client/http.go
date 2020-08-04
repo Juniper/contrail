@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/Juniper/asf/pkg/httputil"
 	"github.com/Juniper/asf/pkg/keystone"
@@ -32,8 +32,8 @@ type HTTPConfig struct {
 	Insecure bool            `yaml:"insecure"`
 }
 
-// LoadHTTPConfig creates new config object based on viper configuration.
-func LoadHTTPConfig() *HTTPConfig {
+// LoadGlobalHTTPConfig creates new config object based on global Viper configuration.
+func LoadGlobalHTTPConfig() *HTTPConfig {
 	return &HTTPConfig{
 		ID:       viper.GetString("client.id"),
 		Password: viper.GetString("client.password"),
@@ -80,7 +80,7 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 
 // NewHTTPFromConfig makes API Server HTTP client with viper config
 func NewHTTPFromConfig() *HTTP {
-	return NewHTTP(LoadHTTPConfig())
+	return NewHTTP(LoadGlobalHTTPConfig())
 }
 
 // Login refreshes authentication token.
@@ -103,23 +103,6 @@ func (h *HTTP) Batch(ctx context.Context, requests []*Request) error {
 		}
 	}
 	return nil
-}
-
-// DoRequest requests based on request object.
-func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
-	if request == nil {
-		return nil, fmt.Errorf("request cannot be nil")
-	}
-	return h.Do(ctx, request.Method, request.Path, nil, request.Data, &request.Output, request.Expected)
-}
-
-// Request represents API request to the server.
-type Request struct {
-	Method   string      `yaml:"method"`
-	Path     string      `yaml:"path,omitempty"`
-	Expected []int       `yaml:"expected,omitempty"`
-	Data     interface{} `yaml:"data,omitempty"`
-	Output   interface{} `yaml:"output,omitempty"`
 }
 
 // Create send a create API request.
@@ -156,7 +139,7 @@ func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{
 
 // RefUpdate sends a create/update API request
 func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
-	return h.Do(ctx, http.MethodPost, "/"+services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
+	return h.Do(ctx, http.MethodPost, services.RefUpdatePath, nil, data, output, []int{http.StatusOK})
 }
 
 // CreateIntPool sends a create int pool request to remote int-pools.
@@ -164,7 +147,7 @@ func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end 
 	_, err := h.Do(
 		ctx,
 		http.MethodPost,
-		"/"+services.IntPoolsPath,
+		services.IntPoolsPath,
 		nil,
 		&services.CreateIntPoolRequest{
 			Pool:  pool,
@@ -186,7 +169,7 @@ func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (strin
 		Owner string `json:"owner"`
 	}
 
-	_, err := h.Do(ctx, http.MethodGet, "/"+services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
+	_, err := h.Do(ctx, http.MethodGet, services.IntPoolPath, q, nil, &output, []int{http.StatusOK})
 	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
 }
 
@@ -195,7 +178,7 @@ func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
 	_, err := h.Do(
 		ctx,
 		http.MethodDelete,
-		"/"+services.IntPoolsPath,
+		services.IntPoolsPath,
 		nil,
 		&services.DeleteIntPoolRequest{
 			Pool: pool,
@@ -214,7 +197,7 @@ func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, erro
 	_, err := h.Do(
 		ctx,
 		http.MethodPost,
-		"/"+services.IntPoolPath,
+		services.IntPoolPath,
 		nil,
 		&services.IntPoolAllocationBody{
 			Pool:  pool,
@@ -231,7 +214,7 @@ func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner strin
 	_, err := h.Do(
 		ctx,
 		http.MethodPost,
-		"/"+services.IntPoolPath,
+		services.IntPoolPath,
 		nil,
 		&services.IntPoolAllocationBody{
 			Pool:  pool,
@@ -249,7 +232,7 @@ func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) erro
 	_, err := h.Do(
 		ctx,
 		http.MethodDelete,
-		"/"+services.IntPoolPath,
+		services.IntPoolPath,
 		nil,
 		&services.IntPoolAllocationBody{
 			Pool:  pool,
@@ -262,6 +245,7 @@ func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) erro
 }
 
 // Do issues an API request.
+// Deprecated: use DoRequest() instead.
 func (h *HTTP) Do(
 	ctx context.Context,
 	method, path string,
@@ -269,29 +253,46 @@ func (h *HTTP) Do(
 	data, output interface{},
 	expected []int,
 ) (*http.Response, error) {
-	request, err := h.prepareHTTPRequest(ctx, method, path, data, query)
-	if err != nil {
-		return nil, err
+	return h.DoRequest(ctx, &Request{
+		Method:           method,
+		Path:             path,
+		Query:            query,
+		RequestBody:      data,
+		ResponseBody:     output,
+		ExpectedStatuses: expected,
+	})
+}
+
+// DoRequest preforms the request based on given request object.
+// request.RequestBodyJSON or request.RequestBody is used as a request body - RequestBodyJSON variant
+// has higher priority.
+// TODO(dfurman): refactor the function to implement Doer interface: func(http.Request) (http.Response, error)
+// TODO(dfurman): use the builder pattern: h.ExpectStatuses([]int{200}).DecodeResponseTo(&response).Do(http.Request)
+// TODO(dfurman): improve the test coverage
+func (h *HTTP) DoRequest(ctx context.Context, r *Request) (*http.Response, error) {
+	if r == nil {
+		return nil, errors.Errorf("request cannot be nil")
 	}
 
-	resp, err := h.doHTTPRequestRetryingOn401(ctx, request, data)
+	resp, err := h.doHTTPRequestRetryingOn401(ctx, r)
 	if err != nil {
 		return resp, httputil.ErrorFromResponse(err, resp)
 	}
 	defer func() {
 		if cErr := resp.Body.Close(); cErr != nil {
+			// TODO(dfurman): append cErr to err
 			logrus.WithError(err).Debug("client.HTTP: Error closing response body")
 		}
 	}()
 
-	err = httputil.CheckStatusCode(expected, resp.StatusCode)
+	err = httputil.CheckStatusCode(r.ExpectedStatuses, resp.StatusCode)
 	if err != nil {
 		return resp, httputil.ErrorFromResponse(err, resp)
 	}
 
 	d := json.NewDecoder(resp.Body)
 	d.UseNumber()
-	err = d.Decode(&output)
+	err = d.Decode(&r.ResponseBody)
 	switch err {
 	default:
 		return resp, errors.Wrapf(httputil.ErrorFromResponse(err, resp), "decoding response body failed")
@@ -301,58 +302,19 @@ func (h *HTTP) Do(
 	return resp, nil
 }
 
-func (h *HTTP) prepareHTTPRequest(
-	ctx context.Context, method, path string, data interface{}, query url.Values,
-) (*http.Request, error) {
-	var request *http.Request
-	if data != nil {
-		dataJSON, err := json.Marshal(data)
-		if err != nil {
-			return nil, errors.Wrap(err, "encoding request data failed")
-		}
-		request, err = http.NewRequest(method, h.getURL(path), bytes.NewBuffer(dataJSON))
-		if err != nil {
-			return nil, errors.Wrap(err, "creating HTTP request failed")
-		}
-		request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	} else {
-		var err error
-		request, err = http.NewRequest(method, h.getURL(path), nil)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating HTTP request failed")
-		}
-		request = request.WithContext(ctx) // TODO(mblotniak): use http.NewRequestWithContext after go 1.13 upgrade
-	}
-	if len(query) > 0 {
-		request.URL.RawQuery = query.Encode()
-	}
-	request.Header.Set("Content-Type", "application/json")
-	if h.AuthToken != "" {
-		request.Header.Set("X-Auth-Token", h.AuthToken)
-	}
-	return request, nil
-}
-
-func (h *HTTP) getURL(path string) string {
-	return h.Endpoint + path
-}
-
-// nolint: gocyclo
-func (h *HTTP) doHTTPRequestRetryingOn401(
-	ctx context.Context, request *http.Request, data interface{},
-) (*http.Response, error) {
-	logrus.WithFields(logrus.Fields{
-		"method": request.Method,
-		"url":    request.URL,
-		"header": request.Header,
-		"data":   data,
-	}).Debug("Executing API Server request")
-
-	httputil.SetContextHeaders(request)
+func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context, r *Request) (*http.Response, error) {
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
-		var err error
-		if resp, err = h.httpClient.Do(request); err != nil {
+		httpR, err := r.newHTTPRequest(ctx, h.Endpoint, h.AuthToken)
+		if err != nil {
+			return nil, err
+		}
+		logrus.WithFields(logrus.Fields{
+			"attempt": i + 1,
+			"request": httpR,
+		}).Debug("Doing HTTP request")
+
+		if resp, err = h.httpClient.Do(httpR); err != nil {
 			return resp, errors.Wrap(err, "issuing HTTP request failed")
 		}
 		if resp.StatusCode != http.StatusUnauthorized || h.ID == "" {
@@ -360,7 +322,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 		}
 		// If there is no keystone scope setup then the retry won't help.
 		if resp.StatusCode == http.StatusUnauthorized && h.Scope == nil {
-			return resp, errors.Wrap(err, "no keystone present cannot reauth")
+			return resp, errors.Wrap(err, "no keystone present - cannot re-authenticate")
 		}
 		// token might be expired, refresh token and retry
 		// skip refresh token after last retry
@@ -369,14 +331,67 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 				return resp, errors.Wrap(err, "closing response body failed")
 			}
 
-			// refresh token and use the new token in request header
+			// refresh token and use the new token in request newHeader
 			if err := h.Login(ctx); err != nil {
 				return resp, err
 			}
 			if h.AuthToken != "" {
-				request.Header.Set("X-Auth-Token", h.AuthToken)
+				httpR.Header.Set("X-Auth-Token", h.AuthToken)
 			}
 		}
 	}
 	return resp, nil
+}
+
+// Request holds HTTP request data.
+type Request struct {
+	Method           string      `yaml:"method,omitempty"`
+	Path             string      `yaml:"path,omitempty"`
+	Query            url.Values  `yaml:"query,omitempty"`
+	RequestBody      interface{} `yaml:"data,omitempty"`
+	RequestBodyJSON  string      `yaml:"request_body_json,omitempty"`
+	ResponseBody     interface{} `yaml:"output,omitempty"`
+	ExpectedStatuses []int       `yaml:"expected,omitempty"`
+}
+
+func (r *Request) newHTTPRequest(ctx context.Context, endpoint, authToken string) (request *http.Request, err error) {
+	body, err := r.resolveBody()
+	if err != nil {
+		return nil, err
+	}
+	request, err = http.NewRequestWithContext(ctx, r.Method, endpoint+r.Path, body)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating HTTP request failed")
+	}
+
+	if len(r.Query) > 0 {
+		request.URL.RawQuery = r.Query.Encode()
+	}
+
+	request.Header = newHeader(authToken)
+	httputil.SetContextHeaders(request)
+	return request, nil
+}
+
+func (r *Request) resolveBody() (body io.Reader, err error) {
+	if r.RequestBodyJSON != "" {
+		body = strings.NewReader(r.RequestBodyJSON)
+	} else if r.RequestBody != nil {
+		j, err := json.Marshal(r.RequestBody)
+		if err != nil {
+			return nil, errors.Wrap(err, "encode request body")
+		}
+		body = strings.NewReader(string(j))
+	}
+	return body, err
+}
+
+func newHeader(authToken string) http.Header {
+	header := http.Header{
+		"Content-Type": []string{"application/json"},
+	}
+	if authToken != "" {
+		header.Set("X-Auth-Token", authToken)
+	}
+	return header
 }

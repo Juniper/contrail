@@ -9,6 +9,7 @@ import (
 
 	"github.com/Juniper/asf/pkg/apiserver"
 	"github.com/Juniper/asf/pkg/errutil"
+	"github.com/Juniper/asf/pkg/logutil"
 	"github.com/Juniper/asf/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -74,6 +75,7 @@ func (p *ServiceEventProcessor) Process(ctx context.Context, event *Event) (*Eve
 type FQNameCache struct {
 	EventProcessor
 	idToFQName map[string][]string
+	log        *logrus.Entry
 }
 
 // NewFQNameCache returns new event processor with fqName cache.
@@ -81,11 +83,14 @@ func NewFQNameCache(p EventProcessor) *FQNameCache {
 	return &FQNameCache{
 		EventProcessor: p,
 		idToFQName:     map[string][]string{},
+		log:            logutil.NewLogger("fq-name-cache"),
 	}
 }
 
 // Process updates cache, adds fqNames to refEvents and processes the event with the EventProcessor.
 func (p *FQNameCache) Process(ctx context.Context, event *Event) (*Event, error) {
+	p.log.Debugf("FQNameCache received event: %v", event)
+
 	p.updateFQNameCache(event)
 
 	if err := p.sanitizeCreateRefEvent(event); err != nil {
@@ -100,8 +105,10 @@ func (p *FQNameCache) updateFQNameCache(event *Event) {
 	case services.ResourceEvent:
 		r := request.GetResource()
 		p.idToFQName[r.GetUUID()] = r.GetFQName()
+		p.log.Debugf("Added key %v, value %v", r.GetUUID(), r.GetFQName())
 	case DeleteRequest:
 		delete(p.idToFQName, request.GetID())
+		p.log.Debugf("Deleted key %v", request.GetID())
 	}
 }
 
@@ -113,7 +120,11 @@ func (p *FQNameCache) sanitizeCreateRefEvent(event *Event) error {
 	reference := refRequest.GetReference()
 	fqName, ok := p.idToFQName[reference.GetUUID()]
 	if !ok {
-		return errors.Errorf("failed to fetched reference fq_name for uuid: '%v'", reference.GetUUID())
+		return errors.Errorf(
+			"failed to fetched reference fq_name for uuid %v from FQNameCache %v",
+			reference.GetUUID(),
+			p.idToFQName,
+		)
 	}
 	reference.SetTo(fqName)
 	return nil
@@ -145,8 +156,8 @@ func (p *EventListProcessor) ProcessList(ctx context.Context, e *EventList) (*Ev
 	}, nil
 }
 
-// ContrailService implementation.
-type ContrailService struct {
+// APIService implementation.
+type APIService struct {
 	BaseService
 
 	DBService          ReadService
@@ -156,7 +167,7 @@ type ContrailService struct {
 }
 
 // UpdateRef performs a RefUpdate.
-func (service *ContrailService) UpdateRef(ctx context.Context, req *services.RefUpdate) error {
+func (service *APIService) UpdateRef(ctx context.Context, req *services.RefUpdate) error {
 	e, err := NewRefUpdateEvent(RefUpdateOption{
 		ReferenceType: asfmodels.ReferenceKind(req.Type, req.RefType),
 		FromUUID:      req.UUID,
@@ -172,7 +183,7 @@ func (service *ContrailService) UpdateRef(ctx context.Context, req *services.Ref
 }
 
 // RESTSync handles Sync API request.
-func (service *ContrailService) RESTSync(c echo.Context) error {
+func (service *APIService) RESTSync(c echo.Context) error {
 	events := &EventList{}
 	if err := c.Bind(events); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
@@ -194,7 +205,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	return c.JSON(http.StatusOK, responses.Events)
 }
 
-func sortEvents(ctx context.Context, service *ContrailService, events *EventList) (*EventList, error) {
+func sortEvents(ctx context.Context, service *APIService, events *EventList) (*EventList, error) {
 	switch events.OperationType() {
 	case services.OperationDelete:
 		return sortDelete(ctx, service, events)
@@ -205,7 +216,7 @@ func sortEvents(ctx context.Context, service *ContrailService, events *EventList
 	}
 }
 
-func sortDelete(ctx context.Context, service *ContrailService, events *EventList) (*EventList, error) {
+func sortDelete(ctx context.Context, service *APIService, events *EventList) (*EventList, error) {
 	refMap, err := getRefMapFromObjects(ctx, service, events.Events)
 	if err != nil {
 		return nil, err
@@ -214,7 +225,7 @@ func sortDelete(ctx context.Context, service *ContrailService, events *EventList
 }
 
 func getRefMapFromObjects(
-		ctx context.Context, service *ContrailService, events []*Event,
+		ctx context.Context, service *APIService, events []*Event,
 ) (map[*Event]asfmodels.References, error) {
 	refMap := make(map[*Event]asfmodels.References)
 	for i, ev := range events {
@@ -311,7 +322,7 @@ func getRefMapFromEvents(events []*Event) map[*Event]asfmodels.References {
 }
 
 // RegisterHTTPAPI registers REST API and action endpoints.
-func (service *ContrailService) RegisterHTTPAPI(r apiserver.HTTPRouter) {
+func (service *APIService) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	r.POST(
 		"{{ schema.Prefix }}{{ schema.PluralPath }}",
@@ -353,8 +364,8 @@ func (service *ContrailService) RegisterHTTPAPI(r apiserver.HTTPRouter) {
 }
 
 // RegisterGRPCAPI registers GRPC services.
-func (service *ContrailService) RegisterGRPCAPI(r apiserver.GRPCRouter) {
-	r.RegisterService(&_ContrailService_serviceDesc, service)
+func (service *APIService) RegisterGRPCAPI(r apiserver.GRPCRouter) {
+	r.RegisterService(&_APIService_serviceDesc, service)
 }
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.

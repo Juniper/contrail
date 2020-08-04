@@ -37,9 +37,14 @@ func (e *serviceUserNotFound) Error() string {
 	return fmt.Sprintf("user '%s' does not exist", e.user)
 }
 
-// WithXAuthToken creates child context with Auth Token
+// WithXAuthToken creates child context with Auth Token.
 func WithXAuthToken(ctx context.Context, token string) context.Context {
 	return httputil.WithHTTPHeader(ctx, xAuthTokenHeader, token)
+}
+
+// WithXSubjectToken creates child context with Subject Token.
+func WithXSubjectToken(ctx context.Context, token string) context.Context {
+	return httputil.WithHTTPHeader(ctx, xSubjectTokenHeader, token)
 }
 
 type doer interface {
@@ -108,6 +113,24 @@ func (k *Client) do(
 	}
 
 	return resp, nil
+}
+
+type tokenResponse struct {
+	Token `json:"token"`
+}
+
+// InspectToken gets token information from keystone.
+// This method requires authentication.
+func (k *Client) InspectToken(ctx context.Context, subjectToken string) (Token, error) {
+	ctx = WithXSubjectToken(ctx, subjectToken)
+
+	var response tokenResponse
+	if _, err := k.do(
+		ctx, http.MethodGet, "/auth/tokens", []int{http.StatusOK}, nil, &response,
+	); err != nil {
+		return Token{}, err
+	}
+	return response.Token, nil
 }
 
 // QueryParameter is a struct describing a single http query parameter.

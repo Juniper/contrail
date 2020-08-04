@@ -1,6 +1,8 @@
 package keystone
 
-import "time"
+import (
+	"time"
+)
 
 //AuthRequest is used to request an authentication.
 type AuthRequest interface {
@@ -180,31 +182,73 @@ type UserToken struct {
 
 //Token represents a token object.
 type Token struct {
-	AuditIds  []string   `json:"audit_ids"`
-	Catalog   []*Catalog `json:"catalog"`
-	Domain    *Domain    `json:"domain"`
-	Project   *Project   `json:"project"`
-	User      *User      `json:"user"`
-	ExpiresAt time.Time  `json:"expires_at"`
-	IssuedAt  time.Time  `json:"issued_at"`
-	Methods   []string   `json:"methods"`
-	Roles     []*Role    `json:"roles"`
+	AuditIds  []string  `json:"audit_ids"`
+	Catalog   Catalog   `json:"catalog"`
+	Domain    *Domain   `json:"domain"`
+	Project   *Project  `json:"project"`
+	User      *User     `json:"user"`
+	ExpiresAt time.Time `json:"expires_at"`
+	IssuedAt  time.Time `json:"issued_at"`
+	Methods   []string  `json:"methods"`
+	Roles     []*Role   `json:"roles"`
 }
 
-//Catalog represents API catalog.
-type Catalog struct {
+// Catalog is a service catalog for given token.
+type Catalog []*CatalogEntry
+
+// FindByName gets CatalogEntry with given name or nil if not found.
+func (c Catalog) FindByName(name string) *CatalogEntry {
+	for _, e := range c {
+		if e != nil && e.Name == name {
+			return e
+		}
+	}
+	return nil
+}
+
+// CatalogEntry represents API catalog entry.
+type CatalogEntry struct {
 	Endpoints []*Endpoint `json:"endpoints"`
 	ID        string      `json:"id"`
 	Name      string      `json:"name"`
 	Type      string      `json:"type"`
 }
 
+// EndpointInterface describes endpoint's interface type (public/internal/admin).
+type EndpointInterface string
+
+// EndpointInterface all possible values.
+// See: https://docs.openstack.org/python-openstackclient/train/cli/command-objects/endpoint.html#endpoint-set
+const (
+	AdminInterface    EndpointInterface = "admin"
+	InternalInterface EndpointInterface = "internal"
+	PublicInterface   EndpointInterface = "public"
+)
+
+// URL returns URL of endpoint that has provided interface type.
+func (e *CatalogEntry) URL(i EndpointInterface) string {
+	if e == nil {
+		return ""
+	}
+	for _, endpoint := range e.Endpoints {
+		if endpoint != nil && endpoint.Interface == i {
+			return endpoint.URL
+		}
+	}
+	return ""
+}
+
+// PublicURL returns URL of catalog entry that has interface set to "public".
+func (e *CatalogEntry) PublicURL() string {
+	return e.URL(PublicInterface)
+}
+
 //Endpoint represents API endpoint.
 type Endpoint struct {
-	ID        string `json:"id"`
-	Interface string `json:"interface"`
-	Region    string `json:"region"`
-	URL       string `json:"url"`
+	ID        string            `json:"id"`
+	Interface EndpointInterface `json:"interface"`
+	Region    string            `json:"region"`
+	URL       string            `json:"url"`
 }
 
 //ValidateTokenResponse represents a response object for validate token request.

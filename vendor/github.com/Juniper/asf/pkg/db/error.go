@@ -32,7 +32,7 @@ func FormatDBError(err error) error {
 // If err is not recognized, nil is returned.
 func getPublicError(err error) error {
 	if err == sql.ErrNoRows {
-		return errutil.ErrorNotFound
+		return errutil.ErrorNotFound()
 	}
 
 	switch err.(type) {

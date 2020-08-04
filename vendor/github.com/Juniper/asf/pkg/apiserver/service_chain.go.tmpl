@@ -18,15 +18,15 @@ import (
 // SetupServiceChain creates service chain using default services, given extra services and DB service.
 // It puts extra services after default services but before etcd notifier service and DB service.
 // It returns first service of the built service chain.
-// TODO(dfurman): return services.Service when ContrailService is split to plugins.
+// TODO(dfurman): return services.Service when APIService is split to plugins.
 func SetupServiceChain(
 	dbService *db.Service, ag asfrbac.AccessGetter, extraServices ...services.Service,
-) (*services.ContrailService, error) {
+) (*services.APIService, error) {
 	tv, err := models.NewTypeValidatorWithFormat()
 	if err != nil {
 		return nil, errors.Wrap(err, "new type validator with format")
 	}
-	cs := &services.ContrailService{
+	cs := &services.APIService{
 		BaseService:       services.BaseService{},
 		DBService:         dbService,
 		TypeValidator:     tv,

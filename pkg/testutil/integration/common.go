@@ -417,7 +417,7 @@ func runTestScenario(
 		}).Info("Starting task")
 		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
 		checkWaiters := StartWaiters(t, ts.Name, task.Waiters)
-		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
+		task.Request.RequestBody = fileutil.YAMLtoJSONCompat(task.Request.RequestBody)
 		clientID := DefaultClientID
 		if task.Client != "" {
 			clientID = task.Client
@@ -439,7 +439,7 @@ func runTestScenario(
 		ok = testutil.AssertEqual(
 			t,
 			task.Expect,
-			task.Request.Output,
+			task.Request.ResponseBody,
 			fmt.Sprintf("Invalid response body in task %q of scenario %q", task.Name, ts.Name),
 		)
 		checkWatchers(t)
@@ -549,12 +549,12 @@ func extractSyncOperation(syncOp map[string]interface{}, client string) []tracke
 }
 
 func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
-	if task.Request.Output != nil && task.Request.Method == "POST" && code == http.StatusOK && rerr == nil {
+	if task.Request.ResponseBody != nil && task.Request.Method == "POST" && code == http.StatusOK && rerr == nil {
 		clientID := DefaultClientID
 		if task.Client != "" {
 			clientID = task.Client
 		}
-		tracked = trackResponse(task.Request.Output, clientID, tracked)
+		tracked = trackResponse(task.Request.ResponseBody, clientID, tracked)
 	}
 	return tracked
 }

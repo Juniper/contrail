@@ -8,7 +8,7 @@ go install github.com/golang/mock/mockgen
 go install github.com/mitchellh/gox
 go install golang.org/x/lint/golint
 go install golang.org/x/tools/cmd/goimports
-go install github.com/Juniper/asf/cmd/contrailschema
+go install github.com/Juniper/asf/cmd/asfgen
 
 curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
     bash -s -- -b $(go env GOPATH)/bin v1.10.2

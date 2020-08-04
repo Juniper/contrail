@@ -29,6 +29,7 @@ func NewEtcdFeeder(id string) (*sync.PostgresWatcher, error) {
 		id,
 		&services.ServiceEventProcessor{Service: etcdNotifierService},
 		etcdNotifierService.Client,
+		viper.GetBool("sync.dump"),
 	)
 }
 

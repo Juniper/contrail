@@ -43,7 +43,7 @@ func (db *DB) GetMetadata(
 		return metadatas[0], nil
 	}
 
-	return nil, errutil.ErrorNotFound
+	return nil, errutil.ErrorNotFound()
 }
 
 func buildMetadataFilter(

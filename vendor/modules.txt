@@ -1,12 +1,13 @@
 # github.com/ExpansiveWorlds/instrumentedsql v0.0.0-20171218214018-45abb4b1947d
 github.com/ExpansiveWorlds/instrumentedsql
-# github.com/Juniper/asf v0.0.0-20200424093617-24f6b1b9296e
-github.com/Juniper/asf/cmd/contrailschema
+# github.com/Juniper/asf v0.0.0-20200728212033-9fdd3f5f6bdc
+github.com/Juniper/asf/cmd/asfgen
 github.com/Juniper/asf/pkg/apiserver
 github.com/Juniper/asf/pkg/auth
 github.com/Juniper/asf/pkg/cache
 github.com/Juniper/asf/pkg/client
-github.com/Juniper/asf/pkg/cmd/contrailschema
+github.com/Juniper/asf/pkg/cmd/asfcli
+github.com/Juniper/asf/pkg/cmd/asfgen
 github.com/Juniper/asf/pkg/db
 github.com/Juniper/asf/pkg/errutil
 github.com/Juniper/asf/pkg/etcd
@@ -288,6 +289,8 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
+# golang.org/x/time v0.0.0-20191024005414-555d28b269f0
+golang.org/x/time/rate
 # golang.org/x/tools v0.0.0-20200421185700-66008de356c7
 golang.org/x/tools/cmd/goimports
 golang.org/x/tools/cover

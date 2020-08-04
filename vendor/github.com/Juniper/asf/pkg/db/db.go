@@ -103,6 +103,23 @@ func GetTransaction(ctx context.Context) *sql.Tx {
 	return tx
 }
 
+// SetTransactionSnapshot sets transaction snapshot for current transaction from context.
+func SetTransactionSnapshot(ctx context.Context, snapshotName string) error {
+	tx := GetTransaction(ctx)
+	if tx == nil {
+		return errors.New("no active transaction in context")
+	}
+	_, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+	if err != nil {
+		return errors.Wrap(err, "error setting transaction isolation")
+	}
+	_, err = tx.ExecContext(ctx, fmt.Sprintf("SET TRANSACTION SNAPSHOT '%s'", snapshotName))
+	if err != nil {
+		return errors.Wrap(err, "error setting transaction snapshot")
+	}
+	return nil
+}
+
 func rollbackOnPanic(tx *sql.Tx) {
 	if p := recover(); p != nil {
 		err := tx.Rollback()
@@ -212,7 +229,7 @@ func (db *DB) CheckPolicy(ctx context.Context, qb *QueryBuilder, uuid string) (e
 		return FormatDBError(err)
 	}
 	if count == 0 {
-		return errutil.ErrorNotFound
+		return errutil.ErrorNotFound()
 	}
 
 	return nil
@@ -376,6 +393,27 @@ func (db *DB) dumpTable(ctx context.Context, schemaID string) (TableData, error)
 	return result, nil
 }
 
+// DumpSnapshot performs snapshot in transaction.
+func (db *DB) DumpSnapshot(
+	ctx context.Context, snapshotName string,
+) (dump DatabaseData, err error) {
+	if err = db.DoInTransactionWithOpts(ctx, func(ctx context.Context) error {
+		if err := SetTransactionSnapshot(ctx, snapshotName); err != nil {
+			return errors.Wrap(err, "cannot set transaction snapshot")
+		}
+		dump, err = db.Dump(ctx)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, &sql.TxOptions{ReadOnly: true},
+	); err != nil {
+		return nil, err
+	}
+
+	return dump, nil
+}
+
 // DriverWrapper is a function that wraps driver.Driver adding some functionalities.
 type DriverWrapper func(driver.Driver) driver.Driver
 
@@ -432,21 +470,22 @@ type ConnectionConfig struct {
 
 // ConnectionConfigFromViper loads ConnectionConfig from viper.
 func ConnectionConfigFromViper() ConnectionConfig {
+	databasePort := viper.GetString("database.port")
+	if databasePort == "" {
+		databasePort = defaultPostgresPort
+	}
 	return ConnectionConfig{
 		User:     viper.GetString("database.user"),
 		Password: viper.GetString("database.password"),
 		Host:     viper.GetString("database.host"),
-		Port:     viper.GetString("database.port"),
+		Port:     databasePort,
 		Name:     viper.GetString("database.name"),
 	}
 }
 
 // OpenConnection opens DB connection.
 func OpenConnection(c ConnectionConfig) (*sql.DB, error) {
-	dsn, err := dataSourceName(&c)
-	if err != nil {
-		return nil, err
-	}
+	dsn := fmt.Sprintf(dbDSNFormatPostgreSQL, c.User, c.Password, c.Host, c.Name, c.Port)
 
 	driverName := registerDriver(c.DriverWrappers)
 
@@ -455,13 +494,6 @@ func OpenConnection(c ConnectionConfig) (*sql.DB, error) {
 		return nil, errors.Wrap(err, "failed to open DB connection")
 	}
 	return db, nil
-}
-
-func dataSourceName(c *ConnectionConfig) (string, error) {
-	if c.Port == "" {
-		c.Port = defaultPostgresPort
-	}
-	return fmt.Sprintf(dbDSNFormatPostgreSQL, c.User, c.Password, c.Host, c.Name, c.Port), nil
 }
 
 func registerDriver(wrappers []DriverWrapper) string {

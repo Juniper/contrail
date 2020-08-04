@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/Juniper/asf/pkg/errutil"
 	"github.com/Juniper/asf/pkg/format"
@@ -49,23 +48,22 @@ func NewService(db *sql.DB) *Service {
 
 // DecodeRowEvent transforms row data into *services.Event.
 func (db *Service) DecodeRowEvent(
-	operation, resourceName string, pk []string, properties map[string]interface{},
+	operation, tableName string, pk []string, properties map[string]interface{},
 ) (*services.Event, error) {
-	obj, fields, err := db.ScanRow(resourceName, properties)
+	kind, obj, fields, err := db.ScanRow(tableName, properties)
 	if err != nil {
 		return nil, fmt.Errorf("error scanning row: %v", err)
 	}
 
 	pkLen := len(pk)
-	isRef := strings.HasPrefix(resourceName, schema.RefPrefix)
 	switch {
-	case pkLen == 1 && !isRef:
-		return decodeResourceEvent(operation, resourceName, pk, obj, fields)
-	case pkLen == 2 && isRef:
-		return decodeReferenceEvent(operation, resourceName, pk, obj)
+	case pkLen == 1:
+		return decodeResourceEvent(operation, kind, pk, obj, fields)
+	case pkLen == 2:
+		return decodeReferenceEvent(operation, kind, pk, obj)
 	}
 	return nil, errors.Errorf(
-		"%s row: unhandled case with table %v and primary key with %v elements", operation, resourceName, pkLen,
+		"%s row: unhandled case with table %v and primary key with %v elements", operation, kind, pkLen,
 	)
 }
 
@@ -74,7 +72,7 @@ type toMapper interface {
 }
 
 func decodeResourceEvent(
-	operation, resourceName string, pk []string, obj toMapper, fm *types.FieldMask,
+	operation, kind string, pk []string, obj toMapper, fm *types.FieldMask,
 ) (*services.Event, error) {
 	m := obj.ToMap()
 	if fm != nil {
@@ -82,14 +80,14 @@ func decodeResourceEvent(
 	}
 	return services.NewEvent(services.EventOption{
 		UUID:      pk[0],
-		Kind:      resourceName,
+		Kind:      kind,
 		Data:      m,
 		Operation: operation,
 		FieldMask: fm,
 	})
 }
 
-func decodeReferenceEvent(operation, resourceName string, pk []string, attr toMapper) (*services.Event, error) {
+func decodeReferenceEvent(operation, kind string, pk []string, attr toMapper) (*services.Event, error) {
 	if operation == asfservices.OperationUpdate {
 		return nil, errors.New("method UPDATE not available on ref_* resources - received ref-relax event")
 	}
@@ -99,15 +97,11 @@ func decodeReferenceEvent(operation, resourceName string, pk []string, attr toMa
 	}
 	return services.NewRefUpdateEvent(services.RefUpdateOption{
 		Operation:     asfservices.ParseRefOperation(operation),
-		ReferenceType: refTableNameToReferenceName(resourceName),
+		ReferenceType: kind,
 		FromUUID:      pk[0],
 		ToUUID:        pk[1],
 		Attr:          attrMap,
 	})
-}
-
-func refTableNameToReferenceName(name string) string {
-	return strings.Replace(strings.TrimPrefix(name, "ref_"), "_", "-", -1)
 }
 
 func (db *Service) initQueryBuilders() {
@@ -125,19 +119,23 @@ func (db *Service) initQueryBuilders() {
 }
 
 // ScanRow maps row from database table named schemaID into generated Go struct.
-func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (asfdb.Object, *types.FieldMask, error) {
-    switch schemaID { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-    case "{{ schema.ID }}":
-        return db.scan{{schema.JSONSchema.GoName}}(rowData)
-        {%- for linkTo, reference in schema.References %}
-    case "ref_{{ schema.ID }}_{{ linkTo }}":
-        {% if reference.RefType %}o, fm := db.scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(rowData)
-        return o, fm, nil
-        {%- else %}return nil, nil, nil{% endif %}
+func (db *Service) ScanRow(tableName string, rowData map[string]interface{}) (
+	kind string, object asfdb.Object, fieldMask *types.FieldMask, err error,
+) {
+	switch tableName { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.Table %}
+	case "{{ schema.Table }}":
+		o, fm, err := db.scan{{schema.JSONSchema.GoName}}(rowData)
+		return "{{ schema.ID }}", o, fm, err
+{%- for linkTo, reference in schema.References %}
+	{%- set refKind = schema.TypeName | add:"-" | add:reference.LinkTo.TypeName %}
+	case "{{ reference.Table }}":
+		{% if reference.RefType %}o, fm := db.scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(rowData)
+		return "{{ refKind }}", o, fm, nil
+		{%- else %}return "{{ refKind }}", nil, nil, nil{% endif %}
 {%- endfor -%}
-    {% endif%}{% endfor %}
-    }
-    return nil, nil, fmt.Errorf("unknown schemaID: %v", schemaID)
+	{% endif%}{% endfor %}
+	}
+	return "", nil, nil, fmt.Errorf("unknown table: %v", tableName)
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -642,7 +640,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 			result, err = db.list{{ schema.JSONSchema.GoName }}(ctx, listRequest)
 			return err
 		}); err != nil {
-		return nil, errutil.ErrorInternal
+		return nil, errutil.ErrorInternal()
 	}
 	if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
 		return nil, errutil.ErrorNotFoundf("{{ schema.TypeName }} with uuid: '%s' does not exists", request.ID)

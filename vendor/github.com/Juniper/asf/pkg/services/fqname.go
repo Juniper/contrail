@@ -14,10 +14,10 @@ import (
 
 // Endpoint paths and names.
 const (
-	FQNameToIDPath = "fqname-to-id"
+	FQNameToIDPath = "/fqname-to-id"
 	FQNameToIDName = "name-to-id"
 
-	IDToFQNamePath = "id-to-fqname"
+	IDToFQNamePath = "/id-to-fqname"
 	IDToFQNameName = "id-to-name"
 )
 

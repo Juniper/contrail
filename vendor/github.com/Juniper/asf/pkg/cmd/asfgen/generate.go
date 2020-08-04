@@ -1,4 +1,4 @@
-package contrailschema
+package asfgen
 
 import (
 	"strings"
@@ -33,11 +33,11 @@ type generateFlags struct {
 var flags = generateFlags{}
 
 func init() {
-	viper.SetEnvPrefix("contrail")
+	viper.SetEnvPrefix("asf")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
-	ContrailSchema.AddCommand(generateCmd)
+	Command.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&flags.SchemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&flags.AddonsDir, "addons", "a", "", "Addons Directory")
 	generateCmd.Flags().StringVarP(

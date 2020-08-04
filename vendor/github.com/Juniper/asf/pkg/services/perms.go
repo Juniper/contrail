@@ -10,7 +10,7 @@ import (
 
 // Endpoint path values.
 const (
-	ObjPermsPath = "obj-perms"
+	ObjPermsPath = "/obj-perms"
 )
 
 // ObjPermsPlugin adds a obj-perms enpoint.

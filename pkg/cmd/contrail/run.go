@@ -152,7 +152,12 @@ func startEtcdWatcher() {
 // TODO: move to startServer
 func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
-	producer, err := syncp.NewEventProducer("cache-watcher", cacheDB, asfservices.NoTransaction)
+	producer, err := syncp.NewEventProducer(
+		"cache-watcher",
+		cacheDB,
+		asfservices.NoTransaction,
+		false,
+	)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
@@ -257,7 +262,7 @@ func startServer() {
 
 // NewServiceChain creates a new service chain which can be plugged into API Server.
 // It returns the first service of the built service chain.
-func NewServiceChain(dbService *db.Service, c collector.Collector) (*services.ContrailService, error) {
+func NewServiceChain(dbService *db.Service, c collector.Collector) (*services.APIService, error) {
 	var extraServices []services.Service
 	var neutronService *neutron.Service
 	if viper.GetBool("server.enable_vnc_neutron") {

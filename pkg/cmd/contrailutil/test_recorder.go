@@ -65,7 +65,7 @@ func recordTest() {
 
 	for _, task := range testScenario.Workflow {
 		logrus.Debug("[Step] ", task.Name)
-		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
+		task.Request.RequestBody = fileutil.YAMLtoJSONCompat(task.Request.RequestBody)
 		clientID := "default"
 		if task.Client != "" {
 			clientID = task.Client
@@ -73,8 +73,8 @@ func recordTest() {
 
 		_, err = clients[clientID].DoRequest(ctx, task.Request)
 		assertError(err, fmt.Sprintf("Task %s failed", task.Name))
-		task.Expect = task.Request.Output
-		task.Request.Output = nil
+		task.Expect = task.Request.ResponseBody
+		task.Request.ResponseBody = nil
 	}
 
 	err = fileutil.SaveFile(outputPath, testScenario)

@@ -196,7 +196,7 @@ func (db *DB) insertIntIntoPool(ctx context.Context, tx *sql.Tx, key string, id 
 	}
 
 	if len(pools) == 0 {
-		return errutil.ErrorNotFound
+		return errutil.ErrorNotFound()
 	}
 
 	err = db.deleteIntPools(ctx, rangePool)
@@ -295,7 +295,7 @@ func (db *DB) DeallocateIntRange(ctx context.Context, target *IntPool) error {
 		End:   target.End + 1,
 	}
 	pools, err := db.GetIntPools(ctx, mergePool)
-	if err != nil && err != errutil.ErrorNotFound {
+	if err != nil && err != errutil.ErrorNotFound() {
 		return err
 	}
 
@@ -577,7 +577,7 @@ func (db *DB) DeallocateIPRange(ctx context.Context, target *IPPool) error {
 	}
 
 	pools, err := db.GetIPPools(ctx, mergePool)
-	if err != nil && err != errutil.ErrorNotFound {
+	if err != nil && err != errutil.ErrorNotFound() {
 		return err
 	}
 

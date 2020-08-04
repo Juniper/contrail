@@ -2,7 +2,8 @@ BUILD_DIR := ../build
 CONTRAIL_APIDOC_PATH := public/doc/index.html
 CONTRAIL_OPENAPI_PATH := public/openapi.json
 DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
-CONTRAILSCHEMA = $(shell go list -f '{{ .Target }}' ./vendor/github.com/Juniper/asf/cmd/contrailschema)
+ASFGEN = ./vendor/github.com/Juniper/asf/cmd/asfgen
+ASFGEN_BIN = $(shell go list -f '{{ .Target }}' $(ASFGEN))
 CONTRAILUTIL := $(shell go list -f '{{ .Target }}' ./cmd/contrailutil)
 GOPATH ?= $(shell go env GOPATH)
 PATH := $(PATH):$(GOPATH)/bin
@@ -31,10 +32,10 @@ fast_generate: generate_pb_go generate_mocks doc/proto.md ## Generate source cod
 
 generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/gen_service.pb.go pkg/services/gen_plugins.pb.go ## Generate *pb.go files from *.proto definitions
 
-generate_go: install_contrailschema ## Generate source code from templates and schema
+generate_go: install_asfgen ## Generate source code from templates and schema
 	# Generate for contrail resources.
 	@mkdir -p public/
-	$(CONTRAILSCHEMA) generate --no-regenerate --schemas schemas/contrail --addons schemas/addons \
+	$(ASFGEN_BIN) generate --no-regenerate --schemas schemas/contrail --addons schemas/addons \
 		--template-config tools/templates/contrail/template_config.yaml \
 		--db-import-path github.com/Juniper/contrail/pkg/db \
 		--etcd-import-path github.com/Juniper/contrail/pkg/etcd \
@@ -44,7 +45,7 @@ generate_go: install_contrailschema ## Generate source code from templates and s
 		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
-	$(CONTRAILSCHEMA) generate --no-regenerate --schemas schemas/neutron \
+	$(ASFGEN_BIN) generate --no-regenerate --schemas schemas/neutron \
 		--template-config tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
@@ -96,7 +97,7 @@ clean_gen: ## Remove generated source code and documentation
 build: ## Build all binaries without producing output
 	go build ./cmd/...
 
-install: install_contrail install_contrailcli install_contrailschema install_contrailutil ## Install all binaries
+install: install_contrail install_contrailcli install_asfgen install_contrailutil ## Install all binaries
 
 install_contrail: ## Install Contrail binary
 	go install ./cmd/contrail
@@ -104,8 +105,8 @@ install_contrail: ## Install Contrail binary
 install_contrailcli:  ## Install Contrailcli binary
 	go install ./cmd/contrailcli
 
-install_contrailschema: ## Install Contrailschema binary
-	go install ./vendor/github.com/Juniper/asf/cmd/contrailschema/
+install_asfgen: ## Install Contrailschema binary
+	go install $(ASFGEN)
 
 install_contrailutil: ## Install Contrailutil binary
 	go install ./cmd/contrailutil

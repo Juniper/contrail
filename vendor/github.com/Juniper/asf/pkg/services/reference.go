@@ -13,8 +13,8 @@ import (
 
 // Endpoint paths.
 const (
-	RefUpdatePath         = "ref-update"
-	RefRelaxForDeletePath = "ref-relax-for-delete"
+	RefUpdatePath         = "/ref-update"
+	RefRelaxForDeletePath = "/ref-relax-for-delete"
 )
 
 type RefUpdater interface {

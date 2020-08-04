@@ -163,3 +163,22 @@ func CopyFile(src, dest string, overwrite bool) error {
 	}
 	return WriteToFile(dest, content, srcInfo.Mode())
 }
+
+// SuperDirPath returns path of super-directory with given name.
+// It supports only forward-slash paths.
+// Example:
+//		when current directory is                /path/to/grand-grand-super-dir/grand-super-dir/super-dir/current-dir
+//		then SuperDirPath("grand-super-dir") == "/path/to/grand-grand-super-dir/grand-super-dir"
+func SuperDirPath(superDirName string) (string, error) {
+	wdPath, err := os.Getwd()
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	wdPath += "/"
+
+	var i int
+	if i = strings.LastIndex(wdPath, "/"+superDirName+"/"); i == -1 {
+		return "", errors.Errorf("superDirName %q not found in working directory", superDirName)
+	}
+	return wdPath[:i+1+len(superDirName)], nil
+}

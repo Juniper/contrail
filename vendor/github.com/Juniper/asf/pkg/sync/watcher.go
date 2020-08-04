@@ -8,10 +8,15 @@ import (
 
 	"github.com/Juniper/asf/pkg/db"
 	"github.com/Juniper/asf/pkg/logutil"
+	"github.com/Juniper/asf/pkg/retry"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+)
+
+const (
+	maxRetry = 5
 )
 
 // PostgresWatcher allows subscribing to PostgreSQL logical replication messages.
@@ -20,7 +25,8 @@ type PostgresWatcher struct {
 
 	lsnCounter lsnCounter
 
-	conn postgresWatcherConnection
+	conn   postgresWatcherConnection
+	dumper Dumper
 
 	consumer ChangeHandler
 	decoder  *pgoutputDecoder
@@ -32,31 +38,33 @@ type PostgresWatcher struct {
 
 type postgresWatcherConnection interface {
 	io.Closer
+	Reconnect() error
 	GetReplicationSlot(name string) (receivedLSN LSN, snapshotName string, err error)
 	StartReplication(slot, publication string, start LSN) error
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 	SendStatus(received, saved LSN) error
-	IsInRecovery(context.Context) (bool, error)
+}
 
-	DumpSnapshot(ctx context.Context, snapshotName string) (db.DatabaseData, error)
+// Dumper is a object that allows dumping transaction snapshot.
+type Dumper interface {
+	DumpSnapshot(context.Context, string) (db.DatabaseData, error)
 }
 
 // NewPostgresWatcher creates new watcher and initializes its connections.
-func NewPostgresWatcher(consumer ChangeHandler, db DB, options ...WatcherOption) (*PostgresWatcher, error) {
-	conf := defaultWatcherOptions()
-	for _, o := range options {
-		o(&conf)
-	}
-	conn, err := NewPostgresConnection(db)
+func NewPostgresWatcher(consumer ChangeHandler, dumper Dumper, options ...WatcherOption) (*PostgresWatcher, error) {
+	conn, err := NewPostgresConnection()
 	if err != nil {
 		return nil, err
 	}
 
-	log := logutil.NewLogger("postgres-watcher")
+	conf := loadConfig(options)
+
+	log := logutil.NewLogger(conf.Slot)
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
 	return &PostgresWatcher{
 		conn:       conn,
+		dumper:     dumper,
 		conf:       conf,
 		consumer:   consumer,
 		decoder:    newPgoutputDecoder(),
@@ -79,6 +87,14 @@ func defaultWatcherOptions() WatcherOptions {
 		Publication:   PostgreSQLPublicationName,
 		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
 	}
+}
+
+func loadConfig(os []WatcherOption) WatcherOptions {
+	conf := defaultWatcherOptions()
+	for _, o := range os {
+		o(&conf)
+	}
+	return conf
 }
 
 // WatcherOption is a function that sets some value in WatherOptions.
@@ -117,20 +133,9 @@ func (w *PostgresWatcher) DumpDone() <-chan struct{} {
 	return w.dumpDoneCh
 }
 
-// Start starts running the subscription. It can be stopped with context cancellation.
-func (w *PostgresWatcher) Start(ctx context.Context) error {
-	w.log.Debug("Starting Watch")
+func (w *PostgresWatcher) prepareReplication(ctx context.Context) error {
+	w.log.Debug("Preparing for replication")
 
-	// Logical replication cannot be run in recovery mode.
-	isInRecovery, err := w.conn.IsInRecovery(ctx)
-	if isInRecovery {
-		return markTemporaryError(errors.New("database is in recovery mode"))
-	}
-	if err != nil {
-		return wrapError(err)
-	}
-
-	var snapshotName string
 	slotLSN, snapshotName, err := w.conn.GetReplicationSlot(w.conf.Slot)
 	if err != nil {
 		return wrapError(errors.Wrap(err, "error getting replication slot"))
@@ -141,18 +146,48 @@ func (w *PostgresWatcher) Start(ctx context.Context) error {
 	}).Debug("Got replication slot")
 
 	w.lsnCounter.updateReceivedLSN(slotLSN) // TODO(Michal): get receivedLSN from etcd
-
 	if err := w.dumpIfShould(ctx, snapshotName); err != nil {
 		return wrapError(err)
 	}
-
 	w.lsnCounter.txnFinished(slotLSN)
 
-	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
-		return wrapError(errors.Wrap(err, "failed to start replication"))
+	return nil
+}
+
+// Start starts running the subscription. It can be stopped with context cancellation.
+func (w *PostgresWatcher) Start(ctx context.Context) error {
+	if err := w.prepareReplication(ctx); err != nil {
+		return errors.Wrap(err, "preparation for replication failed")
 	}
 
 	return wrapError(w.runMessageProducer(ctx))
+}
+
+// StartWithRetry do the same as Start if no error arises. Else it retry on capturing errors caused by unstable connection
+func (w *PostgresWatcher) StartWithRetry(ctx context.Context) error {
+	if err := w.prepareReplication(ctx); err != nil {
+		return errors.Wrap(err, "preparation for replication failed")
+	}
+
+	return wrapError(
+		retry.Do(
+			func() (retry bool, err error) {
+				if err = w.runMessageProducer(ctx); isBadConnectionCausedError(err) {
+					// If reconnect fails, conn is not replaced by a new one
+					// So in next round of retry,
+					// same error will be raised by runMessageProducer and w.conn will Reconncet() again
+					err = w.conn.Reconnect()
+					return true, err
+				}
+
+				return false, err
+			},
+			retry.WithLog(logrus.StandardLogger()),
+			retry.WithMaxRetry(maxRetry),
+			retry.WithInterval(time.Second),
+			retry.WithBackoff(2),
+		),
+	)
 }
 
 func (w *PostgresWatcher) dumpIfShould(ctx context.Context, snapshotName string) error {
@@ -172,7 +207,7 @@ func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
 	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 
-	dumpData, err := w.conn.DumpSnapshot(ctx, snapshotName)
+	dumpData, err := w.dumper.DumpSnapshot(ctx, snapshotName)
 	if err != nil {
 		return errors.Wrap(w.muteCancellationError(err), "dumping snapshot failed")
 	}
@@ -199,6 +234,12 @@ func (w *PostgresWatcher) muteCancellationError(err error) error {
 }
 
 func (w *PostgresWatcher) runMessageProducer(ctx context.Context) error {
+	w.log.Debug("Start watching")
+
+	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
+		return wrapError(errors.Wrap(err, "failed to start replication"))
+	}
+
 	ticker := time.NewTicker(w.conf.StatusTimeout)
 	defer ticker.Stop()
 

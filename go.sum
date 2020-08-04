@@ -6,8 +6,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/ExpansiveWorlds/instrumentedsql v0.0.0-20171218214018-45abb4b1947d h1:r+whow+VHd9kAd4UTtQ/rtvcvmwkdryKUcGofpYOp+8=
 github.com/ExpansiveWorlds/instrumentedsql v0.0.0-20171218214018-45abb4b1947d/go.mod h1:Lm6NFlzU3HvZIo5l8GykZn6MH8/wq/A/X/d+7P/hgZU=
-github.com/Juniper/asf v0.0.0-20200424093617-24f6b1b9296e h1:+1m/agjTN5KAJ1nGpDB3hPS/c0kzAJZFr8ffkDahT8o=
-github.com/Juniper/asf v0.0.0-20200424093617-24f6b1b9296e/go.mod h1:fu8RDMPWEi9s8s09/6c+L1ZZKRh+1XJXF2gc1cuvz7A=
+github.com/Juniper/asf v0.0.0-20200728212033-9fdd3f5f6bdc h1:sgpkJKRPUMSG+yOG5uqwImh8iuUTQS7I6HITBf4yct4=
+github.com/Juniper/asf v0.0.0-20200728212033-9fdd3f5f6bdc/go.mod h1:VyPxJA4NoGjjNlico6vpa6BF2MXHBWti1cmfb8a0iaM=
 github.com/Masterminds/semver v1.4.2 h1:WBLTQ37jOCzSLtXNdoo8bNM8876KhNqOKvrlGITgsTc=
 github.com/Masterminds/semver v1.4.2/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/sprig v2.15.0+incompatible h1:0gSxPGWS9PAr7U2NsQ2YQg6juRDINkUyuvbb4b2Xm8w=

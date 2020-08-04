@@ -86,11 +86,11 @@ func (p *AuthMiddleware) GRPCInterceptor(
 ) (interface{}, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, errutil.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated()
 	}
 	token := md["x-auth-token"]
 	if len(token) == 0 {
-		return nil, errutil.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated()
 	}
 	newCtx, err := authenticate(ctx, p.auth, token[0])
 	if err != nil {
@@ -109,12 +109,12 @@ func newKeystoneAuth(authURL string, insecure bool) *keystone.Auth {
 
 func authenticate(ctx context.Context, ka *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
-		return nil, errors.Wrap(errutil.ErrorUnauthenticated, "no auth token in request")
+		return nil, errors.Wrap(errutil.ErrorUnauthenticated(), "no auth token in request")
 	}
 	validatedToken, err := ka.Validate(tokenString)
 	if err != nil {
 		logrus.Errorf("Invalid Token: %s", err)
-		return nil, errutil.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated()
 	}
 	roles := []string{}
 	for _, r := range validatedToken.Roles {
@@ -123,7 +123,7 @@ func authenticate(ctx context.Context, ka *keystone.Auth, tokenString string) (c
 	project := validatedToken.Project
 	if project == nil {
 		logrus.Debug("No project in a token")
-		return nil, errutil.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated()
 	}
 	domain := validatedToken.Project.Domain.ID
 	user := validatedToken.User

@@ -15,8 +15,8 @@ import (
 
 // Endpoint paths.
 const (
-	IntPoolPath  = "int-pool"
-	IntPoolsPath = "int-pools"
+	IntPoolPath  = "/int-pool"
+	IntPoolsPath = "/int-pools"
 )
 
 // IntPoolAllocator (de)allocates integers in an integer pool.
@@ -54,7 +54,7 @@ func (p *IntPoolPlugin) RegisterGRPCAPI(r apiserver.GRPCRouter) {
 func (p *IntPoolPlugin) RESTCreateIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorForbidden())
 	}
 
 	data := &CreateIntPoolRequest{}
@@ -74,7 +74,7 @@ func (p *IntPoolPlugin) RESTCreateIntPool(c echo.Context) error {
 func (p *IntPoolPlugin) RESTGetIntOwner(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorForbidden())
 	}
 	aValue := c.QueryParam("value")
 	if aValue == "" {
@@ -106,7 +106,7 @@ func (p *IntPoolPlugin) RESTGetIntOwner(c echo.Context) error {
 func (p *IntPoolPlugin) RESTDeleteIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorForbidden())
 	}
 
 	data := &DeleteIntPoolRequest{}
@@ -184,7 +184,7 @@ type IntPoolAllocationBody struct {
 func (p *IntPoolPlugin) RESTIntPoolAllocate(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorForbidden())
 	}
 	var allocReq IntPoolAllocationBody
 	if err := c.Bind(&allocReq); err != nil {
@@ -255,7 +255,7 @@ func (p *IntPoolPlugin) SetInt(ctx context.Context, request *SetIntRequest) (*ty
 func (p *IntPoolPlugin) RESTIntPoolDeallocate(c echo.Context) error {
 	ctx := c.Request().Context()
 	if !auth.GetIdentity(ctx).IsAdmin() {
-		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorForbidden())
 	}
 	var allocReq IntPoolAllocationBody
 	if err := c.Bind(&allocReq); err != nil {
@@ -280,7 +280,7 @@ func (p *IntPoolPlugin) DeallocateInt(
 	}
 	if err := p.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		if err := p.IntPoolAllocator.DeallocateInt(ctx, request.GetPool(), request.GetValue()); err != nil {
-			return errutil.ErrorBadRequest(err.Error())
+			return errutil.ErrorBadRequestf(err.Error())
 		}
 		return nil
 	}); err != nil {

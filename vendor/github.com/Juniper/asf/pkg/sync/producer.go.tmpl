@@ -16,7 +16,7 @@ import (
 // NewEventProducer creates event producer that feeds EventProcessor with changes comming
 // from PostgresWatcher.
 func NewEventProducer(
-	id string, processor services.EventProcessor, txn asfservices.InTransactionDoer,
+	id string, processor services.EventProcessor, txn asfservices.InTransactionDoer, dump bool,
 ) (*sync.PostgresWatcher, error) {
 	setViperDefaults()
 
@@ -32,7 +32,7 @@ func NewEventProducer(
 		decoder: dbService,
 	}
 
-	if !viper.GetBool("sync.dump") {
+	if !dump {
 		return sync.NewPostgresWatcher(handler, &dbService.DB, sync.Slot(id), sync.NoDump())
 	}
 	return sync.NewPostgresWatcher(handler, &dbService.DB, sync.Slot(id))

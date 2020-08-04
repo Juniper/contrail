@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -116,7 +117,7 @@ type syncListResponse = syncListData
 type syncListRequest = syncListData
 
 const showHelpTemplate = `Show command possible usages:
-{% for schema in schemas %}contrail show {{ schema.ID }} $UUID
+{% for schema in schemas %}asfcli show {{ schema.ID }} $UUID
 {% endfor %}`
 
 // ListParameters contains parameters for list command.
@@ -174,7 +175,7 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 }
 
 const listHelpTemplate = `List command possible usages:
-{% for schema in schemas %}contrail list {{ schema.ID }}
+{% for schema in schemas %}{{ executableName }} list {{ schema.ID }}
 {% endfor %}`
 
 func pluralPath(schemaID string) string {
@@ -303,7 +304,7 @@ func (c *CLI) SetResourceParameter(schemaID, uuid, yamlString string) (string, e
 }
 
 const setHelpTemplate = `Set command possible usages:
-{% for schema in schemas %}contrail set {{ schema.ID }} $UUID $YAML
+{% for schema in schemas %}{{ executableName }} set {{ schema.ID }} $UUID $YAML
 {% endfor %}`
 
 // DeleteResource deletes resource with given schemaID and UUID.
@@ -325,7 +326,7 @@ func (c *CLI) DeleteResource(schemaID, uuid string) (string, error) {
 }
 
 const removeHelpTemplate = `Remove command possible usages:
-{% for schema in schemas %}contrail rm {{ schema.ID }} $UUID
+{% for schema in schemas %}{{ executableName }} rm {{ schema.ID }} $UUID
 {% endfor %}`
 
 type deleteRequest struct {
@@ -391,12 +392,9 @@ func (c *CLI) showHelp(schemaID string, template string) (string, error) {
 		return "", err
 	}
 
-	o, err := tpl.Execute(pongo2.Context{"schemas": api.Schemas})
-	if err != nil {
-		return "", err
-	}
-
-	return o, nil
+	return tpl.Execute(pongo2.Context{
+		"schemas": api.Schemas, "executableName": os.Args[0],
+	})
 }
 
 func (c *CLI) fetchServerAPI(serverSchema string) (*schema.API, error) {
