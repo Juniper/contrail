@@ -18,14 +18,16 @@ if [[ $(./bin/protoc --version) == "libprotoc 3.5.1" ]]; then
     exit 0
 fi
 
+protoc_ver="3.5.1"
+
 if [ "$(uname)" == 'Darwin' ]; then
-    wget https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-osx-x86_64.zip
-    unzip -o protoc-3.5.1-osx-x86_64.zip "bin/protoc"
-    rm protoc-3.5.1-osx-x86_64.zip
+    wget https://github.com/google/protobuf/releases/download/v${protoc_ver}/protoc-${protoc_ver}-osx-x86_64.zip -O protoc-${protoc_ver}-osx-x86_64.zip
+    unzip -o protoc-${protoc_ver}-osx-x86_64.zip "bin/protoc"
+    rm protoc-${protoc_ver}-osx-x86_64.zip
 elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
-    wget https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-x86_64.zip
-    unzip -o protoc-3.5.1-linux-x86_64.zip "bin/protoc"
-    rm protoc-3.5.1-linux-x86_64.zip
+    wget https://github.com/google/protobuf/releases/download/v${protoc_ver}/protoc-${protoc_ver}-linux-x86_64.zip -O protoc-${protoc_ver}-linux-x86_64.zip
+    unzip -o protoc-${protoc_ver}-linux-x86_64.zip "bin/protoc"
+    rm protoc-${protoc_ver}-linux-x86_64.zip
 else
     echo "Your platform ($(uname -a)) is not supported."
     echo "Please manually install protoc"
