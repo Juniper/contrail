@@ -4,11 +4,14 @@
 #
 #    python gen-pipreqs.py
 #
-ansible==2.7.11           # via -r docker/contrail_go/requirements.in
+ansible==2.7.11           # via -r ../docker/contrail_go/requirements.in
 bcrypt==3.1.7             # via paramiko
+certifi==2020.6.20        # via requests
 cffi==1.14.0              # via bcrypt, cryptography, pynacl
+chardet==3.0.4            # via requests
 cryptography==2.9.2       # via ansible, paramiko
 enum34==1.1.10            # via cryptography
+idna==2.10                # via requests
 ipaddress==1.0.23         # via cryptography
 jinja2==2.11.2            # via ansible
 markupsafe==1.1.1         # via jinja2
@@ -16,7 +19,9 @@ paramiko==2.7.1           # via ansible
 pycparser==2.20           # via cffi
 pynacl==1.4.0             # via paramiko
 pyyaml==5.3.1             # via ansible
+requests==2.23.0          # via -r ../docker/contrail_go/requirements.in
 six==1.15.0               # via bcrypt, cryptography, pynacl
+urllib3==1.25.10          # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
