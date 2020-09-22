@@ -22,6 +22,9 @@ COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
 # creating link as needed by multi-cloud
 RUN ln -s /usr/share/contrail/contrail-ansible-deployer /tmp/
 
+#https://github.com/Juniper/contrail-ansible-deployer/blob/e28082e618a3e15c4d5c3308815922170d964eab/playbooks/roles/pip/tasks/main.yml#L6
+RUN yum remove -y python-requests
+
 RUN yum install -y \
     postgresql \
     git \
