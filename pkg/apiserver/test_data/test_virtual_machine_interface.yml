@@ -138,7 +138,7 @@ workflow:
   expect:
     virtual-network: *vn_vmi_blue
 
-- name: create virtual router in the blue virutal network
+- name: create virtual router in the blue virtual network
   request:
     path: /virtual-routers
     method: POST
