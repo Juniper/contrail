@@ -140,7 +140,7 @@ workflow:
           description: ''
           tenant_id: 3a36aca64838453dabb05c07e0f75ea2
           admin_state_up: true
-          policys: ''
+          policies: ''
           vpc:route_table: ''
           shared: false
           port_security_enabled: true

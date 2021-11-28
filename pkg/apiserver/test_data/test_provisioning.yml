@@ -221,7 +221,7 @@ workflow:
 
 - name: create firewall policy
   request:
-    path: /firewall-policys
+    path: /firewall-policies
     method: POST
     expected: [200]
     data:

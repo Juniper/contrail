@@ -9,7 +9,7 @@ parents:
       Network policies that are attached to virtual networks.
     operations: CRUD
     presence: optional
-plural: network_policys
+plural: network_policies
 prefix: /
 references: {}
 schema:

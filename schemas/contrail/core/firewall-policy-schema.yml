@@ -12,7 +12,7 @@ parents:
       rules
     operations: CRUD
     presence: optional
-plural: firewall_policys
+plural: firewall_policies
 prefix: /
 references:
   firewall_rule:

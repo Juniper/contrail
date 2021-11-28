@@ -38,7 +38,7 @@ schema:
     admin_state_up:
       presence: optional
       type: boolean
-    policys:
+    policies:
       presence: optional
       type: array
       items:

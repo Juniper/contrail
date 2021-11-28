@@ -31,7 +31,7 @@ schema:
       type: string
     port_security_enabled:
       type: boolean
-    policys:
+    policies:
       presence: optional
       type: array
       items:

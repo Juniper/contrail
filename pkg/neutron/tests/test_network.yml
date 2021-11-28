@@ -68,7 +68,7 @@ workflow:
           name: test-vn1
           tenant_id: 886c725d04614dd6ac2730c74d4e46fb
           admin_state_up: true
-          policys: ''
+          policies: ''
           vpc:route_table: ''
           shared: false
           port_security_enabled: true
@@ -393,7 +393,7 @@ workflow:
 
 - name: Create network policy
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected: [200]
     data:
@@ -442,7 +442,7 @@ workflow:
             - end_port: -1
               start_port: -1
 
-- name: Network update with policys field
+- name: Network update with policies field
   request:
     path: /neutron/network
     method: POST
@@ -451,7 +451,7 @@ workflow:
       data:
         fields: []
         resource:
-          policys:
+          policies:
           - - default
             - neutron_network_admin_project
             - test-net-policy
@@ -482,7 +482,7 @@ workflow:
     - default
     - neutron_network_admin_project
     - test-vn1
-    policys:
+    policies:
     - - default
       - neutron_network_admin_project
       - test-net-policy
@@ -494,7 +494,7 @@ workflow:
     project_id: 886c725d04614dd6ac2730c74d4e46fb
     description: ''
 
-- name: Network read after update on policys
+- name: Network read after update on policies
   request:
     path: /neutron/network
     method: POST
@@ -530,7 +530,7 @@ workflow:
     - default
     - neutron_network_admin_project
     - test-vn1
-    policys:
+    policies:
     - - default
       - neutron_network_admin_project
       - test-net-policy
@@ -542,7 +542,7 @@ workflow:
     project_id: 886c725d04614dd6ac2730c74d4e46fb
     description: ''
 
-- name: Network update with empty policys field
+- name: Network update with empty policies field
   request:
     path: /neutron/network
     method: POST
@@ -551,7 +551,7 @@ workflow:
       data:
         fields: []
         resource:
-          policys: []
+          policies: []
         id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
       context:
         user_id: 06be3763c8224dd5a343e3d95d87c1d2

@@ -3,7 +3,7 @@ extends:
 - base
 id: peering_policy
 parents: {}
-plural: peering_policys
+plural: peering_policies
 prefix: /
 references: {}
 schema:

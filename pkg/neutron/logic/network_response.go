@@ -57,14 +57,14 @@ func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork, oper s
 
 func (r *NetworkResponse) setResponseRefs(vn *models.VirtualNetwork, oper string) {
 	if oper == OperationRead || oper == OperationReadAll {
-		r.setPolicys(vn)
+		r.setPolicies(vn)
 	}
 	r.setRouteTables(vn)
 }
 
-func (r *NetworkResponse) setPolicys(vn *models.VirtualNetwork) {
+func (r *NetworkResponse) setPolicies(vn *models.VirtualNetwork) {
 	for _, np := range vn.GetNetworkPolicyRefs() {
-		r.Policys = append(r.Policys, np.GetTo())
+		r.Policies = append(r.Policies, np.GetTo())
 	}
 }
 

@@ -69,7 +69,7 @@ workflow:
           name: test-vn1
           tenant_id: 316dc378464911e9b210d663bd873d93
           admin_state_up: true
-          policys: ''
+          policies: ''
           vpc:route_table: ''
           shared: false
           port_security_enabled: true

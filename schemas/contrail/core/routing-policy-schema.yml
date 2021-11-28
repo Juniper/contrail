@@ -8,7 +8,7 @@ parents:
       maintained by system.
     operations: CRUD
     presence: optional
-plural: routing_policys
+plural: routing_policies
 prefix: /
 references:
   routing_instance:

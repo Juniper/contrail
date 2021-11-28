@@ -50,7 +50,7 @@ test_data:
             simple_action: pass
   admin_project_with_network_policy1: &admin_project_with_network_policy1
     <<: *admin_project
-    network_policys:
+    network_policies:
     - <<: *network_policy1
   network_policy2: &network_policy2
     fq_name: ["default", "5038dd12-9bf1-11e9-95a1-df91d98ff557", "policy2"]
@@ -196,7 +196,7 @@ workflow:
     project: *demo_project
 - name: create network policy 1
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 200
@@ -215,7 +215,7 @@ workflow:
 - name: create network policy 2
   client: bob
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 200
@@ -590,32 +590,32 @@ workflow:
 - name: list network policy
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: /network-policys?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80
+    path: /network-policies?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80
     method: GET
     expected:
     - 200
   expect:
-    network-policys:
+    network-policies:
     - *network_policy1
 - name: list network policy by user bob
   client: bob
   request:
-    path: /network-policys
+    path: /network-policies
     method: GET
     expected:
     - 200
   expect:
-    network-policys:
+    network-policies:
     - *network_policy2
 - name: count network policies
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: "/network-policys?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&count=true"
+    path: "/network-policies?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&count=true"
     method: GET
     expected:
     - 200
   expect:
-    network-policys:
+    network-policies:
       count: 1
 
 - name: update vn_blue with user-defined subnet
