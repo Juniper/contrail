@@ -908,7 +908,7 @@ resources:
             status:
               $id: /properties/output/properties/status
               default: ""
-              description: Status of the plabybook run
+              description: Status of the playbook run
               examples:
               - SUCCESS
               title: The Status Schema
