@@ -15,7 +15,7 @@ schema:
   properties:
     structured_syslog_message_forward:
       $ref: types.json#/definitions/StructuredSyslogMessageForwardType
-      description: fowarding action to be taken on the message
+      description: forwarding action to be taken on the message
       operations: CRUD
       presence: required
     structured_syslog_message_integer_fields:
