@@ -3,7 +3,7 @@
 
 Schema based validation is done in `ContrailService` which is the first one in the inner service chain.
 Validation function for each resource is generated from [template file](tools/templates/contrail/type_validation.tmpl).
-Each generated function may be overwriten or extended in [this file](pkg/models/validation.go).
+Each generated function may be overwritten or extended in [this file](pkg/models/validation.go).
 
 ### Enums
 
