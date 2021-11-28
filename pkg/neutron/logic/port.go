@@ -115,7 +115,7 @@ func (port *Port) Delete(ctx context.Context, rp RequestParameters, id string) (
 		})
 	}
 
-	vmID := port.getAsssociatedVirtualMachineID(vmi)
+	vmID := port.getAssociatedVirtualMachineID(vmi)
 
 	if err = removeVirtualMachineIfNoPortsLeft(ctx, rp, vmID); err != nil {
 		return nil, err
@@ -474,7 +474,7 @@ func shouldChangeDevice(deviceOwner string, fm *types.FieldMask) bool {
 // updateMacAddress modify mac address only for baremetal deployments or when port is not attached to any VM
 // Here nil is returned - same as original config node
 // However this silently discards mac address update request if not allowed
-func (port *Port) getAsssociatedVirtualMachineID(vmi *models.VirtualMachineInterface) string {
+func (port *Port) getAssociatedVirtualMachineID(vmi *models.VirtualMachineInterface) string {
 	if vmi.GetParentType() == models.KindVirtualMachine {
 		return vmi.GetParentUUID()
 	}
