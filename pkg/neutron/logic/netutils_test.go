@@ -9,12 +9,12 @@ import (
 func TestGetIPPrefixAndPrefixLen(t *testing.T) {
 
 	tests := []struct {
-		name                 string
-		input                string
-		outputIPPrefix       string
-		outputIPNetworPrefix string
-		outputIPPrefixLen    int64
-		expectError          bool
+		name                  string
+		input                 string
+		outputIPPrefix        string
+		outputIPNetworkPrefix string
+		outputIPPrefixLen     int64
+		expectError           bool
 	}{
 		{"good ipv4 1", "137.105.215.54/23", "137.105.215.54", "137.105.214.0", 23, false},
 		{"good ipv4 2", "3.37.8.253/13", "3.37.8.253", "3.32.0.0", 13, false},
@@ -38,7 +38,7 @@ func TestGetIPPrefixAndPrefixLen(t *testing.T) {
 			}
 
 			assert.EqualValues(t, tt.outputIPPrefix, ipPrefix, "Error wrong IP address")
-			assert.EqualValues(t, tt.outputIPNetworPrefix, ipNetwork, "Error wrong IP Network address")
+			assert.EqualValues(t, tt.outputIPNetworkPrefix, ipNetwork, "Error wrong IP Network address")
 			assert.EqualValues(t, tt.outputIPPrefixLen, ipPrefixLen, "Error wrong IP Prefix length")
 		})
 	}
@@ -46,13 +46,13 @@ func TestGetIPPrefixAndPrefixLen(t *testing.T) {
 
 func TestDecodeIP(t *testing.T) {
 	tests := []struct {
-		name                 string
-		input                string
-		outputIPPrefix       string
-		outputIPNetworPrefix string
-		outputIPPrefixLen    int64
-		outputVersion        int8
-		expectError          bool
+		name                  string
+		input                 string
+		outputIPPrefix        string
+		outputIPNetworkPrefix string
+		outputIPPrefixLen     int64
+		outputVersion         int8
+		expectError           bool
 	}{
 		{"good ipv4 mask", "137.105.215.54/23", "137.105.215.54", "137.105.214.0", 23, ipV4, false},
 		{"good ipv4 nomask", "3.37.8.253", "3.37.8.253", "0.0.0.0", 0, ipV4, false},
@@ -73,7 +73,7 @@ func TestDecodeIP(t *testing.T) {
 			}
 
 			assert.EqualValues(t, tt.outputIPPrefix, ip.IP, "Error wrong IP address")
-			assert.EqualValues(t, tt.outputIPNetworPrefix, ip.netIP, "Error wrong IP Network address")
+			assert.EqualValues(t, tt.outputIPNetworkPrefix, ip.netIP, "Error wrong IP Network address")
 			assert.EqualValues(t, tt.outputIPPrefixLen, ip.prefixLen, "Error wrong IP Prefix length")
 			assert.EqualValues(t, tt.outputVersion, ip.ver, "Error wrong IP version")
 		})
