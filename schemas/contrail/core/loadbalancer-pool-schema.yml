@@ -22,7 +22,7 @@ references:
     presence: optional
   service_appliance_set:
     description: ''
-    operations: RReference to service-appliance-set where this loadbalancer-pool is
+    operations: Reference to service-appliance-set where this loadbalancer-pool is
       hosted. Applicable to LBaaS V1.
     presence: system-only
   service_instance:
