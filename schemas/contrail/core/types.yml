@@ -550,7 +550,7 @@ definitions:
         type: integer
       port:
         description: TCP port number on which BGP protocol connections are accepted.
-          default is based on standareds.
+          default is based on standards.
         presence: optional
         type: integer
       router_type:
