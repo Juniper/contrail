@@ -140,7 +140,7 @@ type dependencyTestAssertion func(
 	cache *DB,
 )
 
-type dependecyTestScenario struct {
+type dependencyTestScenario struct {
 	name      string
 	event     *services.Event
 	assertion dependencyTestAssertion
@@ -173,7 +173,7 @@ func TestDependencyResolution(t *testing.T) {
 	}
 
 	// All the steps must be run in proper order
-	tests := []dependecyTestScenario{
+	tests := []dependencyTestScenario{
 		{
 			name: "Create vn_blue",
 			event: &services.Event{
@@ -340,7 +340,7 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 	}
 
 	// All the steps must be run in proper order
-	tests := []dependecyTestScenario{
+	tests := []dependencyTestScenario{
 		{
 			name: "Create vn_blue",
 			event: &services.Event{
