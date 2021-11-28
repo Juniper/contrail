@@ -116,7 +116,7 @@ func TestUpdateForwardingClass(t *testing.T) {
 		name    string
 		request services.UpdateForwardingClassRequest // params to be updated
 		*mockedListForwardingClassResponse
-		*mockedGetForwardingClassResponse // retruns existing obj in DB
+		*mockedGetForwardingClassResponse // returns existing obj in DB
 		errorCode                         codes.Code
 	}{
 		{
