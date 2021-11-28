@@ -1969,7 +1969,7 @@ definitions:
       job_completion_weightage:
         description: Job percentage completion when this playbook is completed. This
           attribute value should 100 if there is only one playbook defined in the
-          job template. The job-completion-weigtages for all playbooks in the same
+          job template. The job-completion-weightages for all playbooks in the same
           job-template should add up to 100 exact.
         type: integer
       multi_device_playbook:
