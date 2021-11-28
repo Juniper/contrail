@@ -82,7 +82,7 @@ func Test_fieldByTag(t *testing.T) {
 		{
 			name: "field name typo",
 			t:    reflect.TypeOf(models.VirtualNetwork{}),
-			key:  "json", value: "annotatio",
+			key:  "json", value: "annotation",
 			wantOk: false,
 		},
 		{
