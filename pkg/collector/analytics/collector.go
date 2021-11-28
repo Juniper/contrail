@@ -21,7 +21,7 @@ const (
 	defaultTimeout = 30 * time.Second
 )
 
-// Config represents parameters of Сollector in the config file
+// Config represents parameters of Collector in the config file
 type Config struct {
 	Enabled bool
 	URL     string

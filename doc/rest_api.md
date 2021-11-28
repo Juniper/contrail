@@ -389,7 +389,7 @@ RESPONSE: {
 
 ## Sync API
 
-Sync API support creating or deleting multiple resoruces in one time.
+Sync API support creating or deleting multiple resources in one time.
 This API tries to update resources if same resource with UUID has already exists.
 
 POST

@@ -119,7 +119,7 @@ schema:
     supported_fabric_annotations:
       $ref: types.json#/definitions/KeyValuePairs
       description: 'List of supported annotations that can be used to annotate a Contrail
-        Fabric. These annoations are used as directives, or hints to assign resources
+        Fabric. These annotations are used as directives, or hints to assign resources
         defined in namespaces to the network devices. For example, `igp-protocol:
         ospf` attribute could be used by the underlay provisioning playbook to choose
         which IGP protocol to use for the IP fabric.'

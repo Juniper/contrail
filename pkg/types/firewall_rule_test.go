@@ -346,7 +346,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			errorCode: codes.InvalidArgument,
 		},
 		{
-			name: "Try to create with tag references definied",
+			name: "Try to create with tag references defined",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
 					Protocol: models.TCPProtocol,
@@ -402,7 +402,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			IsInternalRequest: true,
 		},
 		{
-			name: "Try to create with address group references definied",
+			name: "Try to create with address group references defined",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
 					Protocol: models.TCPProtocol,

@@ -100,7 +100,7 @@ workflow:
 
 - name: creating firewall policy with draft mode state property defined should fail
   request:
-    path: /firewall-policys
+    path: /firewall-policies
     method: POST
     expected: [400]
     data:
@@ -110,7 +110,7 @@ workflow:
 
 - name: creating global firewall policy with scoped refs should fail
   request:
-    path: /firewall-policys
+    path: /firewall-policies
     method: POST
     expected: [400]
     data:
@@ -121,7 +121,7 @@ workflow:
 
 - name: create firewall policy
   request:
-    path: /firewall-policys
+    path: /firewall-policies
     method: POST
     expected: [200]
     data:

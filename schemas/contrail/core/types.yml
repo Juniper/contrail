@@ -539,7 +539,7 @@ definitions:
           It holds ipv6 gateway address for ipv6 subnet from which the client has
           IP address. The value is used as nexthop when advertising routes to the
           client via bgp.  Note that the ipv6-gateway-address can be a regular ipv6
-          address or a ipv4-mapped-ipv6 adddress.
+          address or a ipv4-mapped-ipv6 address.
         presence: optional
       local_autonomous_system:
         description: BgpRouter specific Autonomous System number if different from
@@ -550,7 +550,7 @@ definitions:
         type: integer
       port:
         description: TCP port number on which BGP protocol connections are accepted.
-          default is based on standareds.
+          default is based on standards.
         presence: optional
         type: integer
       router_type:
@@ -1969,7 +1969,7 @@ definitions:
       job_completion_weightage:
         description: Job percentage completion when this playbook is completed. This
           attribute value should 100 if there is only one playbook defined in the
-          job template. The job-completion-weigtages for all playbooks in the same
+          job template. The job-completion-weightages for all playbooks in the same
           job-template should add up to 100 exact.
         type: integer
       multi_device_playbook:

@@ -26,7 +26,7 @@ type JobRequest struct {
 // JobQueue : All jobs get queued here
 var JobQueue chan JobRequest
 
-// WatcherInit intializes the Watcher
+// WatcherInit initializes the Watcher
 func WatcherInit(numJobs int) {
 	// Initialize the Job-Q with configured number of Jobs permitted
 	JobQueue = make(chan JobRequest, numJobs)

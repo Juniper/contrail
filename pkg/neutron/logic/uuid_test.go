@@ -16,7 +16,7 @@ func TestVncUUIDToNeutronID(t *testing.T) {
 	for _, test := range tests {
 		result := VncUUIDToNeutronID(test.input)
 		if result != test.output {
-			t.Errorf("Tranlating contrail uuid (%s) to neutron was incorrect, got: %s, want: %s.",
+			t.Errorf("Translation contrail uuid (%s) to neutron was incorrect, got: %s, want: %s.",
 				test.input, result, test.output)
 		}
 	}

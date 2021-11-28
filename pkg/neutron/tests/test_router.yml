@@ -271,7 +271,7 @@ workflow:
           description: ''
           tenant_id: *tenant_id
           admin_state_up: true
-          policys: ''
+          policies: ''
           vpc:route_table: ''
           shared: false
           port_security_enabled: true

@@ -17,22 +17,22 @@ import (
 
 func TestGlobalSystemConfigUdc(t *testing.T) {
 	var mockCtrl *gomock.Controller
-	var inTransationDoerMock *typesmock.MockInTransactionDoer
+	var inTransactionDoerMock *typesmock.MockInTransactionDoer
 	var dataServiceMock *servicesmock.MockService
 	var logicService ContrailTypeLogicService
 
 	testSetup := func(t *testing.T) {
 		mockCtrl = gomock.NewController(t)
-		inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
+		inTransactionDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
 			ReadService:       dataServiceMock,
-			InTransactionDoer: inTransationDoerMock,
+			InTransactionDoer: inTransactionDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
 
-		inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+		inTransactionDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 			func(ctx context.Context, do func(context.Context) error) error {
 				return do(ctx)
 			},
@@ -91,22 +91,22 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 
 func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 	var mockCtrl *gomock.Controller
-	var inTransationDoerMock *typesmock.MockInTransactionDoer
+	var inTransactionDoerMock *typesmock.MockInTransactionDoer
 	var dataServiceMock *servicesmock.MockService
 	var logicService ContrailTypeLogicService
 
 	testSetup := func(t *testing.T) {
 		mockCtrl = gomock.NewController(t)
-		inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
+		inTransactionDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
 			ReadService:       dataServiceMock,
-			InTransactionDoer: inTransationDoerMock,
+			InTransactionDoer: inTransactionDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
 
-		inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+		inTransactionDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 			func(ctx context.Context, do func(context.Context) error) error {
 				return do(ctx)
 			},
@@ -271,22 +271,22 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 
 func TestGlobalSystemConfigAsn(t *testing.T) {
 	var mockCtrl *gomock.Controller
-	var inTransationDoerMock *typesmock.MockInTransactionDoer
+	var inTransactionDoerMock *typesmock.MockInTransactionDoer
 	var dataServiceMock *servicesmock.MockService
 	var logicService ContrailTypeLogicService
 
 	testSetup := func(t *testing.T) {
 		mockCtrl = gomock.NewController(t)
-		inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
+		inTransactionDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
 			ReadService:       dataServiceMock,
-			InTransactionDoer: inTransationDoerMock,
+			InTransactionDoer: inTransactionDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
 
-		inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+		inTransactionDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 			func(ctx context.Context, do func(context.Context) error) error {
 				return do(ctx)
 			},

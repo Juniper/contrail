@@ -395,7 +395,7 @@ workflow:
         virtual-network: *spocknet_blue2
     expect: null
 
-  - name: Re-verify virtal_network blue2 is not created
+  - name: Re-verify virtual_network blue2 is not created
     request:
       path: /virtual-network/uuid_vn_blue_spock2
       method: GET
@@ -805,7 +805,7 @@ workflow:
 
   - name: Create network_policy blue 1
     request:
-      path: /network-policys
+      path: /network-policies
       method: POST
       expected:
         - 200
@@ -829,7 +829,7 @@ workflow:
 
   - name: Create network_policy blue 2
     request:
-      path: /network-policys
+      path: /network-policies
       method: POST
       expected:
         - 400
@@ -861,7 +861,7 @@ workflow:
 
   - name: Create network_policy blue 2 (again)
     request:
-      path: /network-policys
+      path: /network-policies
       method: POST
       expected:
         - 200

@@ -47,9 +47,9 @@ func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
 	return reflect.DeepEqual(m, other)
 }
 
-var avaiableProtocols = []string{AnyProtocol, ICMPProtocol, TCPProtocol, UDPProtocol, ICMP6Protocol}
+var availableProtocols = []string{AnyProtocol, ICMPProtocol, TCPProtocol, UDPProtocol, ICMP6Protocol}
 
-var isAvailableProtocol = format.BoolMap(avaiableProtocols)
+var isAvailableProtocol = format.BoolMap(availableProtocols)
 
 // ValidateProtocol checks if protocol is valid rule protocol.
 func (m *PolicyRuleType) ValidateProtocol() error {

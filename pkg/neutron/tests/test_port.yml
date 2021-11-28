@@ -803,7 +803,7 @@ workflow:
     method: GET
     expected: [404]
 
-- name: Neutron port update AllowedAddresPairs and FixedIP
+- name: Neutron port update AllowedAddressPairs and FixedIP
   request:
     path: /neutron/port
     method: POST

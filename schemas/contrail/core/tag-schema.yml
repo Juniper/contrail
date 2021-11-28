@@ -23,7 +23,7 @@ schema:
     tag_id:
       $ref: types.json#/definitions/U32BitHexInt
       description: 'Internal Tag ID encapsulating tag type and value in                  hexadecimal
-        fomat: 0xTTTTVVVV (T: type, V: value)'
+        format: 0xTTTTVVVV (T: type, V: value)'
       operations: R
       presence: optional
     tag_predefined:

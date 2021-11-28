@@ -36,7 +36,7 @@ func TestService_ListMetadata(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Get multiple metadatas using UUID and FQName",
+			name: "Get multiple metadata using UUID and FQName",
 			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
@@ -60,7 +60,7 @@ func TestService_ListMetadata(t *testing.T) {
 			},
 		},
 		{
-			name: "Get multiple metadatas using UUIDs",
+			name: "Get multiple metadata using UUIDs",
 			args: []*models.Metadata{
 				{
 					UUID: "uuid-b",
@@ -83,7 +83,7 @@ func TestService_ListMetadata(t *testing.T) {
 			},
 		},
 		{
-			name: "Get multiple metadatas using FQNames",
+			name: "Get multiple metadata using FQNames",
 			args: []*models.Metadata{
 				{
 					FQName: []string{"default", "uuid-b"},

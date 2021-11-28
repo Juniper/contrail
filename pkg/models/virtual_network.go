@@ -23,7 +23,7 @@ const (
 
 //MakeNeutronCompatible makes this resource data neutron compatible.
 func (m *VirtualNetwork) MakeNeutronCompatible() {
-	//  neutorn <-> vnc sharing
+	//  neutron <-> vnc sharing
 	if m.Perms2.GlobalAccess == models.PermsRWX {
 		m.IsShared = true
 	}

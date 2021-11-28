@@ -13,7 +13,7 @@ prefix: /
 references:
   node_profile:
     $ref: types.json#/definitions/SerialNumListType
-    description: node profiles assignd to the fabric. The serial number list on the
+    description: node profiles assigned to the fabric. The serial number list on the
       link is used to auto assign node-profile during ZTP so that port channelization
       could be bootstrapped based on the hardware spec in the node profile.
     operations: CRUD

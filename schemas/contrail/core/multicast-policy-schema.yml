@@ -8,7 +8,7 @@ parents:
       maintained by system.
     operations: CRUD
     presence: optional
-plural: multicast_policys
+plural: multicast_policies
 prefix: /
 references: {}
 schema:

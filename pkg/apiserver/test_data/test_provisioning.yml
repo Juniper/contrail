@@ -213,7 +213,7 @@ workflow:
       endpoint_2:
         tag_ids:
         - 0x00ff0002
-      # TODO uncomment when tag refs definied
+      # TODO uncomment when tag refs defined
       # tag_refs:
       #   - uuid: tag_test_provisioning_uuid
       #     to:
@@ -221,7 +221,7 @@ workflow:
 
 - name: create firewall policy
   request:
-    path: /firewall-policys
+    path: /firewall-policies
     method: POST
     expected: [200]
     data:

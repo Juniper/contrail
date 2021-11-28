@@ -40,7 +40,7 @@ func physicalInterfaceReadServiceMocks(
 ) {
 	readService, ok := s.ReadService.(*servicesmock.MockReadService)
 	assert.True(t, ok)
-	// Use empty physical router structure instead nil parent physical rounter
+	// Use empty physical router structure instead nil parent physical router
 	if parentRouter == nil {
 		parentRouter = new(models.PhysicalRouter)
 	}

@@ -157,7 +157,7 @@ workflow:
     data:
       security-group: *security_group_with_no_local
   expect: null
-- name: try to create security group with non mathing ethertype
+- name: try to create security group with non matching ethertype
   request:
     path: /security-groups
     method: POST

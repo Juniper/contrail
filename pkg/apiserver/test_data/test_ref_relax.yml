@@ -55,7 +55,7 @@ workflow:
     project: *admin_project
 - name: create network policy
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 200

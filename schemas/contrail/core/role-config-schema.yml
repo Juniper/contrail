@@ -14,7 +14,7 @@ references:
   job_template:
     description: This reference associates the role config to a job-template that
       contains a playbook that generates device              specific role config
-      and deploys it to the device. The role-config.config attribtue value must be
+      and deploys it to the device. The role-config.config attribute value must be
       in JSON              format and conform to the input_schema defined in the job-template.
     operations: CRUD
     presence: optional

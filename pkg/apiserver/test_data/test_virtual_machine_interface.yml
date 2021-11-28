@@ -138,7 +138,7 @@ workflow:
   expect:
     virtual-network: *vn_vmi_blue
 
-- name: create virtual router in the blue virutal network
+- name: create virtual router in the blue virtual network
   request:
     path: /virtual-routers
     method: POST
@@ -282,7 +282,7 @@ workflow:
       virtual-machine-interface:
         virtual_machine_refs:
           - to: ["default-domain", "admin_vmi_project", "non-existing-vm"]
-            uuid: uuid-non-exisitng-vm-uuid
+            uuid: uuid-non-existing-vm-uuid
   expect:
     message:
       $contains: "VirtualMachineRefs create failed"
@@ -412,7 +412,7 @@ workflow:
       virtual_machine_refs: $null
 
 # Tests of Delete operation
-- name: create virtual machine interface with vrouter linked by bidings and with asssigned virtual machine
+- name: create virtual machine interface with vrouter linked by bidings and with assigned virtual machine
   request:
     path: /virtual-machine-interfaces
     method: POST
@@ -431,7 +431,7 @@ workflow:
           - to: ["default-domain", "admin_vmi_project", "default-vm"]
             uuid: default-vm-uuid
 
-- name: try to delete VMI with assined VRouter and VM
+- name: try to delete VMI with assigned VRouter and VM
   request:
     path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
     method: DELETE

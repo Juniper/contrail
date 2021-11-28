@@ -43,8 +43,8 @@ func BenchmarkVirtualNetworkCreate(b *testing.B) {
 				}
 
 				for i := 0; i < tt.numberOfExistingVNs; i++ {
-					vn.UUID = "test_exisiting_vn_uuid_" + strconv.Itoa(i)
-					vn.Name = "test_exisiting_vn_" + strconv.Itoa(i)
+					vn.UUID = "test_existing_vn_uuid_" + strconv.Itoa(i)
+					vn.Name = "test_existing_vn_" + strconv.Itoa(i)
 
 					if _, err := hc.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{VirtualNetwork: vn}); err != nil {
 						b.Fatal("Failed to create VN: ", err)

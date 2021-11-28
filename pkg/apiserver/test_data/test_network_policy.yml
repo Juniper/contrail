@@ -114,7 +114,7 @@ workflow:
 
 - name: create network policy with security group entries
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 400
@@ -124,7 +124,7 @@ workflow:
 
 - name: create network policy with two the same rules
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 409
@@ -134,7 +134,7 @@ workflow:
 
 - name: create network policy with invalid protocol number
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 400
@@ -144,7 +144,7 @@ workflow:
 
 - name: create network policy with invalid protocol
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 400
@@ -154,7 +154,7 @@ workflow:
 
 - name: create valid network policy and check if rule uuid is filled
   request:
-    path: /network-policys
+    path: /network-policies
     method: POST
     expected:
     - 200

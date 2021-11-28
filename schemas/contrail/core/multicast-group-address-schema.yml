@@ -3,7 +3,7 @@ extends:
 - base
 id: multicast_group_address
 parents: {}
-plural: multicast_group_addresss
+plural: multicast_group_address
 prefix: /
 references: {}
 schema:

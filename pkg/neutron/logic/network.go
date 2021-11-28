@@ -36,19 +36,19 @@ func (n *Network) UnmarshalJSON(data []byte) error {
 	type alias Network
 	obj := struct {
 		*alias
-		Policys interface{} `json:"policys"`
+		Policies interface{} `json:"policies"`
 	}{alias: (*alias)(n)}
 
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return err
 	}
 
-	if policys, ok := obj.Policys.([]interface{}); ok {
-		for _, policy := range policys {
+	if policies, ok := obj.Policies.([]interface{}); ok {
+		for _, policy := range policies {
 			if p, ok := policy.([]string); ok {
-				n.Policys = append(n.Policys, p)
+				n.Policies = append(n.Policies, p)
 			} else {
-				n.Policys = [][]string{}
+				n.Policies = [][]string{}
 				break
 			}
 		}
@@ -58,9 +58,9 @@ func (n *Network) UnmarshalJSON(data []byte) error {
 
 // ApplyMap applies map onto network.
 func (n *Network) ApplyMap(m map[string]interface{}) error {
-	_, ok := m[NetworkFieldPolicys].(string)
+	_, ok := m[NetworkFieldPolicies].(string)
 	if ok {
-		delete(m, NetworkFieldPolicys)
+		delete(m, NetworkFieldPolicies)
 	}
 	type alias Network
 	return format.ApplyMap(m, (*alias)(n))
@@ -449,7 +449,7 @@ func (n *Network) setVncRefs(
 	vncNet *models.VirtualNetwork,
 	vncFm *types.FieldMask,
 ) error {
-	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPolicys)) {
+	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPolicies)) {
 		n.createNetworkPolicyRef(vncNet, vncFm)
 	}
 	if asfmodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouteTable)) &&
@@ -532,7 +532,7 @@ func (n *Network) createNetworkPolicyRef(
 	vncNet *models.VirtualNetwork, vncFm *types.FieldMask,
 ) {
 	vncNet.NetworkPolicyRefs = []*models.VirtualNetworkNetworkPolicyRef{}
-	for i, policy := range n.Policys {
+	for i, policy := range n.Policies {
 		vncNet.AddNetworkPolicyRef(&models.VirtualNetworkNetworkPolicyRef{
 			To: policy,
 			Attr: &models.VirtualNetworkPolicyType{

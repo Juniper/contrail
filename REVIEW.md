@@ -1,6 +1,6 @@
 # Code review guidelines
 
-This file contains guidelines for commiters and code reviewers.
+This file contains guidelines for committers and code reviewers.
 It is open for updates.
 
 ## References

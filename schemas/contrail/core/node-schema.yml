@@ -27,7 +27,7 @@ schema:
       operations: CRUD
       presence: optional
     disk_partition:
-      description: Comma seperated disk partition to use.
+      description: Comma separated disk partition to use.
       operations: CRUD
       presence: optional
       type: string

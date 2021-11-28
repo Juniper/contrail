@@ -49,7 +49,7 @@ func TestCreateForwardingClass(t *testing.T) {
 			errorCode: codes.OK,
 		},
 		{
-			name: "Fail creating ForwardingClass on alredy used ForwardingClassID param",
+			name: "Fail creating ForwardingClass on already used ForwardingClassID param",
 			testForwardingClass: &models.ForwardingClass{
 				UUID:              "forwarding-class-1",
 				ForwardingClassID: 1,
@@ -116,7 +116,7 @@ func TestUpdateForwardingClass(t *testing.T) {
 		name    string
 		request services.UpdateForwardingClassRequest // params to be updated
 		*mockedListForwardingClassResponse
-		*mockedGetForwardingClassResponse // retruns existing obj in DB
+		*mockedGetForwardingClassResponse // returns existing obj in DB
 		errorCode                         codes.Code
 	}{
 		{
@@ -147,7 +147,7 @@ func TestUpdateForwardingClass(t *testing.T) {
 			errorCode: codes.OK,
 		},
 		{
-			name: "Fail updating ForwardingClass on alredy used ForwardingClassID param",
+			name: "Fail updating ForwardingClass on already used ForwardingClassID param",
 			request: services.UpdateForwardingClassRequest{
 				ForwardingClass: &models.ForwardingClass{
 					UUID:              "forwarding-class-1",

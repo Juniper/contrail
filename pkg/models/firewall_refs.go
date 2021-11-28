@@ -26,7 +26,7 @@ func checkAssociatedRefsInSameScope(obj models.Object, fqName []string, refs []m
 // isScopedFirewallResource checks whether firewall resource is global or scoped.
 // Using length of firewall resource one might distinguish a global firewall
 // resource (fqName length equal to two) to a scoped one (length longer than two).
-// Without this assumtion, checking if references are in the same scope has to be re-worked.
+// Without this assumption, checking if references are in the same scope has to be re-worked.
 func isScopedFirewallResource(fqName []string) bool {
 	return len(fqName) != 2
 }

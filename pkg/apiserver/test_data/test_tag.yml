@@ -3,7 +3,7 @@ cleanup:
 - path: /tag-type/tag_type_uuid
 - path: /tag/tag_minimal_correct_uuid
 - path: /tag/tag_full_correct_uuid
-- path: /tag/tag_wihout_tagtype_uuid
+- path: /tag/tag_without_tagtype_uuid
 
 test_data:
   # SetUp data

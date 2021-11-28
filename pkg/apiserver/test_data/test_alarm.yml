@@ -228,7 +228,7 @@ workflow:
         <<: *alarm_range_correct_without_uuid
         uuid: test_valid_alarm
 
-  - name: update with emtpy rules
+  - name: update with empty rules
     request:
       path: /alarm/test_valid_alarm
       method: PUT
