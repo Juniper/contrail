@@ -282,7 +282,7 @@ workflow:
       virtual-machine-interface:
         virtual_machine_refs:
           - to: ["default-domain", "admin_vmi_project", "non-existing-vm"]
-            uuid: uuid-non-exisitng-vm-uuid
+            uuid: uuid-non-existing-vm-uuid
   expect:
     message:
       $contains: "VirtualMachineRefs create failed"
